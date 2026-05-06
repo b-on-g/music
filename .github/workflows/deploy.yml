@@ -31,18 +31,19 @@ jobs:
       if: github.ref == 'refs/heads/master'
       run: |
         cd bog/vk/app/-
-        zip -r "$GITHUB_WORKSPACE/bog-vk-extension-${GITHUB_REF_NAME}.zip" .
+        zip -r "$GITHUB_WORKSPACE/bog-vk-extension-build-${{ github.run_number }}.zip" .
 
     - name: Publish release
       if: github.ref == 'refs/heads/master'
       uses: softprops/action-gh-release@v2
       with:
         files: bog-vk-extension-*.zip
-        name: ${{ github.ref_name }}
+        tag_name: build-${{ github.run_number }}
+        name: build-${{ github.run_number }}
         body: |
           ## Установка расширения вручную (Chrome / Edge / Brave)
 
-          1. Скачай `bog-vk-extension-${{ github.ref_name }}.zip` ниже
+          1. Скачай `bog-vk-extension-build-${{ github.run_number }}.zip` ниже
           2. Распакуй архив в любую постоянную папку (если удалишь — расширение перестанет работать)
           3. Открой `chrome://extensions/`
           4. Включи **Режим разработчика** (тумблер справа сверху)
