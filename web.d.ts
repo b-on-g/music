@@ -14106,6 +14106,8 @@ declare namespace $ {
     const $bog_vk_account_baza_base: Omit<typeof $giper_baza_dict, "prototype"> & {
         new (...args: any[]): $mol_type_override<$giper_baza_dict, {
             readonly Nickname: (auto?: any) => $giper_baza_atom_text | null;
+            readonly Last_track_key: (auto?: any) => $giper_baza_atom_text | null;
+            readonly Last_position: (auto?: any) => $giper_baza_atom_real | null;
         }>;
         path: string;
     } & {
@@ -14113,6 +14115,8 @@ declare namespace $ {
             [x: string]: typeof $giper_baza_pawn;
         } & {
             readonly Nickname: typeof $giper_baza_atom_text;
+            readonly Last_track_key: typeof $giper_baza_atom_text;
+            readonly Last_position: typeof $giper_baza_atom_real;
         };
     };
     /**
@@ -16730,6 +16734,49 @@ declare namespace $ {
 //# sourceMappingURL=next.view.tree.d.ts.map
 declare namespace $ {
 
+	export class $mol_icon_volume_high extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=high.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_pop_over extends $mol_pop {
+		hovered( next?: boolean ): boolean
+		event_show( next?: any ): any
+		event_hide( next?: any ): any
+		showed( ): ReturnType< $mol_pop_over['hovered'] >
+		attr( ): ({ 
+			'tabindex': number,
+		})  & ReturnType< $mol_pop['attr'] >
+		event( ): ({ 
+			mouseenter( next?: ReturnType< $mol_pop_over['event_show'] > ): ReturnType< $mol_pop_over['event_show'] >,
+			mouseleave( next?: ReturnType< $mol_pop_over['event_hide'] > ): ReturnType< $mol_pop_over['event_hide'] >,
+		})  & ReturnType< $mol_pop['event'] >
+	}
+	
+}
+
+//# sourceMappingURL=over.view.tree.d.ts.map
+declare namespace $.$$ {
+    /**
+     * Bubble that can be shown anchored to Anchor element.
+     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_pop_over_demo
+     */
+    class $mol_pop_over extends $.$mol_pop_over {
+        event_show(event?: MouseEvent): void;
+        event_hide(event?: MouseEvent): void;
+        showed(): boolean;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
 	type $mol_paragraph__title_bog_vk_player_1 = $mol_type_enforce<
 		ReturnType< $bog_vk_player['time_current_text'] >
 		,
@@ -16820,7 +16867,54 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_vk_player_19 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_vk_player_19 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_view__style_bog_vk_player_20 = $mol_type_enforce<
+		({ 
+			'height': ReturnType< $bog_vk_player['volume_fill_height'] >,
+		}) 
+		,
+		ReturnType< $mol_view['style'] >
+	>
+	type $mol_view__event_bog_vk_player_21 = $mol_type_enforce<
+		({ 
+			pointerdown( next?: ReturnType< $bog_vk_player['volume_pointer_down'] > ): ReturnType< $bog_vk_player['volume_pointer_down'] >,
+			pointermove( next?: ReturnType< $bog_vk_player['volume_pointer_move'] > ): ReturnType< $bog_vk_player['volume_pointer_move'] >,
+			pointerup( next?: ReturnType< $bog_vk_player['volume_pointer_up'] > ): ReturnType< $bog_vk_player['volume_pointer_up'] >,
+			pointercancel( next?: ReturnType< $bog_vk_player['volume_pointer_up'] > ): ReturnType< $bog_vk_player['volume_pointer_up'] >,
+		}) 
+		,
+		ReturnType< $mol_view['event'] >
+	>
+	type $mol_view__sub_bog_vk_player_22 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_vk_player_23 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_pop_over__align_bog_vk_player_24 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_pop_over['align'] >
+	>
+	type $mol_pop_over__Anchor_bog_vk_player_25 = $mol_type_enforce<
+		ReturnType< $bog_vk_player['Volume_anchor'] >
+		,
+		ReturnType< $mol_pop_over['Anchor'] >
+	>
+	type $mol_pop_over__bubble_content_bog_vk_player_26 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_pop_over['bubble_content'] >
+	>
+	type $mol_view__sub_bog_vk_player_27 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
@@ -16854,6 +16948,16 @@ declare namespace $ {
 		Next_icon( ): $mol_icon_skip_next
 		Next( ): $mol_button_minor
 		Center( ): $mol_view
+		Volume_icon( ): $mol_icon_volume_high
+		Volume_anchor( ): $mol_button_minor
+		volume_pointer_down( next?: any ): any
+		volume_pointer_move( next?: any ): any
+		volume_pointer_up( next?: any ): any
+		volume_fill_height( ): string
+		Volume_fill( ): $mol_view
+		Volume_slider( ): $mol_view
+		Volume_panel( ): $mol_view
+		Volume( ): $mol_pop_over
 		Controls( ): $mol_view
 		current_audio( next?: any ): any
 		queue( ): readonly(any)[]
@@ -16876,12 +16980,24 @@ declare namespace $.$$ {
         private is_extension;
         audio_el(): HTMLAudioElement;
         private offscreen_link;
+        private _session_restored;
+        private try_restore_session;
+        private dispatch_restore_offscreen;
+        private load_local_paused;
         private setup_media_session;
         private send;
         queue_index(next?: number): number;
         playing(next?: boolean): boolean;
         current_time(next?: number): number;
         duration(next?: number): number;
+        volume(next?: number): number;
+        private _vol_dragging;
+        private volume_set_from_event;
+        volume_pointer_down(event?: Event): null;
+        volume_pointer_move(event?: Event): null;
+        volume_pointer_up(event?: Event): null;
+        volume_fill_height(): string;
+        private apply_volume;
         title(): any;
         artist(): any;
         cover(): any;
@@ -16901,6 +17017,8 @@ declare namespace $.$$ {
         sub(): readonly any[];
         Play(): any;
         Pause(): any;
+        private _pagehide_listener_set;
+        private setup_pagehide_save;
         auto(): void;
     }
 }
@@ -17150,6 +17268,15 @@ declare namespace $.$$ {
         restore_track(audio: $bog_vk_api_audio): void;
         delete_track(audio: $bog_vk_api_audio): void;
         drop_blob(audio: $bog_vk_api_audio): void;
+        /**
+         * Последняя прослушиваемая запись из профиля. Возвращает audio + position
+         * или null если ничего не сохранено / трек не найден в локальной баззе.
+         */
+        last_session(): {
+            audio: $bog_vk_api_audio;
+            position: number;
+        } | null;
+        save_last_session(audio: $bog_vk_api_audio, position: number): void;
         /**
          * Миграция: для треков с непустым buffer'ом форсит .remote(store).
          * Старые блобы писались без этого вызова → не синкались.

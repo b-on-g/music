@@ -29143,6 +29143,8 @@ var $;
      */
     class $bog_vk_account_baza extends $giper_baza_dict.with({
         Nickname: $giper_baza_atom_text,
+        Last_track_key: $giper_baza_atom_text,
+        Last_position: $giper_baza_atom_real,
     }) {
     }
     $.$bog_vk_account_baza = $bog_vk_account_baza;
@@ -30849,6 +30851,87 @@ var $;
 
 
 ;
+	($.$mol_icon_volume_high) = class $mol_icon_volume_high extends ($.$mol_icon) {
+		path(){
+			return "M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_pop_over) = class $mol_pop_over extends ($.$mol_pop) {
+		hovered(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		event_show(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		event_hide(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		showed(){
+			return (this.hovered());
+		}
+		attr(){
+			return {...(super.attr()), "tabindex": 0};
+		}
+		event(){
+			return {
+				...(super.event()), 
+				"mouseenter": (next) => (this.event_show(next)), 
+				"mouseleave": (next) => (this.event_hide(next))
+			};
+		}
+	};
+	($mol_mem(($.$mol_pop_over.prototype), "hovered"));
+	($mol_mem(($.$mol_pop_over.prototype), "event_show"));
+	($mol_mem(($.$mol_pop_over.prototype), "event_hide"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        /**
+         * Bubble that can be shown anchored to Anchor element.
+         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_pop_over_demo
+         */
+        class $mol_pop_over extends $.$mol_pop_over {
+            event_show(event) {
+                this.hovered(true);
+            }
+            event_hide(event) {
+                this.hovered(false);
+            }
+            showed() {
+                return this.focused() || this.hovered();
+            }
+        }
+        $$.$mol_pop_over = $mol_pop_over;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/pop/over/over.view.css", "[mol_pop_over]:focus {\r\n\toutline: none;\r\n}");
+})($ || ($ = {}));
+
+;
 	($.$bog_vk_player) = class $bog_vk_player extends ($.$mol_view) {
 		time_current_text(){
 			return "";
@@ -30988,9 +31071,65 @@ var $;
 			]);
 			return obj;
 		}
+		Volume_icon(){
+			const obj = new this.$.$mol_icon_volume_high();
+			return obj;
+		}
+		Volume_anchor(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.sub) = () => ([(this.Volume_icon())]);
+			return obj;
+		}
+		volume_pointer_down(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		volume_pointer_move(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		volume_pointer_up(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		volume_fill_height(){
+			return "";
+		}
+		Volume_fill(){
+			const obj = new this.$.$mol_view();
+			(obj.style) = () => ({"height": (this.volume_fill_height())});
+			return obj;
+		}
+		Volume_slider(){
+			const obj = new this.$.$mol_view();
+			(obj.event) = () => ({
+				"pointerdown": (next) => (this.volume_pointer_down(next)), 
+				"pointermove": (next) => (this.volume_pointer_move(next)), 
+				"pointerup": (next) => (this.volume_pointer_up(next)), 
+				"pointercancel": (next) => (this.volume_pointer_up(next))
+			});
+			(obj.sub) = () => ([(this.Volume_fill())]);
+			return obj;
+		}
+		Volume_panel(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Volume_slider())]);
+			return obj;
+		}
+		Volume(){
+			const obj = new this.$.$mol_pop_over();
+			(obj.align) = () => ("top_right");
+			(obj.Anchor) = () => ((this.Volume_anchor()));
+			(obj.bubble_content) = () => ([(this.Volume_panel())]);
+			return obj;
+		}
 		Controls(){
 			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.Left()), (this.Center())]);
+			(obj.sub) = () => ([
+				(this.Left()), 
+				(this.Center()), 
+				(this.Volume())
+			]);
 			return obj;
 		}
 		current_audio(next){
@@ -31039,6 +31178,15 @@ var $;
 	($mol_mem(($.$bog_vk_player.prototype), "Next_icon"));
 	($mol_mem(($.$bog_vk_player.prototype), "Next"));
 	($mol_mem(($.$bog_vk_player.prototype), "Center"));
+	($mol_mem(($.$bog_vk_player.prototype), "Volume_icon"));
+	($mol_mem(($.$bog_vk_player.prototype), "Volume_anchor"));
+	($mol_mem(($.$bog_vk_player.prototype), "volume_pointer_down"));
+	($mol_mem(($.$bog_vk_player.prototype), "volume_pointer_move"));
+	($mol_mem(($.$bog_vk_player.prototype), "volume_pointer_up"));
+	($mol_mem(($.$bog_vk_player.prototype), "Volume_fill"));
+	($mol_mem(($.$bog_vk_player.prototype), "Volume_slider"));
+	($mol_mem(($.$bog_vk_player.prototype), "Volume_panel"));
+	($mol_mem(($.$bog_vk_player.prototype), "Volume"));
 	($mol_mem(($.$bog_vk_player.prototype), "Controls"));
 	($mol_mem(($.$bog_vk_player.prototype), "current_audio"));
 	($mol_mem(($.$bog_vk_player.prototype), "queue_index"));
@@ -31068,7 +31216,7 @@ var $;
                 if (this._audio_el)
                     return this._audio_el;
                 const el = new Audio();
-                el.volume = 0.7;
+                el.volume = this.volume();
                 el.addEventListener('ended', () => {
                     try {
                         const finished = this.current_audio();
@@ -31151,19 +31299,117 @@ var $;
                 chrome.runtime.sendMessage({ target: 'background', type: 'ensure_offscreen' })
                     .then(() => chrome.runtime.sendMessage({ target: 'offscreen', type: 'get_state' }))
                     .then((s) => {
-                    if (!s)
-                        return;
-                    if (typeof s.playing === 'boolean')
-                        this.playing(s.playing);
-                    if (typeof s.current_time === 'number')
-                        this.current_time(s.current_time);
-                    if (typeof s.duration === 'number' && isFinite(s.duration))
-                        this.duration(s.duration);
-                    if (s.current_audio)
+                    if (s?.current_audio) {
+                        if (typeof s.playing === 'boolean')
+                            this.playing(s.playing);
+                        if (typeof s.current_time === 'number')
+                            this.current_time(s.current_time);
+                        if (typeof s.duration === 'number' && isFinite(s.duration))
+                            this.duration(s.duration);
                         this.current_audio(s.current_audio);
+                        return;
+                    }
+                    this.try_restore_session();
                 })
                     .catch(() => { });
                 return null;
+            }
+            _session_restored = false;
+            async try_restore_session() {
+                if (this._session_restored)
+                    return;
+                this._session_restored = true;
+                const app = $bog_vk_app.Root(0);
+                let session = null;
+                try {
+                    session = await $mol_wire_async(app).last_session();
+                }
+                catch (e) {
+                    console.warn('[player] restore_session read failed:', e?.message);
+                    return;
+                }
+                if (!session)
+                    return;
+                this.current_audio(session.audio);
+                this.current_time(session.position);
+                if (session.audio.duration)
+                    this.duration(session.audio.duration);
+                if (this.is_extension()) {
+                    this.dispatch_restore_offscreen(session.audio, session.position).catch(() => { });
+                }
+                else {
+                    const el = this.audio_el();
+                    this.load_local_paused(session.audio, session.position, el).catch(() => { });
+                }
+            }
+            async dispatch_restore_offscreen(audio, position) {
+                try {
+                    await chrome.runtime.sendMessage({ target: 'background', type: 'ensure_offscreen' });
+                    const app = $bog_vk_app.Root(0);
+                    let blob = null;
+                    try {
+                        blob = await $mol_wire_async(app).local_blob(audio);
+                    }
+                    catch { }
+                    if (!blob && audio.url) {
+                        try {
+                            await app.save_hls(audio);
+                            blob = app.local_blob(audio);
+                        }
+                        catch (e) {
+                            console.error('[player] restore save_hls failed:', e?.message);
+                        }
+                    }
+                    if (blob) {
+                        const buffer = await blob.arrayBuffer();
+                        await chrome.runtime.sendMessage({
+                            target: 'offscreen',
+                            type: 'play_track',
+                            audio,
+                            buffer,
+                            mime: blob.type || 'audio/mpeg',
+                            start_at: position,
+                            autoplay: false,
+                        });
+                    }
+                }
+                catch (e) {
+                    console.error('[player] restore offscreen failed:', e);
+                }
+            }
+            async load_local_paused(audio, position, el) {
+                try {
+                    const app = $bog_vk_app.Root(0);
+                    let blob = null;
+                    try {
+                        blob = await $mol_wire_async(app).local_blob(audio);
+                    }
+                    catch { }
+                    if (blob) {
+                        if (this._last_blob_url)
+                            URL.revokeObjectURL(this._last_blob_url);
+                        const url = URL.createObjectURL(blob);
+                        this._last_blob_url = url;
+                        el.src = url;
+                    }
+                    else if (audio.url) {
+                        el.src = audio.url;
+                    }
+                    else {
+                        return;
+                    }
+                    const seek = () => {
+                        try {
+                            el.currentTime = position;
+                        }
+                        catch { }
+                        el.removeEventListener('loadedmetadata', seek);
+                    };
+                    el.addEventListener('loadedmetadata', seek);
+                }
+                catch (e) {
+                    console.error('[player] local restore failed:', e);
+                }
             }
             setup_media_session() {
                 if (!('mediaSession' in navigator))
@@ -31214,6 +31460,67 @@ var $;
             duration(next) {
                 return next ?? 0;
             }
+            volume(next) {
+                const v = $mol_state_local.value('bog_vk_volume', next) ?? 0.7;
+                return Math.max(0, Math.min(1, v));
+            }
+            _vol_dragging = false;
+            volume_set_from_event(event) {
+                const target = event.currentTarget;
+                const rect = target.getBoundingClientRect();
+                const y = event.clientY - rect.top;
+                const v = Math.max(0, Math.min(1, 1 - y / rect.height));
+                this.volume(v);
+            }
+            volume_pointer_down(event) {
+                if (!event)
+                    return null;
+                const e = event;
+                const target = e.currentTarget;
+                try {
+                    target.setPointerCapture(e.pointerId);
+                }
+                catch { }
+                this._vol_dragging = true;
+                this.volume_set_from_event(e);
+                e.preventDefault();
+                return null;
+            }
+            volume_pointer_move(event) {
+                if (!event || !this._vol_dragging)
+                    return null;
+                this.volume_set_from_event(event);
+                return null;
+            }
+            volume_pointer_up(event) {
+                if (!event)
+                    return null;
+                const e = event;
+                const target = e.currentTarget;
+                try {
+                    target.releasePointerCapture(e.pointerId);
+                }
+                catch { }
+                this._vol_dragging = false;
+                try {
+                    this.Volume().hovered(false);
+                }
+                catch { }
+                return null;
+            }
+            volume_fill_height() {
+                return `${Math.round(this.volume() * 100)}%`;
+            }
+            apply_volume() {
+                const v = this.volume();
+                if (this.is_extension()) {
+                    this.send('volume', { value: v });
+                }
+                else if (this._audio_el) {
+                    this._audio_el.volume = v;
+                }
+                return v;
+            }
             title() {
                 return this.current_audio()?.title ?? '';
             }
@@ -31254,6 +31561,10 @@ var $;
                 if (!audio)
                     return;
                 this.current_audio(audio);
+                try {
+                    $bog_vk_app.Root(0).save_last_session(audio, 0);
+                }
+                catch { }
                 if ('mediaSession' in navigator) {
                     const artwork = [];
                     const thumb = audio.album?.thumb?.photo_300;
@@ -31376,18 +31687,28 @@ var $;
                 }
             }
             toggle() {
+                const was_playing = this.playing();
                 if (this.is_extension()) {
-                    if (this.playing())
+                    if (was_playing)
                         this.send('pause');
                     else
                         this.send('resume');
                 }
                 else {
                     const el = this.audio_el();
-                    if (this.playing())
+                    if (was_playing)
                         el.pause();
                     else
                         el.play();
+                }
+                if (was_playing) {
+                    const audio = this.current_audio();
+                    if (audio) {
+                        try {
+                            $bog_vk_app.Root(0).save_last_session(audio, this.current_time());
+                        }
+                        catch { }
+                    }
                 }
             }
             prev() {
@@ -31437,8 +31758,28 @@ var $;
                     return null;
                 return super.Pause();
             }
+            _pagehide_listener_set = false;
+            setup_pagehide_save() {
+                if (this._pagehide_listener_set)
+                    return;
+                this._pagehide_listener_set = true;
+                window.addEventListener('pagehide', () => {
+                    const audio = this.current_audio();
+                    if (!audio)
+                        return;
+                    try {
+                        $bog_vk_app.Root(0).save_last_session(audio, this.current_time());
+                    }
+                    catch { }
+                });
+            }
             auto() {
                 this.offscreen_link();
+                this.setup_pagehide_save();
+                if (!this.is_extension() && !this.current_audio()) {
+                    this.try_restore_session();
+                }
+                this.apply_volume();
                 const style = this.Progress_bar().dom_node().style;
                 style.width = `${this.progress_percent()}%`;
             }
@@ -31455,6 +31796,12 @@ var $;
         __decorate([
             $mol_mem
         ], $bog_vk_player.prototype, "duration", null);
+        __decorate([
+            $mol_mem
+        ], $bog_vk_player.prototype, "volume", null);
+        __decorate([
+            $mol_mem
+        ], $bog_vk_player.prototype, "apply_volume", null);
         $$.$bog_vk_player = $bog_vk_player;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
@@ -31619,6 +31966,36 @@ var $;
                     items: 'center',
                 },
                 gap: '0.25rem',
+            },
+            Volume_panel: {
+                padding: {
+                    top: '0.75rem',
+                    bottom: '0.75rem',
+                    left: '0.5rem',
+                    right: '0.5rem',
+                },
+                align: {
+                    items: 'center',
+                },
+            },
+            Volume_slider: {
+                width: '6px',
+                height: '8rem',
+                background: { color: $mol_theme.line },
+                borderRadius: '3px',
+                cursor: 'pointer',
+                position: 'relative',
+                overflow: { x: 'hidden', y: 'hidden' },
+                touchAction: 'none',
+                userSelect: 'none',
+            },
+            Volume_fill: {
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: { color: $mol_theme.focus },
+                borderRadius: '3px',
             },
         });
     })($$ = $.$$ || ($.$$ = {}));
@@ -32380,6 +32757,59 @@ var $;
                     return;
                 track.File('auto').val(null);
                 this.fresh_files.delete(this.cache_key(audio));
+            }
+            // ---------- last session (current track + position) ----------
+            /**
+             * Последняя прослушиваемая запись из профиля. Возвращает audio + position
+             * или null если ничего не сохранено / трек не найден в локальной баззе.
+             */
+            last_session() {
+                try {
+                    const profile = this.$.$giper_baza_glob.home().land().Data($bog_vk_account_baza);
+                    const key = profile.Last_track_key()?.val() ?? '';
+                    if (!key)
+                        return null;
+                    const position = Number(profile.Last_position()?.val() ?? 0) || 0;
+                    const dict = this.tracks_dict();
+                    const track = dict.key(String(key));
+                    if (!track)
+                        return null;
+                    const vk_id = track.Vk_id()?.val() ?? key;
+                    const parts = String(vk_id).split('_');
+                    const owner_id = Number(parts[0]);
+                    const id = Number(parts[1]);
+                    if (!Number.isFinite(owner_id) || !Number.isFinite(id))
+                        return null;
+                    return {
+                        audio: {
+                            id,
+                            owner_id,
+                            artist: track.Artist()?.val() ?? '',
+                            title: track.Title()?.val() ?? '',
+                            duration: track.Duration()?.val() ?? 0,
+                            url: track.Url()?.val() ?? '',
+                        },
+                        position,
+                    };
+                }
+                catch (e) {
+                    if (e instanceof Promise)
+                        throw e;
+                    console.warn('[app] last_session read failed:', e?.message);
+                    return null;
+                }
+            }
+            save_last_session(audio, position) {
+                try {
+                    const profile = this.$.$giper_baza_glob.home().land().Data($bog_vk_account_baza);
+                    profile.Last_track_key('auto').val(this.cache_key(audio));
+                    profile.Last_position('auto').val(Math.max(0, position || 0));
+                }
+                catch (e) {
+                    if (e instanceof Promise)
+                        return;
+                    console.warn('[app] save_last_session failed:', e?.message);
+                }
             }
             /**
              * Миграция: для треков с непустым buffer'ом форсит .remote(store).
