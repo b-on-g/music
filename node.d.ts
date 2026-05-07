@@ -9414,74 +9414,69 @@ declare namespace $ {
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_paragraph__title_bog_vk_track_6 = $mol_type_enforce<
-		ReturnType< $bog_vk_track['duration_text'] >
-		,
-		ReturnType< $mol_paragraph['title'] >
-	>
-	type $mol_view__event_bog_vk_track_7 = $mol_type_enforce<
+	type $mol_view__event_bog_vk_track_6 = $mol_type_enforce<
 		({ 
 			click( next?: ReturnType< $bog_vk_track['on_play_click'] > ): ReturnType< $bog_vk_track['on_play_click'] >,
 		}) 
 		,
 		ReturnType< $mol_view['event'] >
 	>
-	type $mol_view__sub_bog_vk_track_8 = $mol_type_enforce<
+	type $mol_view__sub_bog_vk_track_7 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_button_minor__click_bog_vk_track_9 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_vk_track_8 = $mol_type_enforce<
 		ReturnType< $bog_vk_track['delete_cached'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_vk_track_10 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_vk_track_9 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_button_minor__hint_bog_vk_track_11 = $mol_type_enforce<
+	type $mol_button_minor__hint_bog_vk_track_10 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__click_bog_vk_track_12 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_vk_track_11 = $mol_type_enforce<
 		ReturnType< $bog_vk_track['archive'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_vk_track_13 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_vk_track_12 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_button_minor__hint_bog_vk_track_14 = $mol_type_enforce<
+	type $mol_button_minor__hint_bog_vk_track_13 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__click_bog_vk_track_15 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_vk_track_14 = $mol_type_enforce<
 		ReturnType< $bog_vk_track['restore'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_vk_track_16 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_vk_track_15 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_button_minor__hint_bog_vk_track_17 = $mol_type_enforce<
+	type $mol_button_minor__hint_bog_vk_track_16 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__click_bog_vk_track_18 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_vk_track_17 = $mol_type_enforce<
 		ReturnType< $bog_vk_track['delete_forever'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_vk_track_19 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_vk_track_18 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
@@ -9499,8 +9494,6 @@ declare namespace $ {
 		Title( ): $mol_paragraph
 		artist( ): string
 		Artist( ): $mol_paragraph
-		duration_text( ): string
-		Duration( ): $mol_paragraph
 		Info( ): $mol_view
 		delete_cached( next?: any ): any
 		Delete_icon( ): $mol_icon_delete
@@ -9544,7 +9537,6 @@ declare namespace $.$$ {
         cover(): string;
         Cover(): any;
         Cover_placeholder(): any;
-        duration_text(): string;
         cached(next?: boolean): boolean;
         is_local(): boolean;
         can_drag(): boolean;

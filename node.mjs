@@ -20786,22 +20786,10 @@ var $;
 			(obj.title) = () => ((this.artist()));
 			return obj;
 		}
-		duration_text(){
-			return "";
-		}
-		Duration(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ((this.duration_text()));
-			return obj;
-		}
 		Info(){
 			const obj = new this.$.$mol_view();
 			(obj.event) = () => ({"click": (next) => (this.on_play_click(next))});
-			(obj.sub) = () => ([
-				(this.Title()), 
-				(this.Artist()), 
-				(this.Duration())
-			]);
+			(obj.sub) = () => ([(this.Title()), (this.Artist())]);
 			return obj;
 		}
 		delete_cached(next){
@@ -20917,7 +20905,6 @@ var $;
 	($mol_mem(($.$bog_vk_track.prototype), "Cover_box"));
 	($mol_mem(($.$bog_vk_track.prototype), "Title"));
 	($mol_mem(($.$bog_vk_track.prototype), "Artist"));
-	($mol_mem(($.$bog_vk_track.prototype), "Duration"));
 	($mol_mem(($.$bog_vk_track.prototype), "Info"));
 	($mol_mem(($.$bog_vk_track.prototype), "delete_cached"));
 	($mol_mem(($.$bog_vk_track.prototype), "Delete_icon"));
@@ -21210,12 +21197,6 @@ var $;
                     return null;
                 return super.Cover_placeholder();
             }
-            duration_text() {
-                const d = this.audio_data()?.duration ?? 0;
-                const min = Math.floor(d / 60);
-                const sec = d % 60;
-                return `${min}:${sec.toString().padStart(2, '0')}`;
-            }
             cached(next) {
                 const audio = this.audio_data();
                 if (!audio)
@@ -21441,12 +21422,6 @@ var $;
                 color: $mol_theme.shade,
                 whiteSpace: 'normal',
                 wordBreak: 'break-word',
-            },
-            Duration: {
-                font: {
-                    size: '0.6875rem',
-                },
-                color: $mol_theme.shade,
             },
             Delete: {
                 flex: { shrink: 0 },
