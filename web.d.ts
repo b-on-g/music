@@ -17024,7 +17024,9 @@ declare namespace $.$$ {
         private _audio_el?;
         private _last_blob_url;
         private _msg_listener_set;
+        private _channel?;
         private is_extension;
+        private channel;
         audio_el(): HTMLAudioElement;
         private offscreen_link;
         private _session_restored;
@@ -17058,12 +17060,17 @@ declare namespace $.$$ {
         private attach_seek_listener;
         private seek_to;
         /**
-         * Реактивный apply trim'ов. Вызывается из auto() — подписывается на
-         * current_audio / current_time / duration / Trim_start / Trim_end.
-         * При изменении любого из них:
-         *   - если current_time < trim_start → seek вперёд на trim_start;
-         *   - если current_time >= trim_end → next() (через microtask, чтобы
-         *     не писать в cell внутри auto-фибры).
+         * Реактивный apply ТОЛЬКО end-trim'а. Вызывается из auto() —
+         * подписывается на current_audio / current_time / duration / Trim_end.
+         * При current_time >= trim_end → next() (через microtask, чтобы не
+         * писать в cell внутри auto-фибры).
+         *
+         * Start-trim seek НЕ делается реактивно из auto: drag handle спамит
+         * save_trim_start → каждое сохранение invalidate'ит подписку на atom →
+         * apply_trim передёргивается → seek_to → chrome.runtime.sendMessage('seek')
+         * в offscreen. Десятки seek-сообщений в гонке с pending play_track msg
+         * рвут audio.src → DEMUXER_ERROR. Поэтому seek на trim_start выполняется
+         * один раз — в trim_pointer_up.
          */
         private apply_trim;
         private _trim_end_skip;
@@ -17076,6 +17083,7 @@ declare namespace $.$$ {
         trim_pointer_up(event?: Event): null;
         trim_start_left(): string;
         trim_end_left(): string;
+        private _dispatching_key;
         private dispatch_play_offscreen;
         private play_source_local;
         private safe_play;

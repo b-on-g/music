@@ -22101,8 +22101,18 @@ var $;
             _audio_el;
             _last_blob_url = '';
             _msg_listener_set = false;
+            _channel;
             is_extension() {
                 return typeof chrome !== 'undefined' && !!chrome?.runtime?.id;
+            }
+            // chrome.runtime.sendMessage сериализует payload через JSON — Blob/ArrayBuffer
+            // приходят в offscreen как пустой `{}`, аудио-демуксер падает с
+            // DEMUXER_ERROR_COULD_NOT_OPEN. Поэтому play_track (с blob'ом) гоняем
+            // через BroadcastChannel: он использует structured clone и сохраняет Blob.
+            channel() {
+                if (!this._channel)
+                    this._channel = new BroadcastChannel('bog_vk_player');
+                return this._channel;
             }
             audio_el() {
                 if (this._audio_el)
@@ -22253,13 +22263,11 @@ var $;
                         }
                     }
                     if (blob) {
-                        const buffer = await blob.arrayBuffer();
-                        await chrome.runtime.sendMessage({
+                        this.channel().postMessage({
                             target: 'offscreen',
                             type: 'play_track',
                             audio,
-                            buffer,
-                            mime: blob.type || 'audio/mpeg',
+                            blob,
                             start_at: position,
                             autoplay: false,
                         });
@@ -22452,6 +22460,14 @@ var $;
             play_track(audio) {
                 if (!audio)
                     return;
+                // КРИТИЧНО: ресетим current_time/duration ДО любых других операций.
+                // Иначе apply_trim в auto, отреагировав на смену current_audio,
+                // прочитает stale значения от предыдущего трека (например t=200, dur=240),
+                // и если у нового трека сохранён trim_end < 200 — моментально дёрнет next()
+                // → каскад play_track-сообщений в offscreen → audio.src меняется быстрее
+                // чем успевает loadedmetadata → DEMUXER_ERROR_COULD_NOT_OPEN.
+                this.current_time(0);
+                this.duration(0);
                 this.current_audio(audio);
                 this._trim_end_skip = '';
                 const start_at = $bog_vk_app.Root(0).trim_start(audio);
@@ -22508,31 +22524,29 @@ var $;
                 }
             }
             /**
-             * Реактивный apply trim'ов. Вызывается из auto() — подписывается на
-             * current_audio / current_time / duration / Trim_start / Trim_end.
-             * При изменении любого из них:
-             *   - если current_time < trim_start → seek вперёд на trim_start;
-             *   - если current_time >= trim_end → next() (через microtask, чтобы
-             *     не писать в cell внутри auto-фибры).
+             * Реактивный apply ТОЛЬКО end-trim'а. Вызывается из auto() —
+             * подписывается на current_audio / current_time / duration / Trim_end.
+             * При current_time >= trim_end → next() (через microtask, чтобы не
+             * писать в cell внутри auto-фибры).
+             *
+             * Start-trim seek НЕ делается реактивно из auto: drag handle спамит
+             * save_trim_start → каждое сохранение invalidate'ит подписку на atom →
+             * apply_trim передёргивается → seek_to → chrome.runtime.sendMessage('seek')
+             * в offscreen. Десятки seek-сообщений в гонке с pending play_track msg
+             * рвут audio.src → DEMUXER_ERROR. Поэтому seek на trim_start выполняется
+             * один раз — в trim_pointer_up.
              */
             apply_trim() {
                 const audio = this.current_audio();
                 if (!audio)
                     return;
                 const dur = this.duration();
-                const t = this.current_time();
-                const app = $bog_vk_app.Root(0);
-                const ts = app.trim_start(audio);
-                if (ts > 0 && t < ts - 0.5) {
-                    this.seek_to(ts);
-                    return;
-                }
                 if (!dur)
                     return;
-                const te = app.trim_end(audio, dur);
+                const te = $bog_vk_app.Root(0).trim_end(audio, dur);
                 if (te >= dur)
                     return;
-                if (t < te)
+                if (this.current_time() < te)
                     return;
                 const key = `${audio.owner_id}_${audio.id}`;
                 if (this._trim_end_skip === key)
@@ -22626,7 +22640,18 @@ var $;
                     e.currentTarget.releasePointerCapture(e.pointerId);
                 }
                 catch { }
+                const drag = this._trim_drag;
                 this._trim_drag = null;
+                // Единичный seek после отпускания start-handle.
+                if (drag === 'start') {
+                    const audio = this.current_audio();
+                    if (audio) {
+                        const ts = $bog_vk_app.Root(0).trim_start(audio);
+                        if (ts > 0 && this.current_time() < ts - 0.5) {
+                            this.seek_to(ts);
+                        }
+                    }
+                }
                 return null;
             }
             trim_start_left() {
@@ -22643,7 +22668,16 @@ var $;
                     return '100%';
                 return `${($bog_vk_app.Root(0).trim_end(audio, dur) / dur) * 100}%`;
             }
+            _dispatching_key = '';
             async dispatch_play_offscreen(audio, start_at = 0) {
+                // Дедуп: click-handler $mol_wire_async ретраит весь chain on_play_click → on_play_audio
+                // → play_track при invalidate любой подписки внутри фибры (Trim_start atom,
+                // recsys mol_storage, и т.д.). Без дедупа каждый retry шлёт новый play_track-msg
+                // в offscreen, audio.src перезаписывается до loadedmetadata → DEMUXER_ERROR.
+                const key = `${audio.owner_id}_${audio.id}|${start_at}`;
+                if (this._dispatching_key === key)
+                    return;
+                this._dispatching_key = key;
                 try {
                     await chrome.runtime.sendMessage({ target: 'background', type: 'ensure_offscreen' });
                     const app = $bog_vk_app.Root(0);
@@ -22662,13 +22696,11 @@ var $;
                         }
                     }
                     if (blob) {
-                        const buffer = await blob.arrayBuffer();
-                        await chrome.runtime.sendMessage({
+                        this.channel().postMessage({
                             target: 'offscreen',
                             type: 'play_track',
                             audio,
-                            buffer,
-                            mime: blob.type || 'audio/mpeg',
+                            blob,
                             start_at,
                         });
                         return;
@@ -22678,6 +22710,10 @@ var $;
                 catch (e) {
                     console.error('[player] play failed:', e);
                     this.playing(false);
+                }
+                finally {
+                    if (this._dispatching_key === key)
+                        this._dispatching_key = '';
                 }
             }
             async play_source_local(audio, el, start_at = 0) {
