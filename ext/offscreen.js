@@ -4,6 +4,11 @@ audio.volume = 0.7
 let current_audio = null
 let last_blob_url = ''
 
+// chrome.runtime.sendMessage сериализует payload через JSON — ArrayBuffer/Blob
+// приходят как пустой `{}`. Поэтому play_track (с blob'ом) ходит через
+// BroadcastChannel: structured clone сохраняет Blob/ArrayBuffer как есть.
+const channel = new BroadcastChannel( 'bog_vk_player' )
+
 function broadcast( type, payload ) {
 	chrome.runtime.sendMessage( { target: 'popup', type, ...payload } ).catch( () => {} )
 }
@@ -20,7 +25,7 @@ audio.addEventListener( 'error', () => {
 	} )
 } )
 
-function play_track( meta, buffer, mime, opts ) {
+function play_track_blob( meta, blob, opts ) {
 	const start_at = Number( opts?.start_at ) || 0
 	const autoplay = opts?.autoplay !== false
 	current_audio = meta
@@ -28,16 +33,12 @@ function play_track( meta, buffer, mime, opts ) {
 		URL.revokeObjectURL( last_blob_url )
 		last_blob_url = ''
 	}
-	if ( buffer ) {
-		const blob = new Blob( [ buffer ], { type: mime || 'audio/mpeg' } )
-		last_blob_url = URL.createObjectURL( blob )
-		audio.src = last_blob_url
-	} else if ( meta?.url ) {
-		audio.src = meta.url
-	} else {
+	if ( !blob || !( blob instanceof Blob ) || blob.size === 0 ) {
 		broadcast( 'error', { message: 'no source' } )
 		return
 	}
+	last_blob_url = URL.createObjectURL( blob )
+	audio.src = last_blob_url
 	if ( start_at > 0 ) {
 		const seek = () => {
 			try { audio.currentTime = start_at } catch {}
@@ -51,13 +52,17 @@ function play_track( meta, buffer, mime, opts ) {
 	}
 }
 
+channel.addEventListener( 'message', ( e ) => {
+	const msg = e.data
+	if ( msg?.target !== 'offscreen' ) return
+	if ( msg.type === 'play_track' ) {
+		play_track_blob( msg.audio, msg.blob, { start_at: msg.start_at, autoplay: msg.autoplay } )
+	}
+} )
+
 chrome.runtime.onMessage.addListener( ( msg, _sender, reply ) => {
 	if ( msg?.target !== 'offscreen' ) return
 	switch ( msg.type ) {
-		case 'play_track':
-			play_track( msg.audio, msg.buffer, msg.mime, { start_at: msg.start_at, autoplay: msg.autoplay } )
-			reply( { ok: true } )
-			return true
 		case 'pause':
 			audio.pause()
 			reply( { ok: true } )
