@@ -22130,7 +22130,6 @@ var $;
                 });
                 el.addEventListener('timeupdate', () => {
                     this.current_time(el.currentTime);
-                    this.check_trim_end();
                 });
                 el.addEventListener('loadedmetadata', () => {
                     this.duration(el.duration);
@@ -22157,10 +22156,8 @@ var $;
                                 navigator.mediaSession.playbackState = msg.playing ? 'playing' : 'paused';
                             }
                         }
-                        if (typeof msg.current_time === 'number') {
+                        if (typeof msg.current_time === 'number')
                             this.current_time(msg.current_time);
-                            this.check_trim_end();
-                        }
                         if (typeof msg.duration === 'number' && isFinite(msg.duration))
                             this.duration(msg.duration);
                         if (msg.current_audio !== undefined)
@@ -22490,36 +22487,62 @@ var $;
                 };
                 el.addEventListener('loadedmetadata', seek);
             }
-            _trim_end_skip = '';
-            check_trim_end() {
+            seek_to(time) {
+                if (this.is_extension()) {
+                    this.send('seek', { time });
+                }
+                else if (this._audio_el) {
+                    try {
+                        this._audio_el.currentTime = time;
+                    }
+                    catch { }
+                }
+            }
+            /**
+             * Реактивный apply trim'ов. Вызывается из auto() — подписывается на
+             * current_audio / current_time / duration / Trim_start / Trim_end.
+             * При изменении любого из них:
+             *   - если current_time < trim_start → seek вперёд на trim_start;
+             *   - если current_time >= trim_end → next() (через microtask, чтобы
+             *     не писать в cell внутри auto-фибры).
+             */
+            apply_trim() {
                 const audio = this.current_audio();
                 if (!audio)
                     return;
                 const dur = this.duration();
+                const t = this.current_time();
+                const app = $bog_vk_app.Root(0);
+                const ts = app.trim_start(audio);
+                if (ts > 0 && t < ts - 0.5) {
+                    this.seek_to(ts);
+                    return;
+                }
                 if (!dur)
                     return;
-                const trim_end = $bog_vk_app.Root(0).trim_end(audio, dur);
-                if (trim_end >= dur)
+                const te = app.trim_end(audio, dur);
+                if (te >= dur)
                     return;
-                if (this.current_time() < trim_end)
+                if (t < te)
                     return;
                 const key = `${audio.owner_id}_${audio.id}`;
                 if (this._trim_end_skip === key)
                     return;
                 this._trim_end_skip = key;
-                try {
-                    const finished = audio;
-                    this.next();
-                    if (finished && navigator.onLine) {
-                        $bog_vk_app.Root(0).save_hls(finished).catch(() => { });
+                queueMicrotask(() => {
+                    try {
+                        this.next();
+                        if (navigator.onLine)
+                            $bog_vk_app.Root(0).save_hls(audio).catch(() => { });
                     }
-                }
-                catch (e) {
-                    if (e instanceof Promise)
-                        throw e;
-                    console.warn('[player] trim_end next failed:', e?.message);
-                }
+                    catch (e) {
+                        if (e instanceof Promise)
+                            return;
+                        console.warn('[player] trim_end next failed:', e?.message);
+                    }
+                });
             }
+            _trim_end_skip = '';
             // ---------- trim handles ----------
             _trim_drag = null;
             trim_apply(event) {
@@ -22806,6 +22829,13 @@ var $;
                     this.try_restore_session();
                 }
                 this.apply_volume();
+                try {
+                    this.apply_trim();
+                }
+                catch (e) {
+                    if (e instanceof Promise)
+                        throw e;
+                }
                 const style = this.Progress_bar().dom_node().style;
                 style.width = `${this.progress_percent()}%`;
             }
@@ -22916,12 +22946,17 @@ var $;
                 color: $mol_theme.shade,
                 whiteSpace: 'nowrap',
                 flex: { shrink: 0 },
+                minWidth: '2.5rem',
+                textAlign: 'right',
+                fontVariantNumeric: 'tabular-nums',
             },
             Time_total: {
                 font: { size: '0.75rem' },
                 color: $mol_theme.shade,
                 whiteSpace: 'nowrap',
                 flex: { shrink: 0 },
+                minWidth: '2.5rem',
+                fontVariantNumeric: 'tabular-nums',
             },
             Controls: {
                 flex: {

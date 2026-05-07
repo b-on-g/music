@@ -10209,8 +10209,17 @@ declare namespace $.$$ {
         progress_percent(): number;
         play_track(audio?: $bog_vk_api_audio | null): void;
         private attach_seek_listener;
+        private seek_to;
+        /**
+         * Реактивный apply trim'ов. Вызывается из auto() — подписывается на
+         * current_audio / current_time / duration / Trim_start / Trim_end.
+         * При изменении любого из них:
+         *   - если current_time < trim_start → seek вперёд на trim_start;
+         *   - если current_time >= trim_end → next() (через microtask, чтобы
+         *     не писать в cell внутри auto-фибры).
+         */
+        private apply_trim;
         private _trim_end_skip;
-        check_trim_end(): void;
         private _trim_drag;
         private trim_apply;
         trim_start_pointer_down(event?: Event): null;
