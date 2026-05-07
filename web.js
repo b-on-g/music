@@ -30523,6 +30523,9 @@ var $;
         // Расширяется без миграции схемы; полную метадату плейлистов держим в $bog_vk_store.Playlists.
         Playlist: $giper_baza_atom_text,
         File: $bog_vk_atom_link_to_synced(() => $giper_baza_file),
+        // Персональный обрез песни (секунды). Trim_end = null означает «без обреза».
+        Trim_start: $giper_baza_atom_real,
+        Trim_end: $giper_baza_atom_real,
     }) {
     }
     $.$bog_vk_track_baza = $bog_vk_track_baza;
@@ -30945,9 +30948,61 @@ var $;
 			const obj = new this.$.$mol_view();
 			return obj;
 		}
+		trim_start_pointer_down(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		trim_start_pointer_move(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		trim_pointer_up(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		trim_start_left(){
+			return "";
+		}
+		Trim_start_handle(){
+			const obj = new this.$.$mol_view();
+			(obj.event) = () => ({
+				"pointerdown": (next) => (this.trim_start_pointer_down(next)), 
+				"pointermove": (next) => (this.trim_start_pointer_move(next)), 
+				"pointerup": (next) => (this.trim_pointer_up(next)), 
+				"pointercancel": (next) => (this.trim_pointer_up(next))
+			});
+			(obj.style) = () => ({"left": (this.trim_start_left())});
+			return obj;
+		}
+		trim_end_pointer_down(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		trim_end_pointer_move(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		trim_end_left(){
+			return "";
+		}
+		Trim_end_handle(){
+			const obj = new this.$.$mol_view();
+			(obj.event) = () => ({
+				"pointerdown": (next) => (this.trim_end_pointer_down(next)), 
+				"pointermove": (next) => (this.trim_end_pointer_move(next)), 
+				"pointerup": (next) => (this.trim_pointer_up(next)), 
+				"pointercancel": (next) => (this.trim_pointer_up(next))
+			});
+			(obj.style) = () => ({"left": (this.trim_end_left())});
+			return obj;
+		}
 		Progress(){
 			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.Progress_bar())]);
+			(obj.sub) = () => ([
+				(this.Progress_bar()), 
+				(this.Trim_start_handle()), 
+				(this.Trim_end_handle())
+			]);
 			return obj;
 		}
 		time_total_text(){
@@ -31157,6 +31212,13 @@ var $;
 	};
 	($mol_mem(($.$bog_vk_player.prototype), "Time_current"));
 	($mol_mem(($.$bog_vk_player.prototype), "Progress_bar"));
+	($mol_mem(($.$bog_vk_player.prototype), "trim_start_pointer_down"));
+	($mol_mem(($.$bog_vk_player.prototype), "trim_start_pointer_move"));
+	($mol_mem(($.$bog_vk_player.prototype), "trim_pointer_up"));
+	($mol_mem(($.$bog_vk_player.prototype), "Trim_start_handle"));
+	($mol_mem(($.$bog_vk_player.prototype), "trim_end_pointer_down"));
+	($mol_mem(($.$bog_vk_player.prototype), "trim_end_pointer_move"));
+	($mol_mem(($.$bog_vk_player.prototype), "Trim_end_handle"));
 	($mol_mem(($.$bog_vk_player.prototype), "Progress"));
 	($mol_mem(($.$bog_vk_player.prototype), "Time_total"));
 	($mol_mem(($.$bog_vk_player.prototype), "Progress_row"));
@@ -31247,6 +31309,7 @@ var $;
                 });
                 el.addEventListener('timeupdate', () => {
                     this.current_time(el.currentTime);
+                    this.check_trim_end();
                 });
                 el.addEventListener('loadedmetadata', () => {
                     this.duration(el.duration);
@@ -31273,8 +31336,10 @@ var $;
                                 navigator.mediaSession.playbackState = msg.playing ? 'playing' : 'paused';
                             }
                         }
-                        if (typeof msg.current_time === 'number')
+                        if (typeof msg.current_time === 'number') {
                             this.current_time(msg.current_time);
+                            this.check_trim_end();
+                        }
                         if (typeof msg.duration === 'number' && isFinite(msg.duration))
                             this.duration(msg.duration);
                         if (msg.current_audio !== undefined)
@@ -31561,8 +31626,10 @@ var $;
                 if (!audio)
                     return;
                 this.current_audio(audio);
+                this._trim_end_skip = '';
+                const start_at = $bog_vk_app.Root(0).trim_start(audio);
                 try {
-                    $bog_vk_app.Root(0).save_last_session(audio, 0);
+                    $bog_vk_app.Root(0).save_last_session(audio, start_at);
                 }
                 catch { }
                 if ('mediaSession' in navigator) {
@@ -31578,18 +31645,152 @@ var $;
                     this.setup_media_session();
                 }
                 if (this.is_extension()) {
-                    this.dispatch_play_offscreen(audio);
+                    this.dispatch_play_offscreen(audio, start_at);
                 }
                 else {
                     const el = this.audio_el();
                     if (audio.url) {
+                        this.attach_seek_listener(el, start_at);
                         el.src = audio.url;
                         el.play().catch(() => { });
                     }
-                    this.play_source_local(audio, el);
+                    this.play_source_local(audio, el, start_at);
                 }
             }
-            async dispatch_play_offscreen(audio) {
+            attach_seek_listener(el, start_at) {
+                if (start_at <= 0)
+                    return;
+                const seek = () => {
+                    try {
+                        el.currentTime = start_at;
+                    }
+                    catch { }
+                    el.removeEventListener('loadedmetadata', seek);
+                };
+                el.addEventListener('loadedmetadata', seek);
+            }
+            _trim_end_skip = '';
+            check_trim_end() {
+                const audio = this.current_audio();
+                if (!audio)
+                    return;
+                const dur = this.duration();
+                if (!dur)
+                    return;
+                const trim_end = $bog_vk_app.Root(0).trim_end(audio, dur);
+                if (trim_end >= dur)
+                    return;
+                if (this.current_time() < trim_end)
+                    return;
+                const key = `${audio.owner_id}_${audio.id}`;
+                if (this._trim_end_skip === key)
+                    return;
+                this._trim_end_skip = key;
+                try {
+                    const finished = audio;
+                    this.next();
+                    if (finished && navigator.onLine) {
+                        $bog_vk_app.Root(0).save_hls(finished).catch(() => { });
+                    }
+                }
+                catch (e) {
+                    if (e instanceof Promise)
+                        throw e;
+                    console.warn('[player] trim_end next failed:', e?.message);
+                }
+            }
+            // ---------- trim handles ----------
+            _trim_drag = null;
+            trim_apply(event) {
+                const audio = this.current_audio();
+                if (!audio)
+                    return;
+                const dur = this.duration();
+                if (!dur)
+                    return;
+                const progress = this.Progress().dom_node();
+                const rect = progress.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const pct = Math.max(0, Math.min(1, x / rect.width));
+                let seconds = pct * dur;
+                const app = $bog_vk_app.Root(0);
+                if (this._trim_drag === 'start') {
+                    const end = app.trim_end(audio, dur);
+                    seconds = Math.min(seconds, Math.max(0, end - 1));
+                    app.save_trim_start(audio, seconds);
+                }
+                else if (this._trim_drag === 'end') {
+                    const start = app.trim_start(audio);
+                    seconds = Math.max(seconds, Math.min(dur, start + 1));
+                    app.save_trim_end(audio, seconds);
+                }
+            }
+            trim_start_pointer_down(event) {
+                if (!event)
+                    return null;
+                const e = event;
+                e.stopPropagation();
+                e.preventDefault();
+                try {
+                    e.currentTarget.setPointerCapture(e.pointerId);
+                }
+                catch { }
+                this._trim_drag = 'start';
+                this.trim_apply(e);
+                return null;
+            }
+            trim_start_pointer_move(event) {
+                if (!event || this._trim_drag !== 'start')
+                    return null;
+                this.trim_apply(event);
+                return null;
+            }
+            trim_end_pointer_down(event) {
+                if (!event)
+                    return null;
+                const e = event;
+                e.stopPropagation();
+                e.preventDefault();
+                try {
+                    e.currentTarget.setPointerCapture(e.pointerId);
+                }
+                catch { }
+                this._trim_drag = 'end';
+                this.trim_apply(e);
+                return null;
+            }
+            trim_end_pointer_move(event) {
+                if (!event || this._trim_drag !== 'end')
+                    return null;
+                this.trim_apply(event);
+                return null;
+            }
+            trim_pointer_up(event) {
+                if (!event)
+                    return null;
+                const e = event;
+                try {
+                    e.currentTarget.releasePointerCapture(e.pointerId);
+                }
+                catch { }
+                this._trim_drag = null;
+                return null;
+            }
+            trim_start_left() {
+                const audio = this.current_audio();
+                const dur = this.duration();
+                if (!audio || !dur)
+                    return '0%';
+                return `${($bog_vk_app.Root(0).trim_start(audio) / dur) * 100}%`;
+            }
+            trim_end_left() {
+                const audio = this.current_audio();
+                const dur = this.duration();
+                if (!audio || !dur)
+                    return '100%';
+                return `${($bog_vk_app.Root(0).trim_end(audio, dur) / dur) * 100}%`;
+            }
+            async dispatch_play_offscreen(audio, start_at = 0) {
                 try {
                     await chrome.runtime.sendMessage({ target: 'background', type: 'ensure_offscreen' });
                     const app = $bog_vk_app.Root(0);
@@ -31615,6 +31816,7 @@ var $;
                             audio,
                             buffer,
                             mime: blob.type || 'audio/mpeg',
+                            start_at,
                         });
                         return;
                     }
@@ -31625,7 +31827,7 @@ var $;
                     this.playing(false);
                 }
             }
-            async play_source_local(audio, el) {
+            async play_source_local(audio, el, start_at = 0) {
                 try {
                     if (this._last_blob_url) {
                         URL.revokeObjectURL(this._last_blob_url);
@@ -31636,11 +31838,13 @@ var $;
                     if (blob) {
                         const url = URL.createObjectURL(blob);
                         this._last_blob_url = url;
+                        this.attach_seek_listener(el, start_at);
                         el.src = url;
                         await this.safe_play(el);
                         return;
                     }
                     if (audio.url) {
+                        this.attach_seek_listener(el, start_at);
                         el.src = audio.url;
                         try {
                             await this.safe_play(el);
@@ -31655,6 +31859,7 @@ var $;
                         if (blob2) {
                             const url = URL.createObjectURL(blob2);
                             this._last_blob_url = url;
+                            this.attach_seek_listener(el, start_at);
                             el.src = url;
                             await this.safe_play(el);
                             return;
@@ -31849,6 +32054,7 @@ var $;
                     grow: 1,
                     shrink: 1,
                 },
+                position: 'relative',
             },
             Progress_bar: {
                 height: '3px',
@@ -31856,6 +32062,33 @@ var $;
                     color: $mol_theme.focus,
                 },
                 width: 0,
+                pointerEvents: 'none',
+            },
+            Trim_start_handle: {
+                position: 'absolute',
+                top: '-3px',
+                width: '8px',
+                height: '9px',
+                margin: { left: '-4px' },
+                background: { color: $mol_theme.text },
+                borderRadius: '1px',
+                cursor: 'ew-resize',
+                touchAction: 'none',
+                userSelect: 'none',
+                zIndex: 2,
+            },
+            Trim_end_handle: {
+                position: 'absolute',
+                top: '-3px',
+                width: '8px',
+                height: '9px',
+                margin: { left: '-4px' },
+                background: { color: $mol_theme.text },
+                borderRadius: '1px',
+                cursor: 'ew-resize',
+                touchAction: 'none',
+                userSelect: 'none',
+                zIndex: 2,
             },
             Time_current: {
                 font: { size: '0.75rem' },
@@ -32649,6 +32882,51 @@ var $;
                 if (track.Order()?.val() == null)
                     track.Order('auto').val(this.max_order() + 1);
             }
+            /** Обрез начала трека (сек). 0 = без обреза. */
+            trim_start(audio) {
+                try {
+                    const track = this.tracks_dict().key(this.cache_key(audio));
+                    const v = Number(track?.Trim_start()?.val() ?? 0);
+                    return Number.isFinite(v) && v > 0 ? v : 0;
+                }
+                catch (e) {
+                    if (e instanceof Promise)
+                        throw e;
+                    return 0;
+                }
+            }
+            /** Обрез конца трека (сек). null/0 → fallback (полная длительность). */
+            trim_end(audio, fallback) {
+                try {
+                    const track = this.tracks_dict().key(this.cache_key(audio));
+                    const raw = track?.Trim_end()?.val();
+                    if (raw == null)
+                        return fallback;
+                    const v = Number(raw);
+                    return Number.isFinite(v) && v > 0 ? v : fallback;
+                }
+                catch (e) {
+                    if (e instanceof Promise)
+                        throw e;
+                    return fallback;
+                }
+            }
+            save_trim_start(audio, seconds) {
+                if (!audio)
+                    return;
+                const track = this.tracks_dict().key(this.cache_key(audio), 'auto');
+                if (!track)
+                    return;
+                track.Trim_start('auto').val(Math.max(0, seconds));
+            }
+            save_trim_end(audio, seconds) {
+                if (!audio)
+                    return;
+                const track = this.tracks_dict().key(this.cache_key(audio), 'auto');
+                if (!track)
+                    return;
+                track.Trim_end('auto').val(Math.max(0, seconds));
+            }
             save_blob(audio, buffer, mime) {
                 if (!audio)
                     return;
@@ -33180,6 +33458,12 @@ var $;
         __decorate([
             $mol_action
         ], $bog_vk_app.prototype, "save_track", null);
+        __decorate([
+            $mol_action
+        ], $bog_vk_app.prototype, "save_trim_start", null);
+        __decorate([
+            $mol_action
+        ], $bog_vk_app.prototype, "save_trim_end", null);
         __decorate([
             $mol_action
         ], $bog_vk_app.prototype, "save_blob", null);

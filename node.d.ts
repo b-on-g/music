@@ -9669,6 +9669,8 @@ declare namespace $ {
                 [$mol_ambient_ref]: $;
                 [Symbol.dispose](): void;
             } | null;
+            readonly Trim_start: (auto?: any) => $giper_baza_atom_real | null;
+            readonly Trim_end: (auto?: any) => $giper_baza_atom_real | null;
         }>;
         path: string;
     } & {
@@ -9737,6 +9739,8 @@ declare namespace $ {
                 [Symbol.toPrimitive](): any;
                 [$mol_key_handle](): any;
             };
+            readonly Trim_start: typeof $giper_baza_atom_real;
+            readonly Trim_end: typeof $giper_baza_atom_real;
         };
     };
     /**
@@ -9935,33 +9939,47 @@ declare namespace $ {
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_view__sub_bog_vk_player_2 = $mol_type_enforce<
+	type $mol_view__event_bog_vk_player_2 = $mol_type_enforce<
+		({ 
+			pointerdown( next?: ReturnType< $bog_vk_player['trim_start_pointer_down'] > ): ReturnType< $bog_vk_player['trim_start_pointer_down'] >,
+			pointermove( next?: ReturnType< $bog_vk_player['trim_start_pointer_move'] > ): ReturnType< $bog_vk_player['trim_start_pointer_move'] >,
+			pointerup( next?: ReturnType< $bog_vk_player['trim_pointer_up'] > ): ReturnType< $bog_vk_player['trim_pointer_up'] >,
+			pointercancel( next?: ReturnType< $bog_vk_player['trim_pointer_up'] > ): ReturnType< $bog_vk_player['trim_pointer_up'] >,
+		}) 
+		,
+		ReturnType< $mol_view['event'] >
+	>
+	type $mol_view__style_bog_vk_player_3 = $mol_type_enforce<
+		({ 
+			'left': ReturnType< $bog_vk_player['trim_start_left'] >,
+		}) 
+		,
+		ReturnType< $mol_view['style'] >
+	>
+	type $mol_view__event_bog_vk_player_4 = $mol_type_enforce<
+		({ 
+			pointerdown( next?: ReturnType< $bog_vk_player['trim_end_pointer_down'] > ): ReturnType< $bog_vk_player['trim_end_pointer_down'] >,
+			pointermove( next?: ReturnType< $bog_vk_player['trim_end_pointer_move'] > ): ReturnType< $bog_vk_player['trim_end_pointer_move'] >,
+			pointerup( next?: ReturnType< $bog_vk_player['trim_pointer_up'] > ): ReturnType< $bog_vk_player['trim_pointer_up'] >,
+			pointercancel( next?: ReturnType< $bog_vk_player['trim_pointer_up'] > ): ReturnType< $bog_vk_player['trim_pointer_up'] >,
+		}) 
+		,
+		ReturnType< $mol_view['event'] >
+	>
+	type $mol_view__style_bog_vk_player_5 = $mol_type_enforce<
+		({ 
+			'left': ReturnType< $bog_vk_player['trim_end_left'] >,
+		}) 
+		,
+		ReturnType< $mol_view['style'] >
+	>
+	type $mol_view__sub_bog_vk_player_6 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
-	>
-	type $mol_paragraph__title_bog_vk_player_3 = $mol_type_enforce<
-		ReturnType< $bog_vk_player['time_total_text'] >
-		,
-		ReturnType< $mol_paragraph['title'] >
-	>
-	type $mol_view__sub_bog_vk_player_4 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_view['sub'] >
-	>
-	type $mol_image__uri_bog_vk_player_5 = $mol_type_enforce<
-		ReturnType< $bog_vk_player['cover'] >
-		,
-		ReturnType< $mol_image['uri'] >
-	>
-	type $mol_paragraph__title_bog_vk_player_6 = $mol_type_enforce<
-		ReturnType< $bog_vk_player['title'] >
-		,
-		ReturnType< $mol_paragraph['title'] >
 	>
 	type $mol_paragraph__title_bog_vk_player_7 = $mol_type_enforce<
-		ReturnType< $bog_vk_player['artist'] >
+		ReturnType< $bog_vk_player['time_total_text'] >
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
@@ -9970,33 +9988,33 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_vk_player_9 = $mol_type_enforce<
+	type $mol_image__uri_bog_vk_player_9 = $mol_type_enforce<
+		ReturnType< $bog_vk_player['cover'] >
+		,
+		ReturnType< $mol_image['uri'] >
+	>
+	type $mol_paragraph__title_bog_vk_player_10 = $mol_type_enforce<
+		ReturnType< $bog_vk_player['title'] >
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_paragraph__title_bog_vk_player_11 = $mol_type_enforce<
+		ReturnType< $bog_vk_player['artist'] >
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_view__sub_bog_vk_player_12 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_button_minor__click_bog_vk_player_10 = $mol_type_enforce<
-		ReturnType< $bog_vk_player['prev'] >
-		,
-		ReturnType< $mol_button_minor['click'] >
-	>
-	type $mol_button_minor__sub_bog_vk_player_11 = $mol_type_enforce<
+	type $mol_view__sub_bog_vk_player_13 = $mol_type_enforce<
 		readonly(any)[]
 		,
-		ReturnType< $mol_button_minor['sub'] >
-	>
-	type $mol_button_minor__click_bog_vk_player_12 = $mol_type_enforce<
-		ReturnType< $bog_vk_player['toggle'] >
-		,
-		ReturnType< $mol_button_minor['click'] >
-	>
-	type $mol_button_minor__sub_bog_vk_player_13 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_button_minor['sub'] >
+		ReturnType< $mol_view['sub'] >
 	>
 	type $mol_button_minor__click_bog_vk_player_14 = $mol_type_enforce<
-		ReturnType< $bog_vk_player['toggle'] >
+		ReturnType< $bog_vk_player['prev'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
@@ -10006,7 +10024,7 @@ declare namespace $ {
 		ReturnType< $mol_button_minor['sub'] >
 	>
 	type $mol_button_minor__click_bog_vk_player_16 = $mol_type_enforce<
-		ReturnType< $bog_vk_player['next'] >
+		ReturnType< $bog_vk_player['toggle'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
@@ -10015,24 +10033,44 @@ declare namespace $ {
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_view__sub_bog_vk_player_18 = $mol_type_enforce<
-		readonly(any)[]
+	type $mol_button_minor__click_bog_vk_player_18 = $mol_type_enforce<
+		ReturnType< $bog_vk_player['toggle'] >
 		,
-		ReturnType< $mol_view['sub'] >
+		ReturnType< $mol_button_minor['click'] >
 	>
 	type $mol_button_minor__sub_bog_vk_player_19 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_view__style_bog_vk_player_20 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_vk_player_20 = $mol_type_enforce<
+		ReturnType< $bog_vk_player['next'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub_bog_vk_player_21 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_view__sub_bog_vk_player_22 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_button_minor__sub_bog_vk_player_23 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_view__style_bog_vk_player_24 = $mol_type_enforce<
 		({ 
 			'height': ReturnType< $bog_vk_player['volume_fill_height'] >,
 		}) 
 		,
 		ReturnType< $mol_view['style'] >
 	>
-	type $mol_view__event_bog_vk_player_21 = $mol_type_enforce<
+	type $mol_view__event_bog_vk_player_25 = $mol_type_enforce<
 		({ 
 			pointerdown( next?: ReturnType< $bog_vk_player['volume_pointer_down'] > ): ReturnType< $bog_vk_player['volume_pointer_down'] >,
 			pointermove( next?: ReturnType< $bog_vk_player['volume_pointer_move'] > ): ReturnType< $bog_vk_player['volume_pointer_move'] >,
@@ -10042,32 +10080,32 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['event'] >
 	>
-	type $mol_view__sub_bog_vk_player_22 = $mol_type_enforce<
+	type $mol_view__sub_bog_vk_player_26 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_vk_player_23 = $mol_type_enforce<
+	type $mol_view__sub_bog_vk_player_27 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_pop_over__align_bog_vk_player_24 = $mol_type_enforce<
+	type $mol_pop_over__align_bog_vk_player_28 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_pop_over['align'] >
 	>
-	type $mol_pop_over__Anchor_bog_vk_player_25 = $mol_type_enforce<
+	type $mol_pop_over__Anchor_bog_vk_player_29 = $mol_type_enforce<
 		ReturnType< $bog_vk_player['Volume_anchor'] >
 		,
 		ReturnType< $mol_pop_over['Anchor'] >
 	>
-	type $mol_pop_over__bubble_content_bog_vk_player_26 = $mol_type_enforce<
+	type $mol_pop_over__bubble_content_bog_vk_player_30 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_pop_over['bubble_content'] >
 	>
-	type $mol_view__sub_bog_vk_player_27 = $mol_type_enforce<
+	type $mol_view__sub_bog_vk_player_31 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
@@ -10076,6 +10114,15 @@ declare namespace $ {
 		time_current_text( ): string
 		Time_current( ): $mol_paragraph
 		Progress_bar( ): $mol_view
+		trim_start_pointer_down( next?: any ): any
+		trim_start_pointer_move( next?: any ): any
+		trim_pointer_up( next?: any ): any
+		trim_start_left( ): string
+		Trim_start_handle( ): $mol_view
+		trim_end_pointer_down( next?: any ): any
+		trim_end_pointer_move( next?: any ): any
+		trim_end_left( ): string
+		Trim_end_handle( ): $mol_view
 		Progress( ): $mol_view
 		time_total_text( ): string
 		Time_total( ): $mol_paragraph
@@ -10161,6 +10208,18 @@ declare namespace $.$$ {
         format_time(seconds: number): string;
         progress_percent(): number;
         play_track(audio?: $bog_vk_api_audio | null): void;
+        private attach_seek_listener;
+        private _trim_end_skip;
+        check_trim_end(): void;
+        private _trim_drag;
+        private trim_apply;
+        trim_start_pointer_down(event?: Event): null;
+        trim_start_pointer_move(event?: Event): null;
+        trim_end_pointer_down(event?: Event): null;
+        trim_end_pointer_move(event?: Event): null;
+        trim_pointer_up(event?: Event): null;
+        trim_start_left(): string;
+        trim_end_left(): string;
         private dispatch_play_offscreen;
         private play_source_local;
         private safe_play;
@@ -10412,6 +10471,12 @@ declare namespace $.$$ {
         visible_audios(): $bog_vk_api_audio[];
         max_order(): number;
         save_track(audio: $bog_vk_api_audio): void;
+        /** Обрез начала трека (сек). 0 = без обреза. */
+        trim_start(audio: $bog_vk_api_audio): number;
+        /** Обрез конца трека (сек). null/0 → fallback (полная длительность). */
+        trim_end(audio: $bog_vk_api_audio, fallback: number): number;
+        save_trim_start(audio: $bog_vk_api_audio, seconds: number): void;
+        save_trim_end(audio: $bog_vk_api_audio, seconds: number): void;
         save_blob(audio: $bog_vk_api_audio, buffer: Uint8Array, mime: string): void;
         save_local_track(file: File, buffer: Uint8Array): $bog_vk_api_audio | null;
         swap_order(a: $bog_vk_api_audio, b: $bog_vk_api_audio): void;
