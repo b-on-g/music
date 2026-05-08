@@ -1028,6 +1028,7 @@ namespace $.$$ {
 
 		@$mol_action
 		save_local_track(file: File, buffer: Uint8Array): $bog_vk_api_audio | null {
+			console.log('[upload/save] start file=', file.name)
 			const { artist, title } = this.parse_filename(file.name)
 			const id = this.hash_str(`${file.name}|${file.size}|${file.lastModified}`)
 			const audio: $bog_vk_api_audio = {
@@ -1038,26 +1039,32 @@ namespace $.$$ {
 				duration: 0,
 				url: '',
 			}
+			console.log('[upload/save] tracks_dict…')
 			const dict = this.tracks_dict()
 			const key = this.cache_key(audio)
+			console.log('[upload/save] dict.key auto, key=', key)
 			const track = dict.key(key, 'auto')
-			if (!track) return null
+			if (!track) { console.warn('[upload/save] track null'); return null }
+			console.log('[upload/save] write Vk_id/Title/Artist…')
 			track.Vk_id('auto')!.val(key)
 			track.Title('auto')!.val(title)
 			track.Artist('auto')!.val(artist)
 			if (track.Added()?.val() == null) track.Added('auto')!.val(Date.now())
 			if (track.Order()?.val() == null) track.Order('auto')!.val(this.max_order() + 1)
-			// '' = main playlist (default).
 			if (track.Playlist()?.val() == null) track.Playlist('auto')!.val('')
-			// Blob — в отдельном land (см. save_blob).
+			console.log('[upload/save] ensure File land…')
 			const store = track.File('auto')!.ensure([])
+			console.log('[upload/save] ensure result:', store ? `link=${store.land().link().str}` : 'NULL')
 			if (store) {
+				console.log('[upload/save] write buffer/type/name/remote…')
 				store.buffer(buffer as Uint8Array<ArrayBuffer>)
 				store.type(file.type || 'audio/mpeg')
 				if (file.name) store.name(file.name)
 				track.File('auto')!.remote(store)
+				console.log('[upload/save] file land written')
 			}
 			this.fresh_files.set(key, file)
+			console.log('[upload/save] DONE')
 			return audio
 		}
 
@@ -1296,14 +1303,23 @@ namespace $.$$ {
 
 		@$mol_mem
 		upload_files(next?: File[]) {
+			console.log('[upload] upload_files called, next=', next?.length ?? 'undefined')
 			if (next?.length) {
 				for (const file of next) {
+					console.log('[upload] processing file:', file.name, file.size, file.type)
 					try {
+						console.log('[upload] reading arrayBuffer…')
 						const buffer = new Uint8Array(($mol_wire_sync(file) as any).arrayBuffer())
+						console.log('[upload] arrayBuffer ok, bytes=', buffer.byteLength)
+						console.log('[upload] save_local_track…')
 						this.save_local_track(file, buffer)
+						console.log('[upload] save_local_track done')
 					} catch (e: any) {
-						if (e instanceof Promise) throw e
-						console.warn('[app] upload failed:', file.name, e?.message)
+						if (e instanceof Promise) {
+							console.log('[upload] caught Promise, throwing for @$mol_mem retry')
+							throw e
+						}
+						console.warn('[upload] failed:', file.name, e?.message ?? e)
 					}
 				}
 			}
