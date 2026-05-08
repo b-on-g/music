@@ -99,10 +99,38 @@ namespace $.$$ {
 			justify: { content: 'flex-end' },
 		},
 
+		Share: {
+			flex: {
+				shrink: 0,
+				grow: 0,
+			},
+			width: '2rem',
+			height: '2rem',
+			justify: { content: 'center' },
+			align: { items: 'center' },
+			borderRadius: '4px',
+			cursor: 'pointer',
+			color: $mol_theme.shade,
+			touchAction: 'none',
+			userSelect: 'none',
+			transition: 'background 0.15s, color 0.15s',
+		},
+
+		Share_icon: {
+			width: '1rem',
+			height: '1rem',
+		},
+
 		'@': {
 			bog_vk_track_current: {
 				true: {
 					color: $mol_theme.focus,
+				},
+			},
+			bog_vk_track_share_selected: {
+				true: {
+					background: { color: $mol_theme.focus },
+					color: $mol_theme.card,
 				},
 			},
 		},

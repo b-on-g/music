@@ -9,8 +9,10 @@ $bog_vk_track $mol_view
 	archive? null
 	restore? null
 	delete_forever? null
+	share_selected false
 	attr *
 		bog_vk_track_current <= current
+		bog_vk_track_share_selected <= share_selected
 		draggable <= can_drag
 	event *
 		dragstart?event <=> event_drag_start?event null
@@ -32,6 +34,17 @@ $bog_vk_track $mol_view
 					title <= title \
 				<= Artist $mol_paragraph
 					title <= artist \
+		<= Share $mol_view
+			attr *
+				bog_vk_track_share_button true
+				bog_vk_track_share_selected <= share_selected
+			event *
+				pointerdown?event <=> share_pointer_down?event null
+				pointerup?event <=> share_pointer_up?event null
+				pointercancel?event <=> share_pointer_cancel?event null
+				pointerleave?event <=> share_pointer_leave?event null
+			sub /
+				<= Share_icon $mol_icon_share
 		<= Delete $mol_button_minor
 			click? <=> delete_cached? null
 			sub /

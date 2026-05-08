@@ -27,6 +27,8 @@ $bog_vk_app $mol_page
 	body_scroll_top? <=> scroll? 0
 	body /
 		<= Account $bog_vk_account
+		<= Share_toast $mol_view
+			sub / <= share_toast_text \
 		<= Tabs $mol_switch
 			value? <=> page? \my
 			options <= tab_options *

@@ -54,5 +54,23 @@ namespace $.$$ {
 			position: 'sticky',
 			bottom: 0,
 		},
+
+		Share_toast: {
+			margin: {
+				left: '0.5rem',
+				right: '0.5rem',
+				top: '0.5rem',
+			},
+			padding: {
+				top: '0.5rem',
+				bottom: '0.5rem',
+				left: '0.75rem',
+				right: '0.75rem',
+			},
+			background: { color: $mol_theme.focus },
+			color: $mol_theme.card,
+			borderRadius: '0.375rem',
+			font: { size: '0.8125rem' },
+		},
 	})
 }

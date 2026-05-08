@@ -90,6 +90,25 @@ namespace $.$$ {
 		}
 	})()
 
+	/**
+	 * Parsing share-токена из URL fragment. Не дёргаем baza здесь —
+	 * только сохраняем токен в module-scope, чтобы $bog_vk_app.auto()
+	 * запустил импорт реактивно через $mol_wire_async (с ретраем
+	 * на baza-Promise'ы).
+	 */
+	let pending_share = ''
+	;(function parse_share_hash() {
+		try {
+			if (typeof location === 'undefined') return
+			const hash = location.hash || ''
+			const match = hash.match(/[#&]share=([^&]+)/)
+			if (!match) return
+			pending_share = decodeURIComponent(match[1])
+		} catch (e: any) {
+			console.warn('[app] share hash parse failed:', e?.message)
+		}
+	})()
+
 	export class $bog_vk_app extends $.$bog_vk_app {
 
 		title() {
@@ -99,6 +118,12 @@ namespace $.$$ {
 		@$mol_mem
 		page(next?: string) {
 			if (next !== undefined) {
+				// Клик на табе "Расшаренный" в режиме шаринга — финализирует шар,
+				// не переключая страницу.
+				if (next === 'share') {
+					this.submit_share()
+					return $mol_state_arg.value('page') ?? 'my'
+				}
 				$mol_state_arg.value('page', next)
 				return next
 			}
@@ -107,6 +132,659 @@ namespace $.$$ {
 
 		archive_mode() {
 			return this.page() === 'archive'
+		}
+
+		// =========================================================================
+		// Share — sender flow: long-press → multi-select → submit_share
+		//                     single click → instant share
+		// =========================================================================
+
+		@$mol_mem
+		share_mode(next?: boolean): boolean {
+			return next ?? false
+		}
+
+		private _share_selection = new Set<string>()
+
+		/** Реактивный счётчик для инвалидации share_selection и share_is_selected. */
+		@$mol_mem
+		private share_selection_version(next?: number): number {
+			return next ?? 0
+		}
+
+		private bump_share_selection() {
+			this.share_selection_version(this.share_selection_version() + 1)
+		}
+
+		share_selection_size(): number {
+			this.share_selection_version()
+			return this._share_selection.size
+		}
+
+		share_is_selected(audio: $bog_vk_api_audio | null): boolean {
+			if (!audio) return false
+			this.share_selection_version()
+			return this._share_selection.has(this.cache_key(audio))
+		}
+
+		/** Long-press: вход в режим шаринга + добавление текущего трека. */
+		share_enter(audio: $bog_vk_api_audio | null) {
+			if (!audio) return
+			this._share_selection.clear()
+			this._share_selection.add(this.cache_key(audio))
+			this.bump_share_selection()
+			this.share_mode(true)
+		}
+
+		share_toggle(audio: $bog_vk_api_audio | null) {
+			if (!audio) return
+			const k = this.cache_key(audio)
+			if (this._share_selection.has(k)) this._share_selection.delete(k)
+			else this._share_selection.add(k)
+			this.bump_share_selection()
+		}
+
+		share_exit() {
+			this._share_selection.clear()
+			this.bump_share_selection()
+			this.share_mode(false)
+		}
+
+		@$mol_mem
+		share_status(next?: string): string {
+			return next ?? ''
+		}
+
+		share_selected_audios(): $bog_vk_api_audio[] {
+			this.share_selection_version()
+			const sel = this._share_selection
+			if (!sel.size) return []
+			// Шарить можно из любого вью (моя/архив/shared:X), поэтому собираем
+			// audios по cache_key из всего dict — Playlist здесь не важен.
+			const dict = this.tracks_dict()
+			const out: $bog_vk_api_audio[] = []
+			for (const k of sel) {
+				const trk = dict.key(k)
+				if (!trk) continue
+				const vk_id = trk.Vk_id()?.val() ?? String(k)
+				const parts = String(vk_id).split('_')
+				const owner_id = Number(parts[0])
+				const id = Number(parts[1])
+				if (!Number.isFinite(owner_id) || !Number.isFinite(id)) continue
+				out.push({
+					id,
+					owner_id,
+					artist: trk.Artist()?.val() ?? '',
+					title: trk.Title()?.val() ?? '',
+					duration: trk.Duration()?.val() ?? 0,
+					url: trk.Url()?.val() ?? '',
+				})
+			}
+			return out
+		}
+
+		/** Click на share-иконке трека вне режима шаринга — мгновенный одиночный шар. */
+		share_single(audio: $bog_vk_api_audio | null) {
+			if (!audio) return
+			$mol_wire_async(this).share_one_async(audio)
+		}
+
+		async share_one_async(audio: $bog_vk_api_audio) {
+			await this.do_share([audio])
+		}
+
+		/** Click на табе "Расшаренный" — финализирует мульти-шар. */
+		submit_share() {
+			$mol_wire_async(this).submit_share_async()
+		}
+
+		async submit_share_async() {
+			// share_selected_audios читает tracks_dict — может бросать Promise.
+			// Читаем безопасно ДО share_exit, чтобы не потерять selection при ретрае.
+			let audios: $bog_vk_api_audio[] = []
+			try {
+				audios = await this.share_read(() => this.share_selected_audios())
+			} catch (e: any) {
+				if (!(e instanceof Promise)) console.warn('[share] read selection failed:', e?.message ?? e)
+			}
+			this.share_exit()
+			if (!audios.length) {
+				this.share_status('Нет выбранных треков')
+				return
+			}
+			await this.do_share(audios)
+		}
+
+		private _share_doing = false
+
+		/**
+		 * Локальный ретрай чтения baza-значения. Без этого Promise всплывал бы
+		 * через async/await до wire_async-fiber'а, и тот бы переретраивал ВСЁ
+		 * `do_share` — c новым `$mol_crypto_sacred.make()` и `land_grab()` (PoW)
+		 * на каждом ретрае. Бесконечная PoW-молотилка вешала main thread.
+		 */
+		private async share_read<T>(fn: () => T): Promise<T> {
+			for (let i = 0; i < 30; i++) {
+				try {
+					return fn()
+				} catch (e: any) {
+					if (e instanceof Promise) {
+						try { await e } catch {}
+						continue
+					}
+					throw e
+				}
+			}
+			throw new Error('baza read timeout')
+		}
+
+		/**
+		 * Создаёт share-land с публичным чтением, шифрует sender + meta + buffer
+		 * каждого трека одноразовым AES-ключом, кладёт ссылку в буфер обмена.
+		 */
+		private async do_share(audios: $bog_vk_api_audio[]) {
+			if (this._share_doing) {
+				console.log('[share] do_share: уже идёт другой шар, выхожу')
+				return
+			}
+			this._share_doing = true
+			this.share_status('Готовлю шар…')
+			console.log('[share] do_share: старт, audios=', audios.length, audios.map(a => `${a.artist}-${a.title}`))
+			try {
+				const sender = await this.share_read(() =>
+					(this.nickname_label() || '').trim() || 'Расшаренный'
+				)
+				console.log('[share] sender =', sender)
+
+				const usable: { audio: $bog_vk_api_audio, blob: Blob }[] = []
+				for (const audio of audios) {
+					const blob = await this.share_read(() => this.local_blob(audio))
+					console.log('[share] local_blob:', audio.artist, '-', audio.title, blob ? `${blob.size}b ${blob.type}` : 'NULL')
+					if (blob) usable.push({ audio, blob })
+				}
+				console.log('[share] usable=', usable.length, '/', audios.length)
+				if (!usable.length) {
+					this.share_status('Нет блоб-данных для шаринга')
+					return
+				}
+
+				// `glob.land_grab` дёргает `auth.grab` → `wire_sync(auth).generate` (PoW).
+				// Этот wire_task кешируется ТОЛЬКО внутри одного fiber-context'а. Между
+				// нашими async-await тиками (мы вне фибры) — пересоздаётся, новый PoW.
+				// Решение: прямо awaitим публичный async `generate()` параллельно, и
+				// пушим серилизацию каждого в `embryos` (по одному auth на каждый
+				// создаваемый land). `grab` пополняет из embryos без PoW.
+				const auth_class = $giper_baza_auth as any
+				const needed_lands = usable.length + 1 // 1 share-land + по 1 на каждый file
+				const have = auth_class.embryos?.length ?? 0
+				const to_gen = Math.max(0, needed_lands - have)
+				console.log('[share] auths: have=', have, 'need=', needed_lands, 'gen=', to_gen)
+				if (to_gen > 0) {
+					this.share_status(`Генерирую ключи (${to_gen})…`)
+					const t0 = performance.now()
+					const generated = await Promise.all(
+						Array.from({ length: to_gen }, () => auth_class.generate())
+					)
+					for (const g of generated) {
+						auth_class.embryos.push(g.toString() + g.toStringPrivate())
+					}
+					console.log('[share] auths generated in', Math.round(performance.now() - t0), 'ms, embryos size=', auth_class.embryos.length)
+				}
+
+				this.share_status('Шифрую…')
+				const key = $mol_crypto_sacred.make()
+				console.log('[share] AES key created, base64=', key.toString().slice(0, 12) + '…')
+				const sender_cipher = await this.share_encrypt(key, $mol_charset_encode(sender))
+				const verifier_cipher = await this.share_encrypt(key, $mol_charset_encode('bog-vk-share-v1'))
+				console.log('[share] sender_cipher bytes=', sender_cipher.byteLength, 'verifier_cipher bytes=', verifier_cipher.byteLength)
+
+				type Cipher = { audio: $bog_vk_api_audio, mime: string, meta: Uint8Array, blob: Uint8Array }
+				const ciphers: Cipher[] = []
+				for (const { audio, blob } of usable) {
+					try {
+						const meta_json = JSON.stringify({
+							artist: audio.artist ?? '',
+							title: audio.title ?? '',
+							duration: Number(audio.duration) || 0,
+							mime: blob.type || 'audio/mpeg',
+							owner_id: audio.owner_id,
+							id: audio.id,
+						})
+						const meta_cipher = await this.share_encrypt(key, $mol_charset_encode(meta_json))
+						const buf = new Uint8Array(await blob.arrayBuffer())
+						const blob_cipher = await this.share_encrypt(key, buf)
+						ciphers.push({ audio, mime: blob.type || 'audio/mpeg', meta: meta_cipher, blob: blob_cipher })
+						console.log('[share] cipher track:', audio.artist, '-', audio.title, 'meta=', meta_cipher.byteLength, 'blob=', blob_cipher.byteLength)
+					} catch (e: any) {
+						console.warn('[share] cipher failed:', audio?.title, e?.message ?? e)
+					}
+				}
+				if (!ciphers.length) {
+					this.share_status('Не удалось зашифровать ни один трек')
+					return
+				}
+				console.log('[share] ciphers ready:', ciphers.length)
+
+				// === Phase: запись в baza ВНУТРИ wire_async-фибры. Внешний async-цикл
+				// с share_read не работает: `units_load` (IDB) — это wire_task на
+				// $giper_baza_mine_idb.land<X>, и он кешируется ТОЛЬКО для одного
+				// fiber-вызова. Снаружи каждый retry создаёт новый task / новый
+				// IDB-запрос, share_read крутится впустую и упирается в timeout.
+				this.share_status('Заливаю в baza…')
+				console.log('[share] entering wire_async fiber for writes…')
+				const t_fiber = performance.now()
+				const land_link = await ($mol_wire_async(this) as any).do_share_writes_in_fiber(
+					sender_cipher, verifier_cipher, ciphers
+				) as string
+				console.log('[share] fiber returned in', Math.round(performance.now() - t_fiber), 'ms, land_link=', land_link)
+
+				if (!land_link) {
+					this.share_status('Не удалось залить треки')
+					return
+				}
+
+				const url = this.share_url_for(land_link, key.toString())
+				console.log('[share] URL:', url)
+				try {
+					navigator.clipboard.writeText(url)
+					this.share_status(`Скопировано: ${ciphers.length} ${this.plural_tracks(ciphers.length)}`)
+					console.log('[share] clipboard write OK')
+				} catch (e: any) {
+					this.share_status('Ссылка: ' + url)
+					console.warn('[share] clipboard failed:', e?.message)
+				}
+			} catch (e: any) {
+				if (e instanceof Promise) {
+					try { await e } catch {}
+				}
+				console.warn('[share] submit failed:', e?.message ?? e)
+				this.share_status('Ошибка: ' + (e?.message ?? 'неизвестно'))
+			} finally {
+				this._share_doing = false
+			}
+		}
+
+		private plural_tracks(n: number): string {
+			const mod10 = n % 10
+			const mod100 = n % 100
+			if (mod10 === 1 && mod100 !== 11) return 'трек'
+			if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'трека'
+			return 'треков'
+		}
+
+		private share_url_for(link: string, key: string): string {
+			const proto = location.protocol
+			const base = (proto === 'chrome-extension:' || proto === 'moz-extension:')
+				? 'https://b-on-g.github.io/vk/'
+				: location.origin + location.pathname + location.search
+			return base + '#share=' + link + '.' + key
+		}
+
+		private async share_encrypt(key: $mol_crypto_sacred, data: Uint8Array): Promise<Uint8Array> {
+			const iv = crypto.getRandomValues(new Uint8Array(16))
+			const ct = await key.encrypt(data as any, iv as any)
+			const out = new Uint8Array(iv.length + ct.length)
+			out.set(iv, 0)
+			out.set(ct, iv.length)
+			return out
+		}
+
+		private async share_decrypt(key: $mol_crypto_sacred, blob: Uint8Array): Promise<Uint8Array> {
+			if (blob.length < 17) throw new Error('cipher too short')
+			const iv = blob.slice(0, 16)
+			const ct = blob.slice(16)
+			return key.decrypt(ct as any, iv as any)
+		}
+
+		/**
+		 * Sync-метод. Запускается через `$mol_wire_async(this).do_share_writes_in_fiber(…)`,
+		 * чтобы все вложенные wire_task'и (`land_grab`, `units_load`, `ensure_lord`) кешировались
+		 * как sub-tasks одной фибры — иначе на каждом ретрае создаётся новый IDB-запрос /
+		 * новый land. На каждый ретрай тело перезапускается, но sub-task'и переиспользуются
+		 * и возвращают закешированные результаты.
+		 */
+		private do_share_writes_in_fiber(
+			sender_cipher: Uint8Array,
+			verifier_cipher: Uint8Array,
+			ciphers: { audio: $bog_vk_api_audio, mime: string, meta: Uint8Array, blob: Uint8Array }[],
+		): string {
+			console.log('[share/fiber] step 1: land_grab')
+			const land = this.$.$giper_baza_glob.land_grab([[null, $giper_baza_rank_read]])
+			console.log('[share/fiber] step 1 OK: link=', land.link().str)
+
+			console.log('[share/fiber] step 2: write Sender/Verifier/Count')
+			const data = land.Data($bog_vk_share_baza)
+			data.Sender('auto')!.val(sender_cipher as Uint8Array<ArrayBuffer>)
+			data.Verifier('auto')!.val(verifier_cipher as Uint8Array<ArrayBuffer>)
+			data.Count('auto')!.val(ciphers.length)
+			console.log('[share/fiber] step 2 OK: count=', ciphers.length)
+
+			console.log('[share/fiber] step 3: dive into Tracks')
+			const tracks = data.Tracks(null)!
+			console.log('[share/fiber] step 3 OK')
+
+			const file_lands: $giper_baza_land[] = []
+			for (let i = 0; i < ciphers.length; i++) {
+				const c = ciphers[i]
+				console.log(`[share/fiber] step 4.${i + 1}: track key=`, this.cache_key(c.audio))
+				const trk = tracks.key(this.cache_key(c.audio), 'auto')
+				if (!trk) { console.warn('[share/fiber] trk null!'); continue }
+				console.log(`[share/fiber] step 4.${i + 1}.a: write Meta`)
+				trk.Meta('auto')!.val(c.meta as Uint8Array<ArrayBuffer>)
+				console.log(`[share/fiber] step 4.${i + 1}.b: ensure File land`)
+				const file_store = trk.File('auto')!.ensure([[null, $giper_baza_rank_read]])
+				if (!file_store) { console.warn('[share/fiber] file_store null!'); continue }
+				console.log(`[share/fiber] step 4.${i + 1}.c: file land link=`, file_store.land().link().str)
+				file_store.buffer(c.blob as Uint8Array<ArrayBuffer>)
+				file_store.type(c.mime)
+				trk.File('auto')!.remote(file_store)
+				file_lands.push(file_store.land())
+				console.log(`[share/fiber] step 4.${i + 1}.d: track ${i + 1}/${ciphers.length} written`)
+			}
+
+			console.log('[share/fiber] step 5: explicit sync — share land')
+			land.sync()
+			console.log('[share/fiber] step 5 OK')
+			for (let i = 0; i < file_lands.length; i++) {
+				console.log(`[share/fiber] step 6.${i + 1}: sync file land`)
+				file_lands[i].sync()
+				console.log(`[share/fiber] step 6.${i + 1} OK`)
+			}
+
+			console.log('[share/fiber] DONE, returning link=', land.link().str)
+			return land.link().str
+		}
+
+		// =========================================================================
+		// Share — receiver flow: парсинг #share=<link>.<key>, дешифр, копирование
+		// =========================================================================
+
+		private _share_imported_tokens = new Set<string>()
+
+		@$mol_mem
+		share_import_status(next?: string): string {
+			return next ?? ''
+		}
+
+		async import_share(token: string) {
+			console.log('[import] start, token=', token.slice(0, 30) + '…')
+			if (!token) return
+			if (this._share_imported_tokens.has(token)) {
+				console.log('[import] token already processed, skip')
+				return
+			}
+
+			const dot = token.indexOf('.')
+			if (dot <= 0) {
+				console.warn('[import] no dot in token')
+				this.share_import_status('Битая ссылка')
+				this._share_imported_tokens.add(token)
+				this.clear_share_hash()
+				return
+			}
+			const link_str = token.slice(0, dot)
+			const key_str = token.slice(dot + 1)
+			console.log('[import] link_str=', link_str, 'key_str=', key_str.slice(0, 12) + '…')
+
+			let key: $mol_crypto_sacred
+			try {
+				key = $mol_crypto_sacred.from(key_str)
+				console.log('[import] AES key parsed')
+			} catch (e: any) {
+				console.warn('[import] AES key parse failed:', e?.message)
+				this.share_import_status('Битый ключ')
+				this._share_imported_tokens.add(token)
+				this.clear_share_hash()
+				return
+			}
+
+			try {
+				const link = new $giper_baza_link(link_str)
+				const land = this.$.$giper_baza_glob.Land(link)
+				console.log('[import] land obtained, link=', link.str)
+
+				this.share_import_status('Загружаю шар…')
+
+				type Header = {
+					sender_cipher: Uint8Array | null,
+					verifier_cipher: Uint8Array | null,
+					count: number,
+					keys: readonly string[],
+				}
+				let header: Header | null = null
+				for (let i = 0; i < 90; i++) {
+					try {
+						header = await ($mol_wire_async(this) as any).import_share_header_in_fiber(land) as Header
+					} catch (e: any) {
+						console.warn('[import] header poll iter', i, 'failed:', e?.message ?? e)
+						await new Promise(r => setTimeout(r, 1000))
+						continue
+					}
+					console.log(`[import] header poll iter ${i}: verifier=${!!header.verifier_cipher} sender=${!!header.sender_cipher} count=${header.count} keys=${header.keys.length}`)
+					if (header.verifier_cipher) {
+						if (header.count > 0 && header.keys.length >= header.count) break
+						if (header.count === 0 && header.keys.length > 0) break
+					}
+					this.share_import_status(`Жду треки (${header.keys.length}/${header.count || '?'})…`)
+					await new Promise(r => setTimeout(r, 1000))
+				}
+
+				if (!header || !header.verifier_cipher) {
+					console.warn('[import] no verifier after polling')
+					this.share_import_status('Шар не загрузился — попробуй позже')
+					return
+				}
+				console.log('[import] header ready: count=', header.count, 'keys=', header.keys.length)
+
+				let verifier: string
+				try {
+					verifier = $mol_charset_decode(await this.share_decrypt(key, header.verifier_cipher))
+					console.log('[import] verifier decoded:', verifier)
+				} catch (e: any) {
+					console.warn('[import] verifier decrypt failed:', e?.message)
+					this.share_import_status('Не тот ключ')
+					this._share_imported_tokens.add(token)
+					this.clear_share_hash()
+					return
+				}
+				if (verifier !== 'bog-vk-share-v1') {
+					console.warn('[import] verifier mismatch:', verifier)
+					this.share_import_status('Не тот ключ')
+					this._share_imported_tokens.add(token)
+					this.clear_share_hash()
+					return
+				}
+
+				const sender = header.sender_cipher && header.sender_cipher.byteLength > 0
+					? $mol_charset_decode(await this.share_decrypt(key, header.sender_cipher))
+					: 'Расшаренный'
+				console.log('[import] sender =', sender)
+
+				const playlist = 'shared:' + sender
+				let imported = 0
+				for (let i = 0; i < header.keys.length; i++) {
+					const k = header.keys[i]
+					console.log(`[import] track ${i + 1}/${header.keys.length} key=${k}`)
+					try {
+						type TrackData = { meta_cipher: Uint8Array, file_cipher: Uint8Array, file_mime: string }
+						// Поллим — file-land мог залинковаться раньше, чем master
+						// прислал его chunks. Внутри track-fiber'а проверяем, что
+						// `file.buffer()` непустой; если пусто — sleep + retry.
+						let td: TrackData | null = null
+						for (let attempt = 0; attempt < 60; attempt++) {
+							this.share_import_status(`Тяну ${i + 1}/${header.keys.length}${attempt ? ` (${attempt}с)` : ''}…`)
+							try {
+								td = await ($mol_wire_async(this) as any).import_share_track_in_fiber(land, k) as TrackData | null
+							} catch (e: any) {
+								console.warn(`[import] track ${k} fiber failed:`, e?.message ?? e)
+							}
+							if (td) break
+							console.log(`[import] track ${k} ещё не пришёл, attempt=${attempt + 1}`)
+							await new Promise(r => setTimeout(r, 1000))
+						}
+						if (!td) { console.warn('[import] track data null после 60с:', k); continue }
+						console.log(`[import] track ${k}: meta=${td.meta_cipher.byteLength}b cipher=${td.file_cipher.byteLength}b`)
+						const meta_json = $mol_charset_decode(await this.share_decrypt(key, td.meta_cipher))
+						const meta = JSON.parse(meta_json)
+						console.log(`[import] track meta:`, meta.artist, '-', meta.title)
+						const t_dec = performance.now()
+						const audio_buf = await this.share_decrypt(key, td.file_cipher)
+						console.log(`[import] track ${k} decrypted ${audio_buf.byteLength}b in ${Math.round(performance.now() - t_dec)}ms`)
+
+						const audio: $bog_vk_api_audio = {
+							id: Number(meta.id),
+							owner_id: Number(meta.owner_id),
+							artist: String(meta.artist ?? ''),
+							title: String(meta.title ?? ''),
+							duration: Number(meta.duration ?? 0),
+							url: '',
+						}
+						const mime = String(meta.mime || td.file_mime || 'audio/mpeg')
+						console.log(`[import] track ${k} → save_in_fiber`)
+						const t_save = performance.now()
+						await ($mol_wire_async(this) as any).import_share_save_track_in_fiber(audio, mime, audio_buf, playlist)
+						console.log(`[import] track ${k} saved in ${Math.round(performance.now() - t_save)}ms`)
+						imported++
+					} catch (e: any) {
+						if (e instanceof Promise) throw e
+						console.warn('[import] track import failed:', e?.message ?? e)
+					}
+				}
+				console.log('[import] DONE, imported=', imported, '/', header.keys.length)
+
+				this._share_imported_tokens.add(token)
+				this.clear_share_hash()
+				if (imported) {
+					this.share_import_status(`От ${sender}: ${imported} ${this.plural_tracks(imported)}`)
+					this.page(playlist)
+				} else {
+					this.share_import_status('Шар пустой')
+				}
+			} catch (e: any) {
+				if (e instanceof Promise) throw e
+				console.warn('[share] import failed:', e?.message ?? e)
+				this.share_import_status('Не получилось: ' + (e?.message ?? 'ошибка'))
+			}
+		}
+
+		/**
+		 * Sync-метод. Под `$mol_wire_async` все вложенные wire_task'и
+		 * (`units_load` для share-land, `Tracks.keys()`, etc.) кешируются как
+		 * sub-task'и одной фибры — фибра ретраится на Promise'ах от async IDB-load
+		 * и возвращает результат когда land загружен.
+		 */
+		private import_share_header_in_fiber(land: $giper_baza_land): {
+			sender_cipher: Uint8Array | null,
+			verifier_cipher: Uint8Array | null,
+			count: number,
+			keys: readonly string[],
+		} {
+			console.log('[import/header-fiber] step a: get data')
+			const data = land.Data($bog_vk_share_baza)
+			console.log('[import/header-fiber] step b: read Sender')
+			const sender_cipher = (data.Sender()?.val() as Uint8Array | undefined) ?? null
+			console.log('[import/header-fiber] step c: read Verifier')
+			const verifier_cipher = (data.Verifier()?.val() as Uint8Array | undefined) ?? null
+			console.log('[import/header-fiber] step d: read Count')
+			const count = Number(data.Count()?.val() ?? 0)
+			console.log('[import/header-fiber] step e: read Tracks dict')
+			const tracks = data.Tracks()
+			const keys = (tracks?.keys() ?? []) as string[]
+			console.log('[import/header-fiber] DONE: sender=', !!sender_cipher, 'verifier=', !!verifier_cipher, 'count=', count, 'keys=', keys.length)
+			return { sender_cipher, verifier_cipher, count, keys }
+		}
+
+		/**
+		 * Sync-метод. В фибре читает Meta + File-blob одного трека —
+		 * `units_load` шифр-блоб-land'а кешируется внутри фибры, ретраится
+		 * пока baza не догрузит чанки файла.
+		 */
+		/**
+		 * Sync-метод. `save_track`/`move_to_playlist`/`save_blob` — `@$mol_action`,
+		 * могут бросить Promise при `units_load` home-land'а или ensure'е blob-land'а.
+		 * Без этой обёртки wire_async ретраит ВСЁ `import_share` (включая 8MB AES-decrypt)
+		 * на каждом Promise, что выглядит как зависание.
+		 */
+		private import_share_save_track_in_fiber(
+			audio: $bog_vk_api_audio,
+			mime: string,
+			buf: Uint8Array,
+			playlist: string,
+		): boolean {
+			console.log('[import/save-fiber] save_track')
+			this.save_track(audio)
+			console.log('[import/save-fiber] move_to_playlist:', playlist)
+			this.move_to_playlist(audio, playlist)
+			console.log('[import/save-fiber] save_blob bytes=', buf.byteLength)
+			this.save_blob(audio, buf as Uint8Array<ArrayBuffer>, mime)
+			console.log('[import/save-fiber] DONE')
+			return true
+		}
+
+		private import_share_track_in_fiber(land: $giper_baza_land, key: string): {
+			meta_cipher: Uint8Array,
+			file_cipher: Uint8Array,
+			file_mime: string,
+		} | null {
+			console.log('[import/track-fiber] start key=', key)
+			const data = land.Data($bog_vk_share_baza)
+			const tracks = data.Tracks()
+			if (!tracks) { console.warn('[import/track-fiber] tracks dict null'); return null }
+			const trk = tracks.key(key)
+			if (!trk) { console.warn('[import/track-fiber] trk null for', key); return null }
+			console.log('[import/track-fiber] reading Meta…')
+			const meta_cipher = trk.Meta()?.val() as Uint8Array | undefined
+			if (!meta_cipher || meta_cipher.byteLength === 0) { console.warn('[import/track-fiber] meta empty'); return null }
+			console.log('[import/track-fiber] reading File link…')
+			const file = trk.File()?.remote()
+			if (!file) { console.warn('[import/track-fiber] file remote null'); return null }
+			// `$bog_vk_atom_link_to_synced.remote()` зовёт `.land().sync()` но
+			// глотает Promise — внутри fiber'а нам нужно, чтобы Promise пробросился
+			// и фибра подождала. Вызываем sync напрямую.
+			console.log('[import/track-fiber] forcing file land sync…')
+			file.land().sync()
+			console.log('[import/track-fiber] reading file.buffer…')
+			const file_cipher = file.buffer()
+			if (!file_cipher || file_cipher.byteLength === 0) { console.warn('[import/track-fiber] file buffer empty'); return null }
+			console.log('[import/track-fiber] DONE meta=', meta_cipher.byteLength, 'cipher=', file_cipher.byteLength)
+			return { meta_cipher, file_cipher, file_mime: file.type() || 'audio/mpeg' }
+		}
+
+		private clear_share_hash() {
+			try {
+				const new_hash = (location.hash || '').replace(/[#&]?share=[^&]*/, '').replace(/^#&/, '#')
+				const new_url = location.origin + location.pathname + location.search + (new_hash && new_hash !== '#' ? new_hash : '')
+				history.replaceState(null, '', new_url)
+			} catch {}
+			pending_share = ''
+		}
+
+		// =========================================================================
+		// Динамические плейлисты от senders (для receiver-табов).
+		// =========================================================================
+
+		@$mol_mem
+		shared_playlists(): { id: string, sender: string, count: number }[] {
+			try {
+				const dict = this.tracks_dict()
+				const keys = (dict.keys() ?? []) as string[]
+				const map = new Map<string, number>()
+				for (const k of keys) {
+					const trk = dict.key(k)
+					if (!trk) continue
+					const pl = trk.Playlist()?.val() ?? ''
+					if (!pl.startsWith('shared:')) continue
+					map.set(pl, (map.get(pl) ?? 0) + 1)
+				}
+				return Array.from(map.entries()).map(([id, count]) => ({
+					id,
+					sender: id.slice('shared:'.length),
+					count,
+				}))
+			} catch (e: any) {
+				if (e instanceof Promise) throw e
+				return []
+			}
 		}
 
 		// =========================================================================
@@ -244,7 +922,11 @@ namespace $.$$ {
 
 		@$mol_mem
 		visible_audios() {
-			return this.archive_mode() ? this.archived_audios() : this.saved_audios()
+			const p = this.page()
+			if (p === 'archive') return this.archived_audios()
+			if (p === 'share') return this.share_selected_audios()
+			if (p.startsWith('shared:')) return this.list_audios_in(p)
+			return this.saved_audios()
 		}
 
 		// ---------- запись в baza (паттерн blitz: @$mol_action instance) ----------
@@ -529,10 +1211,18 @@ namespace $.$$ {
 		tab_options() {
 			const my = this.saved_audios().length
 			const arch = this.archived_audios().length
-			return {
+			const opts: Record<string, string> = {
 				my: my ? `Моя музыка ${my}` : 'Моя музыка',
 				archive: arch ? `Архив ${arch}` : 'Архив',
 			}
+			if (this.share_mode()) {
+				const n = this.share_selection_size()
+				opts['share'] = n ? `Расшаренный ${n}` : 'Расшаренный'
+			}
+			for (const pl of this.shared_playlists()) {
+				opts[pl.id] = `${pl.sender} ${pl.count}`
+			}
+			return opts as { my: string, archive: string }
 		}
 
 		@$mol_mem
@@ -655,6 +1345,16 @@ namespace $.$$ {
 		Account() {
 			if (!this.account_open()) return null as any
 			return super.Account()
+		}
+
+		@$mol_mem
+		share_toast_text(): string {
+			return this.share_status() || this.share_import_status() || ''
+		}
+
+		Share_toast() {
+			if (!this.share_toast_text()) return null as any
+			return super.Share_toast()
 		}
 
 		@$mol_mem
@@ -795,6 +1495,8 @@ namespace $.$$ {
 			return touched
 		}
 
+		private _share_import_started = false
+
 		auto() {
 			// Прогрев чтения из baza — кидает Promise при загрузке, ретраится здесь.
 			try { this.saved_audios() } catch (e: any) {
@@ -816,6 +1518,11 @@ namespace $.$$ {
 			// Реактивный авто-импорт.
 			try { this.auto_import() } catch (e: any) {
 				if (e instanceof Promise) throw e
+			}
+			// Импорт шара из URL (#share=…) — wire_async ретраит на baza-Promise'ах.
+			if (pending_share && !this._share_import_started) {
+				this._share_import_started = true
+				$mol_wire_async(this).import_share(pending_share)
 			}
 			return super.auto()
 		}

@@ -104,5 +104,80 @@ namespace $.$$ {
 			$bog_vk_app.Root(0).drop_blob(audio)
 			this.cached(false)
 		}
+
+		// =========================================================================
+		// Share — long-press = вход в multi-select, click = single share / toggle
+		// =========================================================================
+
+		private _share_press_timer: ReturnType<typeof setTimeout> | null = null
+		private _share_long_press_fired = false
+		private static SHARE_LONG_PRESS_MS = 450
+
+		@$mol_mem
+		share_selected() {
+			const audio = this.audio_data()
+			if (!audio) return false
+			try {
+				return $bog_vk_app.Root(0).share_is_selected(audio)
+			} catch (e: any) {
+				if (e instanceof Promise) throw e
+				return false
+			}
+		}
+
+		share_pointer_down(event?: Event) {
+			if (!event) return null
+			const e = event as PointerEvent
+			e.stopPropagation()
+			this._share_long_press_fired = false
+			if (this._share_press_timer) clearTimeout(this._share_press_timer)
+			this._share_press_timer = setTimeout(() => {
+				this._share_press_timer = null
+				this._share_long_press_fired = true
+				try {
+					const audio = this.audio_data()
+					if (audio) $bog_vk_app.Root(0).share_enter(audio)
+				} catch (err) {
+					// audio_data может бросить Promise при загрузке baza —
+					// глотаем, long-press теряется, пользователь повторит.
+				}
+			}, $bog_vk_track.SHARE_LONG_PRESS_MS)
+			return null
+		}
+
+		share_pointer_up(event?: Event) {
+			if (!event) return null
+			const e = event as PointerEvent
+			e.stopPropagation()
+			if (this._share_press_timer) {
+				clearTimeout(this._share_press_timer)
+				this._share_press_timer = null
+			}
+			if (this._share_long_press_fired) return null
+			try {
+				const audio = this.audio_data()
+				if (!audio) return null
+				const app = $bog_vk_app.Root(0)
+				if (app.share_mode()) app.share_toggle(audio)
+				else app.share_single(audio)
+			} catch (err) {
+				// audio_data() / share_mode() могут бросить Promise при загрузке
+				// baza. Глотаем — пользователь повторит, повторный wire-retry
+				// не нужен (он бы ничего полезного не делал, audio тот же).
+			}
+			return null
+		}
+
+		share_pointer_cancel(event?: Event) {
+			if (this._share_press_timer) {
+				clearTimeout(this._share_press_timer)
+				this._share_press_timer = null
+			}
+			return null
+		}
+
+		share_pointer_leave(event?: Event) {
+			return this.share_pointer_cancel(event)
+		}
 	}
 }
