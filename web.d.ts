@@ -54737,6 +54737,13 @@ declare namespace $.$$ {
         private _last_blob_url;
         private _msg_listener_set;
         private _channel?;
+        private _shuffle_bag;
+        private _shuffle_bag_idx;
+        private _shuffle_bag_sig;
+        private _shuffle_last_key;
+        private static audio_key;
+        private build_shuffle_bag;
+        private ensure_shuffle_bag;
         private is_extension;
         private channel;
         audio_el(): HTMLAudioElement;

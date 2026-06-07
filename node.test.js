@@ -25658,6 +25658,37 @@ var $;
             _last_blob_url = '';
             _msg_listener_set = false;
             _channel;
+            // shuffle-bag: одна перетасовка всего плейлиста, играем без повторов
+            // до конца, затем перетасовываем заново. _bag_sig сторожит изменения
+            // состава queue (трек добавили/удалили/переместили) — несоответствие
+            // сигнатуры → пересборка.
+            _shuffle_bag = [];
+            _shuffle_bag_idx = 0;
+            _shuffle_bag_sig = '';
+            _shuffle_last_key = '';
+            static audio_key(a) {
+                return `${a.owner_id}_${a.id}`;
+            }
+            build_shuffle_bag(queue, exclude_first) {
+                const keys = queue.map((a) => $bog_vk_player.audio_key(a));
+                for (let i = keys.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [keys[i], keys[j]] = [keys[j], keys[i]];
+                }
+                if (keys.length > 1 && exclude_first && keys[0] === exclude_first) {
+                    ;
+                    [keys[0], keys[1]] = [keys[1], keys[0]];
+                }
+                return keys;
+            }
+            ensure_shuffle_bag(queue) {
+                const sig = queue.map((a) => $bog_vk_player.audio_key(a)).join(',');
+                if (sig === this._shuffle_bag_sig && this._shuffle_bag_idx < this._shuffle_bag.length)
+                    return;
+                this._shuffle_bag = this.build_shuffle_bag(queue, this._shuffle_last_key);
+                this._shuffle_bag_idx = 0;
+                this._shuffle_bag_sig = sig;
+            }
             is_extension() {
                 return typeof chrome !== 'undefined' && !!chrome?.runtime?.id;
             }
@@ -26457,16 +26488,18 @@ var $;
                     }
                 }
                 if (mode === 'shuffle' && queue.length) {
-                    const cur = this.current_audio();
-                    const cur_idx = cur
-                        ? queue.findIndex((a) => a.id === cur.id && a.owner_id === cur.owner_id)
-                        : -1;
-                    let idx = Math.floor(Math.random() * queue.length);
-                    if (queue.length > 1 && idx === cur_idx)
-                        idx = (idx + 1) % queue.length;
-                    this._queue_idx = idx;
-                    this.play_track(queue[idx]);
-                    return;
+                    this.ensure_shuffle_bag(queue);
+                    const key = this._shuffle_bag[this._shuffle_bag_idx++];
+                    if (this._shuffle_bag_idx >= this._shuffle_bag.length) {
+                        this._shuffle_last_key = key;
+                        this._shuffle_bag_sig = ''; // следующий next() перетасует
+                    }
+                    const idx = queue.findIndex((a) => $bog_vk_player.audio_key(a) === key);
+                    if (idx >= 0) {
+                        this._queue_idx = idx;
+                        this.play_track(queue[idx]);
+                        return;
+                    }
                 }
                 try {
                     const picked = this.pick_next(this.current_audio());
