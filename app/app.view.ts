@@ -1400,7 +1400,7 @@ namespace $.$$ {
 		}
 
 		// =========================================================================
-		// Реактивный авто-импорт VK-треков + фоновый префетч блобов.
+		// Ручной импорт VK-треков + фоновый префетч блобов (по кнопке).
 		// =========================================================================
 
 		/**
@@ -1422,28 +1422,42 @@ namespace $.$$ {
 			}
 		}
 
-		/**
-		 * Реактивная авторегистрация: при готовности baza + появлении треков
-		 * стартует фоновый префетч. Идемпотентно через флаг.
-		 */
-		@$mol_mem
-		auto_import(): number {
-			const items = this.vk_audios()
-			if (!items.length) return 0
-			// прогрев dict — кидает Promise если baza ещё грузится, @$mol_mem ретраит.
-			this.tracks_dict()
-			if (!this._prefetch_started) {
-				this._prefetch_started = true
-				$mol_wire_async(this).prefetch_blobs(items)
-			}
-			return items.length
-		}
-
-		private _prefetch_started = false
-
 		@$mol_mem
 		prefetch_state(next?: { total: number, done: number, failed: number }) {
 			return next ?? { total: 0, done: 0, failed: 0 }
+		}
+
+		@$mol_mem
+		download_playlist_status(next?: string): string {
+			return next ?? ''
+		}
+
+		/** Триггер: качает треки видимого плейлиста в baza (НЕ на ПК). */
+		download_playlist() {
+			$mol_wire_async(this).download_playlist_async()
+			return null
+		}
+
+		async download_playlist_async() {
+			const page = this.page()
+			let items: $bog_vk_api_audio[]
+			if (page === 'my') {
+				items = this.vk_audios()
+				if (!items.length) {
+					this.download_playlist_status($bog_vk_api.in_extension() ? 'Список VK пуст' : 'Нет VK-токена (открой расширение)')
+					return
+				}
+			} else {
+				items = this.visible_audios()
+				if (!items.length) {
+					this.download_playlist_status('Плейлист пуст')
+					return
+				}
+			}
+			this.download_playlist_status(`Скачиваю ${items.length}…`)
+			await this.prefetch_blobs(items)
+			const s = this.prefetch_state()
+			this.download_playlist_status(`Готово: ${s.done}/${s.total}${s.failed ? `, ошибок ${s.failed}` : ''}`)
 		}
 
 		/**
@@ -1523,6 +1537,96 @@ namespace $.$$ {
 
 		private _share_import_started = false
 
+		// =========================================================================
+		// Очередь pending-треков от content.js. Поток: vk.com → background.js (SW)
+		// → IDB (`bog_vk_pending` / `pending` store) в chrome-extension origin.
+		// popup и offscreen — тот же origin, видят тот же IDB.
+		// Здесь читаем store, save_track + save_blob в Giper Baza, удаляем запись.
+		// =========================================================================
+
+		@$mol_mem
+		pending_keys_version(next?: number): number {
+			return next ?? 0
+		}
+
+		private _pending_listener_set = false
+
+		private setup_pending_listener() {
+			if (this._pending_listener_set) return
+			const ext = (globalThis as any).chrome
+			if (!ext?.runtime?.onMessage?.addListener) return
+			this._pending_listener_set = true
+			ext.runtime.onMessage.addListener((msg: any) => {
+				if (msg?.target !== 'popup' || msg.type !== 'pending_added') return
+				this.pending_keys_version(this.pending_keys_version() + 1)
+			})
+		}
+
+		private open_pending_db(): Promise<IDBDatabase> {
+			return new Promise((resolve, reject) => {
+				const req = indexedDB.open('bog_vk_pending', 1)
+				req.onupgradeneeded = () => {
+					const db = req.result
+					if (!db.objectStoreNames.contains('pending')) {
+						db.createObjectStore('pending', { keyPath: 'key' })
+					}
+				}
+				req.onsuccess = () => resolve(req.result)
+				req.onerror = () => reject(req.error)
+			})
+		}
+
+		private _draining = false
+
+		async drain_pending() {
+			if (this._draining) return
+			this._draining = true
+			try {
+				// Цикл до пустоты: если pending_added прилетит ВО ВРЕМЯ дренажа,
+				// версия бампнётся снаружи, но из-за _draining-guard'а сюда не
+				// войдёт ещё один вызов. Снаружи ретрига больше не будет, поэтому
+				// дренажим повторно из этой же фибры.
+				while (true) {
+					const db = await this.open_pending_db()
+					let entries: any[] = []
+					try {
+						entries = await new Promise<any[]>((resolve, reject) => {
+							const tx = db.transaction(['pending'], 'readonly')
+							const req = tx.objectStore('pending').getAll()
+							req.onsuccess = () => resolve(req.result || [])
+							req.onerror = () => reject(req.error)
+						})
+						if (!entries.length) break
+						console.log('[app] drain pending from IDB:', entries.length)
+						for (const entry of entries) {
+							try {
+								const raw = entry.buf
+								const buf = raw instanceof Uint8Array
+									? raw
+									: new Uint8Array(raw)
+								this.save_track(entry.audio)
+								this.save_blob(entry.audio, buf, entry.mime || 'audio/aac')
+								await new Promise<void>((resolve, reject) => {
+									const tx = db.transaction(['pending'], 'readwrite')
+									tx.objectStore('pending').delete(entry.key)
+									tx.oncomplete = () => resolve()
+									tx.onerror = () => reject(tx.error)
+									tx.onabort = () => reject(tx.error)
+								})
+							} catch (e: any) {
+								if (e instanceof Promise) throw e
+								console.warn('[app] drain failed:', entry.key, e?.message ?? e)
+							}
+						}
+					} finally {
+						db.close()
+					}
+				}
+			} finally {
+				this._draining = false
+			}
+		}
+
 		auto() {
 			// Прогрев чтения из baza — кидает Promise при загрузке, ретраится здесь.
 			try { this.saved_audios() } catch (e: any) {
@@ -1541,15 +1645,16 @@ namespace $.$$ {
 					if (e instanceof Promise) throw e
 				}
 			}
-			// Реактивный авто-импорт.
-			try { this.auto_import() } catch (e: any) {
-				if (e instanceof Promise) throw e
-			}
 			// Импорт шара из URL (#share=…) — wire_async ретраит на baza-Promise'ах.
 			if (pending_share && !this._share_import_started) {
 				this._share_import_started = true
 				$mol_wire_async(this).import_share(pending_share)
 			}
+			// Дренаж pending-очереди от content.js. Подписка на version →
+			// перезапуск при pending_added-сообщении от background.js.
+			this.setup_pending_listener()
+			this.pending_keys_version()
+			$mol_wire_async(this).drain_pending()
 			return super.auto()
 		}
 	}

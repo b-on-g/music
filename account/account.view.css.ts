@@ -18,16 +18,16 @@ namespace $.$$ {
 			padding: { left: '0.25rem', right: '0.25rem' },
 		},
 
-		Download_all: {
+		Download_playlist: {
 			gap: '0.375rem',
 			alignItems: 'center',
 		},
 
-		Download_all_label: {
+		Download_playlist_label: {
 			font: { size: '0.875rem' },
 		},
 
-		Download_all_status: {
+		Download_playlist_status: {
 			font: { size: '0.8125rem' },
 			color: $mol_theme.shade,
 			flex: { grow: 1 },
