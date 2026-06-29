@@ -39803,6 +39803,56 @@ declare namespace $.$$ {
 }
 
 declare namespace $ {
+    class $bog_vk_api extends $mol_object {
+        static default_proxy_url: string;
+        static token(next?: string): string;
+        static cookies(next?: string): string;
+        /**
+         * Конфигурируемый URL прокси. Пустое значение — дефолт.
+         * Позволяет обходить блокировки VK API через свой / альтернативный хост.
+         */
+        static proxy_url(next?: string): string;
+        /**
+         * Запущены ли мы как Chrome/Firefox extension popup?
+         * В этом контексте host_permissions снимают CORS, и VK API можно дёргать
+         * напрямую без прокси-воркера.
+         */
+        static in_extension(): boolean;
+        /** Прямой вызов VK API из popup (использует host_permissions расширения). */
+        static fetch_vk_direct(method: string, params: Record<string, any>): Promise<any>;
+        static fetch_proxy(endpoint: string, body: Record<string, any>): Promise<any>;
+        static my_audios(): $bog_vk_api_audio_list;
+        static search_audios(query: string): $bog_vk_api_audio_list;
+        /**
+         * Обновляет URL трека (HLS-ссылки от VK живут ~60 минут).
+         * Используется перед save_hls для треков, у которых url протух.
+         */
+        static refresh_audio(audio_key: string): $bog_vk_api_audio | null;
+    }
+    interface $bog_vk_api_audio {
+        id: number;
+        owner_id: number;
+        artist: string;
+        title: string;
+        duration: number;
+        url: string;
+        access_key?: string;
+        album?: {
+            id: number;
+            title: string;
+            thumb?: {
+                photo_300?: string;
+                photo_600?: string;
+            };
+        };
+    }
+    interface $bog_vk_api_audio_list {
+        count: number;
+        items: $bog_vk_api_audio[];
+    }
+}
+
+declare namespace $ {
 
 	type $mol_view__sub_bog_vk_account_1 = $mol_type_enforce<
 		readonly(any)[]
@@ -39810,7 +39860,7 @@ declare namespace $ {
 		ReturnType< $mol_view['sub'] >
 	>
 	type $mol_button_minor__hint_bog_vk_account_2 = $mol_type_enforce<
-		string
+		ReturnType< $bog_vk_account['download_playlist_hint'] >
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
@@ -39956,8 +40006,10 @@ declare namespace $ {
 	>
 	export class $bog_vk_account extends $mol_view {
 		Sync_status( ): $giper_baza_status
+		download_playlist_hint( ): string
 		download_playlist( next?: any ): any
 		Download_playlist_icon( ): $mol_icon_download
+		download_playlist_label( ): string
 		Download_playlist_label( ): $mol_view
 		Download_playlist( ): $mol_button_minor
 		download_playlist_status( ): string
@@ -39990,6 +40042,10 @@ declare namespace $ {
 		Reset( ): $mol_view
 		Cards( ): $mol_view
 		sub( ): readonly(any)[]
+		ext_label( ): string
+		ext_hint( ): string
+		pwa_label( ): string
+		pwa_hint( ): string
 	}
 	
 }
@@ -40012,8 +40068,10 @@ declare namespace $.$$ {
         copy(): void;
         import_link(next?: string): string;
         import_status(next?: string): string;
-        /** Форвард на app.download_playlist() — скачивает видимый плейлист в baza. */
+        /** Форвард на app.download_playlist() — в extension в baza, в PWA zip-архивом. */
         download_playlist(): null;
+        download_playlist_label(): string;
+        download_playlist_hint(): string;
         download_playlist_status(): string;
         reset_account(): void;
         apply_import(): void;
@@ -43284,56 +43342,6 @@ declare namespace $ {
 }
 
 //# sourceMappingURL=restore.view.tree.d.ts.map
-declare namespace $ {
-    class $bog_vk_api extends $mol_object {
-        static default_proxy_url: string;
-        static token(next?: string): string;
-        static cookies(next?: string): string;
-        /**
-         * Конфигурируемый URL прокси. Пустое значение — дефолт.
-         * Позволяет обходить блокировки VK API через свой / альтернативный хост.
-         */
-        static proxy_url(next?: string): string;
-        /**
-         * Запущены ли мы как Chrome/Firefox extension popup?
-         * В этом контексте host_permissions снимают CORS, и VK API можно дёргать
-         * напрямую без прокси-воркера.
-         */
-        static in_extension(): boolean;
-        /** Прямой вызов VK API из popup (использует host_permissions расширения). */
-        static fetch_vk_direct(method: string, params: Record<string, any>): Promise<any>;
-        static fetch_proxy(endpoint: string, body: Record<string, any>): Promise<any>;
-        static my_audios(): $bog_vk_api_audio_list;
-        static search_audios(query: string): $bog_vk_api_audio_list;
-        /**
-         * Обновляет URL трека (HLS-ссылки от VK живут ~60 минут).
-         * Используется перед save_hls для треков, у которых url протух.
-         */
-        static refresh_audio(audio_key: string): $bog_vk_api_audio | null;
-    }
-    interface $bog_vk_api_audio {
-        id: number;
-        owner_id: number;
-        artist: string;
-        title: string;
-        duration: number;
-        url: string;
-        access_key?: string;
-        album?: {
-            id: number;
-            title: string;
-            thumb?: {
-                photo_300?: string;
-                photo_600?: string;
-            };
-        };
-    }
-    interface $bog_vk_api_audio_list {
-        count: number;
-        items: $bog_vk_api_audio[];
-    }
-}
-
 declare namespace $ {
     const $giper_baza_file_base: Omit<typeof $giper_baza_dict, "prototype"> & {
         new (...args: any[]): $mol_type_override<$giper_baza_dict, {
@@ -55322,6 +55330,14 @@ declare namespace $.$$ {
         /** Триггер: качает треки видимого плейлиста в baza (НЕ на ПК). */
         download_playlist(): null;
         download_playlist_async(): Promise<void>;
+        /** PWA-путь: собирает локально засинканные blob'ы в ZIP (STORE) и триггерит браузерный download. */
+        download_playlist_zip_async(): Promise<void>;
+        private zip_filename;
+        private static _crc32_table;
+        private static crc32_table;
+        private static crc32;
+        /** STORE-only ZIP encoder (no compression — аудио и так сжато). */
+        private build_zip;
         /**
          * Фоновый префетч — реактивный wire_async fiber, ретраит при Promise.
          * Метаданные сохраняются по одному перед каждой выкачкой блоба, чтобы

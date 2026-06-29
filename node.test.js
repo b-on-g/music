@@ -19715,6 +19715,9 @@ var $;
 			const obj = new this.$.$giper_baza_status();
 			return obj;
 		}
+		download_playlist_hint(){
+			return "";
+		}
 		download_playlist(next){
 			if(next !== undefined) return next;
 			return null;
@@ -19723,14 +19726,17 @@ var $;
 			const obj = new this.$.$mol_icon_download();
 			return obj;
 		}
+		download_playlist_label(){
+			return "";
+		}
 		Download_playlist_label(){
 			const obj = new this.$.$mol_view();
-			(obj.sub) = () => (["Скачать плейлист в расширение"]);
+			(obj.sub) = () => ([(this.download_playlist_label())]);
 			return obj;
 		}
 		Download_playlist(){
 			const obj = new this.$.$mol_button_minor();
-			(obj.hint) = () => ("Скачать треки видимого плейлиста в расширение");
+			(obj.hint) = () => ((this.download_playlist_hint()));
 			(obj.click) = (next) => ((this.download_playlist(next)));
 			(obj.sub) = () => ([(this.Download_playlist_icon()), (this.Download_playlist_label())]);
 			return obj;
@@ -19894,6 +19900,18 @@ var $;
 		sub(){
 			return [(this.Sync_row()), (this.Cards())];
 		}
+		ext_label(){
+			return (this.$.$mol_locale.text("$bog_vk_account_ext_label"));
+		}
+		ext_hint(){
+			return (this.$.$mol_locale.text("$bog_vk_account_ext_hint"));
+		}
+		pwa_label(){
+			return (this.$.$mol_locale.text("$bog_vk_account_pwa_label"));
+		}
+		pwa_hint(){
+			return (this.$.$mol_locale.text("$bog_vk_account_pwa_hint"));
+		}
 	};
 	($mol_mem(($.$bog_vk_account.prototype), "Sync_status"));
 	($mol_mem(($.$bog_vk_account.prototype), "download_playlist"));
@@ -19926,6 +19944,139 @@ var $;
 	($mol_mem(($.$bog_vk_account.prototype), "Reset"));
 	($mol_mem(($.$bog_vk_account.prototype), "Cards"));
 
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $bog_vk_api extends $mol_object {
+        static default_proxy_url = 'https://bog-vk-audio.cmyser-fast-i.workers.dev';
+        static token(next) {
+            return $mol_state_local.value('vk_token', next) ?? '';
+        }
+        static cookies(next) {
+            return $mol_state_local.value('vk_cookies', next) ?? '';
+        }
+        /**
+         * Конфигурируемый URL прокси. Пустое значение — дефолт.
+         * Позволяет обходить блокировки VK API через свой / альтернативный хост.
+         */
+        static proxy_url(next) {
+            const custom = $mol_state_local.value('vk_proxy_url', next) ?? '';
+            return custom || this.default_proxy_url;
+        }
+        /**
+         * Запущены ли мы как Chrome/Firefox extension popup?
+         * В этом контексте host_permissions снимают CORS, и VK API можно дёргать
+         * напрямую без прокси-воркера.
+         */
+        static in_extension() {
+            try {
+                const proto = location.protocol;
+                return proto === 'chrome-extension:' || proto === 'moz-extension:';
+            }
+            catch {
+                return false;
+            }
+        }
+        /** Прямой вызов VK API из popup (использует host_permissions расширения). */
+        static async fetch_vk_direct(method, params) {
+            const token = this.token();
+            if (!token)
+                throw new Error('Token is not set');
+            const body = new URLSearchParams({
+                ...Object.fromEntries(Object.entries(params).map(([k, v]) => [k, String(v)])),
+                access_token: token,
+                v: '5.275',
+                client_id: '6287487',
+            });
+            // credentials: 'include' прицепляет cookies vk.com (если user залогинен) —
+            // нужно для приватных треков с непустым audio.url.
+            const resp = await fetch(`https://api.vk.com/method/${method}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body.toString(),
+                credentials: 'include',
+            });
+            const data = await resp.json();
+            if (data?.error) {
+                const msg = data.error.error_msg ?? 'VK API error';
+                const code = data.error.error_code ?? '?';
+                console.error(`[vk-api] error ${code}: ${msg}`);
+                throw new Error(`[${code}] ${msg}`);
+            }
+            return data.response;
+        }
+        static async fetch_proxy(endpoint, body) {
+            const base = this.proxy_url().replace(/\/$/, '');
+            const resp = await fetch(`${base}${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            const data = await resp.json();
+            if (!resp.ok) {
+                const code = data.code ?? '?';
+                const msg = data.error ?? 'Proxy error';
+                console.error(`[vk-api] error ${code}: ${msg}`);
+                throw new Error(`[${code}] ${msg}`);
+            }
+            return data;
+        }
+        static my_audios() {
+            const token = this.token();
+            if (!token)
+                throw new Error('Token is not set');
+            if (this.in_extension()) {
+                return $mol_wire_sync(this).fetch_vk_direct('audio.get', { count: 200 });
+            }
+            return $mol_wire_sync(this).fetch_proxy('/audios', { token, cookies: this.cookies(), count: 200 });
+        }
+        static search_audios(query) {
+            const token = this.token();
+            if (!token)
+                throw new Error('Token is not set');
+            if (this.in_extension()) {
+                return $mol_wire_sync(this).fetch_vk_direct('audio.search', { q: query, count: 100, sort: 2 });
+            }
+            return $mol_wire_sync(this).fetch_proxy('/search', { token, cookies: this.cookies(), query, count: 100 });
+        }
+        /**
+         * Обновляет URL трека (HLS-ссылки от VK живут ~60 минут).
+         * Используется перед save_hls для треков, у которых url протух.
+         */
+        static refresh_audio(audio_key) {
+            const token = this.token();
+            if (!token)
+                throw new Error('Token is not set');
+            if (this.in_extension()) {
+                const resp = $mol_wire_sync(this).fetch_vk_direct('audio.getById', { audios: audio_key });
+                return resp?.[0] ?? null;
+            }
+            const resp = $mol_wire_sync(this).fetch_proxy('/getById', { token, cookies: this.cookies(), audios: audio_key });
+            return resp?.[0] ?? null;
+        }
+    }
+    __decorate([
+        $mol_mem
+    ], $bog_vk_api, "token", null);
+    __decorate([
+        $mol_mem
+    ], $bog_vk_api, "cookies", null);
+    __decorate([
+        $mol_mem
+    ], $bog_vk_api, "proxy_url", null);
+    __decorate([
+        $mol_mem
+    ], $bog_vk_api, "my_audios", null);
+    __decorate([
+        $mol_mem_key
+    ], $bog_vk_api, "search_audios", null);
+    __decorate([
+        $mol_mem_key
+    ], $bog_vk_api, "refresh_audio", null);
+    $.$bog_vk_api = $bog_vk_api;
+})($ || ($ = {}));
 
 ;
 "use strict";
@@ -20016,10 +20167,16 @@ var $;
             import_status(next) {
                 return next ?? '';
             }
-            /** Форвард на app.download_playlist() — скачивает видимый плейлист в baza. */
+            /** Форвард на app.download_playlist() — в extension в baza, в PWA zip-архивом. */
             download_playlist() {
                 $bog_vk_app.Root(0).download_playlist();
                 return null;
+            }
+            download_playlist_label() {
+                return $bog_vk_api.in_extension() ? this.ext_label() : this.pwa_label();
+            }
+            download_playlist_hint() {
+                return $bog_vk_api.in_extension() ? this.ext_hint() : this.pwa_hint();
             }
             download_playlist_status() {
                 try {
@@ -24180,139 +24337,6 @@ var $;
 	($mol_mem(($.$bog_vk_track.prototype), "drag_start"));
 	($mol_mem(($.$bog_vk_track.prototype), "drop_here"));
 
-
-;
-"use strict";
-var $;
-(function ($) {
-    class $bog_vk_api extends $mol_object {
-        static default_proxy_url = 'https://bog-vk-audio.cmyser-fast-i.workers.dev';
-        static token(next) {
-            return $mol_state_local.value('vk_token', next) ?? '';
-        }
-        static cookies(next) {
-            return $mol_state_local.value('vk_cookies', next) ?? '';
-        }
-        /**
-         * Конфигурируемый URL прокси. Пустое значение — дефолт.
-         * Позволяет обходить блокировки VK API через свой / альтернативный хост.
-         */
-        static proxy_url(next) {
-            const custom = $mol_state_local.value('vk_proxy_url', next) ?? '';
-            return custom || this.default_proxy_url;
-        }
-        /**
-         * Запущены ли мы как Chrome/Firefox extension popup?
-         * В этом контексте host_permissions снимают CORS, и VK API можно дёргать
-         * напрямую без прокси-воркера.
-         */
-        static in_extension() {
-            try {
-                const proto = location.protocol;
-                return proto === 'chrome-extension:' || proto === 'moz-extension:';
-            }
-            catch {
-                return false;
-            }
-        }
-        /** Прямой вызов VK API из popup (использует host_permissions расширения). */
-        static async fetch_vk_direct(method, params) {
-            const token = this.token();
-            if (!token)
-                throw new Error('Token is not set');
-            const body = new URLSearchParams({
-                ...Object.fromEntries(Object.entries(params).map(([k, v]) => [k, String(v)])),
-                access_token: token,
-                v: '5.275',
-                client_id: '6287487',
-            });
-            // credentials: 'include' прицепляет cookies vk.com (если user залогинен) —
-            // нужно для приватных треков с непустым audio.url.
-            const resp = await fetch(`https://api.vk.com/method/${method}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: body.toString(),
-                credentials: 'include',
-            });
-            const data = await resp.json();
-            if (data?.error) {
-                const msg = data.error.error_msg ?? 'VK API error';
-                const code = data.error.error_code ?? '?';
-                console.error(`[vk-api] error ${code}: ${msg}`);
-                throw new Error(`[${code}] ${msg}`);
-            }
-            return data.response;
-        }
-        static async fetch_proxy(endpoint, body) {
-            const base = this.proxy_url().replace(/\/$/, '');
-            const resp = await fetch(`${base}${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body),
-            });
-            const data = await resp.json();
-            if (!resp.ok) {
-                const code = data.code ?? '?';
-                const msg = data.error ?? 'Proxy error';
-                console.error(`[vk-api] error ${code}: ${msg}`);
-                throw new Error(`[${code}] ${msg}`);
-            }
-            return data;
-        }
-        static my_audios() {
-            const token = this.token();
-            if (!token)
-                throw new Error('Token is not set');
-            if (this.in_extension()) {
-                return $mol_wire_sync(this).fetch_vk_direct('audio.get', { count: 200 });
-            }
-            return $mol_wire_sync(this).fetch_proxy('/audios', { token, cookies: this.cookies(), count: 200 });
-        }
-        static search_audios(query) {
-            const token = this.token();
-            if (!token)
-                throw new Error('Token is not set');
-            if (this.in_extension()) {
-                return $mol_wire_sync(this).fetch_vk_direct('audio.search', { q: query, count: 100, sort: 2 });
-            }
-            return $mol_wire_sync(this).fetch_proxy('/search', { token, cookies: this.cookies(), query, count: 100 });
-        }
-        /**
-         * Обновляет URL трека (HLS-ссылки от VK живут ~60 минут).
-         * Используется перед save_hls для треков, у которых url протух.
-         */
-        static refresh_audio(audio_key) {
-            const token = this.token();
-            if (!token)
-                throw new Error('Token is not set');
-            if (this.in_extension()) {
-                const resp = $mol_wire_sync(this).fetch_vk_direct('audio.getById', { audios: audio_key });
-                return resp?.[0] ?? null;
-            }
-            const resp = $mol_wire_sync(this).fetch_proxy('/getById', { token, cookies: this.cookies(), audios: audio_key });
-            return resp?.[0] ?? null;
-        }
-    }
-    __decorate([
-        $mol_mem
-    ], $bog_vk_api, "token", null);
-    __decorate([
-        $mol_mem
-    ], $bog_vk_api, "cookies", null);
-    __decorate([
-        $mol_mem
-    ], $bog_vk_api, "proxy_url", null);
-    __decorate([
-        $mol_mem
-    ], $bog_vk_api, "my_audios", null);
-    __decorate([
-        $mol_mem_key
-    ], $bog_vk_api, "search_audios", null);
-    __decorate([
-        $mol_mem_key
-    ], $bog_vk_api, "refresh_audio", null);
-    $.$bog_vk_api = $bog_vk_api;
-})($ || ($ = {}));
 
 ;
 "use strict";
@@ -28578,12 +28602,19 @@ var $;
                 return null;
             }
             async download_playlist_async() {
+                // PWA/сайт: VK API недоступен, но локальные blob'ы засинканы из baza —
+                // упаковываем что есть в zip и отдаём как файл. extension-режим
+                // продолжает качать с VK и кеширует в baza (для синка на другие устройства).
+                if (!$bog_vk_api.in_extension()) {
+                    await this.download_playlist_zip_async();
+                    return;
+                }
                 const page = this.page();
                 let items;
                 if (page === 'my') {
                     items = this.vk_audios();
                     if (!items.length) {
-                        this.download_playlist_status($bog_vk_api.in_extension() ? 'Список VK пуст' : 'Нет VK-токена (открой расширение)');
+                        this.download_playlist_status('Список VK пуст');
                         return;
                     }
                 }
@@ -28598,6 +28629,173 @@ var $;
                 await this.prefetch_blobs(items);
                 const s = this.prefetch_state();
                 this.download_playlist_status(`Готово: ${s.done}/${s.total}${s.failed ? `, ошибок ${s.failed}` : ''}`);
+            }
+            /** PWA-путь: собирает локально засинканные blob'ы в ZIP (STORE) и триггерит браузерный download. */
+            async download_playlist_zip_async() {
+                const items = this.visible_audios();
+                if (!items.length) {
+                    this.download_playlist_status('Плейлист пуст');
+                    return;
+                }
+                this.download_playlist_status(`Архивирую 0/${items.length}…`);
+                const files = [];
+                let skipped = 0;
+                for (let i = 0; i < items.length; i++) {
+                    const audio = items[i];
+                    let blob = null;
+                    try {
+                        blob = this.local_blob(audio);
+                    }
+                    catch (e) {
+                        if (e instanceof Promise) {
+                            try {
+                                await e;
+                            }
+                            catch { }
+                            ;
+                            i--;
+                            continue;
+                        }
+                    }
+                    if (!blob) {
+                        skipped++;
+                        this.download_playlist_status(`Архивирую ${files.length}/${items.length}…`);
+                        continue;
+                    }
+                    try {
+                        const buf = new Uint8Array(await blob.arrayBuffer());
+                        files.push({ name: this.zip_filename(audio, files.length + 1, blob.type), data: buf });
+                    }
+                    catch (e) {
+                        skipped++;
+                        console.warn('[zip] read failed:', audio.artist, '—', audio.title, '|', e?.message ?? String(e));
+                    }
+                    this.download_playlist_status(`Архивирую ${files.length}/${items.length}…`);
+                }
+                if (!files.length) {
+                    this.download_playlist_status('Нет локально доступных треков для архива');
+                    return;
+                }
+                this.download_playlist_status('Собираю zip…');
+                const zip_ab = this.build_zip(files);
+                const blob = new Blob([zip_ab], { type: 'application/zip' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `vk-playlist-${new Date().toISOString().slice(0, 10)}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                const skipped_note = skipped ? `, пропущено ${skipped}` : '';
+                this.download_playlist_status(`Готово: ${files.length} ${this.plural_tracks(files.length)}${skipped_note}`);
+            }
+            zip_filename(audio, index, mime) {
+                const ext_map = {
+                    'audio/mpeg': 'mp3',
+                    'audio/mp3': 'mp3',
+                    'audio/mp4': 'm4a',
+                    'audio/aac': 'aac',
+                    'audio/ogg': 'ogg',
+                    'audio/webm': 'webm',
+                    'audio/wav': 'wav',
+                    'audio/flac': 'flac',
+                };
+                const ext = ext_map[(mime || '').toLowerCase()] || 'mp3';
+                const safe = (s) => (s || '').replace(/[\\/:*?"<>|\x00-\x1f]/g, '_').trim().slice(0, 80);
+                const num = String(index).padStart(3, '0');
+                const artist = safe(audio.artist) || 'unknown';
+                const title = safe(audio.title) || 'unknown';
+                return `${num} - ${artist} - ${title}.${ext}`;
+            }
+            static _crc32_table = null;
+            static crc32_table() {
+                if ($bog_vk_app._crc32_table)
+                    return $bog_vk_app._crc32_table;
+                const t = new Uint32Array(256);
+                for (let i = 0; i < 256; i++) {
+                    let c = i;
+                    for (let k = 0; k < 8; k++)
+                        c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+                    t[i] = c;
+                }
+                $bog_vk_app._crc32_table = t;
+                return t;
+            }
+            static crc32(data) {
+                const t = $bog_vk_app.crc32_table();
+                let crc = 0xFFFFFFFF;
+                for (let i = 0; i < data.length; i++)
+                    crc = (crc >>> 8) ^ t[(crc ^ data[i]) & 0xFF];
+                return (crc ^ 0xFFFFFFFF) >>> 0;
+            }
+            /** STORE-only ZIP encoder (no compression — аудио и так сжато). */
+            build_zip(files) {
+                const enc = new TextEncoder();
+                const entries = files.map(f => ({
+                    name: enc.encode(f.name),
+                    data: f.data,
+                    crc: $bog_vk_app.crc32(f.data),
+                    offset: 0,
+                }));
+                let local_size = 0;
+                let cd_size = 0;
+                for (const e of entries) {
+                    local_size += 30 + e.name.length + e.data.length;
+                    cd_size += 46 + e.name.length;
+                }
+                const ab = new ArrayBuffer(local_size + cd_size + 22);
+                const buf = new Uint8Array(ab);
+                const view = new DataView(ab);
+                let off = 0;
+                for (const e of entries) {
+                    e.offset = off;
+                    view.setUint32(off, 0x04034b50, true);
+                    view.setUint16(off + 4, 20, true);
+                    view.setUint16(off + 6, 0x0800, true); // UTF-8 filename
+                    view.setUint16(off + 8, 0, true); // STORE
+                    view.setUint16(off + 10, 0, true);
+                    view.setUint16(off + 12, 0, true);
+                    view.setUint32(off + 14, e.crc, true);
+                    view.setUint32(off + 18, e.data.length, true);
+                    view.setUint32(off + 22, e.data.length, true);
+                    view.setUint16(off + 26, e.name.length, true);
+                    view.setUint16(off + 28, 0, true);
+                    buf.set(e.name, off + 30);
+                    buf.set(e.data, off + 30 + e.name.length);
+                    off += 30 + e.name.length + e.data.length;
+                }
+                const cd_off = off;
+                for (const e of entries) {
+                    view.setUint32(off, 0x02014b50, true);
+                    view.setUint16(off + 4, 20, true);
+                    view.setUint16(off + 6, 20, true);
+                    view.setUint16(off + 8, 0x0800, true);
+                    view.setUint16(off + 10, 0, true);
+                    view.setUint16(off + 12, 0, true);
+                    view.setUint16(off + 14, 0, true);
+                    view.setUint32(off + 16, e.crc, true);
+                    view.setUint32(off + 20, e.data.length, true);
+                    view.setUint32(off + 24, e.data.length, true);
+                    view.setUint16(off + 28, e.name.length, true);
+                    view.setUint16(off + 30, 0, true);
+                    view.setUint16(off + 32, 0, true);
+                    view.setUint16(off + 34, 0, true);
+                    view.setUint16(off + 36, 0, true);
+                    view.setUint32(off + 38, 0, true);
+                    view.setUint32(off + 42, e.offset, true);
+                    buf.set(e.name, off + 46);
+                    off += 46 + e.name.length;
+                }
+                view.setUint32(off, 0x06054b50, true);
+                view.setUint16(off + 4, 0, true);
+                view.setUint16(off + 6, 0, true);
+                view.setUint16(off + 8, entries.length, true);
+                view.setUint16(off + 10, entries.length, true);
+                view.setUint32(off + 12, cd_size, true);
+                view.setUint32(off + 16, cd_off, true);
+                view.setUint16(off + 20, 0, true);
+                return ab;
             }
             /**
              * Фоновый префетч — реактивный wire_async fiber, ретраит при Promise.
