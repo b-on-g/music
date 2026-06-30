@@ -55240,6 +55240,13 @@ declare namespace $.$$ {
         hash_str(s: string): number;
         /** RAM-кеш свежезагруженных файлов на текущей сессии. */
         private fresh_files;
+        private _synced_cache;
+        private synced_cache;
+        private persist_synced;
+        mark_synced(key: string): void;
+        unmark_synced(key: string): void;
+        private _swept;
+        sweep_synced(): void;
         /** Blob трека из baza или RAM. null если нет. */
         local_blob(audio: $bog_vk_api_audio): Blob | null;
         is_cached(audio: $bog_vk_api_audio): boolean;
