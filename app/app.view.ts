@@ -937,35 +937,51 @@ namespace $.$$ {
 			type Row = { audio: $bog_vk_api_audio, order: number, added: number }
 			const rows: Row[] = []
 			for (const key of keys) {
-				const track = dict.key(key)
-				if (!track) continue
-				const track_playlist = track.Playlist()?.val() ?? ''
-				if (track_playlist !== playlist) continue
-				// БЕЗ ФИЛЬТРА по sync-статусу: чтение .File().remote()/buffer на
-				// cold-open ненадёжно (Promise/partial CBOR errors), треки прячутся
-				// и не возвращаются. Если track-pawn в dict есть — показываем как
-				// раньше. «Скрывать до полного синка» вернём через явный sync-флаг
-				// в самой схеме трека (доп. атом), когда придумаем как.
-				const vk_id = track.Vk_id()?.val() ?? String(key)
-				const parts = vk_id.split('_')
-				const owner_id = Number(parts[0])
-				const id = Number(parts[1])
-				if (!Number.isFinite(owner_id) || !Number.isFinite(id)) continue
-				const added = Number(track.Added()?.val() ?? 0)
-				const order_val = track.Order()?.val()
-				const order = order_val == null ? added : Number(order_val)
-				rows.push({
-					audio: {
-						id,
-						owner_id,
-						artist: track.Artist()?.val() ?? '',
-						title: track.Title()?.val() ?? '',
-						duration: track.Duration()?.val() ?? 0,
-						url: track.Url()?.val() ?? '',
-					},
-					order,
-					added,
-				})
+				// Per-track try/catch: если этот конкретный track-pawn ещё
+				// догружается (атомы кидают Promise) — скипаем ТОЛЬКО его,
+				// остальные треки рендерятся. Подписка на атом регистрируется
+				// до throw → cell ретраит когда атом приедет → трек появится.
+				// Без этого один зависший трек блокирует весь список.
+				try {
+					const track = dict.key(key)
+					if (!track) continue
+					const track_playlist = track.Playlist()?.val() ?? ''
+					if (track_playlist !== playlist) continue
+					// Sync-флаг от uploader'а (см. $bog_vk_track_baza.Synced):
+					//   false → uploader пишет чанки прямо сейчас, скрываем
+					//   true  → uploader всё дописал, показываем
+					//   undefined → legacy-трек без атома, показываем (не фильтруем)
+					// fresh_files перевешивает — локальный пользователь видит свою
+					// заливку немедленно.
+					if (!this.fresh_files.has(key)) {
+						const synced_val = track.Synced()?.val()
+						if (synced_val === false) continue
+					}
+					const vk_id = track.Vk_id()?.val() ?? String(key)
+					const parts = vk_id.split('_')
+					const owner_id = Number(parts[0])
+					const id = Number(parts[1])
+					if (!Number.isFinite(owner_id) || !Number.isFinite(id)) continue
+					const added = Number(track.Added()?.val() ?? 0)
+					const order_val = track.Order()?.val()
+					const order = order_val == null ? added : Number(order_val)
+					rows.push({
+						audio: {
+							id,
+							owner_id,
+							artist: track.Artist()?.val() ?? '',
+							title: track.Title()?.val() ?? '',
+							duration: track.Duration()?.val() ?? 0,
+							url: track.Url()?.val() ?? '',
+						},
+						order,
+						added,
+					})
+				} catch (e: any) {
+					// Promise (атом грузится) — подписка зарегистрирована, ретрай придёт.
+					// Non-Promise (битый pawn / CBOR) — скипаем; на след. рендере попробуем.
+					continue
+				}
 			}
 			rows.sort((a, b) => a.order !== b.order ? a.order - b.order : b.added - a.added)
 			return rows.map(r => r.audio)
@@ -1095,6 +1111,8 @@ namespace $.$$ {
 			console.log('[save_blob] dict ok')
 			const track = dict.key(key, 'auto')
 			if (!track) { console.warn('[save_blob] track null'); return }
+			// Sync-флаг false — пока чанки пишутся, other devices скрывают трек.
+			track.Synced('auto')!.val(false)
 			console.log('[save_blob] track ok, ensure file land (king_grab → PoW)…')
 			const ensure_t = performance.now()
 			// Blob лежит в ОТДЕЛЬНОМ land (king_grab с public read), НЕ в home land.
@@ -1112,6 +1130,8 @@ namespace $.$$ {
 			// Без .remote(store) link существует только локально — в pack для пуша не попадает.
 			track.File('auto')!.remote(store)
 			console.log('[save_blob] remote linked in', Math.round(performance.now() - remote_t), 'ms')
+			// Sync-флаг true — uploader всё дописал, other devices могут показывать.
+			track.Synced('auto')!.val(true)
 			console.log('[save_blob] DONE total', Math.round(performance.now() - t0), 'ms')
 		}
 
@@ -1152,6 +1172,8 @@ namespace $.$$ {
 				track.File('auto')!.remote(store)
 				console.log('[upload/save] file land written')
 			}
+			// Upload локальный — всё дописано в один заход → сразу Synced=true.
+			track.Synced('auto')!.val(true)
 			this.fresh_files.set(key, file)
 			console.log('[upload/save] DONE')
 			return audio

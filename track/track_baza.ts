@@ -50,6 +50,11 @@ namespace $ {
 		// Персональный обрез песни (секунды). Trim_end = null означает «без обреза».
 		Trim_start: $giper_baza_atom.of( $mol_schema_float ),
 		Trim_end: $giper_baza_atom.of( $mol_schema_float ),
+		// Explicit sync-флаг от uploader'а. Жизненный цикл:
+		//   save_blob START → false (атом синкается → other devices скрывают)
+		//   save_blob END   → true  (атом синкается → other devices показывают)
+		// Legacy-треки без этого атома (val()===undefined) — фильтр их НЕ прячет.
+		Synced: $giper_baza_atom.of( $mol_schema_boolean ),
 	}) {}
 
 }
