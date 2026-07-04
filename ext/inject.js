@@ -24,7 +24,7 @@
 	}
 
 	function dispatch(kind, data) {
-		try { window.postMessage({ __bog_vk: kind, data }, '*') } catch (e) {}
+		try { window.postMessage({ __bog_music: kind, data }, '*') } catch (e) {}
 	}
 
 	function harvest_audios(json) {

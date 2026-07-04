@@ -1,14 +1,11 @@
 namespace $ {
 
 	/**
-	 * Чистый утилитарный класс — HLS-декодирование, демукс TS, MP4-мукс,
-	 * расшифровка AES-CBC. БЕЗ записи в baza — все side-эффекты в $bog_vk_app.
+	 * Чистый утилитарный класс — скачивание HLS, демукс TS, MP4-мукс,
+	 * расшифровка AES-CBC. Без записи в baza: байты сохраняет домен
+	 * ($bog_music_account_baza.save_hls).
 	 */
-	export class $bog_vk_cache extends $mol_object {
-
-		static cache_key(audio: $bog_vk_api_audio) {
-			return `${audio.owner_id}_${audio.id}`
-		}
+	export class $bog_music_hls extends $mol_object {
 
 		static adts_to_m4a(adts: Uint8Array): Uint8Array {
 			const frames: Uint8Array[] = []
@@ -269,33 +266,26 @@ namespace $ {
 		 * Освежает audio.url через VK audio.getById — HLS ссылки протухают ~60 мин.
 		 * Возвращает рабочий URL или пустую строку если не получилось.
 		 */
-		static async refresh_url(audio: $bog_vk_api_audio): Promise<string> {
+		static async refresh_url(audio: $bog_music_api_audio): Promise<string> {
 			try {
 				const key = `${audio.owner_id}_${audio.id}${audio.access_key ? '_' + audio.access_key : ''}`
-				const fresh = ($mol_wire_sync($bog_vk_api) as any).refresh_audio(key) as $bog_vk_api_audio | null
+				const fresh = ($mol_wire_sync($bog_music_api) as any).refresh_audio(key) as $bog_music_api_audio | null
 				return fresh?.url ?? ''
 			} catch (e: any) {
-				console.warn('[cache] refresh_url failed:', e?.message)
+				console.warn('[hls] refresh_url failed:', e?.message)
 				return ''
 			}
 		}
 
 		/**
 		 * Качает HLS, демуксит, конвертит ADTS→M4A. Возвращает байты + mime.
-		 * Запись в baza — снаружи (instance-метод $bog_vk_app.save_blob).
 		 */
-		static async download_hls(audio: $bog_vk_api_audio): Promise<{ buffer: Uint8Array, mime: string } | null> {
+		static async download(audio: $bog_music_api_audio): Promise<{ buffer: Uint8Array, mime: string } | null> {
 			let url = audio.url
-			if (!url) {
-				console.warn('[cache] skip — no URL:', audio.artist, '—', audio.title)
-				return null
-			}
-
-			console.log('[cache] start download:', audio.artist, '—', audio.title)
+			if (!url) return null
 
 			let m3u8_resp = await fetch(url)
 			if (m3u8_resp.status === 403 || m3u8_resp.status === 404) {
-				console.log('[cache] url expired, refreshing:', audio.artist, '—', audio.title)
 				const fresh_url = await this.refresh_url(audio)
 				if (fresh_url) {
 					url = fresh_url

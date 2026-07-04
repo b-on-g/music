@@ -1,15 +1,15 @@
 {
 	"manifest_version": 3,
-	"name": "Bog VK Music",
-	"short_name": "Bog VK",
-	"description": "VK music player with offline cache and Giper Baza sync",
+	"name": "Bog Music",
+	"short_name": "Bog Music",
+	"description": "Music player with offline cache and Giper Baza sync",
 	"version": "1.2.2.1",
 	"action": {
-		"default_title": "Bog VK Music",
-		"default_icon": "bog/vk/app/favicon.svg"
+		"default_title": "Bog Music",
+		"default_icon": "bog/music/app/favicon.svg"
 	},
 	"background": {
-		"service_worker": "bog/vk/ext/background.js"
+		"service_worker": "bog/music/ext/background.js"
 	},
 	"permissions": ["storage", "cookies", "offscreen", "tabs"],
 	"host_permissions": [
@@ -19,18 +19,18 @@
 		"https://*.vk.ru/*",
 		"https://vk.ru/*",
 		"https://*.userapi.com/*",
-		"https://baza.giper.dev/*",
-		"wss://baza.giper.dev/*"
+		"https://baza.91.219.148.98.ip.giper.dev/*",
+		"wss://baza.91.219.148.98.ip.giper.dev/*"
 	],
 	"icons": [
 		{
-			"src": "bog/vk/app/favicon.svg",
+			"src": "bog/music/app/favicon.svg",
 			"sizes": "any",
 			"type": "image/svg+xml",
 			"purpose": "any"
 		},
 		{
-			"src": "bog/vk/app/favicon.svg",
+			"src": "bog/music/app/favicon.svg",
 			"sizes": "any",
 			"type": "image/svg+xml",
 			"purpose": "maskable"
@@ -44,14 +44,14 @@
 				"*://*.vk.ru/*",
 				"*://vk.ru/*"
 			],
-			"js": ["bog/vk/ext/content.js"],
+			"js": ["bog/music/ext/content.js"],
 			"run_at": "document_start",
 			"all_frames": false
 		}
 	],
 	"web_accessible_resources": [
 		{
-			"resources": ["bog/vk/ext/inject.js"],
+			"resources": ["bog/music/ext/inject.js"],
 			"matches": [
 				"*://*.vk.com/*",
 				"*://vk.com/*",

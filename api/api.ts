@@ -1,5 +1,5 @@
 namespace $ {
-	export class $bog_vk_api extends $mol_object {
+	export class $bog_music_api extends $mol_object {
 
 		static default_proxy_url = 'https://bog-vk-audio.cmyser-fast-i.workers.dev'
 
@@ -24,17 +24,12 @@ namespace $ {
 		}
 
 		/**
-		 * Запущены ли мы как Chrome/Firefox extension popup?
+		 * Запущены ли мы как Chrome/Firefox extension?
 		 * В этом контексте host_permissions снимают CORS, и VK API можно дёргать
 		 * напрямую без прокси-воркера.
 		 */
 		static in_extension(): boolean {
-			try {
-				const proto = location.protocol
-				return proto === 'chrome-extension:' || proto === 'moz-extension:'
-			} catch {
-				return false
-			}
+			return $bog_music_boot.in_extension()
 		}
 
 		/** Прямой вызов VK API из popup (использует host_permissions расширения). */
@@ -90,9 +85,9 @@ namespace $ {
 			const token = this.token()
 			if (!token) throw new Error('Token is not set')
 			if (this.in_extension()) {
-				return ($mol_wire_sync(this) as any).fetch_vk_direct('audio.get', { count: 200 }) as $bog_vk_api_audio_list
+				return ($mol_wire_sync(this) as any).fetch_vk_direct('audio.get', { count: 200 }) as $bog_music_api_audio_list
 			}
-			return ($mol_wire_sync(this) as any).fetch_proxy('/audios', { token, cookies: this.cookies(), count: 200 }) as $bog_vk_api_audio_list
+			return ($mol_wire_sync(this) as any).fetch_proxy('/audios', { token, cookies: this.cookies(), count: 200 }) as $bog_music_api_audio_list
 		}
 
 		@$mol_mem_key
@@ -100,9 +95,9 @@ namespace $ {
 			const token = this.token()
 			if (!token) throw new Error('Token is not set')
 			if (this.in_extension()) {
-				return ($mol_wire_sync(this) as any).fetch_vk_direct('audio.search', { q: query, count: 100, sort: 2 }) as $bog_vk_api_audio_list
+				return ($mol_wire_sync(this) as any).fetch_vk_direct('audio.search', { q: query, count: 100, sort: 2 }) as $bog_music_api_audio_list
 			}
-			return ($mol_wire_sync(this) as any).fetch_proxy('/search', { token, cookies: this.cookies(), query, count: 100 }) as $bog_vk_api_audio_list
+			return ($mol_wire_sync(this) as any).fetch_proxy('/search', { token, cookies: this.cookies(), query, count: 100 }) as $bog_music_api_audio_list
 		}
 
 		/**
@@ -110,19 +105,19 @@ namespace $ {
 		 * Используется перед save_hls для треков, у которых url протух.
 		 */
 		@$mol_mem_key
-		static refresh_audio(audio_key: string): $bog_vk_api_audio | null {
+		static refresh_audio(audio_key: string): $bog_music_api_audio | null {
 			const token = this.token()
 			if (!token) throw new Error('Token is not set')
 			if (this.in_extension()) {
-				const resp = ($mol_wire_sync(this) as any).fetch_vk_direct('audio.getById', { audios: audio_key }) as $bog_vk_api_audio[]
+				const resp = ($mol_wire_sync(this) as any).fetch_vk_direct('audio.getById', { audios: audio_key }) as $bog_music_api_audio[]
 				return resp?.[0] ?? null
 			}
-			const resp = ($mol_wire_sync(this) as any).fetch_proxy('/getById', { token, cookies: this.cookies(), audios: audio_key }) as $bog_vk_api_audio[]
+			const resp = ($mol_wire_sync(this) as any).fetch_proxy('/getById', { token, cookies: this.cookies(), audios: audio_key }) as $bog_music_api_audio[]
 			return resp?.[0] ?? null
 		}
 	}
 
-	export interface $bog_vk_api_audio {
+	export interface $bog_music_api_audio {
 		id: number
 		owner_id: number
 		artist: string
@@ -140,8 +135,8 @@ namespace $ {
 		}
 	}
 
-	export interface $bog_vk_api_audio_list {
+	export interface $bog_music_api_audio_list {
 		count: number
-		items: $bog_vk_api_audio[]
+		items: $bog_music_api_audio[]
 	}
 }

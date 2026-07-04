@@ -1,41 +1,10 @@
 namespace $ {
 
 	/**
-	 * Расширение `$giper_baza_atom_link.to` с автоматическим запуском `.sync()`
-	 * на target-land при чтении ссылки. Стандартный `remote()` только создаёт
-	 * Pawn proxy без триггера sync (см. `land.ts:345` — `.sync()` закомменчен в Pawn()).
-	 *
-	 * Без этого blob-lands треков не подсасываются с master'а пока пользователь
-	 * не нажмёт play. С этой обёрткой любой `.remote()` сразу инициирует sync.
+	 * Трек пользователя в home land. Ключ в словаре Tracks — `${owner_id}_${id}`
+	 * (для локальных файлов owner_id = 0, id = хеш имени).
 	 */
-	export function $bog_vk_atom_link_to_synced<const Value extends any>(Value: Value) {
-		const Base = $giper_baza_atom_link.to(Value)
-		class $bog_vk_atom_link_to_synced extends Base {
-			remote(next?: any) {
-				const r = (super.remote as any)(next)
-				if (r && next === undefined) {
-					try {
-						(r as any).land().sync()
-					} catch (e: any) {
-						// Promise = async sync в фоне, это нормально
-						if (!(e instanceof Promise)) throw e
-					}
-				}
-				return r
-			}
-		}
-		return $bog_vk_atom_link_to_synced as typeof Base
-	}
-
-	/**
-	 * Персональная запись трека в home land пользователя.
-	 * Синкается между устройствами через Giper Baza.
-	 * Ключ в $giper_baza_dict_to — VK cache_key (`${owner_id}_${id}`).
-	 *
-	 * `File` использует synced-версию atom_link — sync blob-land автоматически
-	 * запускается при первом чтении ссылки.
-	 */
-	export class $bog_vk_track_baza extends $giper_baza_dict.with({
+	export class $bog_music_track_baza extends $giper_baza_dict.with({
 		Vk_id: $giper_baza_atom.of( $mol_schema_string ),
 		Title: $giper_baza_atom.of( $mol_schema_string ),
 		Artist: $giper_baza_atom.of( $mol_schema_string ),
@@ -43,18 +12,93 @@ namespace $ {
 		Url: $giper_baza_atom.of( $mol_schema_string ),
 		Added: $giper_baza_atom.of( $mol_schema_float ),
 		Order: $giper_baza_atom.of( $mol_schema_float ),
-		// Id плейлиста: '' = main, 'archive' = архив, любое другое — кастомный плейлист.
-		// Расширяется без миграции схемы; полную метадату плейлистов держим в $bog_vk_store.Playlists.
+		// Id плейлиста: '' = основной, 'archive' = архив, 'shared:<имя>' —
+		// импортированный шар. Расширяется без миграции схемы.
 		Playlist: $giper_baza_atom.of( $mol_schema_string ),
-		File: $bog_vk_atom_link_to_synced(() => $giper_baza_file),
-		// Персональный обрез песни (секунды). Trim_end = null означает «без обреза».
+		// Blob лежит в отдельном land — синкается независимо от home land
+		// и не блокирует лёгкие метаданные большими паками.
+		File: $bog_music_link_synced(() => $giper_baza_file),
+		// Персональный обрез песни (секунды). Trim_end = null — «без обреза».
 		Trim_start: $giper_baza_atom.of( $mol_schema_float ),
 		Trim_end: $giper_baza_atom.of( $mol_schema_float ),
-		// Explicit sync-флаг от uploader'а. Жизненный цикл:
-		//   save_blob START → false (атом синкается → other devices скрывают)
-		//   save_blob END   → true  (атом синкается → other devices показывают)
-		// Legacy-треки без этого атома (val()===undefined) — фильтр их НЕ прячет.
-		Synced: $giper_baza_atom.of( $mol_schema_boolean ),
-	}) {}
+	}) {
+
+		/** Метаданные в форме VK-audio. null если Vk_id не парсится. */
+		audio(): $bog_music_api_audio | null {
+			const vk_id = String(this.Vk_id()?.val() ?? '')
+			const parts = vk_id.split('_')
+			const owner_id = Number(parts[0])
+			const id = Number(parts[1])
+			if (!Number.isFinite(owner_id) || !Number.isFinite(id)) return null
+			return {
+				id,
+				owner_id,
+				artist: this.Artist()?.val() ?? '',
+				title: this.Title()?.val() ?? '',
+				duration: this.Duration()?.val() ?? 0,
+				url: this.Url()?.val() ?? '',
+			}
+		}
+
+		playlist(): string {
+			return this.Playlist()?.val() ?? ''
+		}
+
+		added(): number {
+			return Number(this.Added()?.val() ?? 0)
+		}
+
+		/** Позиция в плейлисте. Fallback — время добавления. */
+		order(): number {
+			const raw = this.Order()?.val()
+			return raw == null ? this.added() : Number(raw)
+		}
+
+		order_set(next: number) {
+			this.Order('auto')!.val(next)
+		}
+
+		/** Blob из baza. null если не закеширован. */
+		blob(): Blob | null {
+			const file = this.File()?.remote()
+			if (!file) return null
+			const buf = file.buffer()
+			if (!buf || buf.byteLength === 0) return null
+			const type = file.type() || 'audio/mpeg'
+			return new Blob(
+				[buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer],
+				{ type },
+			)
+		}
+
+		cached(): boolean {
+			try {
+				return this.blob() !== null
+			} catch (e: any) {
+				if (e instanceof Promise) throw e
+				return false // битый pawn/CBOR — считаем что кеша нет
+			}
+		}
+
+		/** Обрез начала (сек). 0 = без обреза. */
+		trim_start(next?: number): number {
+			if (next !== undefined) this.Trim_start('auto')!.val(Math.max(0, next))
+			const v = Number(this.Trim_start()?.val() ?? 0)
+			return Number.isFinite(v) && v > 0 ? v : 0
+		}
+
+		/** Обрез конца (сек). null/0 → fallback (обычно полная длительность). */
+		trim_end(fallback: number, next?: number): number {
+			if (next !== undefined) this.Trim_end('auto')!.val(Math.max(0, next))
+			const raw = this.Trim_end()?.val()
+			if (raw == null) return fallback
+			const v = Number(raw)
+			return Number.isFinite(v) && v > 0 ? v : fallback
+		}
+
+	}
+
+	/** Словарь cache_key → трек. Вынесен отдельно, чтобы не циклить TS-инференс. */
+	export class $bog_music_tracks_dict extends $giper_baza_dict_to($bog_music_track_baza) {}
 
 }

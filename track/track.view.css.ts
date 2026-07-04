@@ -1,5 +1,5 @@
 namespace $.$$ {
-	$mol_style_define($bog_vk_track, {
+	$mol_style_define($bog_music_track, {
 		flex: {
 			direction: 'row',
 		},
@@ -27,12 +27,6 @@ namespace $.$$ {
 			cursor: 'pointer',
 			justify: { content: 'center' },
 			align: { items: 'center' },
-		},
-
-		Cover: {
-			width: '100%',
-			height: '100%',
-			objectFit: 'cover',
 		},
 
 		Cover_placeholder: {
@@ -122,12 +116,12 @@ namespace $.$$ {
 		},
 
 		'@': {
-			bog_vk_track_current: {
+			bog_music_track_current: {
 				true: {
 					color: $mol_theme.focus,
 				},
 			},
-			bog_vk_track_share_selected: {
+			bog_music_track_share_selected: {
 				true: {
 					background: { color: $mol_theme.focus },
 					color: $mol_theme.card,

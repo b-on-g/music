@@ -1,4 +1,4 @@
-$bog_vk_account $mol_view
+$bog_music_account $mol_view
 	sub /
 		<= Sync_row $mol_view
 			sub /
@@ -36,7 +36,7 @@ $bog_vk_account $mol_view
 						<= Import_hint $mol_paragraph
 							title \Перенести с другого устройства — вставь ссылку:
 						<= Import_input $mol_string
-							hint \https://.../vk/#account=...
+							hint \https://.../music/#account=...
 							value? <=> import_link? \
 						<= Import_apply $mol_button_minor
 							title \Применить

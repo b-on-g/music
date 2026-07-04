@@ -1,15 +1,15 @@
-$bog_vk_tracks $mol_list
-	audios /
-	current_audio null
-	play_audio? null
+$bog_music_tracks $mol_list
+	track_keys /
+	current_key \
+	play_key? null
 	archive_mode false
 	reorder_to? null
-	archive_audio? null
-	restore_audio? null
-	delete_audio? null
+	archive_key? null
+	restore_key? null
+	delete_key? null
 	rows <= track_rows /
-		<= Track*0 $bog_vk_track
-			audio <= track_audio* null
+		<= Track*0 $bog_music_track
+			key <= track_key* \
 			current <= track_current* false
 			play? <=> track_play*? null
 			archive_mode <= archive_mode

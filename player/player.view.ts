@@ -1,368 +1,270 @@
 declare const chrome: any
 
 namespace $.$$ {
-	export class $bog_vk_player extends $.$bog_vk_player {
 
-		private _queue_idx = 0
-		private _audio_el?: HTMLAudioElement
-		private _last_blob_url = ''
-		private _msg_listener_set = false
-		private _channel?: BroadcastChannel
+	/**
+	 * Плеер. Работает с треками по ключу, метаданные и блобы читает из домена
+	 * ($bog_music_account_baza). Два режима вывода звука:
+	 * - PWA/сайт: собственный <audio>;
+	 * - extension: offscreen-документ (см. ext/offscreen.js) — играет при
+	 *   закрытом табе. Команды — sendMessage, блоб — BroadcastChannel
+	 *   (sendMessage сериализует через JSON и теряет Blob).
+	 */
+	export class $bog_music_player extends $.$bog_music_player {
 
-		// shuffle-bag: одна перетасовка всего плейлиста, играем без повторов
-		// до конца, затем перетасовываем заново. _bag_sig сторожит изменения
-		// состава queue (трек добавили/удалили/переместили) — несоответствие
-		// сигнатуры → пересборка.
-		private _shuffle_bag: string[] = []
-		private _shuffle_bag_idx = 0
-		private _shuffle_bag_sig = ''
-		private _shuffle_last_key = ''
-
-		private static audio_key( a: $bog_vk_api_audio ) {
-			return `${ a.owner_id }_${ a.id }`
+		account() {
+			return $bog_music_account_baza.home()
 		}
 
-		private build_shuffle_bag( queue: readonly any[], exclude_first: string ) {
-			const keys = queue.map( ( a: $bog_vk_api_audio ) => $bog_vk_player.audio_key( a ) )
-			for ( let i = keys.length - 1; i > 0; i-- ) {
-				const j = Math.floor( Math.random() * ( i + 1 ) )
-				;[ keys[ i ], keys[ j ] ] = [ keys[ j ], keys[ i ] ]
-			}
-			if ( keys.length > 1 && exclude_first && keys[ 0 ] === exclude_first ) {
-				;[ keys[ 0 ], keys[ 1 ] ] = [ keys[ 1 ], keys[ 0 ] ]
-			}
-			return keys
+		current_track() {
+			const key = this.current_key()
+			return key ? this.account().track(key) : null
 		}
 
-		private ensure_shuffle_bag( queue: readonly any[] ) {
-			const sig = queue.map( ( a: $bog_vk_api_audio ) => $bog_vk_player.audio_key( a ) ).join( ',' )
-			if ( sig === this._shuffle_bag_sig && this._shuffle_bag_idx < this._shuffle_bag.length ) return
-			this._shuffle_bag = this.build_shuffle_bag( queue, this._shuffle_last_key )
-			this._shuffle_bag_idx = 0
-			this._shuffle_bag_sig = sig
+		current_audio(): $bog_music_api_audio | null {
+			return this.current_track()?.audio() ?? null
 		}
+
+		// ---------- окружение ----------
 
 		private is_extension() {
 			return typeof chrome !== 'undefined' && !!chrome?.runtime?.id
 		}
 
-		// chrome.runtime.sendMessage сериализует payload через JSON — Blob/ArrayBuffer
-		// приходят в offscreen как пустой `{}`, аудио-демуксер падает с
-		// DEMUXER_ERROR_COULD_NOT_OPEN. Поэтому play_track (с blob'ом) гоняем
-		// через BroadcastChannel: он использует structured clone и сохраняет Blob.
+		private _channel?: BroadcastChannel
+
 		private channel() {
-			if ( !this._channel ) this._channel = new BroadcastChannel( 'bog_vk_player' )
+			if (!this._channel) this._channel = new BroadcastChannel('bog_music_player')
 			return this._channel
 		}
 
+		private send(type: string, payload?: Record<string, unknown>) {
+			if (!this.is_extension()) return
+			chrome.runtime.sendMessage({ target: 'offscreen', type, ...payload }).catch(() => {})
+		}
+
+		// ---------- <audio> для PWA-режима ----------
+
+		private _audio_el?: HTMLAudioElement
+		private _last_blob_url = ''
+
 		audio_el() {
-			if ( this._audio_el ) return this._audio_el
+			if (this._audio_el) return this._audio_el
 			const el = new Audio()
 			el.volume = this.volume()
-			el.addEventListener( 'ended', () => {
-				try {
-					const finished = this.current_audio()
-					this.next( false )
-					if ( finished && navigator.onLine ) {
-						$bog_vk_app.Root( 0 ).save_hls( finished ).catch( () => {} )
-					}
-				} catch ( e ) {
-					console.warn( '[player] ended handler error:', e )
-				}
-			} )
-			el.addEventListener( 'play', () => {
-				try { this.playing( true ) } catch {}
-				if ( 'mediaSession' in navigator ) navigator.mediaSession.playbackState = 'playing'
-			} )
-			el.addEventListener( 'pause', () => {
-				try { this.playing( false ) } catch {}
-				if ( 'mediaSession' in navigator ) navigator.mediaSession.playbackState = 'paused'
-			} )
-			el.addEventListener( 'timeupdate', () => {
-				this.current_time( el.currentTime )
-			} )
-			el.addEventListener( 'loadedmetadata', () => {
-				this.duration( el.duration )
-			} )
-			el.addEventListener( 'error', () => {
-				console.error( '[player] audio error:', el.error?.code, el.error?.message, el.error )
-			} )
+			el.addEventListener('ended', () => this.on_ended())
+			el.addEventListener('play', () => {
+				try { this.playing(true) } catch {}
+				if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing'
+			})
+			el.addEventListener('pause', () => {
+				try { this.playing(false) } catch {}
+				if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused'
+			})
+			el.addEventListener('timeupdate', () => {
+				this.current_time(el.currentTime)
+			})
+			el.addEventListener('loadedmetadata', () => {
+				this.duration(el.duration)
+			})
+			el.addEventListener('error', () => {
+				console.error('[player] audio error:', el.error?.code, el.error?.message)
+			})
 			this._audio_el = el
 			return el
 		}
 
+		private on_ended() {
+			try {
+				const finished = this.current_audio()
+				this.next(false)
+				// Дослушанный трек докачиваем в кеш, если ещё не там.
+				if (finished && navigator.onLine) {
+					this.account().save_hls(finished).catch(() => {})
+				}
+			} catch (e) {
+				console.warn('[player] ended handler error:', e)
+			}
+		}
+
+		// ---------- связь с offscreen (extension) ----------
+
+		private _msg_listener_set = false
+
 		@$mol_mem
 		private offscreen_link() {
-			if ( !this.is_extension() ) return null
-			if ( this._msg_listener_set ) return null
+			if (!this.is_extension()) return null
+			if (this._msg_listener_set) return null
 			this._msg_listener_set = true
 
-			chrome.runtime.onMessage.addListener( ( msg: any ) => {
-				if ( msg?.target !== 'popup' ) return
-				if ( msg.type === 'state' ) {
-					if ( typeof msg.playing === 'boolean' ) {
-						this.playing( msg.playing )
-						if ( 'mediaSession' in navigator ) {
+			chrome.runtime.onMessage.addListener((msg: any) => {
+				if (msg?.target !== 'popup') return
+				if (msg.type === 'state') {
+					if (typeof msg.playing === 'boolean') {
+						this.playing(msg.playing)
+						if ('mediaSession' in navigator) {
 							navigator.mediaSession.playbackState = msg.playing ? 'playing' : 'paused'
 						}
 					}
-					if ( typeof msg.current_time === 'number' ) this.current_time( msg.current_time )
-					if ( typeof msg.duration === 'number' && isFinite( msg.duration ) ) this.duration( msg.duration )
-					if ( msg.current_audio !== undefined ) this.current_audio( msg.current_audio )
-				}
-				if ( msg.type === 'ended' ) {
-					try {
-						const finished = this.current_audio()
-						this.next( false )
-						if ( finished && navigator.onLine ) {
-							$bog_vk_app.Root( 0 ).save_hls( finished ).catch( () => {} )
-						}
-					} catch ( e ) {
-						console.warn( '[player] ended handler error:', e )
+					if (typeof msg.current_time === 'number') this.current_time(msg.current_time)
+					if (typeof msg.duration === 'number' && isFinite(msg.duration)) this.duration(msg.duration)
+					if (msg.current_audio) {
+						this.current_key($bog_music_account_baza.key_of(msg.current_audio))
 					}
 				}
-				if ( msg.type === 'error' ) {
-					console.error( '[player] offscreen error:', msg.code, msg.message )
+				if (msg.type === 'ended') this.on_ended()
+				if (msg.type === 'error') {
+					console.error('[player] offscreen error:', msg.code, msg.message)
 				}
-			} )
+			})
 
-			chrome.runtime.sendMessage( { target: 'background', type: 'ensure_offscreen' } )
-				.then( () => chrome.runtime.sendMessage( { target: 'offscreen', type: 'get_state' } ) )
-				.then( ( s: any ) => {
-					if ( s?.current_audio ) {
-						if ( typeof s.playing === 'boolean' ) this.playing( s.playing )
-						if ( typeof s.current_time === 'number' ) this.current_time( s.current_time )
-						if ( typeof s.duration === 'number' && isFinite( s.duration ) ) this.duration( s.duration )
-						this.current_audio( s.current_audio )
+			chrome.runtime.sendMessage({ target: 'background', type: 'ensure_offscreen' })
+				.then(() => chrome.runtime.sendMessage({ target: 'offscreen', type: 'get_state' }))
+				.then((s: any) => {
+					if (s?.current_audio) {
+						if (typeof s.playing === 'boolean') this.playing(s.playing)
+						if (typeof s.current_time === 'number') this.current_time(s.current_time)
+						if (typeof s.duration === 'number' && isFinite(s.duration)) this.duration(s.duration)
+						this.current_key($bog_music_account_baza.key_of(s.current_audio))
 						return
 					}
 					this.try_restore_session()
-				} )
-				.catch( () => {} )
+				})
+				.catch(() => {})
 
 			return null
 		}
 
+		// ---------- восстановление последней сессии ----------
+
 		private _session_restored = false
 
+		/** Sync-чтение сессии из домена — зовётся через фибру. */
+		session_read() {
+			const session = this.account().last_session()
+			if (!session) return null
+			const audio = this.account().track(session.key)?.audio()
+			if (!audio) return null
+			return { ...session, audio }
+		}
+
 		private async try_restore_session() {
-			if ( this._session_restored ) return
+			if (this._session_restored) return
 			this._session_restored = true
-			const app = $bog_vk_app.Root( 0 )
-			let session: { audio: $bog_vk_api_audio, position: number } | null = null
-			try {
-				session = await ( $mol_wire_async( app ) as any ).last_session() as any
-			} catch ( e: any ) {
-				console.warn( '[player] restore_session read failed:', e?.message )
+			const session = await ($mol_wire_async(this) as any).session_read()
+				.catch(() => null) as { key: string, position: number, audio: $bog_music_api_audio } | null
+			if (!session) return
+			this.current_key(session.key)
+			this.current_time(session.position)
+			if (session.audio.duration) this.duration(session.audio.duration)
+
+			if (this.is_extension()) {
+				this.restore_offscreen(session).catch(() => {})
+			} else {
+				this.restore_local(session).catch(() => {})
+			}
+		}
+
+		private async restore_offscreen(session: { key: string, position: number, audio: $bog_music_api_audio }) {
+			await chrome.runtime.sendMessage({ target: 'background', type: 'ensure_offscreen' })
+			const blob = await this.blob_ready(session.key, session.audio)
+			if (!blob) return
+			this.channel().postMessage({
+				target: 'offscreen',
+				type: 'play_track',
+				audio: session.audio,
+				blob,
+				start_at: session.position,
+				autoplay: false,
+			})
+		}
+
+		private async restore_local(session: { key: string, position: number, audio: $bog_music_api_audio }) {
+			const el = this.audio_el()
+			const blob = await ($mol_wire_async(this) as any).blob_of(session.key).catch(() => null) as Blob | null
+			if (blob) {
+				if (this._last_blob_url) URL.revokeObjectURL(this._last_blob_url)
+				const url = URL.createObjectURL(blob)
+				this._last_blob_url = url
+				el.src = url
+			} else if (session.audio.url) {
+				el.src = session.audio.url
+			} else {
 				return
 			}
-			if ( !session ) return
-			this.current_audio( session.audio )
-			this.current_time( session.position )
-			if ( session.audio.duration ) this.duration( session.audio.duration )
-
-			if ( this.is_extension() ) {
-				this.dispatch_restore_offscreen( session.audio, session.position ).catch( () => {} )
-			} else {
-				const el = this.audio_el()
-				this.load_local_paused( session.audio, session.position, el ).catch( () => {} )
-			}
+			this.attach_seek_listener(el, session.position)
 		}
 
-		private async dispatch_restore_offscreen( audio: $bog_vk_api_audio, position: number ) {
-			try {
-				await chrome.runtime.sendMessage( { target: 'background', type: 'ensure_offscreen' } )
-				const app = $bog_vk_app.Root( 0 )
-				let blob: Blob | null = null
-				try {
-					blob = await ( $mol_wire_async( app ) as any ).local_blob( audio ) as Blob | null
-				} catch {}
-				if ( !blob && audio.url ) {
-					try {
-						await app.save_hls( audio )
-						blob = app.local_blob( audio ) as Blob | null
-					} catch ( e: any ) {
-						console.error( '[player] restore save_hls failed:', e?.message )
-					}
-				}
-				if ( blob ) {
-					this.channel().postMessage( {
-						target: 'offscreen',
-						type: 'play_track',
-						audio,
-						blob,
-						start_at: position,
-						autoplay: false,
-					} )
-				}
-			} catch ( e: any ) {
-				console.error( '[player] restore offscreen failed:', e )
-			}
-		}
-
-		private async load_local_paused( audio: $bog_vk_api_audio, position: number, el: HTMLAudioElement ) {
-			try {
-				const app = $bog_vk_app.Root( 0 )
-				let blob: Blob | null = null
-				try {
-					blob = await ( $mol_wire_async( app ) as any ).local_blob( audio ) as Blob | null
-				} catch {}
-				if ( blob ) {
-					if ( this._last_blob_url ) URL.revokeObjectURL( this._last_blob_url )
-					const url = URL.createObjectURL( blob )
-					this._last_blob_url = url
-					el.src = url
-				} else if ( audio.url ) {
-					el.src = audio.url
-				} else {
-					return
-				}
-				const seek = () => {
-					try { el.currentTime = position } catch {}
-					el.removeEventListener( 'loadedmetadata', seek )
-				}
-				el.addEventListener( 'loadedmetadata', seek )
-			} catch ( e: any ) {
-				console.error( '[player] local restore failed:', e )
-			}
-		}
+		// ---------- media session ----------
 
 		private setup_media_session() {
-			if ( !( 'mediaSession' in navigator ) ) return
+			if (!('mediaSession' in navigator)) return
 			const ms = navigator.mediaSession
-			ms.setActionHandler( 'previoustrack', () => { try { this.prev() } catch {} } )
-			ms.setActionHandler( 'nexttrack', () => { try { this.next() } catch {} } )
-			if ( this.is_extension() ) {
-				ms.setActionHandler( 'seekto', ( details ) => {
-					if ( details.seekTime != null ) this.send( 'seek', { time: details.seekTime } )
-				} )
-				ms.setActionHandler( 'play', () => { this.send( 'resume' ) } )
-				ms.setActionHandler( 'pause', () => { this.send( 'pause' ) } )
+			ms.setActionHandler('previoustrack', () => { try { this.prev() } catch {} })
+			ms.setActionHandler('nexttrack', () => { try { this.next() } catch {} })
+			if (this.is_extension()) {
+				ms.setActionHandler('seekto', details => {
+					if (details.seekTime != null) this.send('seek', { time: details.seekTime })
+				})
+				ms.setActionHandler('play', () => { this.send('resume') })
+				ms.setActionHandler('pause', () => { this.send('pause') })
 			} else {
 				const el = this.audio_el()
-				ms.setActionHandler( 'seekto', ( details ) => {
-					if ( details.seekTime != null ) el.currentTime = details.seekTime
-				} )
-				ms.setActionHandler( 'play', () => { el.play().catch( () => {} ) } )
-				ms.setActionHandler( 'pause', () => { el.pause() } )
+				ms.setActionHandler('seekto', details => {
+					if (details.seekTime != null) el.currentTime = details.seekTime
+				})
+				ms.setActionHandler('play', () => { el.play().catch(() => {}) })
+				ms.setActionHandler('pause', () => { el.pause() })
 			}
 		}
 
-		private send( type: string, payload?: Record< string, unknown > ) {
-			if ( !this.is_extension() ) return
-			chrome.runtime.sendMessage( { target: 'offscreen', type, ...payload } ).catch( () => {} )
+		private apply_media_metadata(audio: $bog_music_api_audio) {
+			if (!('mediaSession' in navigator)) return
+			// iOS PWA: без artwork iOS считает это не «настоящим медиа» и душит
+			// фоновый звук — подсовываем favicon в нескольких размерах.
+			const fav = 'bog/music/app/favicon.svg'
+			navigator.mediaSession.metadata = new MediaMetadata({
+				title: audio.title,
+				artist: audio.artist,
+				album: 'Bog Music',
+				artwork: [
+					{ src: fav, sizes: '96x96', type: 'image/svg+xml' },
+					{ src: fav, sizes: '192x192', type: 'image/svg+xml' },
+					{ src: fav, sizes: '512x512', type: 'image/svg+xml' },
+				],
+			})
+			this.setup_media_session()
 		}
 
-		queue_index( next?: number ) {
-			if ( next !== undefined ) this._queue_idx = next
-			return this._queue_idx
-		}
+		// ---------- базовое состояние ----------
 
 		@$mol_mem
-		playing( next?: boolean ) {
+		playing(next?: boolean) {
 			return next ?? false
 		}
 
 		@$mol_mem
-		current_time( next?: number ) {
+		current_time(next?: number) {
 			return next ?? 0
 		}
 
 		@$mol_mem
-		duration( next?: number ) {
+		duration(next?: number) {
 			return next ?? 0
 		}
 
 		@$mol_mem
-		volume( next?: number ) {
-			const v = $mol_state_local.value( 'bog_vk_volume', next ) ?? 0.7
-			return Math.max( 0, Math.min( 1, v as number ) )
-		}
-
-		private _vol_dragging = false
-
-		private volume_set_from_event( event: PointerEvent ) {
-			const target = event.currentTarget as HTMLElement
-			const rect = target.getBoundingClientRect()
-			const y = event.clientY - rect.top
-			const v = Math.max( 0, Math.min( 1, 1 - y / rect.height ) )
-			this.volume( v )
-		}
-
-		volume_pointer_down( event?: Event ) {
-			if ( !event ) return null
-			const e = event as PointerEvent
-			const target = e.currentTarget as HTMLElement
-			try { target.setPointerCapture( e.pointerId ) } catch {}
-			this._vol_dragging = true
-			this.volume_set_from_event( e )
-			e.preventDefault()
-			return null
-		}
-
-		volume_pointer_move( event?: Event ) {
-			if ( !event || !this._vol_dragging ) return null
-			this.volume_set_from_event( event as PointerEvent )
-			return null
-		}
-
-		volume_pointer_up( event?: Event ) {
-			if ( !event ) return null
-			const e = event as PointerEvent
-			const target = e.currentTarget as HTMLElement
-			try { target.releasePointerCapture( e.pointerId ) } catch {}
-			this._vol_dragging = false
-			try { this.Volume().hovered( false ) } catch {}
-			return null
-		}
-
-		volume_fill_height() {
-			return `${ Math.round( this.volume() * 100 ) }%`
-		}
-
-		@$mol_mem
-		repeat_mode( next?: 'all' | 'one' | 'shuffle' ) {
-			const v = $mol_state_local.value( 'bog_vk_repeat_mode', next ) as string | null
-			if ( v === 'one' || v === 'shuffle' ) return v
-			return 'all' as const
-		}
-
-		repeat_cycle() {
-			const cur = this.repeat_mode()
-			const order: ( 'all' | 'one' | 'shuffle' )[] = [ 'all', 'one', 'shuffle' ]
-			const idx = order.indexOf( cur as any )
-			const next = order[ ( idx + 1 ) % order.length ]
-			this.repeat_mode( next )
-		}
-
-		repeat_hint() {
-			const m = this.repeat_mode()
-			if ( m === 'one' ) return 'Повтор одного трека'
-			if ( m === 'shuffle' ) return 'Случайный порядок'
-			return 'Повтор плейлиста'
-		}
-
-		Repeat_all_icon() {
-			if ( this.repeat_mode() !== 'all' ) return null as any
-			return super.Repeat_all_icon()
-		}
-
-		Repeat_one_icon() {
-			if ( this.repeat_mode() !== 'one' ) return null as any
-			return super.Repeat_one_icon()
-		}
-
-		Shuffle_icon() {
-			if ( this.repeat_mode() !== 'shuffle' ) return null as any
-			return super.Shuffle_icon()
+		volume(next?: number) {
+			const v = $mol_state_local.value('bog_music_volume', next) ?? 0.7
+			return Math.max(0, Math.min(1, v as number))
 		}
 
 		@$mol_mem
 		private apply_volume() {
 			const v = this.volume()
-			if ( this.is_extension() ) {
-				this.send( 'volume', { value: v } )
-			} else if ( this._audio_el ) {
+			if (this.is_extension()) {
+				this.send('volume', { value: v })
+			} else if (this._audio_el) {
 				this._audio_el.volume = v
 			}
 			return v
@@ -376,376 +278,287 @@ namespace $.$$ {
 			return this.current_audio()?.artist ?? ''
 		}
 
-		cover() {
-			return this.current_audio()?.album?.thumb?.photo_300 ?? ''
-		}
-
-		Cover() {
-			if ( !this.cover() ) return null as any
-			return super.Cover()
-		}
-
-		Cover_placeholder() {
-			if ( this.cover() ) return null as any
-			return super.Cover_placeholder()
-		}
-
 		time_current_text() {
-			return this.format_time( this.current_time() )
+			return this.format_time(this.current_time())
 		}
 
 		time_total_text() {
-			return this.format_time( this.duration() )
+			return this.format_time(this.duration())
 		}
 
-		format_time( seconds: number ) {
-			const min = Math.floor( seconds / 60 )
-			const sec = Math.floor( seconds % 60 )
-			return `${min}:${sec.toString().padStart( 2, '0' )}`
+		format_time(seconds: number) {
+			const min = Math.floor(seconds / 60)
+			const sec = Math.floor(seconds % 60)
+			return `${min}:${sec.toString().padStart(2, '0')}`
 		}
 
-		progress_percent() {
+		progress_width() {
 			const dur = this.duration()
-			if ( !dur ) return 0
-			return ( this.current_time() / dur ) * 100
+			if (!dur) return '0%'
+			return `${(this.current_time() / dur) * 100}%`
 		}
 
-		play_track( audio?: $bog_vk_api_audio | null ) {
-			if ( !audio ) return
-			// КРИТИЧНО: сбрасываем current_time/duration ДО смены current_audio.
-			// Иначе apply_trim в auto(), отреагировав на смену current_audio,
-			// прочитает stale значения от предыдущего трека (например t=200, dur=240),
-			// и если у нового трека сохранён trim_end < 200 — моментально дёрнет next()
-			// → каскад play_track-сообщений → src перезаписывается до loadedmetadata.
-			this.current_time( 0 )
-			this.duration( 0 )
-			this.current_audio( audio )
+		// ---------- громкость (drag по вертикальному слайдеру) ----------
+
+		private _vol_dragging = false
+
+		private volume_set_from_event(event: PointerEvent) {
+			const target = event.currentTarget as HTMLElement
+			const rect = target.getBoundingClientRect()
+			const y = event.clientY - rect.top
+			this.volume(Math.max(0, Math.min(1, 1 - y / rect.height)))
+		}
+
+		volume_pointer_down(event?: Event) {
+			if (!event) return null
+			const e = event as PointerEvent
+			try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId) } catch {}
+			this._vol_dragging = true
+			this.volume_set_from_event(e)
+			e.preventDefault()
+			return null
+		}
+
+		volume_pointer_move(event?: Event) {
+			if (!event || !this._vol_dragging) return null
+			this.volume_set_from_event(event as PointerEvent)
+			return null
+		}
+
+		volume_pointer_up(event?: Event) {
+			if (!event) return null
+			const e = event as PointerEvent
+			try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId) } catch {}
+			this._vol_dragging = false
+			try { this.Volume().hovered(false) } catch {}
+			return null
+		}
+
+		volume_fill_height() {
+			return `${Math.round(this.volume() * 100)}%`
+		}
+
+		// ---------- режим повтора ----------
+
+		@$mol_mem
+		repeat_mode(next?: 'all' | 'one' | 'shuffle') {
+			const v = $mol_state_local.value('bog_music_repeat_mode', next) as string | null
+			if (v === 'one' || v === 'shuffle') return v
+			return 'all' as const
+		}
+
+		repeat_cycle() {
+			const order: ('all' | 'one' | 'shuffle')[] = ['all', 'one', 'shuffle']
+			const idx = order.indexOf(this.repeat_mode() as any)
+			this.repeat_mode(order[(idx + 1) % order.length])
+		}
+
+		repeat_hint() {
+			const m = this.repeat_mode()
+			if (m === 'one') return 'Повтор одного трека'
+			if (m === 'shuffle') return 'Случайный порядок'
+			return 'Повтор плейлиста'
+		}
+
+		Repeat_all_icon() {
+			if (this.repeat_mode() !== 'all') return null as any
+			return super.Repeat_all_icon()
+		}
+
+		Repeat_one_icon() {
+			if (this.repeat_mode() !== 'one') return null as any
+			return super.Repeat_one_icon()
+		}
+
+		Shuffle_icon() {
+			if (this.repeat_mode() !== 'shuffle') return null as any
+			return super.Shuffle_icon()
+		}
+
+		// ---------- shuffle-bag ----------
+		// Одна перетасовка всего плейлиста, играем без повторов до конца, затем
+		// тасуем заново. Состояние обхода — не reactive: его никто не рендерит.
+
+		private _shuffle_bag: string[] = []
+		private _shuffle_bag_idx = 0
+		private _shuffle_bag_sig = ''
+		private _shuffle_last_key = ''
+
+		private ensure_shuffle_bag(queue: readonly string[]) {
+			const sig = queue.join(',')
+			if (sig === this._shuffle_bag_sig && this._shuffle_bag_idx < this._shuffle_bag.length) return
+			const keys = [...queue]
+			for (let i = keys.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1))
+				;[keys[i], keys[j]] = [keys[j], keys[i]]
+			}
+			if (keys.length > 1 && this._shuffle_last_key && keys[0] === this._shuffle_last_key) {
+				;[keys[0], keys[1]] = [keys[1], keys[0]]
+			}
+			this._shuffle_bag = keys
+			this._shuffle_bag_idx = 0
+			this._shuffle_bag_sig = sig
+		}
+
+		// ---------- запуск трека ----------
+
+		play_track(key?: string | null) {
+			if (!key) return
+			const audio = this.account().track(key)?.audio()
+			if (!audio) return
+
+			// Сброс времени ДО смены трека: иначе apply_trim в auto() прочитает
+			// stale-значения предыдущего трека и может мгновенно дёрнуть next().
+			this.current_time(0)
+			this.duration(0)
+			this.current_key(key)
 			this._trim_end_skip = ''
-			const start_at = $bog_vk_app.Root( 0 ).trim_start( audio )
-			try { $bog_vk_app.Root( 0 ).save_last_session( audio, start_at ) } catch {}
+			const start_at = this.account().track(key)?.trim_start() ?? 0
+			try { this.account().save_last_session(key, start_at) } catch {}
 
-			if ( 'mediaSession' in navigator ) {
-				const artwork: MediaImage[] = []
-				const thumb = audio.album?.thumb?.photo_300
-				if ( thumb ) {
-					artwork.push( { src: thumb, sizes: '300x300', type: 'image/jpeg' } )
-				} else {
-					// iOS PWA: без artwork iOS считает это не «настоящим медиа» и душит
-					// фоновый звук. Подсовываем favicon как фоллбэк (несколько размеров —
-					// iOS любит выбрать нужный сам).
-					const fav = 'bog/vk/app/favicon.svg'
-					artwork.push(
-						{ src: fav, sizes: '96x96', type: 'image/svg+xml' },
-						{ src: fav, sizes: '192x192', type: 'image/svg+xml' },
-						{ src: fav, sizes: '512x512', type: 'image/svg+xml' },
-					)
-				}
-				navigator.mediaSession.metadata = new MediaMetadata( {
-					title: audio.title,
-					artist: audio.artist,
-					album: 'Bog VK Music',
-					artwork,
-				} )
-				this.setup_media_session()
+			this.apply_media_metadata(audio)
+
+			if (this.is_extension()) {
+				this.dispatch_play_offscreen(key, audio, start_at)
+				return
 			}
 
-			if ( this.is_extension() ) {
-				this.dispatch_play_offscreen( audio, start_at )
-			} else {
-				const el = this.audio_el()
-				// iOS PWA: при заблокированном экране любой await перед el.play()
-				// рвёт audio-session continuation от `ended`-обработчика — трек
-				// идёт молча. Пробуем СИНХРОННО взять blob (в типичном случае он
-				// в baza уже есть) и сразу же src+play в том же tick.
-				if ( this.try_play_local_sync( audio, el, start_at ) ) return
-				if ( audio.url ) {
-					this.attach_seek_listener( el, start_at )
-					el.src = audio.url
-					el.play().catch( () => {} )
-				}
-				this.play_source_local( audio, el, start_at )
+			const el = this.audio_el()
+			// iOS PWA: при заблокированном экране любой await перед el.play()
+			// рвёт audio-session continuation от ended-обработчика. Пробуем
+			// СИНХРОННО взять blob и запустить в том же tick.
+			if (this.try_play_local_sync(key, el, start_at)) return
+			if (audio.url) {
+				this.attach_seek_listener(el, start_at)
+				el.src = audio.url
+				el.play().catch(() => {})
 			}
+			this.play_source_local(key, audio, el, start_at)
 		}
 
-		private try_play_local_sync( audio: $bog_vk_api_audio, el: HTMLAudioElement, start_at: number ): boolean {
+		/** Sync-чтение блоба — зовётся и напрямую (best-effort), и через фибру. */
+		blob_of(key: string): Blob | null {
+			return this.account().track(key)?.blob() ?? null
+		}
+
+		private try_play_local_sync(key: string, el: HTMLAudioElement, start_at: number): boolean {
 			let blob: Blob | null = null
 			try {
-				blob = $bog_vk_app.Root( 0 ).local_blob( audio )
-			} catch ( e: any ) {
-				if ( e instanceof Promise ) return false
-				return false
+				blob = this.blob_of(key)
+			} catch {
+				return false // Promise = blob ещё грузится, пойдём async-путём
 			}
-			if ( !blob ) return false
-			if ( this._last_blob_url ) URL.revokeObjectURL( this._last_blob_url )
-			const url = URL.createObjectURL( blob )
+			if (!blob) return false
+			if (this._last_blob_url) URL.revokeObjectURL(this._last_blob_url)
+			const url = URL.createObjectURL(blob)
 			this._last_blob_url = url
 			this._dispatch_token++
-			this.attach_seek_listener( el, start_at )
+			this.attach_seek_listener(el, start_at)
 			el.src = url
-			el.play().catch( () => {} )
+			el.play().catch(() => {})
 			return true
 		}
 
-		private attach_seek_listener( el: HTMLAudioElement, start_at: number ) {
-			if ( start_at <= 0 ) return
+		private attach_seek_listener(el: HTMLAudioElement, start_at: number) {
+			if (start_at <= 0) return
 			const seek = () => {
 				try { el.currentTime = start_at } catch {}
-				el.removeEventListener( 'loadedmetadata', seek )
+				el.removeEventListener('loadedmetadata', seek)
 			}
-			el.addEventListener( 'loadedmetadata', seek )
+			el.addEventListener('loadedmetadata', seek)
 		}
 
-		private seek_to( time: number ) {
-			if ( this.is_extension() ) {
-				this.send( 'seek', { time } )
-			} else if ( this._audio_el ) {
+		private seek_to(time: number) {
+			if (this.is_extension()) {
+				this.send('seek', { time })
+			} else if (this._audio_el) {
 				try { this._audio_el.currentTime = time } catch {}
 			}
 		}
 
-		/**
-		 * Реактивный apply ТОЛЬКО end-trim'а. Вызывается из auto() —
-		 * подписывается на current_audio / current_time / duration / Trim_end.
-		 * При current_time >= trim_end → next() (через microtask, чтобы не
-		 * писать в cell внутри auto-фибры).
-		 *
-		 * Start-trim seek НЕ делается реактивно из auto: drag handle спамит
-		 * save_trim_start → каждое сохранение invalidate'ит подписку на atom →
-		 * apply_trim передёргивается → seek_to → chrome.runtime.sendMessage('seek')
-		 * в offscreen. Десятки seek-сообщений в гонке с pending play_track msg
-		 * рвут audio.src → DEMUXER_ERROR. Поэтому seek на trim_start выполняется
-		 * один раз — в trim_pointer_up.
-		 */
-		private apply_trim() {
-			const audio = this.current_audio()
-			if ( !audio ) return
-			const dur = this.duration()
-			if ( !dur ) return
-			const te = $bog_vk_app.Root( 0 ).trim_end( audio, dur )
-			if ( te >= dur ) return
-			if ( this.current_time() < te ) return
-
-			const key = `${audio.owner_id}_${audio.id}`
-			if ( this._trim_end_skip === key ) return
-			this._trim_end_skip = key
-			queueMicrotask( () => {
-				try {
-					this.next( false )
-					if ( navigator.onLine ) $bog_vk_app.Root( 0 ).save_hls( audio ).catch( () => {} )
-				} catch ( e: any ) {
-					if ( e instanceof Promise ) return
-					console.warn( '[player] trim_end next failed:', e?.message )
-				}
-			} )
-		}
-
-		private _trim_end_skip = ''
-
-		// ---------- trim handles ----------
-
-		private _trim_drag: 'start' | 'end' | null = null
-
-		private trim_apply( event: PointerEvent ) {
-			const audio = this.current_audio()
-			if ( !audio ) return
-			const dur = this.duration()
-			if ( !dur ) return
-			const progress = this.Progress().dom_node() as HTMLElement
-			const rect = progress.getBoundingClientRect()
-			const x = event.clientX - rect.left
-			const pct = Math.max( 0, Math.min( 1, x / rect.width ) )
-			let seconds = pct * dur
-			const app = $bog_vk_app.Root( 0 )
-			if ( this._trim_drag === 'start' ) {
-				const end = app.trim_end( audio, dur )
-				seconds = Math.min( seconds, Math.max( 0, end - 1 ) )
-				app.save_trim_start( audio, seconds )
-			} else if ( this._trim_drag === 'end' ) {
-				const start = app.trim_start( audio )
-				seconds = Math.max( seconds, Math.min( dur, start + 1 ) )
-				app.save_trim_end( audio, seconds )
-			}
-		}
-
-		trim_start_pointer_down( event?: Event ) {
-			if ( !event ) return null
-			const e = event as PointerEvent
-			e.stopPropagation()
-			e.preventDefault()
-			try { ( e.currentTarget as HTMLElement ).setPointerCapture( e.pointerId ) } catch {}
-			this._trim_drag = 'start'
-			this.trim_apply( e )
-			return null
-		}
-
-		trim_start_pointer_move( event?: Event ) {
-			if ( !event || this._trim_drag !== 'start' ) return null
-			this.trim_apply( event as PointerEvent )
-			return null
-		}
-
-		trim_end_pointer_down( event?: Event ) {
-			if ( !event ) return null
-			const e = event as PointerEvent
-			e.stopPropagation()
-			e.preventDefault()
-			try { ( e.currentTarget as HTMLElement ).setPointerCapture( e.pointerId ) } catch {}
-			this._trim_drag = 'end'
-			this.trim_apply( e )
-			return null
-		}
-
-		trim_end_pointer_move( event?: Event ) {
-			if ( !event || this._trim_drag !== 'end' ) return null
-			this.trim_apply( event as PointerEvent )
-			return null
-		}
-
-		trim_pointer_up( event?: Event ) {
-			if ( !event ) return null
-			const e = event as PointerEvent
-			try { ( e.currentTarget as HTMLElement ).releasePointerCapture( e.pointerId ) } catch {}
-			const drag = this._trim_drag
-			this._trim_drag = null
-			// Единичный seek после отпускания start-handle.
-			if ( drag === 'start' ) {
-				const audio = this.current_audio()
-				if ( audio ) {
-					const ts = $bog_vk_app.Root( 0 ).trim_start( audio )
-					if ( ts > 0 && this.current_time() < ts - 0.5 ) {
-						this.seek_to( ts )
-					}
-				}
-			}
-			return null
-		}
-
-		trim_start_left() {
-			const audio = this.current_audio()
-			const dur = this.duration()
-			if ( !audio || !dur ) return '0%'
-			return `${ ( $bog_vk_app.Root( 0 ).trim_start( audio ) / dur ) * 100 }%`
-		}
-
-		trim_end_left() {
-			const audio = this.current_audio()
-			const dur = this.duration()
-			if ( !audio || !dur ) return '100%'
-			return `${ ( $bog_vk_app.Root( 0 ).trim_end( audio, dur ) / dur ) * 100 }%`
-		}
-
+		// Гонки fast-click'ов: пока blob трека A грузится, пользователь кликает B.
+		// Токен инвалидирует устаревшие dispatch'и.
 		private _dispatch_token = 0
 
-		private is_current( audio: $bog_vk_api_audio ): boolean {
-			const cur = this.current_audio()
-			return !!cur && cur.id === audio.id && cur.owner_id === audio.owner_id
+		private is_current(key: string): boolean {
+			return this.current_key() === key
 		}
 
-		private async dispatch_play_offscreen( audio: $bog_vk_api_audio, start_at: number = 0 ) {
-			// Fast-clicks: пока local_blob/save_hls для трека A грузится через wire_async,
-			// пользователь кликает B. Без токена оба dispatch'а долетают до postMessage,
-			// порядок прибытия в offscreen неопределён → инфа от B, аудио от A.
+		/** Дожидается блоба: из baza, при неудаче докачивает с VK. */
+		private async blob_ready(key: string, audio: $bog_music_api_audio): Promise<Blob | null> {
+			let blob = await ($mol_wire_async(this) as any).blob_of(key).catch(() => null) as Blob | null
+			if (!blob && audio.url) {
+				await this.account().save_hls(audio).catch(() => {})
+				blob = await ($mol_wire_async(this) as any).blob_of(key).catch(() => null) as Blob | null
+			}
+			return blob
+		}
+
+		private async dispatch_play_offscreen(key: string, audio: $bog_music_api_audio, start_at: number) {
 			const token = ++this._dispatch_token
 			try {
-				await chrome.runtime.sendMessage( { target: 'background', type: 'ensure_offscreen' } )
-				if ( token !== this._dispatch_token || !this.is_current( audio ) ) return
+				await chrome.runtime.sendMessage({ target: 'background', type: 'ensure_offscreen' })
+				if (token !== this._dispatch_token || !this.is_current(key)) return
 
-				const app = $bog_vk_app.Root( 0 )
+				const blob = await this.blob_ready(key, audio)
+				if (token !== this._dispatch_token || !this.is_current(key)) return
 
-				let blob: Blob | null = null
-				try {
-					blob = await ( $mol_wire_async( app ) as any ).local_blob( audio ) as Blob | null
-				} catch {}
-				if ( token !== this._dispatch_token || !this.is_current( audio ) ) return
-
-				if ( !blob && audio.url ) {
-					try {
-						await app.save_hls( audio )
-						blob = app.local_blob( audio ) as Blob | null
-					} catch ( e: any ) {
-						console.error( '[player] save_hls failed:', e?.message )
-					}
-					if ( token !== this._dispatch_token || !this.is_current( audio ) ) return
-				}
-
-				if ( blob ) {
-					this.channel().postMessage( {
-						target: 'offscreen',
-						type: 'play_track',
-						audio,
-						blob,
-						start_at,
-					} )
+				if (!blob) {
+					console.warn('[player] no source:', audio.artist, '—', audio.title)
 					return
 				}
-
-				console.warn( '[player] no source:', audio.artist, '—', audio.title )
-			} catch ( e: any ) {
-				console.error( '[player] play failed:', e )
-				this.playing( false )
+				this.channel().postMessage({
+					target: 'offscreen',
+					type: 'play_track',
+					audio,
+					blob,
+					start_at,
+				})
+			} catch (e: any) {
+				console.error('[player] play failed:', e)
+				this.playing(false)
 			}
 		}
 
-		private async play_source_local( audio: $bog_vk_api_audio, el: HTMLAudioElement, start_at: number = 0 ) {
+		private async play_source_local(key: string, audio: $bog_music_api_audio, el: HTMLAudioElement, start_at: number) {
 			const token = ++this._dispatch_token
 			try {
-				if ( this._last_blob_url ) {
-					URL.revokeObjectURL( this._last_blob_url )
+				if (this._last_blob_url) {
+					URL.revokeObjectURL(this._last_blob_url)
 					this._last_blob_url = ''
 				}
 
-				const app = $bog_vk_app.Root( 0 )
+				const blob = await this.blob_ready(key, audio)
+				if (token !== this._dispatch_token || !this.is_current(key)) return
 
-				const blob = await ( $mol_wire_async( app ) as any ).local_blob( audio ) as Blob | null
-				if ( token !== this._dispatch_token || !this.is_current( audio ) ) return
-
-				if ( blob ) {
-					const url = URL.createObjectURL( blob )
+				if (blob) {
+					const url = URL.createObjectURL(blob)
 					this._last_blob_url = url
-					this.attach_seek_listener( el, start_at )
+					this.attach_seek_listener(el, start_at)
 					el.src = url
-					await this.safe_play( el )
+					await this.safe_play(el)
 					return
 				}
 
-				if ( audio.url ) {
-					if ( token !== this._dispatch_token || !this.is_current( audio ) ) return
-					this.attach_seek_listener( el, start_at )
+				if (audio.url) {
+					this.attach_seek_listener(el, start_at)
 					el.src = audio.url
-					try {
-						await this.safe_play( el )
-						app.save_hls( audio ).catch( () => {} )
-						return
-					} catch {}
+					await this.safe_play(el)
+					return
 				}
 
-				if ( audio.url ) {
-					await app.save_hls( audio )
-					if ( token !== this._dispatch_token || !this.is_current( audio ) ) return
-					const blob2 = app.local_blob( audio )
-					if ( blob2 ) {
-						const url = URL.createObjectURL( blob2 )
-						this._last_blob_url = url
-						this.attach_seek_listener( el, start_at )
-						el.src = url
-						await this.safe_play( el )
-						return
-					}
-				}
-
-				console.warn( '[player] no source:', audio.artist, '—', audio.title )
-			} catch ( e: any ) {
-				console.error( '[player] play failed:', e )
+				console.warn('[player] no source:', audio.artist, '—', audio.title)
+			} catch (e: any) {
+				console.error('[player] play failed:', e)
 			}
-			this.playing( false )
+			this.playing(false)
 		}
 
-		private async safe_play( el: HTMLAudioElement ) {
+		private async safe_play(el: HTMLAudioElement) {
 			try {
 				await el.play()
-			} catch ( e: any ) {
-				if ( e?.name === 'NotAllowedError' ) {
-					console.warn( '[player] play blocked, will resume on user interaction' )
+			} catch (e: any) {
+				if (e?.name === 'NotAllowedError') {
 					el.muted = true
 					try { await el.play() } catch {}
 					el.muted = false
@@ -755,136 +568,243 @@ namespace $.$$ {
 			}
 		}
 
+		// ---------- управление ----------
+
 		toggle() {
 			const was_playing = this.playing()
-			if ( this.is_extension() ) {
-				if ( was_playing ) this.send( 'pause' )
-				else this.send( 'resume' )
+			if (this.is_extension()) {
+				if (was_playing) this.send('pause')
+				else this.send('resume')
 			} else {
 				const el = this.audio_el()
-				if ( was_playing ) el.pause()
+				if (was_playing) el.pause()
 				else el.play()
 			}
-			if ( was_playing ) {
-				const audio = this.current_audio()
-				if ( audio ) {
-					try { $bog_vk_app.Root( 0 ).save_last_session( audio, this.current_time() ) } catch {}
+			if (was_playing) {
+				const key = this.current_key()
+				if (key) {
+					try { this.account().save_last_session(key, this.current_time()) } catch {}
 				}
 			}
 		}
 
 		prev() {
-			const queue = this.queue()
-			const idx = this._queue_idx
-			if ( idx > 0 ) {
-				this._queue_idx = idx - 1
-				this.play_track( queue[ idx - 1 ] as $bog_vk_api_audio )
+			const queue = this.queue_keys()
+			const idx = this.queue_index()
+			if (idx > 0) {
+				this.queue_index(idx - 1)
+				this.play_track(queue[idx - 1])
 			}
 		}
 
-		next( manual: boolean = true ) {
+		next(manual: boolean = true) {
 			const mode = this.repeat_mode()
-			const queue = this.queue()
+			const queue = this.queue_keys()
 
-			// Авто-advance из `ended`-обработчика: при mode='one' перезапускаем
-			// тот же трек через play_track(cur) — он подхватит Trim_start как
-			// start_at. native audio.loop=true не использовали т.к. он крутит
-			// от 0 и игнорирует trim_start. Ручной клик по Next-кнопке
-			// (`manual=true`) всё равно ведёт к следующему треку.
-			if ( !manual && mode === 'one' ) {
-				const cur = this.current_audio()
-				if ( cur ) {
-					this.play_track( cur )
+			// Авто-advance при mode='one': перезапуск того же трека через
+			// play_track — он подхватит trim_start (native loop крутит от 0).
+			// Ручной клик по Next всё равно ведёт к следующему.
+			if (!manual && mode === 'one') {
+				const cur = this.current_key()
+				if (cur) {
+					this.play_track(cur)
 					return
 				}
 			}
 
-			if ( mode === 'shuffle' && queue.length ) {
-				this.ensure_shuffle_bag( queue )
-				const key = this._shuffle_bag[ this._shuffle_bag_idx++ ]
-				if ( this._shuffle_bag_idx >= this._shuffle_bag.length ) {
+			if (mode === 'shuffle' && queue.length) {
+				this.ensure_shuffle_bag(queue)
+				const key = this._shuffle_bag[this._shuffle_bag_idx++]
+				if (this._shuffle_bag_idx >= this._shuffle_bag.length) {
 					this._shuffle_last_key = key
-					this._shuffle_bag_sig = ''  // следующий next() перетасует
+					this._shuffle_bag_sig = '' // следующий next() перетасует
 				}
-				const idx = queue.findIndex( ( a: $bog_vk_api_audio ) => $bog_vk_player.audio_key( a ) === key )
-				if ( idx >= 0 ) {
-					this._queue_idx = idx
-					this.play_track( queue[ idx ] as $bog_vk_api_audio )
+				const idx = queue.indexOf(key)
+				if (idx >= 0) {
+					this.queue_index(idx)
+					this.play_track(key)
 					return
 				}
 			}
 
+			// «Моя волна» — рекомендалка (binding в app).
 			try {
-				const picked = this.pick_next( this.current_audio() ) as $bog_vk_api_audio | null
-				if ( picked ) {
-					const idx = queue.findIndex( ( a: $bog_vk_api_audio ) => a.id === picked.id && a.owner_id === picked.owner_id )
-					if ( idx >= 0 ) this._queue_idx = idx
-					this.play_track( picked )
+				const picked = this.pick_next(this.current_key()) as string | null
+				if (picked) {
+					const idx = queue.indexOf(picked)
+					if (idx >= 0) this.queue_index(idx)
+					this.play_track(picked)
 					return
 				}
-			} catch ( e: any ) {
-				if ( e instanceof Promise ) throw e
-				console.warn( '[player] pick_next failed:', e?.message )
+			} catch (e: any) {
+				if (e instanceof Promise) throw e
+				console.warn('[player] pick_next failed:', e?.message)
 			}
-			if ( !queue.length ) return
-			const next_idx = this._queue_idx + 1 < queue.length ? this._queue_idx + 1 : 0
-			this._queue_idx = next_idx
-			this.play_track( queue[ next_idx ] as $bog_vk_api_audio )
+
+			if (!queue.length) return
+			const next_idx = this.queue_index() + 1 < queue.length ? this.queue_index() + 1 : 0
+			this.queue_index(next_idx)
+			this.play_track(queue[next_idx])
 		}
 
 		sub() {
-			if ( !this.current_audio() ) return []
+			if (!this.current_key()) return []
 			return super.sub()
 		}
 
 		Play() {
-			if ( this.playing() ) return null as any
+			if (this.playing()) return null as any
 			return super.Play()
 		}
 
 		Pause() {
-			if ( !this.playing() ) return null as any
+			if (!this.playing()) return null as any
 			return super.Pause()
 		}
+
+		// ---------- обрез трека (trim handles на прогресс-баре) ----------
+
+		private _trim_end_skip = ''
+		private _trim_drag: 'start' | 'end' | null = null
+
+		/**
+		 * Реактивный apply ТОЛЬКО end-trim'а: current_time >= trim_end → next().
+		 * Через microtask, чтобы не писать в cell внутри auto-фибры.
+		 * Seek на trim_start делается один раз в trim_pointer_up: если делать
+		 * реактивно, drag-спам инвалидаций рождает гонку seek-сообщений с
+		 * pending play_track → DEMUXER_ERROR в offscreen.
+		 */
+		private apply_trim() {
+			const track = this.current_track()
+			if (!track) return
+			const dur = this.duration()
+			if (!dur) return
+			const te = track.trim_end(dur)
+			if (te >= dur) return
+			if (this.current_time() < te) return
+
+			const key = this.current_key()
+			if (this._trim_end_skip === key) return
+			this._trim_end_skip = key
+			const audio = track.audio()
+			queueMicrotask(() => {
+				try {
+					this.next(false)
+					if (audio && navigator.onLine) this.account().save_hls(audio).catch(() => {})
+				} catch (e: any) {
+					if (e instanceof Promise) return
+					console.warn('[player] trim_end next failed:', e?.message)
+				}
+			})
+		}
+
+		private trim_apply(event: PointerEvent) {
+			const track = this.current_track()
+			if (!track) return
+			const dur = this.duration()
+			if (!dur) return
+			const progress = this.Progress().dom_node() as HTMLElement
+			const rect = progress.getBoundingClientRect()
+			const x = event.clientX - rect.left
+			const pct = Math.max(0, Math.min(1, x / rect.width))
+			let seconds = pct * dur
+			if (this._trim_drag === 'start') {
+				const end = track.trim_end(dur)
+				seconds = Math.min(seconds, Math.max(0, end - 1))
+				track.trim_start(seconds)
+			} else if (this._trim_drag === 'end') {
+				const start = track.trim_start()
+				seconds = Math.max(seconds, Math.min(dur, start + 1))
+				track.trim_end(dur, seconds)
+			}
+		}
+
+		trim_start_pointer_down(event?: Event) {
+			if (!event) return null
+			const e = event as PointerEvent
+			e.stopPropagation()
+			e.preventDefault()
+			try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId) } catch {}
+			this._trim_drag = 'start'
+			this.trim_apply(e)
+			return null
+		}
+
+		trim_start_pointer_move(event?: Event) {
+			if (!event || this._trim_drag !== 'start') return null
+			this.trim_apply(event as PointerEvent)
+			return null
+		}
+
+		trim_end_pointer_down(event?: Event) {
+			if (!event) return null
+			const e = event as PointerEvent
+			e.stopPropagation()
+			e.preventDefault()
+			try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId) } catch {}
+			this._trim_drag = 'end'
+			this.trim_apply(e)
+			return null
+		}
+
+		trim_end_pointer_move(event?: Event) {
+			if (!event || this._trim_drag !== 'end') return null
+			this.trim_apply(event as PointerEvent)
+			return null
+		}
+
+		trim_pointer_up(event?: Event) {
+			if (!event) return null
+			const e = event as PointerEvent
+			try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId) } catch {}
+			const drag = this._trim_drag
+			this._trim_drag = null
+			if (drag === 'start') {
+				const ts = this.current_track()?.trim_start() ?? 0
+				if (ts > 0 && this.current_time() < ts - 0.5) this.seek_to(ts)
+			}
+			return null
+		}
+
+		trim_start_left() {
+			const track = this.current_track()
+			const dur = this.duration()
+			if (!track || !dur) return '0%'
+			return `${(track.trim_start() / dur) * 100}%`
+		}
+
+		trim_end_left() {
+			const track = this.current_track()
+			const dur = this.duration()
+			if (!track || !dur) return '100%'
+			return `${(track.trim_end(dur) / dur) * 100}%`
+		}
+
+		// ---------- lifecycle ----------
 
 		private _pagehide_listener_set = false
 
 		private setup_pagehide_save() {
-			if ( this._pagehide_listener_set ) return
+			if (this._pagehide_listener_set) return
 			this._pagehide_listener_set = true
-			window.addEventListener( 'pagehide', () => {
-				const audio = this.current_audio()
-				if ( !audio ) return
-				try { $bog_vk_app.Root( 0 ).save_last_session( audio, this.current_time() ) } catch {}
-			} )
+			window.addEventListener('pagehide', () => {
+				const key = this.current_key()
+				if (!key) return
+				try { this.account().save_last_session(key, this.current_time()) } catch {}
+			})
 		}
 
 		auto() {
 			this.offscreen_link()
 			this.setup_pagehide_save()
-			if ( !this.is_extension() && !this.current_audio() ) {
+			if (!this.is_extension() && !this.current_key()) {
 				this.try_restore_session()
 			}
 			this.apply_volume()
-			try { this.apply_trim() } catch ( e: any ) {
-				if ( e instanceof Promise ) throw e
-			}
-			const style = ( this.Progress_bar().dom_node() as HTMLElement ).style
-			style.width = `${this.progress_percent()}%`
-			// Trim_*_handle.style.left биндится в view.tree, но style()-замыкание
-			// каждой ручки на телефоне иногда теряет инвалидацию от baza-sync —
-			// audio.ended при этом срабатывает (apply_trim в этом же auto читает
-			// trim_end), а ручки визуально остаются в старой позиции. Дублируем
-			// применение left отсюда: auto() гарантированно re-run-ится.
-			try {
-				const ts_node = this.Trim_start_handle().dom_node() as HTMLElement
-				ts_node.style.left = this.trim_start_left()
-				const te_node = this.Trim_end_handle().dom_node() as HTMLElement
-				te_node.style.left = this.trim_end_left()
-			} catch ( e: any ) {
-				if ( e instanceof Promise ) throw e
+			try { this.apply_trim() } catch (e: any) {
+				if (e instanceof Promise) throw e
 			}
 		}
+
 	}
 }
-

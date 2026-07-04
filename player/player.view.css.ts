@@ -1,5 +1,5 @@
 namespace $.$$ {
-	$mol_style_define($bog_vk_player, {
+	$mol_style_define($bog_music_player, {
 		width: '100%',
 		flex: {
 			direction: 'column',
@@ -126,16 +126,6 @@ namespace $.$$ {
 			overflow: {
 				x: 'hidden',
 			},
-		},
-
-		Cover: {
-			width: '2.5rem',
-			height: '2.5rem',
-			borderRadius: '4px',
-			flex: {
-				shrink: 0,
-			},
-			objectFit: 'cover',
 		},
 
 		Cover_placeholder: {

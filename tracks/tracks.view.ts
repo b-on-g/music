@@ -1,28 +1,26 @@
 namespace $.$$ {
-	export class $bog_vk_tracks extends $.$bog_vk_tracks {
+	export class $bog_music_tracks extends $.$bog_music_tracks {
 
 		private _drag_index = -1
 
 		@$mol_mem
 		track_rows() {
-			return this.audios().map((_: any, i: number) => this.Track(i))
+			return this.track_keys().map((_: string, i: number) => this.Track(i))
 		}
 
-		track_audio(index: number) {
-			return this.audios()[index] ?? null
+		track_key(index: number): string {
+			return this.track_keys()[index] ?? ''
 		}
 
 		track_current(index: number) {
-			const audio = this.track_audio(index)
-			const current = this.current_audio() as $bog_vk_api_audio | null
-			if (!audio || !current) return false
-			return audio.id === current.id && audio.owner_id === current.owner_id
+			const key = this.track_key(index)
+			return !!key && key === this.current_key()
 		}
 
 		@$mol_action
 		track_play(index: number) {
-			const audio = this.track_audio(index)
-			if (audio) this.play_audio(audio)
+			const key = this.track_key(index)
+			if (key) this.play_key(key)
 		}
 
 		track_can_drag(_index: number) {
@@ -43,20 +41,21 @@ namespace $.$$ {
 
 		@$mol_action
 		track_archive(index: number) {
-			const audio = this.track_audio(index)
-			if (audio) this.archive_audio(audio)
+			const key = this.track_key(index)
+			if (key) this.archive_key(key)
 		}
 
 		@$mol_action
 		track_restore(index: number) {
-			const audio = this.track_audio(index)
-			if (audio) this.restore_audio(audio)
+			const key = this.track_key(index)
+			if (key) this.restore_key(key)
 		}
 
 		@$mol_action
 		track_delete(index: number) {
-			const audio = this.track_audio(index)
-			if (audio) this.delete_audio(audio)
+			const key = this.track_key(index)
+			if (key) this.delete_key(key)
 		}
+
 	}
 }

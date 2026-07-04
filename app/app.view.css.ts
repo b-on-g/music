@@ -1,5 +1,5 @@
 namespace $.$$ {
-	$mol_style_define($bog_vk_app, {
+	$mol_style_define($bog_music_app, {
 		minWidth: '20rem',
 		maxWidth: '50rem',
 		margin: {

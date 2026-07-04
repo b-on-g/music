@@ -1,11 +1,11 @@
-$bog_vk_app $mol_page
+$bog_music_app $mol_page
 	plugins /
 		<= Theme $bog_theme_auto
 		<= Popup_fix $bog_popup_plugin
 		<= Tooltip $bog_tooltip_plugin
 	title \Bog Music
 	Title <= Brand $mol_image
-		uri \bog/vk/app/favicon.svg
+		uri \bog/music/app/favicon.svg
 		title <= title
 	tools /
 		<= Nickname_label $mol_view
@@ -30,7 +30,9 @@ $bog_vk_app $mol_page
 			theme_auto <= Theme
 	body_scroll_top? <=> scroll? 0
 	body /
-		<= Account $bog_vk_account
+		<= Account $bog_music_account
+			download_playlist? <=> download_playlist? null
+			download_playlist_status <= download_playlist_status \
 		<= Feedback $bog_feedback2_form
 			feedback_id \bog_vk
 		<= Share_toast $mol_view
@@ -40,17 +42,17 @@ $bog_vk_app $mol_page
 			options <= tab_options *
 				my \Моя музыка
 				archive \Архив
-		<= Tracks $bog_vk_tracks
-			audios <= visible_audios /
-			current_audio <= current_audio null
-			play_audio? <=> on_play_audio? null
+		<= Tracks $bog_music_tracks
+			track_keys <= visible_keys /
+			current_key <= current_key \
+			play_key? <=> play_key? null
 			archive_mode <= archive_mode false
 			reorder_to? <=> reorder_to? null
-			archive_audio? <=> archive_audio? null
-			restore_audio? <=> restore_audio? null
-			delete_audio? <=> delete_audio? null
+			archive_key? <=> archive_key? null
+			restore_key? <=> restore_key? null
+			delete_key? <=> delete_key? null
 	foot /
-		<= Player $bog_vk_player
-			queue <= visible_audios /
-			current_audio? <=> current_audio? null
+		<= Player $bog_music_player
+			queue_keys <= visible_keys /
+			current_key? <=> current_key? \
 			pick_next? <=> player_pick_next? null

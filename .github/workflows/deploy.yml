@@ -1,4 +1,4 @@
-name: $bog_vk
+name: $bog_music
 
 permissions: write-all
 
@@ -19,31 +19,31 @@ jobs:
 
     - uses: hyoo-ru/mam_build@master2
       with:
-        package: 'bog/vk'
+        package: 'bog/music'
         modules: 'app'
 
     - uses: hyoo-ru/gh-deploy@v4.4.1
       if: github.ref == 'refs/heads/master'
       with:
-        folder: 'bog/vk/app/-'
+        folder: 'bog/music/app/-'
 
     - name: Pack extension
       if: github.ref == 'refs/heads/master'
       run: |
-        cd bog/vk/app/-
-        zip -r "$GITHUB_WORKSPACE/bog-vk-extension-build-${{ github.run_number }}.zip" .
+        cd bog/music/app/-
+        zip -r "$GITHUB_WORKSPACE/bog-music-extension-build-${{ github.run_number }}.zip" .
 
     - name: Publish release
       if: github.ref == 'refs/heads/master'
       uses: softprops/action-gh-release@v2
       with:
-        files: bog-vk-extension-*.zip
+        files: bog-music-extension-*.zip
         tag_name: build-${{ github.run_number }}
         name: build-${{ github.run_number }}
         body: |
           ## Установка расширения вручную (Chrome / Edge / Brave)
 
-          1. Скачай `bog-vk-extension-build-${{ github.run_number }}.zip` ниже
+          1. Скачай `bog-music-extension-build-${{ github.run_number }}.zip` ниже
           2. Распакуй архив в любую постоянную папку (если удалишь — расширение перестанет работать)
           3. Открой `chrome://extensions/`
           4. Включи **Режим разработчика** (тумблер справа сверху)

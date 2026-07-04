@@ -9,17 +9,17 @@
 (function () {
 	'use strict'
 
-	console.info('[bog_vk_ext] content_script loaded on', location.host)
+	console.info('[bog_music_ext] content_script loaded on', location.host)
 
 	// --- 1) Inject page-world patch via <script src="chrome-extension://...">.
 
 	try {
 		const tag = document.createElement('script')
-		tag.src = chrome.runtime.getURL('bog/vk/ext/inject.js')
+		tag.src = chrome.runtime.getURL('bog/music/ext/inject.js')
 		tag.onload = () => tag.remove()
 		;(document.head || document.documentElement).appendChild(tag)
 	} catch (e) {
-		console.warn('[bog_vk_ext] inject failed', e)
+		console.warn('[bog_music_ext] inject failed', e)
 	}
 
 	// --- 2) Isolated-world: keep token + audios cache --------------------------
@@ -31,21 +31,21 @@
 	window.addEventListener('message', (e) => {
 		if (e.source !== window) return
 		const msg = e.data
-		if (!msg || typeof msg.__bog_vk !== 'string') return
+		if (!msg || typeof msg.__bog_music !== 'string') return
 
-		if (msg.__bog_vk === 'token') {
+		if (msg.__bog_music === 'token') {
 			const token = msg.token || msg.data
 			if (!token) return
 			try {
 				chrome.storage.local.get(['vk_token'], (cur) => {
 					if (cur && cur.vk_token === token) return
 					chrome.storage.local.set({ vk_token: token })
-					console.info('[bog_vk_ext] token captured from vk.com')
+					console.info('[bog_music_ext] token captured from vk.com')
 				})
 			} catch (e) {}
 		}
 
-		if (msg.__bog_vk === 'audios' && Array.isArray(msg.data)) {
+		if (msg.__bog_music === 'audios' && Array.isArray(msg.data)) {
 			for (const a of msg.data) audios_cache.set(audio_key(a), a)
 		}
 	})
@@ -65,7 +65,7 @@
 		return new Promise((resolve, reject) => {
 			let port
 			try {
-				port = chrome.runtime.connect({ name: 'bog_vk_download' })
+				port = chrome.runtime.connect({ name: 'bog_music_download' })
 			} catch (e) {
 				reject(e)
 				return
@@ -118,7 +118,7 @@
 			set_state('done', '✓')
 			setTimeout(() => set_state('', '⬇'), 2000)
 		} catch (e) {
-			console.warn('[bog_vk_ext] save failed', e)
+			console.warn('[bog_music_ext] save failed', e)
 			set_state('error', '⚠')
 			const text = is_context_dead_error(e)
 				? 'Расширение / SW упал. Открой extension popup и нажми ⟳, потом F5 на vk.com'
@@ -126,7 +126,7 @@
 			if (btn) btn.title = text
 			setTimeout(() => {
 				set_state('', '⬇')
-				if (btn) btn.title = 'Сохранить в Bog VK'
+				if (btn) btn.title = 'Сохранить в Bog Music'
 			}, 5000)
 		}
 	}
@@ -134,7 +134,7 @@
 	// --- 4) UI injection: place a Save button on every audio row ----------------
 
 	const STYLE = `
-		.bog-vk-dl {
+		.bog-music-dl {
 			display: inline-flex; align-items: center; justify-content: center;
 			flex: 0 0 auto;
 			width: 24px; height: 24px; padding: 0; margin: 0 6px;
@@ -144,17 +144,17 @@
 			vertical-align: middle;
 			transition: color .15s, background .15s, transform .15s;
 		}
-		.bog-vk-dl:hover { color: var(--vkui--color_icon_accent_themed, #4986cc); background: rgba(0, 16, 61, 0.06); }
-		.bog-vk-dl:active { transform: scale(0.92); }
-		.bog-vk-dl[data-state="loading"] { color: #4986cc; cursor: progress; }
-		.bog-vk-dl[data-state="done"]    { color: #2db849; }
-		.bog-vk-dl[data-state="error"]   { color: #d33; }
+		.bog-music-dl:hover { color: var(--vkui--color_icon_accent_themed, #4986cc); background: rgba(0, 16, 61, 0.06); }
+		.bog-music-dl:active { transform: scale(0.92); }
+		.bog-music-dl[data-state="loading"] { color: #4986cc; cursor: progress; }
+		.bog-music-dl[data-state="done"]    { color: #2db849; }
+		.bog-music-dl[data-state="error"]   { color: #d33; }
 	`
 
 	function inject_style() {
-		if (document.getElementById('bog-vk-dl-style')) return
+		if (document.getElementById('bog-music-dl-style')) return
 		const s = document.createElement('style')
-		s.id = 'bog-vk-dl-style'
+		s.id = 'bog-music-dl-style'
 		s.textContent = STYLE
 		document.head.appendChild(s)
 	}
@@ -188,7 +188,7 @@
 	}
 
 	function add_button_to(row) {
-		if (!row || row.querySelector('.bog-vk-dl')) return
+		if (!row || row.querySelector('.bog-music-dl')) return
 		let audio = parse_row(row)
 		if (!audio) {
 			const fid = row.getAttribute && row.getAttribute('data-full-id')
@@ -203,8 +203,8 @@
 		if (!audio) return
 
 		const btn = document.createElement('button')
-		btn.className = 'bog-vk-dl'
-		btn.title = 'Сохранить в Bog VK'
+		btn.className = 'bog-music-dl'
+		btn.title = 'Сохранить в Bog Music'
 		btn.textContent = '⬇'
 		btn.addEventListener('click', (e) => {
 			e.preventDefault(); e.stopPropagation()
@@ -223,9 +223,9 @@
 		const rows = document.querySelectorAll('[data-audio]')
 		rows.forEach(add_button_to)
 		document.querySelectorAll('[data-full-id][class*="audio_row"], [data-full-id][class*="AudioRow"]').forEach(add_button_to)
-		if (rows.length && !window.__bog_vk_scan_logged) {
-			console.info('[bog_vk_ext] found', rows.length, 'audio rows on', location.host)
-			window.__bog_vk_scan_logged = true
+		if (rows.length && !window.__bog_music_scan_logged) {
+			console.info('[bog_music_ext] found', rows.length, 'audio rows on', location.host)
+			window.__bog_music_scan_logged = true
 		}
 	}
 

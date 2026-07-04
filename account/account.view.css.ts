@@ -1,5 +1,5 @@
 namespace $.$$ {
-	$mol_style_define($bog_vk_account, {
+	$mol_style_define($bog_music_account, {
 		flex: { direction: 'column' },
 		width: '100%',
 		boxSizing: 'border-box',

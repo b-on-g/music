@@ -1,47 +1,25 @@
 namespace $.$$ {
-	export class $bog_vk_track extends $.$bog_vk_track {
-		audio_data() {
-			return this.audio() as $bog_vk_api_audio | null
+	export class $bog_music_track extends $.$bog_music_track {
+
+		/** Доменная модель трека по ключу. */
+		track() {
+			return $bog_music_account_baza.home().track(this.key())
 		}
 
 		title() {
-			return this.audio_data()?.title ?? ''
+			return this.track()?.Title()?.val() ?? ''
 		}
 
 		artist() {
-			return this.audio_data()?.artist ?? ''
+			return this.track()?.Artist()?.val() ?? ''
 		}
 
-		cover() {
-			return this.audio_data()?.album?.thumb?.photo_300 ?? ''
-		}
-
-		Cover() {
-			if (!this.cover()) return null as any
-			return super.Cover()
-		}
-
-		Cover_placeholder() {
-			if (this.cover()) return null as any
-			return super.Cover_placeholder()
-		}
-
-
-		@$mol_mem
-		cached(next?: boolean) {
-			const audio = this.audio_data()
-			if (!audio) return false
-			if (next !== undefined) return next
-			try {
-				return $bog_vk_app.Root(0).is_cached(audio)
-			} catch (e: any) {
-				if (e instanceof Promise) throw e
-				return false
-			}
+		cached() {
+			return this.track()?.cached() ?? false
 		}
 
 		is_local() {
-			return this.audio_data()?.owner_id === 0
+			return this.track()?.audio()?.owner_id === 0
 		}
 
 		can_drag() {
@@ -64,14 +42,14 @@ namespace $.$$ {
 		}
 
 		Delete() {
-			if (!this.archive_mode()) return null as any
+			if (this.archive_mode()) return null as any
 			if (this.is_local()) return null as any
 			if (!this.cached()) return null as any
 			return super.Delete()
 		}
 
 		on_play_click() {
-			this.play(this.audio())
+			this.play(this.key())
 		}
 
 		event_drag_start(event: DragEvent) {
@@ -98,73 +76,52 @@ namespace $.$$ {
 			this.drop_here()
 		}
 
+		@$mol_action
 		delete_cached() {
-			const audio = this.audio_data()
-			if (!audio) return
-			$bog_vk_app.Root(0).drop_blob(audio)
-			this.cached(false)
+			$bog_music_account_baza.home().drop_blob(this.key())
 		}
 
-		// =========================================================================
-		// Share — long-press = вход в multi-select, click = single share / toggle
-		// =========================================================================
+		// =====================================================================
+		// Share: long-press = вход в multi-select, клик = single share / toggle
+		// =====================================================================
 
+		share() {
+			return $bog_music_share.instance()
+		}
+
+		share_selected() {
+			return this.share().selected(this.key())
+		}
+
+		// Состояние жеста long-press: не reactive-состояние, а таймер DOM-жеста.
 		private _share_press_timer: ReturnType<typeof setTimeout> | null = null
 		private _share_long_press_fired = false
 		private static SHARE_LONG_PRESS_MS = 450
 
-		@$mol_mem
-		share_selected() {
-			const audio = this.audio_data()
-			if (!audio) return false
-			try {
-				return $bog_vk_app.Root(0).share_is_selected(audio)
-			} catch (e: any) {
-				if (e instanceof Promise) throw e
-				return false
-			}
-		}
-
 		share_pointer_down(event?: Event) {
 			if (!event) return null
-			const e = event as PointerEvent
-			e.stopPropagation()
+			event.stopPropagation()
 			this._share_long_press_fired = false
 			if (this._share_press_timer) clearTimeout(this._share_press_timer)
 			this._share_press_timer = setTimeout(() => {
 				this._share_press_timer = null
 				this._share_long_press_fired = true
-				try {
-					const audio = this.audio_data()
-					if (audio) $bog_vk_app.Root(0).share_enter(audio)
-				} catch (err) {
-					// audio_data может бросить Promise при загрузке baza —
-					// глотаем, long-press теряется, пользователь повторит.
-				}
-			}, $bog_vk_track.SHARE_LONG_PRESS_MS)
+				this.share().enter(this.key())
+			}, $bog_music_track.SHARE_LONG_PRESS_MS)
 			return null
 		}
 
 		share_pointer_up(event?: Event) {
 			if (!event) return null
-			const e = event as PointerEvent
-			e.stopPropagation()
+			event.stopPropagation()
 			if (this._share_press_timer) {
 				clearTimeout(this._share_press_timer)
 				this._share_press_timer = null
 			}
 			if (this._share_long_press_fired) return null
-			try {
-				const audio = this.audio_data()
-				if (!audio) return null
-				const app = $bog_vk_app.Root(0)
-				if (app.share_mode()) app.share_toggle(audio)
-				else app.share_single(audio)
-			} catch (err) {
-				// audio_data() / share_mode() могут бросить Promise при загрузке
-				// baza. Глотаем — пользователь повторит, повторный wire-retry
-				// не нужен (он бы ничего полезного не делал, audio тот же).
-			}
+			const share = this.share()
+			if (share.mode()) share.toggle(this.key())
+			else share.share_single(this.key())
 			return null
 		}
 
@@ -179,5 +136,6 @@ namespace $.$$ {
 		share_pointer_leave(event?: Event) {
 			return this.share_pointer_cancel(event)
 		}
+
 	}
 }

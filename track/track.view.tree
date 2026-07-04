@@ -1,5 +1,5 @@
-$bog_vk_track $mol_view
-	audio null
+$bog_music_track $mol_view
+	key \
 	current false
 	play? null
 	archive_mode false
@@ -11,8 +11,8 @@ $bog_vk_track $mol_view
 	delete_forever? null
 	share_selected false
 	attr *
-		bog_vk_track_current <= current
-		bog_vk_track_share_selected <= share_selected
+		bog_music_track_current <= current
+		bog_music_track_share_selected <= share_selected
 		draggable <= can_drag
 	event *
 		dragstart?event <=> event_drag_start?event null
@@ -23,8 +23,6 @@ $bog_vk_track $mol_view
 			event *
 				click?event <=> on_play_click? null
 			sub /
-				<= Cover $mol_image
-					uri <= cover \
 				<= Cover_placeholder $mol_icon_music
 		<= Info $mol_view
 			event *
@@ -36,8 +34,8 @@ $bog_vk_track $mol_view
 					title <= artist \
 		<= Share $mol_view
 			attr *
-				bog_vk_track_share_button true
-				bog_vk_track_share_selected <= share_selected
+				bog_music_track_share_button true
+				bog_music_track_share_selected <= share_selected
 			event *
 				pointerdown?event <=> share_pointer_down?event null
 				pointerup?event <=> share_pointer_up?event null

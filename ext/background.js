@@ -8,9 +8,9 @@
 // Теперь content.js шлёт только { type:'download_track', audio } — крохотный
 // JSON. Бинарь не выходит за границу chrome-extension origin.
 
-const OFFSCREEN_URL = 'bog/vk/ext/offscreen.html'
+const OFFSCREEN_URL = 'bog/music/ext/offscreen.html'
 const APP_URL = 'index.html'
-const PENDING_DB = 'bog_vk_pending'
+const PENDING_DB = 'bog_music_pending'
 const PENDING_STORE = 'pending'
 
 let creating = null
@@ -31,7 +31,7 @@ chrome.action.onClicked.addListener( async () => {
 		}
 		await chrome.tabs.create( { url } )
 	} catch ( e ) {
-		console.warn( '[bog_vk_ext] open tab failed', e )
+		console.warn( '[bog_music_ext] open tab failed', e )
 	}
 } )
 
@@ -282,7 +282,7 @@ chrome.runtime.onMessage.addListener( ( msg, _sender, reply ) => {
 // reply-канал имеет timeout/SW dies → «channel closed». Port держит SW
 // живым явно: пока порт connected, SW не убивают.
 chrome.runtime.onConnect.addListener( ( port ) => {
-	if ( port.name !== 'bog_vk_download' ) return
+	if ( port.name !== 'bog_music_download' ) return
 	port.onMessage.addListener( async ( msg ) => {
 		if ( msg?.type !== 'download_track' ) return
 		try {
