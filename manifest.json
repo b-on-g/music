@@ -29,8 +29,8 @@
 		"https://*.vk.ru/*",
 		"https://vk.ru/*",
 		"https://*.userapi.com/*",
-		"https://baza.91.219.148.98.ip.giper.dev/*",
-		"wss://baza.91.219.148.98.ip.giper.dev/*"
+		"https://baza.87.120.36.150.ip.giper.dev/*",
+		"wss://baza.87.120.36.150.ip.giper.dev/*"
 	],
 	"icons": [
 		{

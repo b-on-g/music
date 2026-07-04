@@ -19980,28 +19980,29 @@ var $;
             const proto = location.protocol;
             return proto === 'chrome-extension:' || proto === 'moz-extension:';
         }
+        /** Актуальный baza-master. Bundled seed может указывать на недоступный хост. */
+        static master = 'https://baza.87.120.36.150.ip.giper.dev/';
         /**
-         * В chrome-extension контексте `location.origin` имеет схему
-         * `chrome-extension://`, и yard.web.ts пушит его в masters_default; peers
-         * из Seed могут принести относительные URL с той же проблемой. Любой
-         * такой URL → `new WebSocket(...)` → SyntaxError. Чистим список и
-         * подкладываем актуальный master (bundled Seed на холодном старте может
-         * не успеть отдать его до первого connect).
+         * Подкладываем актуальный master (bundled Seed на холодном старте может
+         * не успеть отдать его до первого connect, а его peers могут быть
+         * недоступны). В chrome-extension контексте дополнительно чистим список:
+         * `location.origin` имеет схему `chrome-extension://`, yard.web.ts пушит
+         * его в masters_default; peers из Seed могут принести относительные URL
+         * с той же проблемой. Любой такой URL → `new WebSocket(...)` → SyntaxError.
          */
         static fix_yard_masters() {
             try {
-                if (!this.in_extension())
-                    return;
-                const FALLBACK_MASTER = 'https://baza.91.219.148.98.ip.giper.dev/';
                 const yard = $giper_baza_yard;
                 const list = yard.masters_default;
+                if (!list.includes(this.master))
+                    list.push(this.master);
+                if (!this.in_extension())
+                    return;
                 for (let i = list.length - 1; i >= 0; i--) {
                     const stale = list[i] === 'https://baza.giper.dev/'; // мёртвый мастер
                     if (stale || !/^(http|https|ws|wss):/.test(list[i]))
                         list.splice(i, 1);
                 }
-                if (!list.includes(FALLBACK_MASTER))
-                    list.push(FALLBACK_MASTER);
                 if (!yard.__bog_music_masters_patched) {
                     const orig = yard.masters.bind(yard);
                     Object.defineProperty(yard, 'masters', {
@@ -22206,6 +22207,15 @@ var $;
 "use strict";
 var $;
 (function ($) {
+    /**
+     * Рабочий baza-master экосистемы bog. Bundled seed (giper/baza peer.baza)
+     * может указывать на недоступный хост — добавляем актуальный явно,
+     * чтобы виджет фидбека работал в любом приложении без своего boot-кода.
+     */
+    $.$bog_feedback2_master = 'https://baza.87.120.36.150.ip.giper.dev/';
+    if (!$giper_baza_yard.masters_default.includes($.$bog_feedback2_master)) {
+        $giper_baza_yard.masters_default.push($.$bog_feedback2_master);
+    }
     /** Отдельный отзыв пользователя. Ключ в dict — lord string. */
     class $bog_feedback2_entry extends $giper_baza_dict.with({
         Text: $giper_baza_atom_text,
@@ -25281,7 +25291,7 @@ var $;
 			return "";
 		}
 		registry_link(){
-			return "CbZOQk9f_AuSVoHLt";
+			return "c0FEYfG8_tUFJEKfo";
 		}
 		title(){
 			return (this.$.$mol_locale.text("$bog_feedback2_form_title"));
@@ -25370,11 +25380,17 @@ var $;
                 const link = this.feedback_land_link();
                 if (link)
                     return this.$.$giper_baza_glob.Land(new $giper_baza_link(link));
-                // Only registry owner can auto-create feedback land
-                // Others must wait for registry sync from network
-                if (!this.is_owner())
+                // Реестр с пресетом [null, post]: ленд для нового feedback_id создаёт
+                // ПЕРВЫЙ посетитель, заход владельца не нужен. На старом read-only
+                // реестре запись доступна только владельцу — поведение как раньше.
+                if (!this.can_registry_post())
                     return null;
                 return this.land_ensure();
+            }
+            /** Хватает ли прав записать ссылку нового ленда в реестр. */
+            can_registry_post() {
+                const rank = this.registry_land().pass_rank(this.my_pass());
+                return $giper_baza_rank_tier_of(rank) >= $giper_baza_rank_tier.post;
             }
             land_ensure() {
                 const land = this.$.$giper_baza_glob.land_grab([[null, $giper_baza_rank_post('just')]]);

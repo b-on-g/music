@@ -1176,7 +1176,7 @@ $mol_text_list_item $mol_paragraph
 $bog_feedback2_form $mol_page
 	Head null
 	feedback_id \
-	registry_link \CbZOQk9f_AuSVoHLt
+	registry_link \c0FEYfG8_tUFJEKfo
 	title @ \Feedback ( one per user )
 	tools /
 		<= Close null

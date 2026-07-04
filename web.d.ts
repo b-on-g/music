@@ -39813,13 +39813,15 @@ declare namespace $ {
         static share_token: string;
         static init(): void;
         static in_extension(): boolean;
+        /** Актуальный baza-master. Bundled seed может указывать на недоступный хост. */
+        static master: string;
         /**
-         * В chrome-extension контексте `location.origin` имеет схему
-         * `chrome-extension://`, и yard.web.ts пушит его в masters_default; peers
-         * из Seed могут принести относительные URL с той же проблемой. Любой
-         * такой URL → `new WebSocket(...)` → SyntaxError. Чистим список и
-         * подкладываем актуальный master (bundled Seed на холодном старте может
-         * не успеть отдать его до первого connect).
+         * Подкладываем актуальный master (bundled Seed на холодном старте может
+         * не успеть отдать его до первого connect, а его peers могут быть
+         * недоступны). В chrome-extension контексте дополнительно чистим список:
+         * `location.origin` имеет схему `chrome-extension://`, yard.web.ts пушит
+         * его в masters_default; peers из Seed могут принести относительные URL
+         * с той же проблемой. Любой такой URL → `new WebSocket(...)` → SyntaxError.
          */
         static fix_yard_masters(): void;
         /** Мост `chrome.storage.local.vk_token` → `localStorage.vk_token`. */
@@ -57912,6 +57914,12 @@ declare namespace $.$$ {
 }
 
 declare namespace $ {
+    /**
+     * Рабочий baza-master экосистемы bog. Bundled seed (giper/baza peer.baza)
+     * может указывать на недоступный хост — добавляем актуальный явно,
+     * чтобы виджет фидбека работал в любом приложении без своего boot-кода.
+     */
+    export const $bog_feedback2_master = "https://baza.87.120.36.150.ip.giper.dev/";
     const $bog_feedback2_entry_base: Omit<typeof $giper_baza_dict, "prototype"> & {
         new (...args: any[]): $mol_type_override<$giper_baza_dict, {
             readonly Text: (auto?: any) => $giper_baza_atom_text | null;
@@ -59109,6 +59117,8 @@ declare namespace $.$$ {
         /** Ссылка на feedback land: из URL (приоритет) или из реестра */
         feedback_land_link(): string | null;
         land(): $giper_baza_land | null;
+        /** Хватает ли прав записать ссылку нового ленда в реестр. */
+        can_registry_post(): boolean;
         land_ensure(): $giper_baza_land;
         entries_dict(): {
             Value: typeof $bog_feedback2_entry;
