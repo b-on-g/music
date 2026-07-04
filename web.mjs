@@ -34181,6 +34181,41 @@ var $;
                     return;
                 chrome.runtime.sendMessage({ target: 'offscreen', type, ...payload }).catch(() => { });
             }
+            // ---------- iOS keep-alive ----------
+            // iOS замораживает PWA через ~30-60с после паузы в фоне: JS мёртв,
+            // кнопки локскрина двигают Now Playing, но звука нет. Пока крутится
+            // беззвучный loop, WebKit держит audio session и страницу живыми,
+            // и play с локскрина реально отрабатывает.
+            _keepalive;
+            _keepalive_stop_timer;
+            // 4 сэмпла тишины 8kHz — минимальный валидный wav.
+            static SILENCE = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAACAgICA';
+            static KEEPALIVE_MAX_MS = 15 * 60 * 1000; // дальше пусть засыпает, батарея дороже
+            is_ios() {
+                return /iPad|iPhone|iPod/.test(navigator.userAgent)
+                    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            }
+            /** Создать и «разлочить» тихий элемент — только в контексте юзер-жеста. */
+            keepalive_unlock() {
+                if (!this.is_ios() || this._keepalive)
+                    return;
+                const el = new Audio($bog_music_player.SILENCE);
+                el.loop = true;
+                el.play().then(() => el.pause()).catch(() => { this._keepalive = undefined; });
+                this._keepalive = el;
+            }
+            keepalive_start() {
+                const el = this._keepalive;
+                if (!el)
+                    return;
+                el.play().catch(() => { });
+                clearTimeout(this._keepalive_stop_timer);
+                this._keepalive_stop_timer = setTimeout(() => this.keepalive_pause(), $bog_music_player.KEEPALIVE_MAX_MS);
+            }
+            keepalive_pause() {
+                clearTimeout(this._keepalive_stop_timer);
+                this._keepalive?.pause();
+            }
             // ---------- <audio> для PWA-режима ----------
             _audio_el;
             _last_blob_url = '';
@@ -34197,6 +34232,7 @@ var $;
                     catch { }
                     if ('mediaSession' in navigator)
                         navigator.mediaSession.playbackState = 'playing';
+                    this.keepalive_pause();
                 });
                 el.addEventListener('pause', () => {
                     try {
@@ -34205,6 +34241,8 @@ var $;
                     catch { }
                     if ('mediaSession' in navigator)
                         navigator.mediaSession.playbackState = 'paused';
+                    if (this.is_ios())
+                        this.keepalive_start();
                 });
                 el.addEventListener('timeupdate', () => {
                     this.current_time(el.currentTime);
@@ -34371,9 +34409,38 @@ var $;
                         if (details.seekTime != null)
                             el.currentTime = details.seekTime;
                     });
-                    ms.setActionHandler('play', () => { el.play().catch(() => { }); });
+                    ms.setActionHandler('play', () => { this.resume_robust(); });
                     ms.setActionHandler('pause', () => { el.pause(); });
                 }
+            }
+            /**
+             * Возобновление с локскрина/Control Center. Если страница успела
+             * замёрзнуть и source умер (играет «молча»), пересобираем src из blob
+             * и продолжаем с той же позиции.
+             */
+            resume_robust() {
+                const el = this.audio_el();
+                this.keepalive_pause();
+                el.play().catch(() => { });
+                setTimeout(() => {
+                    if (!el.error && el.readyState >= 2 && !el.paused)
+                        return;
+                    const key = this.current_key();
+                    if (!key)
+                        return;
+                    const pos = this.current_time();
+                    $mol_wire_async(this).blob_of(key).then((blob) => {
+                        if (!blob)
+                            return;
+                        if (this._last_blob_url)
+                            URL.revokeObjectURL(this._last_blob_url);
+                        const url = URL.createObjectURL(blob);
+                        this._last_blob_url = url;
+                        el.src = url;
+                        this.attach_seek_listener(el, pos);
+                        el.play().catch(() => { });
+                    }).catch(() => { });
+                }, 500);
             }
             apply_media_metadata(audio) {
                 if (!('mediaSession' in navigator))
@@ -34567,6 +34634,9 @@ var $;
                     this.dispatch_play_offscreen(key, audio, start_at);
                     return;
                 }
+                // Обычно play_track — следствие клика: единственный шанс разлочить
+                // беззвучный keep-alive элемент для iOS (см. выше).
+                this.keepalive_unlock();
                 const el = this.audio_el();
                 // iOS PWA: при заблокированном экране любой await перед el.play()
                 // рвёт audio-session continuation от ended-обработчика. Пробуем
@@ -34727,6 +34797,7 @@ var $;
                         this.send('resume');
                 }
                 else {
+                    this.keepalive_unlock();
                     const el = this.audio_el();
                     if (was_playing)
                         el.pause();

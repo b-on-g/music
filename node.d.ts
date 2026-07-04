@@ -53487,6 +53487,15 @@ declare namespace $.$$ {
         private _channel?;
         private channel;
         private send;
+        private _keepalive?;
+        private _keepalive_stop_timer;
+        private static SILENCE;
+        private static KEEPALIVE_MAX_MS;
+        private is_ios;
+        /** Создать и «разлочить» тихий элемент — только в контексте юзер-жеста. */
+        private keepalive_unlock;
+        private keepalive_start;
+        private keepalive_pause;
         private _audio_el?;
         private _last_blob_url;
         audio_el(): HTMLAudioElement;
@@ -53504,6 +53513,12 @@ declare namespace $.$$ {
         private restore_offscreen;
         private restore_local;
         private setup_media_session;
+        /**
+         * Возобновление с локскрина/Control Center. Если страница успела
+         * замёрзнуть и source умер (играет «молча»), пересобираем src из blob
+         * и продолжаем с той же позиции.
+         */
+        private resume_robust;
         private apply_media_metadata;
         playing(next?: boolean): boolean;
         current_time(next?: number): number;
