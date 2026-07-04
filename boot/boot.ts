@@ -24,27 +24,29 @@ namespace $ {
 			return proto === 'chrome-extension:' || proto === 'moz-extension:'
 		}
 
+		/** Актуальный baza-master. Bundled seed может указывать на недоступный хост. */
+		static master = 'https://baza.87.120.36.150.ip.giper.dev/'
+
 		/**
-		 * В chrome-extension контексте `location.origin` имеет схему
-		 * `chrome-extension://`, и yard.web.ts пушит его в masters_default; peers
-		 * из Seed могут принести относительные URL с той же проблемой. Любой
-		 * такой URL → `new WebSocket(...)` → SyntaxError. Чистим список и
-		 * подкладываем актуальный master (bundled Seed на холодном старте может
-		 * не успеть отдать его до первого connect).
+		 * Подкладываем актуальный master (bundled Seed на холодном старте может
+		 * не успеть отдать его до первого connect, а его peers могут быть
+		 * недоступны). В chrome-extension контексте дополнительно чистим список:
+		 * `location.origin` имеет схему `chrome-extension://`, yard.web.ts пушит
+		 * его в masters_default; peers из Seed могут принести относительные URL
+		 * с той же проблемой. Любой такой URL → `new WebSocket(...)` → SyntaxError.
 		 */
 		static fix_yard_masters() {
 			try {
-				if (!this.in_extension()) return
-
-				const FALLBACK_MASTER = 'https://baza.91.219.148.98.ip.giper.dev/'
-
 				const yard = $giper_baza_yard as any
 				const list: string[] = yard.masters_default
+				if (!list.includes(this.master)) list.push(this.master)
+
+				if (!this.in_extension()) return
+
 				for (let i = list.length - 1; i >= 0; i--) {
 					const stale = list[i] === 'https://baza.giper.dev/' // мёртвый мастер
 					if (stale || !/^(http|https|ws|wss):/.test(list[i])) list.splice(i, 1)
 				}
-				if (!list.includes(FALLBACK_MASTER)) list.push(FALLBACK_MASTER)
 
 				if (!yard.__bog_music_masters_patched) {
 					const orig = yard.masters.bind(yard)
