@@ -7,7 +7,7 @@ let last_blob_url = ''
 // chrome.runtime.sendMessage сериализует payload через JSON — ArrayBuffer/Blob
 // приходят как пустой `{}`. Поэтому play_track (с blob'ом) ходит через
 // BroadcastChannel: structured clone сохраняет Blob/ArrayBuffer как есть.
-const channel = new BroadcastChannel( 'bog_vk_player' )
+const channel = new BroadcastChannel( 'bog_music_player' )
 
 function broadcast( type, payload ) {
 	chrome.runtime.sendMessage( { target: 'popup', type, ...payload } ).catch( () => {} )

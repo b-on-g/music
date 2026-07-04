@@ -579,7 +579,7 @@ $mol_form $mol_list
 				<= Result $mol_status
 					message <= result? null
 
-$bog_vk_account $mol_view
+$bog_music_account $mol_view
 	sub /
 		<= Sync_row $mol_view
 			sub /
@@ -617,7 +617,7 @@ $bog_vk_account $mol_view
 						<= Import_hint $mol_paragraph
 							title \Перенести с другого устройства — вставь ссылку:
 						<= Import_input $mol_string
-							hint \https://.../vk/#account=...
+							hint \https://.../music/#account=...
 							value? <=> import_link? \
 						<= Import_apply $mol_button_minor
 							title \Применить
@@ -634,6 +634,105 @@ $bog_vk_account $mol_view
 	ext_hint @ \Скачать треки видимого плейлиста в расширение
 	pwa_label @ \Скачать плейлист zip-архивом
 	pwa_hint @ \Упаковать локально засинканные треки в zip и скачать на устройство
+
+$bog_music_tracks $mol_list
+	track_keys /
+	current_key \
+	play_key? null
+	archive_mode false
+	reorder_to? null
+	archive_key? null
+	restore_key? null
+	delete_key? null
+	rows <= track_rows /
+		<= Track*0 $bog_music_track
+			key <= track_key* \
+			current <= track_current* false
+			play? <=> track_play*? null
+			archive_mode <= archive_mode
+			can_drag <= track_can_drag* false
+			drag_start? <=> track_drag_start*? null
+			drop_here? <=> track_drop_here*? null
+			archive? <=> track_archive*? null
+			restore? <=> track_restore*? null
+			delete_forever? <=> track_delete*? null
+
+$mol_icon_music $mol_icon path \M21,3V15.5A3.5,3.5 0 0,1 17.5,19A3.5,3.5 0 0,1 14,15.5A3.5,3.5 0 0,1 17.5,12C18.04,12 18.55,12.12 19,12.34V6.47L9,8.6V17.5A3.5,3.5 0 0,1 5.5,21A3.5,3.5 0 0,1 2,17.5A3.5,3.5 0 0,1 5.5,14C6.04,14 6.55,14.12 7,14.34V6L21,3Z
+
+$mol_icon_share $mol_icon path \M21,12L14,5V9C7,10 4,15 3,20C5.5,16.5 9,14.9 14,14.9V19L21,12Z
+
+$mol_icon_delete $mol_icon path \M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z
+
+$mol_icon_archive $mol_icon path \M3,3H21V7H3V3M4,8H20V21H4V8M9.5,11A0.5,0.5 0 0,0 9,11.5V13H15V11.5A0.5,0.5 0 0,0 14.5,11H9.5Z
+
+$mol_icon_restore $mol_icon path \M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z
+
+$mol_icon_delete_forever $mol_icon path \M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8.46,11.88L9.87,10.47L12,12.59L14.12,10.47L15.53,11.88L13.41,14L15.53,16.12L14.12,17.53L12,15.41L9.88,17.53L8.47,16.12L10.59,14L8.46,11.88M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z
+
+$bog_music_track $mol_view
+	key \
+	current false
+	play? null
+	archive_mode false
+	can_drag false
+	drag_start? null
+	drop_here? null
+	archive? null
+	restore? null
+	delete_forever? null
+	share_selected false
+	attr *
+		bog_music_track_current <= current
+		bog_music_track_share_selected <= share_selected
+		draggable <= can_drag
+	event *
+		dragstart?event <=> event_drag_start?event null
+		dragover?event <=> event_drag_over?event null
+		drop?event <=> event_drop?event null
+	sub /
+		<= Cover_box $mol_view
+			event *
+				click?event <=> on_play_click? null
+			sub /
+				<= Cover_placeholder $mol_icon_music
+		<= Info $mol_view
+			event *
+				click?event <=> on_play_click?
+			sub /
+				<= Title $mol_paragraph
+					title <= title \
+				<= Artist $mol_paragraph
+					title <= artist \
+		<= Share $mol_view
+			attr *
+				bog_music_track_share_button true
+				bog_music_track_share_selected <= share_selected
+			event *
+				pointerdown?event <=> share_pointer_down?event null
+				pointerup?event <=> share_pointer_up?event null
+				pointercancel?event <=> share_pointer_cancel?event null
+				pointerleave?event <=> share_pointer_leave?event null
+			sub /
+				<= Share_icon $mol_icon_share
+		<= Delete $mol_button_minor
+			click? <=> delete_cached? null
+			sub /
+				<= Delete_icon $mol_icon_delete
+		<= Archive $mol_button_minor
+			hint \В архив
+			click? <=> archive? null
+			sub /
+				<= Archive_icon $mol_icon_archive
+		<= Restore $mol_button_minor
+			hint \Восстановить
+			click? <=> restore? null
+			sub /
+				<= Restore_icon $mol_icon_restore
+		<= Delete_forever $mol_button_minor
+			hint \Удалить навсегда
+			click? <=> delete_forever? null
+			sub /
+				<= Delete_forever_icon $mol_icon_delete_forever
 
 $mol_stack $mol_view
 
@@ -1141,107 +1240,6 @@ $mol_check_list $mol_view
 $mol_switch $mol_check_list
 	value? \
 
-$mol_icon_music $mol_icon path \M21,3V15.5A3.5,3.5 0 0,1 17.5,19A3.5,3.5 0 0,1 14,15.5A3.5,3.5 0 0,1 17.5,12C18.04,12 18.55,12.12 19,12.34V6.47L9,8.6V17.5A3.5,3.5 0 0,1 5.5,21A3.5,3.5 0 0,1 2,17.5A3.5,3.5 0 0,1 5.5,14C6.04,14 6.55,14.12 7,14.34V6L21,3Z
-
-$mol_icon_share $mol_icon path \M21,12L14,5V9C7,10 4,15 3,20C5.5,16.5 9,14.9 14,14.9V19L21,12Z
-
-$mol_icon_delete $mol_icon path \M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z
-
-$mol_icon_archive $mol_icon path \M3,3H21V7H3V3M4,8H20V21H4V8M9.5,11A0.5,0.5 0 0,0 9,11.5V13H15V11.5A0.5,0.5 0 0,0 14.5,11H9.5Z
-
-$mol_icon_restore $mol_icon path \M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z
-
-$mol_icon_delete_forever $mol_icon path \M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8.46,11.88L9.87,10.47L12,12.59L14.12,10.47L15.53,11.88L13.41,14L15.53,16.12L14.12,17.53L12,15.41L9.88,17.53L8.47,16.12L10.59,14L8.46,11.88M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z
-
-$bog_vk_track $mol_view
-	audio null
-	current false
-	play? null
-	archive_mode false
-	can_drag false
-	drag_start? null
-	drop_here? null
-	archive? null
-	restore? null
-	delete_forever? null
-	share_selected false
-	attr *
-		bog_vk_track_current <= current
-		bog_vk_track_share_selected <= share_selected
-		draggable <= can_drag
-	event *
-		dragstart?event <=> event_drag_start?event null
-		dragover?event <=> event_drag_over?event null
-		drop?event <=> event_drop?event null
-	sub /
-		<= Cover_box $mol_view
-			event *
-				click?event <=> on_play_click? null
-			sub /
-				<= Cover $mol_image
-					uri <= cover \
-				<= Cover_placeholder $mol_icon_music
-		<= Info $mol_view
-			event *
-				click?event <=> on_play_click?
-			sub /
-				<= Title $mol_paragraph
-					title <= title \
-				<= Artist $mol_paragraph
-					title <= artist \
-		<= Share $mol_view
-			attr *
-				bog_vk_track_share_button true
-				bog_vk_track_share_selected <= share_selected
-			event *
-				pointerdown?event <=> share_pointer_down?event null
-				pointerup?event <=> share_pointer_up?event null
-				pointercancel?event <=> share_pointer_cancel?event null
-				pointerleave?event <=> share_pointer_leave?event null
-			sub /
-				<= Share_icon $mol_icon_share
-		<= Delete $mol_button_minor
-			click? <=> delete_cached? null
-			sub /
-				<= Delete_icon $mol_icon_delete
-		<= Archive $mol_button_minor
-			hint \В архив
-			click? <=> archive? null
-			sub /
-				<= Archive_icon $mol_icon_archive
-		<= Restore $mol_button_minor
-			hint \Восстановить
-			click? <=> restore? null
-			sub /
-				<= Restore_icon $mol_icon_restore
-		<= Delete_forever $mol_button_minor
-			hint \Удалить навсегда
-			click? <=> delete_forever? null
-			sub /
-				<= Delete_forever_icon $mol_icon_delete_forever
-
-$bog_vk_tracks $mol_list
-	audios /
-	current_audio null
-	play_audio? null
-	archive_mode false
-	reorder_to? null
-	archive_audio? null
-	restore_audio? null
-	delete_audio? null
-	rows <= track_rows /
-		<= Track*0 $bog_vk_track
-			audio <= track_audio* null
-			current <= track_current* false
-			play? <=> track_play*? null
-			archive_mode <= archive_mode
-			can_drag <= track_can_drag* false
-			drag_start? <=> track_drag_start*? null
-			drop_here? <=> track_drop_here*? null
-			archive? <=> track_archive*? null
-			restore? <=> track_restore*? null
-			delete_forever? <=> track_delete*? null
-
 $mol_icon_skip_previous $mol_icon path \M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z
 
 $mol_icon_play $mol_icon path \M8,5.14V19.14L19,12.14L8,5.14Z
@@ -1268,9 +1266,9 @@ $mol_pop_over $mol_pop
 		mouseenter? <=> event_show? null
 		mouseleave? <=> event_hide? null
 
-$bog_vk_player $mol_view
-	current_audio? null
-	queue /
+$bog_music_player $mol_view
+	current_key? \
+	queue_keys /
 	queue_index? 0
 	play_track? null
 	pick_next? null
@@ -1282,6 +1280,8 @@ $bog_vk_player $mol_view
 				<= Progress $mol_view
 					sub /
 						<= Progress_bar $mol_view
+							style *
+								width <= progress_width \
 						<= Trim_start_handle $mol_view
 							event *
 								pointerdown?event <=> trim_start_pointer_down?event null
@@ -1304,8 +1304,6 @@ $bog_vk_player $mol_view
 			sub /
 				<= Left $mol_view
 					sub /
-						<= Cover $mol_image
-							uri <= cover \
 						<= Cover_placeholder $mol_icon_music
 						<= Track_info $mol_view
 							sub /
@@ -1352,14 +1350,14 @@ $bog_vk_player $mol_view
 											style *
 												height <= volume_fill_height \
 
-$bog_vk_app $mol_page
+$bog_music_app $mol_page
 	plugins /
 		<= Theme $bog_theme_auto
 		<= Popup_fix $bog_popup_plugin
 		<= Tooltip $bog_tooltip_plugin
 	title \Bog Music
 	Title <= Brand $mol_image
-		uri \bog/vk/app/favicon.svg
+		uri \bog/music/app/favicon.svg
 		title <= title
 	tools /
 		<= Nickname_label $mol_view
@@ -1384,7 +1382,9 @@ $bog_vk_app $mol_page
 			theme_auto <= Theme
 	body_scroll_top? <=> scroll? 0
 	body /
-		<= Account $bog_vk_account
+		<= Account $bog_music_account
+			download_playlist? <=> download_playlist? null
+			download_playlist_status <= download_playlist_status \
 		<= Feedback $bog_feedback2_form
 			feedback_id \bog_vk
 		<= Share_toast $mol_view
@@ -1394,17 +1394,17 @@ $bog_vk_app $mol_page
 			options <= tab_options *
 				my \Моя музыка
 				archive \Архив
-		<= Tracks $bog_vk_tracks
-			audios <= visible_audios /
-			current_audio <= current_audio null
-			play_audio? <=> on_play_audio? null
+		<= Tracks $bog_music_tracks
+			track_keys <= visible_keys /
+			current_key <= current_key \
+			play_key? <=> play_key? null
 			archive_mode <= archive_mode false
 			reorder_to? <=> reorder_to? null
-			archive_audio? <=> archive_audio? null
-			restore_audio? <=> restore_audio? null
-			delete_audio? <=> delete_audio? null
+			archive_key? <=> archive_key? null
+			restore_key? <=> restore_key? null
+			delete_key? <=> delete_key? null
 	foot /
-		<= Player $bog_vk_player
-			queue <= visible_audios /
-			current_audio? <=> current_audio? null
+		<= Player $bog_music_player
+			queue_keys <= visible_keys /
+			current_key? <=> current_key? \
 			pick_next? <=> player_pick_next? null

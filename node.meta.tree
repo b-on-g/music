@@ -89,7 +89,7 @@
 	deploy \/giper/baza/docker/autopull_and_restart.sh
 \/giper/baza/file
 	include \/mol/offline/install
-\/bog/vk/app
+\/bog/music/app
 	include \/mol/offline/install
-	deploy \/bog/vk/app/favicon.svg
-	deploy \/bog/vk/ext
+	deploy \/bog/music/app/favicon.svg
+	deploy \/bog/music/ext
