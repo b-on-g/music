@@ -55073,8 +55073,15 @@ declare namespace $.$$ {
         /** Нижняя навигация: music / account / feedback. */
         section(next?: string): string;
         body(): any[];
+        /**
+         * Поле ввода. Дефолт — из committed (URL), чтобы при возврате на
+         * секцию/заходе по ссылке в поле был текущий запрос, а не пусто.
+         */
         tube_query(next?: string): string;
-        /** Запрос, по которому реально ищем — коммитится кнопкой «Найти». */
+        /**
+         * Запрос, по которому реально ищем. Хранится в URL (`?q=`) — переживает
+         * переключение вкладок и перезагрузку, шарится ссылкой.
+         */
         tube_committed(next?: string): string;
         tube_find(): void;
         tube_items(): $bog_music_tube_item[];
