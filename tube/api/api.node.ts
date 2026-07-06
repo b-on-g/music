@@ -20,6 +20,31 @@ namespace $ {
 			return Number(process.env.BOG_MUSIC_TUBE_PORT ?? 9092)
 		}
 
+		// Предохранитель от форк-бомбы: каждый search/audio форкает yt-dlp
+		// (search ~5с CPU, audio ~10-30с). Без лимита спам с прода забивает
+		// CPU/память и вешает всю машину (вплоть до отказа ssh). Держим не
+		// больше MAX_JOBS одновременно, лишние запросы сразу отвечают 503,
+		// а не копят процессы.
+		static MAX_JOBS = 3
+		private active_jobs = 0
+
+		/** Разрешить новый yt-dlp job? Если да — резервирует слот. */
+		private take_slot(): boolean {
+			if (this.active_jobs >= $bog_music_tube_api.MAX_JOBS) return false
+			this.active_jobs++
+			return true
+		}
+
+		private free_slot() {
+			if (this.active_jobs > 0) this.active_jobs--
+		}
+
+		private busy(res: any) {
+			res.statusCode = 503
+			res.setHeader('Retry-After', '5')
+			try { res.end('{"error":"busy"}') } catch {}
+		}
+
 		override expressHandlers(): readonly $mol_server_middleware[] {
 			return [
 				this.expressCors(),
@@ -44,6 +69,7 @@ namespace $ {
 				res.end('{"error":"no query"}')
 				return
 			}
+			if (!this.take_slot()) { this.busy(res); return }
 			const child = spawn('yt-dlp', [
 				'--dump-json',
 				'--flat-playlist',
@@ -60,8 +86,11 @@ namespace $ {
 			child.stdout.on('data', (d: any) => out += d)
 			child.stderr.on('data', (d: any) => err += d)
 			const timer = setTimeout(() => { try { child.kill('SIGKILL') } catch {} }, 30000)
+			// Клиент ушёл (закрыл вкладку/отменил) — не держим yt-dlp зря.
+			req.on('close', () => { try { child.kill('SIGKILL') } catch {} })
 			child.on('close', (code: number) => {
 				clearTimeout(timer)
+				this.free_slot()
 				if (res.writableEnded) return
 				if (code !== 0 && !out) {
 					console.error('[tube] search fail:', err.slice(0, 300))
@@ -97,6 +126,7 @@ namespace $ {
 				res.end()
 				return
 			}
+			if (!this.take_slot()) { this.busy(res); return }
 			const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tube-'))
 			const file = path.join(dir, `${id}.m4a`)
 			const cleanup = () => { try { fs.rmSync(dir, { recursive: true, force: true }) } catch {} }
@@ -116,11 +146,13 @@ namespace $ {
 			})
 			let err = ''
 			child.stderr.on('data', (d: any) => err += d)
-			const timer = setTimeout(() => { try { child.kill('SIGKILL') } catch {} }, 10 * 60000)
+			// 3 мин достаточно на трек; раньше 10 мин копили процессы при спаме.
+			const timer = setTimeout(() => { try { child.kill('SIGKILL') } catch {} }, 3 * 60000)
 			req.on('close', () => { try { child.kill('SIGKILL') } catch {} })
 
 			child.on('close', (code: number) => {
 				clearTimeout(timer)
+				this.free_slot()
 				if (res.writableEnded) return
 				if (code !== 0 || !fs.existsSync(file)) {
 					console.error('[tube] audio fail:', id, err.slice(0, 300))

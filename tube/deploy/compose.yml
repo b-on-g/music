@@ -5,3 +5,9 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:9092:9092"
+    # Жёсткий потолок: даже при форк-бомбе yt-dlp контейнер не утащит хост
+    # (на той же машине живут baza и VPN, и всего 1 CPU / ~960MB). cpus < 1
+    # оставляет ядро остальным; pids-limit добивает форк-бомбу.
+    cpus: 0.75
+    mem_limit: 512m
+    pids_limit: 96

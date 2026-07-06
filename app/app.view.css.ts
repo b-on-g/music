@@ -66,10 +66,6 @@ namespace $.$$ {
 			flex: { grow: 1 },
 		},
 
-		Tube_list: {
-			flex: { direction: 'column' },
-		},
-
 		Foot: {
 			flex: {
 				direction: 'column',
