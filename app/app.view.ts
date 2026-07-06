@@ -327,15 +327,23 @@ namespace $.$$ {
 		// Поиск и скачивание из YouTube (сервер bog/music/tube)
 		// =====================================================================
 
+		/**
+		 * Поле ввода. Дефолт — из committed (URL), чтобы при возврате на
+		 * секцию/заходе по ссылке в поле был текущий запрос, а не пусто.
+		 */
 		@$mol_mem
 		tube_query(next?: string): string {
-			return next ?? ''
+			if (next !== undefined) return next
+			return this.tube_committed()
 		}
 
-		/** Запрос, по которому реально ищем — коммитится кнопкой «Найти». */
+		/**
+		 * Запрос, по которому реально ищем. Хранится в URL (`?q=`) — переживает
+		 * переключение вкладок и перезагрузку, шарится ссылкой.
+		 */
 		@$mol_mem
 		tube_committed(next?: string): string {
-			return next ?? ''
+			return $mol_state_arg.value('q', next) ?? ''
 		}
 
 		@$mol_action
