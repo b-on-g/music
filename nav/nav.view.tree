@@ -6,6 +6,11 @@ $bog_music_nav $mol_view
 			active <= music_active \off
 			Icon <= Music_icon $mol_icon_music
 			click? <=> music_click? null
+		<= Tab_search $bog_music_nav_item
+			label \Поиск
+			active <= search_active \off
+			Icon <= Search_icon $mol_icon_magnify
+			click? <=> search_click? null
 		<= Tab_account $bog_music_nav_item
 			label \Аккаунт
 			active <= account_active \off

@@ -50,6 +50,26 @@ namespace $.$$ {
 			},
 		},
 
+		Tube_bar: {
+			flex: { direction: 'row' },
+			gap: '0.5rem',
+			padding: {
+				top: '0.75rem',
+				bottom: '0.5rem',
+				left: '0.75rem',
+				right: '0.75rem',
+			},
+			align: { items: 'center' },
+		},
+
+		Tube_query: {
+			flex: { grow: 1 },
+		},
+
+		Tube_list: {
+			flex: { direction: 'column' },
+		},
+
 		Foot: {
 			flex: {
 				direction: 'column',

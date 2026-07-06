@@ -1,0 +1,7 @@
+services:
+  tube:
+    build: .
+    container_name: bog-music-tube
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9092:9092"

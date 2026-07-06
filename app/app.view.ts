@@ -314,12 +314,96 @@ namespace $.$$ {
 			switch (this.section()) {
 				case 'account': return [this.Account()]
 				case 'feedback': return [this.Feedback()]
+				case 'search': return [this.Tube_bar(), this.Tube_list()]
 			}
 			return [
 				this.Share_toast(),
 				this.Tabs(),
 				this.Tracks(),
 			]
+		}
+
+		// =====================================================================
+		// Поиск и скачивание из YouTube (сервер bog/music/tube)
+		// =====================================================================
+
+		@$mol_mem
+		tube_query(next?: string): string {
+			return next ?? ''
+		}
+
+		/** Запрос, по которому реально ищем — коммитится кнопкой «Найти». */
+		@$mol_mem
+		tube_committed(next?: string): string {
+			return next ?? ''
+		}
+
+		@$mol_action
+		tube_find() {
+			this.tube_committed(this.tube_query())
+		}
+
+		@$mol_mem
+		tube_items(): $bog_music_tube_item[] {
+			const q = this.tube_committed()
+			if (!q.trim()) return []
+			return $bog_music_tube.search(q)
+		}
+
+		@$mol_mem
+		tube_rows() {
+			return this.tube_items().map((_, i) => this.Tube_row(i))
+		}
+
+		tube_item(index: number): $bog_music_tube_item | null {
+			return this.tube_items()[index] ?? null
+		}
+
+		tube_title(index: number) {
+			return this.tube_item(index)?.title ?? ''
+		}
+
+		tube_meta(index: number) {
+			const item = this.tube_item(index)
+			if (!item) return ''
+			const dur = item.duration
+			const time = dur ? `${Math.floor(dur / 60)}:${String(Math.floor(dur % 60)).padStart(2, '0')}` : ''
+			return [item.channel, time].filter(Boolean).join(' · ')
+		}
+
+		@$mol_mem_key
+		tube_status_text(index: number, next?: string): string {
+			return next ?? ''
+		}
+
+		@$mol_action
+		tube_get(index: number) {
+			const item = this.tube_item(index)
+			if (!item) return
+			;($mol_wire_async(this) as any).tube_download(index, item)
+		}
+
+		async tube_download(index: number, item: $bog_music_tube_item) {
+			if (this.tube_status_text(index)) return
+			this.tube_status_text(index, 'Качаю…')
+			try {
+				const bytes = await $bog_music_tube.audio_bytes(item.id)
+				const audio: $bog_music_api_audio = {
+					id: $bog_music_account_baza.hash_str('yt:' + item.id),
+					owner_id: 0,
+					artist: item.channel,
+					title: item.title,
+					duration: item.duration,
+					url: '',
+				}
+				await ($mol_wire_async(this.account()) as any).import_audio(audio, bytes, 'audio/mp4')
+				this.tube_status_text(index, '✓ в Моей музыке')
+			} catch (e: any) {
+				if (e instanceof Promise) throw e
+				console.warn('[tube] download failed:', e?.message ?? e)
+				this.tube_status_text(index, 'Ошибка')
+				setTimeout(() => this.tube_status_text(index, ''), 4000)
+			}
 		}
 
 		nickname_label() {

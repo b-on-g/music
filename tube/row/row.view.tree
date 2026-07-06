@@ -1,0 +1,19 @@
+$bog_music_tube_row $mol_view
+	title \
+	subtitle \
+	status \
+	get? null
+	sub /
+		<= Info $mol_view
+			sub /
+				<= Title $mol_paragraph
+					title <= title
+				<= Subtitle $mol_paragraph
+					title <= subtitle
+		<= Status $mol_view
+			sub / <= status
+		<= Get $mol_button_minor
+			hint \Скачать в Мою музыку
+			click? <=> get? null
+			sub /
+				<= Get_icon $mol_icon_download

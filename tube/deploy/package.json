@@ -1,0 +1,11 @@
+{
+	"name": "bog-music-tube",
+	"private": true,
+	"dependencies": {
+		"express": "^4",
+		"cors": "^2",
+		"ws": "^8",
+		"compression": "^1",
+		"body-parser": "^1"
+	}
+}
