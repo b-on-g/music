@@ -8,6 +8,7 @@ $bog_music_app $mol_page
 		uri \bog/music/app/favicon.svg
 		title <= title
 	tools /
+		<= Sync_status $giper_baza_status
 		<= Nickname_label $mol_view
 			sub / <= nickname_label \
 		<= Version $mol_view
