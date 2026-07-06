@@ -10,18 +10,12 @@ $bog_music_app $mol_page
 	tools /
 		<= Nickname_label $mol_view
 			sub / <= nickname_label \
+		<= Version $mol_view
+			sub / <= version_label \
 		<= Wave_toggle $mol_check_icon
 			hint \Моя волна
 			Icon <= Wave_icon $mol_icon_chart_timeline_variant
 			checked? <=> wave_mode? false
-		<= Account_toggle $mol_check_icon
-			hint \Аккаунт
-			Icon <= Account_icon $mol_icon_account_circle
-			checked? <=> account_open? false
-		<= Feedback_toggle $mol_check_icon
-			hint \Обратная связь
-			Icon <= Feedback_icon $mol_icon_chat
-			checked? <=> feedback_open? false
 		<= Upload $mol_button_open
 			hint \Загрузить с устройства
 			accept \audio/*,.mp3,.m4a,.aac,.wav,.ogg,.flac
@@ -56,3 +50,5 @@ $bog_music_app $mol_page
 			queue_keys <= visible_keys /
 			current_key? <=> current_key? \
 			pick_next? <=> player_pick_next? null
+		<= Nav $bog_music_nav
+			section? <=> section? \music

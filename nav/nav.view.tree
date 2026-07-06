@@ -1,0 +1,18 @@
+$bog_music_nav $mol_view
+	section? \music
+	sub /
+		<= Tab_music $bog_music_nav_item
+			label \Музыка
+			active <= music_active \off
+			Icon <= Music_icon $mol_icon_music
+			click? <=> music_click? null
+		<= Tab_account $bog_music_nav_item
+			label \Аккаунт
+			active <= account_active \off
+			Icon <= Account_icon $mol_icon_account_circle
+			click? <=> account_click? null
+		<= Tab_feedback $bog_music_nav_item
+			label \Отзывы
+			active <= feedback_active \off
+			Icon <= Feedback_icon $mol_icon_chat
+			click? <=> feedback_click? null

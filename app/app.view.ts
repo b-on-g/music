@@ -300,24 +300,26 @@ namespace $.$$ {
 		// Тулбар, панели, тосты
 		// =====================================================================
 
+		version_label() {
+			return $bog_music_version
+		}
+
+		/** Нижняя навигация: music / account / feedback. */
 		@$mol_mem
-		account_open(next?: boolean) {
-			return $mol_state_local.value('music_account_open', next) ?? false
+		section(next?: string): string {
+			return next ?? 'music'
 		}
 
-		@$mol_mem
-		feedback_open(next?: boolean) {
-			return $mol_state_local.value('music_feedback_open', next) ?? false
-		}
-
-		Account() {
-			if (!this.account_open()) return null as any
-			return super.Account()
-		}
-
-		Feedback() {
-			if (!this.feedback_open()) return null as any
-			return super.Feedback()
+		body() {
+			switch (this.section()) {
+				case 'account': return [this.Account()]
+				case 'feedback': return [this.Feedback()]
+			}
+			return [
+				this.Share_toast(),
+				this.Tabs(),
+				this.Tracks(),
+			]
 		}
 
 		nickname_label() {

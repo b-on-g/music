@@ -1,0 +1,15 @@
+$bog_music_nav_item $mol_view
+	label \
+	active \off
+	Icon $mol_view
+	click? null
+	attr *
+		^
+		bog_music_nav_active <= active
+	event *
+		^
+		click? <=> click? null
+	sub /
+		<= Icon
+		<= Label $mol_view
+			sub / <= label

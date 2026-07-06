@@ -37,6 +37,29 @@ namespace $.$$ {
 			margin: { left: '0.5rem', right: '0.25rem' },
 		},
 
+		Version: {
+			font: {
+				size: '0.6875rem',
+				family: 'monospace',
+			},
+			color: $mol_theme.shade,
+			alignSelf: 'center',
+			padding: {
+				left: '0.25rem',
+				right: '0.25rem',
+			},
+		},
+
+		Foot: {
+			flex: {
+				direction: 'column',
+			},
+			align: {
+				items: 'stretch',
+			},
+			gap: 0,
+		},
+
 		Nickname_label: {
 			font: { size: '0.875rem' },
 			color: $mol_theme.shade,

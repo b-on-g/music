@@ -1,0 +1,27 @@
+#!/bin/sh
+# Автоинкремент версии приложения при каждом push: v1.0 -> v1.1 -> v1.2 …
+# Версия живёт в app/version.ts и показывается в тулбаре.
+#
+# pre-push не может изменить уже начатый push, поэтому хук сам коммитит бамп,
+# сам пушит (с защитой от рекурсии) и отменяет исходный push. Сообщение
+# «failed to push some refs» в конце — ожидаемое, реальный push уже улетел.
+
+[ -n "$BOG_VERSION_BUMP" ] && exit 0
+
+cd "$(git rev-parse --show-toplevel)" || exit 0
+FILE=app/version.ts
+
+CUR=$(sed -n "s/.*'v\([0-9][0-9]*\)\.\([0-9][0-9]*\)'.*/\1 \2/p" "$FILE")
+[ -z "$CUR" ] && exit 0
+MAJ=${CUR% *}
+MIN=${CUR#* }
+NEXT="v$MAJ.$((MIN+1))"
+
+sed -i '' "s/'v$MAJ\.$MIN'/'$NEXT'/" "$FILE" 2>/dev/null || sed -i "s/'v$MAJ\.$MIN'/'$NEXT'/" "$FILE"
+git add "$FILE"
+git commit -m "$NEXT" --quiet
+
+BOG_VERSION_BUMP=1 git push "$1"
+echo ""
+echo "✓ bog_version: $NEXT — запушено вместе с бампом; ошибку ниже игнорируй."
+exit 1
