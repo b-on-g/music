@@ -2684,33 +2684,6 @@ declare namespace $ {
 //# sourceMappingURL=icon.view.tree.d.ts.map
 declare namespace $ {
 
-	export class $mol_icon_account extends $mol_icon {
-		path( ): string
-	}
-	
-}
-
-//# sourceMappingURL=account.view.tree.d.ts.map
-declare namespace $ {
-
-	export class $mol_icon_account_circle extends $mol_icon {
-		path( ): string
-	}
-	
-}
-
-//# sourceMappingURL=circle.view.tree.d.ts.map
-declare namespace $ {
-
-	export class $mol_icon_chat extends $mol_icon {
-		path( ): string
-	}
-	
-}
-
-//# sourceMappingURL=chat.view.tree.d.ts.map
-declare namespace $ {
-
 	export class $mol_icon_upload extends $mol_icon {
 		path( ): string
 	}
@@ -54241,6 +54214,157 @@ declare namespace $.$$ {
 }
 
 declare namespace $ {
+
+	type $mol_view__sub_bog_music_nav_item_1 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	export class $bog_music_nav_item extends $mol_view {
+		click( next?: any ): any
+		Label( ): $mol_view
+		label( ): string
+		active( ): string
+		Icon( ): $mol_view
+		attr( ): ({ 
+			'bog_music_nav_active': ReturnType< $bog_music_nav_item['active'] >,
+		})  & ReturnType< $mol_view['attr'] >
+		event( ): ({ 
+			click( next?: ReturnType< $bog_music_nav_item['click'] > ): ReturnType< $bog_music_nav_item['click'] >,
+		})  & ReturnType< $mol_view['event'] >
+		sub( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=item.view.tree.d.ts.map
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_icon_account extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=account.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_account_circle extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=circle.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_chat extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=chat.view.tree.d.ts.map
+declare namespace $ {
+
+	type $bog_music_nav_item__label_bog_music_nav_1 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $bog_music_nav_item['label'] >
+	>
+	type $bog_music_nav_item__active_bog_music_nav_2 = $mol_type_enforce<
+		ReturnType< $bog_music_nav['music_active'] >
+		,
+		ReturnType< $bog_music_nav_item['active'] >
+	>
+	type $bog_music_nav_item__Icon_bog_music_nav_3 = $mol_type_enforce<
+		ReturnType< $bog_music_nav['Music_icon'] >
+		,
+		ReturnType< $bog_music_nav_item['Icon'] >
+	>
+	type $bog_music_nav_item__click_bog_music_nav_4 = $mol_type_enforce<
+		ReturnType< $bog_music_nav['music_click'] >
+		,
+		ReturnType< $bog_music_nav_item['click'] >
+	>
+	type $bog_music_nav_item__label_bog_music_nav_5 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $bog_music_nav_item['label'] >
+	>
+	type $bog_music_nav_item__active_bog_music_nav_6 = $mol_type_enforce<
+		ReturnType< $bog_music_nav['account_active'] >
+		,
+		ReturnType< $bog_music_nav_item['active'] >
+	>
+	type $bog_music_nav_item__Icon_bog_music_nav_7 = $mol_type_enforce<
+		ReturnType< $bog_music_nav['Account_icon'] >
+		,
+		ReturnType< $bog_music_nav_item['Icon'] >
+	>
+	type $bog_music_nav_item__click_bog_music_nav_8 = $mol_type_enforce<
+		ReturnType< $bog_music_nav['account_click'] >
+		,
+		ReturnType< $bog_music_nav_item['click'] >
+	>
+	type $bog_music_nav_item__label_bog_music_nav_9 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $bog_music_nav_item['label'] >
+	>
+	type $bog_music_nav_item__active_bog_music_nav_10 = $mol_type_enforce<
+		ReturnType< $bog_music_nav['feedback_active'] >
+		,
+		ReturnType< $bog_music_nav_item['active'] >
+	>
+	type $bog_music_nav_item__Icon_bog_music_nav_11 = $mol_type_enforce<
+		ReturnType< $bog_music_nav['Feedback_icon'] >
+		,
+		ReturnType< $bog_music_nav_item['Icon'] >
+	>
+	type $bog_music_nav_item__click_bog_music_nav_12 = $mol_type_enforce<
+		ReturnType< $bog_music_nav['feedback_click'] >
+		,
+		ReturnType< $bog_music_nav_item['click'] >
+	>
+	export class $bog_music_nav extends $mol_view {
+		music_active( ): string
+		Music_icon( ): $mol_icon_music
+		music_click( next?: any ): any
+		Tab_music( ): $bog_music_nav_item
+		account_active( ): string
+		Account_icon( ): $mol_icon_account_circle
+		account_click( next?: any ): any
+		Tab_account( ): $bog_music_nav_item
+		feedback_active( ): string
+		Feedback_icon( ): $mol_icon_chat
+		feedback_click( next?: any ): any
+		Tab_feedback( ): $bog_music_nav_item
+		section( next?: string ): string
+		sub( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=nav.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $bog_music_nav extends $.$bog_music_nav {
+        music_active(): "on" | "off";
+        account_active(): "on" | "off";
+        feedback_active(): "on" | "off";
+        music_click(e?: Event): null;
+        account_click(e?: Event): null;
+        feedback_click(e?: Event): null;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
     /**
      * Чистый утилитарный класс — скачивание HLS, демукс TS, MP4-мукс,
      * расшифровка AES-CBC. Без записи в baza: байты сохраняет домен
@@ -54337,6 +54461,10 @@ declare namespace $ {
 }
 
 declare namespace $ {
+    let $bog_music_version: string;
+}
+
+declare namespace $ {
 
 	type $mol_image__uri_bog_music_app_1 = $mol_type_enforce<
 		string
@@ -54353,155 +54481,135 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_check_icon__hint_bog_music_app_4 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_check_icon['hint'] >
-	>
-	type $mol_check_icon__Icon_bog_music_app_5 = $mol_type_enforce<
-		ReturnType< $bog_music_app['Wave_icon'] >
-		,
-		ReturnType< $mol_check_icon['Icon'] >
-	>
-	type $mol_check_icon__checked_bog_music_app_6 = $mol_type_enforce<
-		ReturnType< $bog_music_app['wave_mode'] >
-		,
-		ReturnType< $mol_check_icon['checked'] >
-	>
-	type $mol_check_icon__hint_bog_music_app_7 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_check_icon['hint'] >
-	>
-	type $mol_check_icon__Icon_bog_music_app_8 = $mol_type_enforce<
-		ReturnType< $bog_music_app['Account_icon'] >
-		,
-		ReturnType< $mol_check_icon['Icon'] >
-	>
-	type $mol_check_icon__checked_bog_music_app_9 = $mol_type_enforce<
-		ReturnType< $bog_music_app['account_open'] >
-		,
-		ReturnType< $mol_check_icon['checked'] >
-	>
-	type $mol_check_icon__hint_bog_music_app_10 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_check_icon['hint'] >
-	>
-	type $mol_check_icon__Icon_bog_music_app_11 = $mol_type_enforce<
-		ReturnType< $bog_music_app['Feedback_icon'] >
-		,
-		ReturnType< $mol_check_icon['Icon'] >
-	>
-	type $mol_check_icon__checked_bog_music_app_12 = $mol_type_enforce<
-		ReturnType< $bog_music_app['feedback_open'] >
-		,
-		ReturnType< $mol_check_icon['checked'] >
-	>
-	type $mol_button_open__hint_bog_music_app_13 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_button_open['hint'] >
-	>
-	type $mol_button_open__accept_bog_music_app_14 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_button_open['accept'] >
-	>
-	type $mol_button_open__files_bog_music_app_15 = $mol_type_enforce<
-		ReturnType< $bog_music_app['upload_files'] >
-		,
-		ReturnType< $mol_button_open['files'] >
-	>
-	type $bog_theme_toggle__theme_auto_bog_music_app_16 = $mol_type_enforce<
-		ReturnType< $bog_music_app['Theme'] >
-		,
-		ReturnType< $bog_theme_toggle['theme_auto'] >
-	>
-	type $bog_music_account__download_playlist_bog_music_app_17 = $mol_type_enforce<
-		ReturnType< $bog_music_app['download_playlist'] >
-		,
-		ReturnType< $bog_music_account['download_playlist'] >
-	>
-	type $bog_music_account__download_playlist_status_bog_music_app_18 = $mol_type_enforce<
-		ReturnType< $bog_music_app['download_playlist_status'] >
-		,
-		ReturnType< $bog_music_account['download_playlist_status'] >
-	>
-	type $bog_feedback2_form__feedback_id_bog_music_app_19 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $bog_feedback2_form['feedback_id'] >
-	>
-	type $mol_view__sub_bog_music_app_20 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_app_4 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_switch__value_bog_music_app_21 = $mol_type_enforce<
+	type $mol_check_icon__hint_bog_music_app_5 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_check_icon['hint'] >
+	>
+	type $mol_check_icon__Icon_bog_music_app_6 = $mol_type_enforce<
+		ReturnType< $bog_music_app['Wave_icon'] >
+		,
+		ReturnType< $mol_check_icon['Icon'] >
+	>
+	type $mol_check_icon__checked_bog_music_app_7 = $mol_type_enforce<
+		ReturnType< $bog_music_app['wave_mode'] >
+		,
+		ReturnType< $mol_check_icon['checked'] >
+	>
+	type $mol_button_open__hint_bog_music_app_8 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_open['hint'] >
+	>
+	type $mol_button_open__accept_bog_music_app_9 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_open['accept'] >
+	>
+	type $mol_button_open__files_bog_music_app_10 = $mol_type_enforce<
+		ReturnType< $bog_music_app['upload_files'] >
+		,
+		ReturnType< $mol_button_open['files'] >
+	>
+	type $bog_theme_toggle__theme_auto_bog_music_app_11 = $mol_type_enforce<
+		ReturnType< $bog_music_app['Theme'] >
+		,
+		ReturnType< $bog_theme_toggle['theme_auto'] >
+	>
+	type $bog_music_account__download_playlist_bog_music_app_12 = $mol_type_enforce<
+		ReturnType< $bog_music_app['download_playlist'] >
+		,
+		ReturnType< $bog_music_account['download_playlist'] >
+	>
+	type $bog_music_account__download_playlist_status_bog_music_app_13 = $mol_type_enforce<
+		ReturnType< $bog_music_app['download_playlist_status'] >
+		,
+		ReturnType< $bog_music_account['download_playlist_status'] >
+	>
+	type $bog_feedback2_form__feedback_id_bog_music_app_14 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $bog_feedback2_form['feedback_id'] >
+	>
+	type $mol_view__sub_bog_music_app_15 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_switch__value_bog_music_app_16 = $mol_type_enforce<
 		ReturnType< $bog_music_app['page'] >
 		,
 		ReturnType< $mol_switch['value'] >
 	>
-	type $mol_switch__options_bog_music_app_22 = $mol_type_enforce<
+	type $mol_switch__options_bog_music_app_17 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tab_options'] >
 		,
 		ReturnType< $mol_switch['options'] >
 	>
-	type $bog_music_tracks__track_keys_bog_music_app_23 = $mol_type_enforce<
+	type $bog_music_tracks__track_keys_bog_music_app_18 = $mol_type_enforce<
 		ReturnType< $bog_music_app['visible_keys'] >
 		,
 		ReturnType< $bog_music_tracks['track_keys'] >
 	>
-	type $bog_music_tracks__current_key_bog_music_app_24 = $mol_type_enforce<
+	type $bog_music_tracks__current_key_bog_music_app_19 = $mol_type_enforce<
 		ReturnType< $bog_music_app['current_key'] >
 		,
 		ReturnType< $bog_music_tracks['current_key'] >
 	>
-	type $bog_music_tracks__play_key_bog_music_app_25 = $mol_type_enforce<
+	type $bog_music_tracks__play_key_bog_music_app_20 = $mol_type_enforce<
 		ReturnType< $bog_music_app['play_key'] >
 		,
 		ReturnType< $bog_music_tracks['play_key'] >
 	>
-	type $bog_music_tracks__archive_mode_bog_music_app_26 = $mol_type_enforce<
+	type $bog_music_tracks__archive_mode_bog_music_app_21 = $mol_type_enforce<
 		ReturnType< $bog_music_app['archive_mode'] >
 		,
 		ReturnType< $bog_music_tracks['archive_mode'] >
 	>
-	type $bog_music_tracks__reorder_to_bog_music_app_27 = $mol_type_enforce<
+	type $bog_music_tracks__reorder_to_bog_music_app_22 = $mol_type_enforce<
 		ReturnType< $bog_music_app['reorder_to'] >
 		,
 		ReturnType< $bog_music_tracks['reorder_to'] >
 	>
-	type $bog_music_tracks__archive_key_bog_music_app_28 = $mol_type_enforce<
+	type $bog_music_tracks__archive_key_bog_music_app_23 = $mol_type_enforce<
 		ReturnType< $bog_music_app['archive_key'] >
 		,
 		ReturnType< $bog_music_tracks['archive_key'] >
 	>
-	type $bog_music_tracks__restore_key_bog_music_app_29 = $mol_type_enforce<
+	type $bog_music_tracks__restore_key_bog_music_app_24 = $mol_type_enforce<
 		ReturnType< $bog_music_app['restore_key'] >
 		,
 		ReturnType< $bog_music_tracks['restore_key'] >
 	>
-	type $bog_music_tracks__delete_key_bog_music_app_30 = $mol_type_enforce<
+	type $bog_music_tracks__delete_key_bog_music_app_25 = $mol_type_enforce<
 		ReturnType< $bog_music_app['delete_key'] >
 		,
 		ReturnType< $bog_music_tracks['delete_key'] >
 	>
-	type $bog_music_player__queue_keys_bog_music_app_31 = $mol_type_enforce<
+	type $bog_music_player__queue_keys_bog_music_app_26 = $mol_type_enforce<
 		ReturnType< $bog_music_app['visible_keys'] >
 		,
 		ReturnType< $bog_music_player['queue_keys'] >
 	>
-	type $bog_music_player__current_key_bog_music_app_32 = $mol_type_enforce<
+	type $bog_music_player__current_key_bog_music_app_27 = $mol_type_enforce<
 		ReturnType< $bog_music_app['current_key'] >
 		,
 		ReturnType< $bog_music_player['current_key'] >
 	>
-	type $bog_music_player__pick_next_bog_music_app_33 = $mol_type_enforce<
+	type $bog_music_player__pick_next_bog_music_app_28 = $mol_type_enforce<
 		ReturnType< $bog_music_app['player_pick_next'] >
 		,
 		ReturnType< $bog_music_player['pick_next'] >
+	>
+	type $bog_music_nav__section_bog_music_app_29 = $mol_type_enforce<
+		ReturnType< $bog_music_app['section'] >
+		,
+		ReturnType< $bog_music_nav['section'] >
 	>
 	export class $bog_music_app extends $mol_page {
 		Theme( ): $bog_theme_auto
@@ -54510,15 +54618,11 @@ declare namespace $ {
 		Brand( ): $mol_image
 		nickname_label( ): string
 		Nickname_label( ): $mol_view
+		version_label( ): string
+		Version( ): $mol_view
 		Wave_icon( ): $mol_icon_chart_timeline_variant
 		wave_mode( next?: boolean ): boolean
 		Wave_toggle( ): $mol_check_icon
-		Account_icon( ): $mol_icon_account_circle
-		account_open( next?: boolean ): boolean
-		Account_toggle( ): $mol_check_icon
-		Feedback_icon( ): $mol_icon_chat
-		feedback_open( next?: boolean ): boolean
-		Feedback_toggle( ): $mol_check_icon
 		upload_files( next?: readonly(File)[] ): readonly(File)[]
 		Upload( ): $mol_button_open
 		Theme_btn( ): $bog_theme_toggle
@@ -54546,6 +54650,8 @@ declare namespace $ {
 		Tracks( ): $bog_music_tracks
 		player_pick_next( next?: any ): any
 		Player( ): $bog_music_player
+		section( next?: string ): string
+		Nav( ): $bog_music_nav
 		plugins( ): readonly(any)[]
 		title( ): string
 		Title( ): ReturnType< $bog_music_app['Brand'] >
@@ -54609,10 +54715,10 @@ declare namespace $.$$ {
         prefetch_blobs(items: $bog_music_api_audio[]): Promise<void>;
         /** PWA-путь: локально засинканные блобы → zip → браузерный download. */
         download_zip_async(): Promise<void>;
-        account_open(next?: boolean): boolean;
-        feedback_open(next?: boolean): boolean;
-        Account(): any;
-        Feedback(): any;
+        version_label(): string;
+        /** Нижняя навигация: music / account / feedback. */
+        section(next?: string): string;
+        body(): any[];
         nickname_label(): string;
         share_toast_text(): string;
         Share_toast(): any;

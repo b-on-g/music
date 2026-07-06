@@ -5485,42 +5485,6 @@ var $;
 
 
 ;
-	($.$mol_icon_account) = class $mol_icon_account extends ($.$mol_icon) {
-		path(){
-			return "M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_account_circle) = class $mol_icon_account_circle extends ($.$mol_icon) {
-		path(){
-			return "M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_chat) = class $mol_icon_chat extends ($.$mol_icon) {
-		path(){
-			return "M12,3C17.5,3 22,6.58 22,11C22,15.42 17.5,19 12,19C10.76,19 9.57,18.82 8.47,18.5C5.55,21 2,21 2,21C4.33,18.67 4.7,17.1 4.75,16.5C3.05,15.07 2,13.13 2,11C2,6.58 6.5,3 12,3Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
 	($.$mol_icon_upload) = class $mol_icon_upload extends ($.$mol_icon) {
 		path(){
 			return "M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z";
@@ -19302,6 +19266,18 @@ var $;
         maxHeight: $mol_style_unit.vh(100),
     });
 })($ || ($ = {}));
+
+;
+	($.$mol_icon_account) = class $mol_icon_account extends ($.$mol_icon) {
+		path(){
+			return "M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z";
+		}
+	};
+
+
+;
+"use strict";
+
 
 ;
 	($.$mol_icon_security) = class $mol_icon_security extends ($.$mol_icon) {
@@ -35422,6 +35398,264 @@ var $;
 })($ || ($ = {}));
 
 ;
+	($.$bog_music_nav_item) = class $bog_music_nav_item extends ($.$mol_view) {
+		click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.label())]);
+			return obj;
+		}
+		label(){
+			return "";
+		}
+		active(){
+			return "off";
+		}
+		Icon(){
+			const obj = new this.$.$mol_view();
+			return obj;
+		}
+		attr(){
+			return {...(super.attr()), "bog_music_nav_active": (this.active())};
+		}
+		event(){
+			return {...(super.event()), "click": (next) => (this.click(next))};
+		}
+		sub(){
+			return [(this.Icon()), (this.Label())];
+		}
+	};
+	($mol_mem(($.$bog_music_nav_item.prototype), "click"));
+	($mol_mem(($.$bog_music_nav_item.prototype), "Label"));
+	($mol_mem(($.$bog_music_nav_item.prototype), "Icon"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_define($bog_music_nav_item, {
+        flex: { direction: 'column', grow: 1, basis: '0%' },
+        align: { items: 'center' },
+        justify: { content: 'center' },
+        gap: '2px',
+        padding: {
+            top: '0.5rem',
+            bottom: '0.5rem',
+            left: '0.5rem',
+            right: '0.5rem',
+        },
+        minWidth: 0,
+        minHeight: '3.5rem',
+        cursor: 'pointer',
+        userSelect: 'none',
+        borderRadius: '0.75rem',
+        color: $mol_theme.shade,
+        background: { color: 'transparent' },
+        transition: 'color 120ms ease, background-color 120ms ease',
+        Icon: {
+            width: '1.5rem',
+            height: '1.5rem',
+            color: 'inherit',
+        },
+        Label: {
+            font: { size: '0.6875rem', weight: 500 },
+            color: 'inherit',
+            whiteSpace: 'nowrap',
+        },
+        ':hover': {
+            background: { color: $mol_theme.hover },
+            color: $mol_theme.text,
+        },
+        '@': {
+            bog_music_nav_active: {
+                on: {
+                    color: $mol_theme.focus,
+                },
+            },
+        },
+    });
+})($ || ($ = {}));
+
+;
+	($.$mol_icon_account_circle) = class $mol_icon_account_circle extends ($.$mol_icon) {
+		path(){
+			return "M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_chat) = class $mol_icon_chat extends ($.$mol_icon) {
+		path(){
+			return "M12,3C17.5,3 22,6.58 22,11C22,15.42 17.5,19 12,19C10.76,19 9.57,18.82 8.47,18.5C5.55,21 2,21 2,21C4.33,18.67 4.7,17.1 4.75,16.5C3.05,15.07 2,13.13 2,11C2,6.58 6.5,3 12,3Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$bog_music_nav) = class $bog_music_nav extends ($.$mol_view) {
+		music_active(){
+			return "off";
+		}
+		Music_icon(){
+			const obj = new this.$.$mol_icon_music();
+			return obj;
+		}
+		music_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Tab_music(){
+			const obj = new this.$.$bog_music_nav_item();
+			(obj.label) = () => ("Музыка");
+			(obj.active) = () => ((this.music_active()));
+			(obj.Icon) = () => ((this.Music_icon()));
+			(obj.click) = (next) => ((this.music_click(next)));
+			return obj;
+		}
+		account_active(){
+			return "off";
+		}
+		Account_icon(){
+			const obj = new this.$.$mol_icon_account_circle();
+			return obj;
+		}
+		account_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Tab_account(){
+			const obj = new this.$.$bog_music_nav_item();
+			(obj.label) = () => ("Аккаунт");
+			(obj.active) = () => ((this.account_active()));
+			(obj.Icon) = () => ((this.Account_icon()));
+			(obj.click) = (next) => ((this.account_click(next)));
+			return obj;
+		}
+		feedback_active(){
+			return "off";
+		}
+		Feedback_icon(){
+			const obj = new this.$.$mol_icon_chat();
+			return obj;
+		}
+		feedback_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Tab_feedback(){
+			const obj = new this.$.$bog_music_nav_item();
+			(obj.label) = () => ("Отзывы");
+			(obj.active) = () => ((this.feedback_active()));
+			(obj.Icon) = () => ((this.Feedback_icon()));
+			(obj.click) = (next) => ((this.feedback_click(next)));
+			return obj;
+		}
+		section(next){
+			if(next !== undefined) return next;
+			return "music";
+		}
+		sub(){
+			return [
+				(this.Tab_music()), 
+				(this.Tab_account()), 
+				(this.Tab_feedback())
+			];
+		}
+	};
+	($mol_mem(($.$bog_music_nav.prototype), "Music_icon"));
+	($mol_mem(($.$bog_music_nav.prototype), "music_click"));
+	($mol_mem(($.$bog_music_nav.prototype), "Tab_music"));
+	($mol_mem(($.$bog_music_nav.prototype), "Account_icon"));
+	($mol_mem(($.$bog_music_nav.prototype), "account_click"));
+	($mol_mem(($.$bog_music_nav.prototype), "Tab_account"));
+	($mol_mem(($.$bog_music_nav.prototype), "Feedback_icon"));
+	($mol_mem(($.$bog_music_nav.prototype), "feedback_click"));
+	($mol_mem(($.$bog_music_nav.prototype), "Tab_feedback"));
+	($mol_mem(($.$bog_music_nav.prototype), "section"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $bog_music_nav extends $.$bog_music_nav {
+            music_active() { return this.section() === 'music' ? 'on' : 'off'; }
+            account_active() { return this.section() === 'account' ? 'on' : 'off'; }
+            feedback_active() { return this.section() === 'feedback' ? 'on' : 'off'; }
+            music_click(e) {
+                if (e)
+                    e.preventDefault();
+                this.section('music');
+                return null;
+            }
+            account_click(e) {
+                if (e)
+                    e.preventDefault();
+                this.section('account');
+                return null;
+            }
+            feedback_click(e) {
+                if (e)
+                    e.preventDefault();
+                this.section('feedback');
+                return null;
+            }
+        }
+        __decorate([
+            $mol_action
+        ], $bog_music_nav.prototype, "music_click", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_nav.prototype, "account_click", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_nav.prototype, "feedback_click", null);
+        $$.$bog_music_nav = $bog_music_nav;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_define($bog_music_nav, {
+        flex: { direction: 'row' },
+        padding: {
+            top: '0.375rem',
+            bottom: '0.375rem',
+            left: '0.5rem',
+            right: '0.5rem',
+        },
+        gap: '0.25rem',
+        background: { color: $mol_theme.card },
+        border: { top: { width: '1px', style: 'solid', color: $mol_theme.line } },
+    });
+})($ || ($ = {}));
+
+;
 "use strict";
 var $;
 (function ($) {
@@ -35783,6 +36017,14 @@ var $;
 			(obj.sub) = () => ([(this.nickname_label())]);
 			return obj;
 		}
+		version_label(){
+			return "";
+		}
+		Version(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.version_label())]);
+			return obj;
+		}
 		Wave_icon(){
 			const obj = new this.$.$mol_icon_chart_timeline_variant();
 			return obj;
@@ -35796,36 +36038,6 @@ var $;
 			(obj.hint) = () => ("Моя волна");
 			(obj.Icon) = () => ((this.Wave_icon()));
 			(obj.checked) = (next) => ((this.wave_mode(next)));
-			return obj;
-		}
-		Account_icon(){
-			const obj = new this.$.$mol_icon_account_circle();
-			return obj;
-		}
-		account_open(next){
-			if(next !== undefined) return next;
-			return false;
-		}
-		Account_toggle(){
-			const obj = new this.$.$mol_check_icon();
-			(obj.hint) = () => ("Аккаунт");
-			(obj.Icon) = () => ((this.Account_icon()));
-			(obj.checked) = (next) => ((this.account_open(next)));
-			return obj;
-		}
-		Feedback_icon(){
-			const obj = new this.$.$mol_icon_chat();
-			return obj;
-		}
-		feedback_open(next){
-			if(next !== undefined) return next;
-			return false;
-		}
-		Feedback_toggle(){
-			const obj = new this.$.$mol_check_icon();
-			(obj.hint) = () => ("Обратная связь");
-			(obj.Icon) = () => ((this.Feedback_icon()));
-			(obj.checked) = (next) => ((this.feedback_open(next)));
 			return obj;
 		}
 		upload_files(next){
@@ -35940,6 +36152,15 @@ var $;
 			(obj.pick_next) = (next) => ((this.player_pick_next(next)));
 			return obj;
 		}
+		section(next){
+			if(next !== undefined) return next;
+			return "music";
+		}
+		Nav(){
+			const obj = new this.$.$bog_music_nav();
+			(obj.section) = (next) => ((this.section(next)));
+			return obj;
+		}
 		plugins(){
 			return [
 				(this.Theme()), 
@@ -35956,9 +36177,8 @@ var $;
 		tools(){
 			return [
 				(this.Nickname_label()), 
+				(this.Version()), 
 				(this.Wave_toggle()), 
-				(this.Account_toggle()), 
-				(this.Feedback_toggle()), 
 				(this.Upload()), 
 				(this.Theme_btn())
 			];
@@ -35976,7 +36196,7 @@ var $;
 			];
 		}
 		foot(){
-			return [(this.Player())];
+			return [(this.Player()), (this.Nav())];
 		}
 	};
 	($mol_mem(($.$bog_music_app.prototype), "Theme"));
@@ -35984,15 +36204,10 @@ var $;
 	($mol_mem(($.$bog_music_app.prototype), "Tooltip"));
 	($mol_mem(($.$bog_music_app.prototype), "Brand"));
 	($mol_mem(($.$bog_music_app.prototype), "Nickname_label"));
+	($mol_mem(($.$bog_music_app.prototype), "Version"));
 	($mol_mem(($.$bog_music_app.prototype), "Wave_icon"));
 	($mol_mem(($.$bog_music_app.prototype), "wave_mode"));
 	($mol_mem(($.$bog_music_app.prototype), "Wave_toggle"));
-	($mol_mem(($.$bog_music_app.prototype), "Account_icon"));
-	($mol_mem(($.$bog_music_app.prototype), "account_open"));
-	($mol_mem(($.$bog_music_app.prototype), "Account_toggle"));
-	($mol_mem(($.$bog_music_app.prototype), "Feedback_icon"));
-	($mol_mem(($.$bog_music_app.prototype), "feedback_open"));
-	($mol_mem(($.$bog_music_app.prototype), "Feedback_toggle"));
 	($mol_mem(($.$bog_music_app.prototype), "upload_files"));
 	($mol_mem(($.$bog_music_app.prototype), "Upload"));
 	($mol_mem(($.$bog_music_app.prototype), "Theme_btn"));
@@ -36012,6 +36227,8 @@ var $;
 	($mol_mem(($.$bog_music_app.prototype), "Tracks"));
 	($mol_mem(($.$bog_music_app.prototype), "player_pick_next"));
 	($mol_mem(($.$bog_music_app.prototype), "Player"));
+	($mol_mem(($.$bog_music_app.prototype), "section"));
+	($mol_mem(($.$bog_music_app.prototype), "Nav"));
 
 
 ;
@@ -36334,6 +36551,14 @@ var $;
 
 ;
 "use strict";
+var $;
+(function ($) {
+    // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
+    $.$bog_music_version = 'v1.1';
+})($ || ($ = {}));
+
+;
+"use strict";
 
 
 ;
@@ -36620,21 +36845,23 @@ var $;
             // =====================================================================
             // Тулбар, панели, тосты
             // =====================================================================
-            account_open(next) {
-                return $mol_state_local.value('music_account_open', next) ?? false;
+            version_label() {
+                return $bog_music_version;
             }
-            feedback_open(next) {
-                return $mol_state_local.value('music_feedback_open', next) ?? false;
+            /** Нижняя навигация: music / account / feedback. */
+            section(next) {
+                return next ?? 'music';
             }
-            Account() {
-                if (!this.account_open())
-                    return null;
-                return super.Account();
-            }
-            Feedback() {
-                if (!this.feedback_open())
-                    return null;
-                return super.Feedback();
+            body() {
+                switch (this.section()) {
+                    case 'account': return [this.Account()];
+                    case 'feedback': return [this.Feedback()];
+                }
+                return [
+                    this.Share_toast(),
+                    this.Tabs(),
+                    this.Tracks(),
+                ];
             }
             nickname_label() {
                 return this.account().nickname();
@@ -36756,10 +36983,7 @@ var $;
         ], $bog_music_app.prototype, "download_playlist", null);
         __decorate([
             $mol_mem
-        ], $bog_music_app.prototype, "account_open", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "feedback_open", null);
+        ], $bog_music_app.prototype, "section", null);
         __decorate([
             $mol_mem
         ], $bog_music_app.prototype, "pending_listener", null);
@@ -36808,6 +37032,27 @@ var $;
                 objectFit: 'contain',
                 alignSelf: 'center',
                 margin: { left: '0.5rem', right: '0.25rem' },
+            },
+            Version: {
+                font: {
+                    size: '0.6875rem',
+                    family: 'monospace',
+                },
+                color: $mol_theme.shade,
+                alignSelf: 'center',
+                padding: {
+                    left: '0.25rem',
+                    right: '0.25rem',
+                },
+            },
+            Foot: {
+                flex: {
+                    direction: 'column',
+                },
+                align: {
+                    items: 'stretch',
+                },
+                gap: 0,
             },
             Nickname_label: {
                 font: { size: '0.875rem' },

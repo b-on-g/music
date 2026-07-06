@@ -147,12 +147,6 @@ $mol_check $mol_button_minor
 
 $mol_check_icon $mol_check
 
-$mol_icon_account $mol_icon path \M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z
-
-$mol_icon_account_circle $mol_icon path \M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z
-
-$mol_icon_chat $mol_icon path \M12,3C17.5,3 22,6.58 22,11C22,15.42 17.5,19 12,19C10.76,19 9.57,18.82 8.47,18.5C5.55,21 2,21 2,21C4.33,18.67 4.7,17.1 4.75,16.5C3.05,15.07 2,13.13 2,11C2,6.58 6.5,3 12,3Z
-
 $mol_icon_upload $mol_icon path \M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z
 
 $mol_button_open $mol_button_minor
@@ -634,6 +628,8 @@ $mol_frame $mol_embed_native
 	pip true
 	clipboard_read true
 	clipboard_write true
+
+$mol_icon_account $mol_icon path \M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z
 
 $mol_icon_security $mol_icon path \M12,12H19C18.47,16.11 15.72,19.78 12,20.92V12H5V6.3L12,3.19M12,1L3,5V11C3,16.55 6.84,21.73 12,23C17.16,21.73 21,16.55 21,11V5L12,1Z
 
@@ -2567,6 +2563,45 @@ $bog_music_player $mol_view
 											style *
 												height <= volume_fill_height \
 
+$bog_music_nav_item $mol_view
+	label \
+	active \off
+	Icon $mol_view
+	click? null
+	attr *
+		^
+		bog_music_nav_active <= active
+	event *
+		^
+		click? <=> click? null
+	sub /
+		<= Icon
+		<= Label $mol_view
+			sub / <= label
+
+$mol_icon_account_circle $mol_icon path \M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z
+
+$mol_icon_chat $mol_icon path \M12,3C17.5,3 22,6.58 22,11C22,15.42 17.5,19 12,19C10.76,19 9.57,18.82 8.47,18.5C5.55,21 2,21 2,21C4.33,18.67 4.7,17.1 4.75,16.5C3.05,15.07 2,13.13 2,11C2,6.58 6.5,3 12,3Z
+
+$bog_music_nav $mol_view
+	section? \music
+	sub /
+		<= Tab_music $bog_music_nav_item
+			label \Музыка
+			active <= music_active \off
+			Icon <= Music_icon $mol_icon_music
+			click? <=> music_click? null
+		<= Tab_account $bog_music_nav_item
+			label \Аккаунт
+			active <= account_active \off
+			Icon <= Account_icon $mol_icon_account_circle
+			click? <=> account_click? null
+		<= Tab_feedback $bog_music_nav_item
+			label \Отзывы
+			active <= feedback_active \off
+			Icon <= Feedback_icon $mol_icon_chat
+			click? <=> feedback_click? null
+
 $bog_music_app $mol_page
 	plugins /
 		<= Theme $bog_theme_auto
@@ -2579,18 +2614,12 @@ $bog_music_app $mol_page
 	tools /
 		<= Nickname_label $mol_view
 			sub / <= nickname_label \
+		<= Version $mol_view
+			sub / <= version_label \
 		<= Wave_toggle $mol_check_icon
 			hint \Моя волна
 			Icon <= Wave_icon $mol_icon_chart_timeline_variant
 			checked? <=> wave_mode? false
-		<= Account_toggle $mol_check_icon
-			hint \Аккаунт
-			Icon <= Account_icon $mol_icon_account_circle
-			checked? <=> account_open? false
-		<= Feedback_toggle $mol_check_icon
-			hint \Обратная связь
-			Icon <= Feedback_icon $mol_icon_chat
-			checked? <=> feedback_open? false
 		<= Upload $mol_button_open
 			hint \Загрузить с устройства
 			accept \audio/*,.mp3,.m4a,.aac,.wav,.ogg,.flac
@@ -2625,3 +2654,5 @@ $bog_music_app $mol_page
 			queue_keys <= visible_keys /
 			current_key? <=> current_key? \
 			pick_next? <=> player_pick_next? null
+		<= Nav $bog_music_nav
+			section? <=> section? \music
