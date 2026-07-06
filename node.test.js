@@ -26335,9 +26335,17 @@ var $;
                 return [];
             return $mol_fetch.json(`${this.base}/tube/search?q=${encodeURIComponent(q)}`) ?? [];
         }
-        /** Аудио-байты трека (m4a). */
+        /** URL стрима аудио — для прослушивания без скачивания в baza. */
+        static audio_url(id) {
+            return `${this.base}/tube/audio?id=${encodeURIComponent(id)}`;
+        }
+        /** URL превью-обложки YouTube (строится по id, без запроса к серверу). */
+        static cover_url(id) {
+            return `https://i.ytimg.com/vi/${encodeURIComponent(id)}/mqdefault.jpg`;
+        }
+        /** Аудио-байты трека (m4a) — для скачивания в baza. */
         static async audio_bytes(id) {
-            const resp = await fetch(`${this.base}/tube/audio?id=${encodeURIComponent(id)}`);
+            const resp = await fetch(this.audio_url(id));
             if (!resp.ok)
                 throw new Error(`tube audio ${resp.status}`);
             const buf = new Uint8Array(await resp.arrayBuffer());
@@ -26353,7 +26361,49 @@ var $;
 })($ || ($ = {}));
 
 ;
+	($.$mol_icon_play) = class $mol_icon_play extends ($.$mol_icon) {
+		path(){
+			return "M8,5.14V19.14L19,12.14L8,5.14Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
 	($.$bog_music_tube_row) = class $bog_music_tube_row extends ($.$mol_view) {
+		play(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Play_icon(){
+			const obj = new this.$.$mol_icon_play();
+			return obj;
+		}
+		Play(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.hint) = () => ("Слушать");
+			(obj.click) = (next) => ((this.play(next)));
+			(obj.sub) = () => ([(this.Play_icon())]);
+			return obj;
+		}
+		Cover(){
+			const obj = new this.$.$mol_image();
+			(obj.uri) = () => ((this.cover()));
+			return obj;
+		}
+		Cover_placeholder(){
+			const obj = new this.$.$mol_icon_music();
+			return obj;
+		}
+		Cover_box(){
+			const obj = new this.$.$mol_view();
+			(obj.event) = () => ({"click": (next) => (this.play(next))});
+			(obj.sub) = () => ([(this.Cover()), (this.Cover_placeholder())]);
+			return obj;
+		}
 		Title(){
 			const obj = new this.$.$mol_paragraph();
 			(obj.title) = () => ((this.title()));
@@ -26366,6 +26416,7 @@ var $;
 		}
 		Info(){
 			const obj = new this.$.$mol_view();
+			(obj.event) = () => ({"click": (next) => (this.play(next))});
 			(obj.sub) = () => ([(this.Title()), (this.Subtitle())]);
 			return obj;
 		}
@@ -26398,14 +26449,28 @@ var $;
 		status(){
 			return "";
 		}
+		cover(){
+			return "";
+		}
+		playing(){
+			return false;
+		}
 		sub(){
 			return [
+				(this.Play()), 
+				(this.Cover_box()), 
 				(this.Info()), 
 				(this.Status()), 
 				(this.Get())
 			];
 		}
 	};
+	($mol_mem(($.$bog_music_tube_row.prototype), "play"));
+	($mol_mem(($.$bog_music_tube_row.prototype), "Play_icon"));
+	($mol_mem(($.$bog_music_tube_row.prototype), "Play"));
+	($mol_mem(($.$bog_music_tube_row.prototype), "Cover"));
+	($mol_mem(($.$bog_music_tube_row.prototype), "Cover_placeholder"));
+	($mol_mem(($.$bog_music_tube_row.prototype), "Cover_box"));
 	($mol_mem(($.$bog_music_tube_row.prototype), "Title"));
 	($mol_mem(($.$bog_music_tube_row.prototype), "Subtitle"));
 	($mol_mem(($.$bog_music_tube_row.prototype), "Info"));
@@ -26423,6 +26488,28 @@ var $;
 "use strict";
 var $;
 (function ($) {
+    var $$;
+    (function ($$) {
+        class $bog_music_tube_row extends $.$bog_music_tube_row {
+            Cover() {
+                if (!this.cover())
+                    return null;
+                return super.Cover();
+            }
+            Cover_placeholder() {
+                if (this.cover())
+                    return null;
+                return super.Cover_placeholder();
+            }
+        }
+        $$.$bog_music_tube_row = $bog_music_tube_row;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
     $mol_style_define($bog_music_tube_row, {
         flex: { direction: 'row' },
         align: { items: 'center' },
@@ -26430,12 +26517,37 @@ var $;
         padding: {
             top: '0.5rem',
             bottom: '0.5rem',
-            left: '0.75rem',
-            right: '0.75rem',
+            left: '0.5rem',
+            right: '0.5rem',
+        },
+        Play: {
+            flex: { shrink: 0 },
+        },
+        Cover_box: {
+            flex: { shrink: 0, grow: 0 },
+            width: '2.5rem',
+            height: '2.5rem',
+            borderRadius: '0.25rem',
+            overflow: { x: 'hidden', y: 'hidden' },
+            cursor: 'pointer',
+            justify: { content: 'center' },
+            align: { items: 'center' },
+            background: { color: $mol_theme.line },
+        },
+        Cover: {
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+        },
+        Cover_placeholder: {
+            width: '1.5rem',
+            height: '1.5rem',
+            color: $mol_theme.shade,
         },
         Info: {
-            flex: { direction: 'column', grow: 1 },
+            flex: { direction: 'column', grow: 1, shrink: 1 },
             minWidth: 0,
+            cursor: 'pointer',
         },
         Title: {
             whiteSpace: 'nowrap',
@@ -26445,11 +26557,18 @@ var $;
         Subtitle: {
             font: { size: '0.8125rem' },
             color: $mol_theme.shade,
+            whiteSpace: 'nowrap',
+            overflow: { x: 'hidden', y: 'hidden' },
+            textOverflow: 'ellipsis',
         },
         Status: {
+            flex: { shrink: 0 },
             font: { size: '0.8125rem' },
             color: $mol_theme.shade,
             whiteSpace: 'nowrap',
+        },
+        Get: {
+            flex: { shrink: 0 },
         },
     });
 })($ || ($ = {}));
@@ -26458,18 +26577,6 @@ var $;
 	($.$mol_icon_skip_previous) = class $mol_icon_skip_previous extends ($.$mol_icon) {
 		path(){
 			return "M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_play) = class $mol_icon_play extends ($.$mol_icon) {
-		path(){
-			return "M8,5.14V19.14L19,12.14L8,5.14Z";
 		}
 	};
 
@@ -27035,7 +27142,35 @@ var $;
                 return key ? this.account().track(key) : null;
             }
             current_audio() {
+                if (this._ext)
+                    return { id: 0, owner_id: 0, artist: this._ext.artist, title: this._ext.title, duration: 0, url: this._ext.url };
                 return this.current_track()?.audio() ?? null;
+            }
+            // Внешний источник (стрим tube-превью), играющий без записи в baza.
+            // Пока задан — плеер работает по url, а не по ключу из baza.
+            _ext = null;
+            /** Прослушать по прямому URL, не сохраняя трек (tube-превью). */
+            play_external(url, title, artist) {
+                if (this.is_extension()) {
+                    // В extension нет прямого <audio>; превью работает только в PWA/сайте.
+                    return;
+                }
+                this._ext = { url, title, artist };
+                this.current_key('');
+                this.current_time(0);
+                this.duration(0);
+                this._trim_end_skip = '';
+                this.apply_media_metadata(this.current_audio());
+                this.keepalive_unlock();
+                this.gain_chain_unlock();
+                const el = this.audio_el();
+                if (this._last_blob_url) {
+                    URL.revokeObjectURL(this._last_blob_url);
+                    this._last_blob_url = '';
+                }
+                this._dispatch_token++;
+                el.src = url;
+                el.play().catch(() => { });
             }
             // ---------- окружение ----------
             is_extension() {
@@ -27555,6 +27690,7 @@ var $;
                 const audio = this.account().track(key)?.audio();
                 if (!audio)
                     return;
+                this._ext = null; // возвращаемся к baza-треку, гасим tube-превью
                 // Сброс времени ДО смены трека: иначе apply_trim в auto() прочитает
                 // stale-значения предыдущего трека и может мгновенно дёрнуть next().
                 this.current_time(0);
@@ -27812,7 +27948,7 @@ var $;
                 this.play_track(queue[next_idx]);
             }
             sub() {
-                if (!this.current_key())
+                if (!this.current_key() && !this._ext)
                     return [];
                 return super.sub();
             }
@@ -29079,6 +29215,13 @@ var $;
 		tube_status_text(id){
 			return "";
 		}
+		tube_cover(id){
+			return "";
+		}
+		tube_play(id, next){
+			if(next !== undefined) return next;
+			return null;
+		}
 		tube_get(id, next){
 			if(next !== undefined) return next;
 			return null;
@@ -29088,6 +29231,8 @@ var $;
 			(obj.title) = () => ((this.tube_title(id)));
 			(obj.subtitle) = () => ((this.tube_meta(id)));
 			(obj.status) = () => ((this.tube_status_text(id)));
+			(obj.cover) = () => ((this.tube_cover(id)));
+			(obj.play) = (next) => ((this.tube_play(id, next)));
 			(obj.get) = (next) => ((this.tube_get(id, next)));
 			return obj;
 		}
@@ -29145,7 +29290,7 @@ var $;
 				(this.Tracks()), 
 				(this.Tube_bar()), 
 				(this.Tube_list()), 
-				(this.Tube_row("0"))
+				(this.Tube_row(id))
 			];
 		}
 		foot(){
@@ -29184,6 +29329,7 @@ var $;
 	($mol_mem(($.$bog_music_app.prototype), "Tube_find"));
 	($mol_mem(($.$bog_music_app.prototype), "Tube_bar"));
 	($mol_mem(($.$bog_music_app.prototype), "Tube_list"));
+	($mol_mem_key(($.$bog_music_app.prototype), "tube_play"));
 	($mol_mem_key(($.$bog_music_app.prototype), "tube_get"));
 	($mol_mem_key(($.$bog_music_app.prototype), "Tube_row"));
 	($mol_mem(($.$bog_music_app.prototype), "player_pick_next"));
@@ -29515,7 +29661,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.5';
+    $.$bog_music_version = 'v1.6';
 })($ || ($ = {}));
 
 ;
@@ -29861,6 +30007,17 @@ var $;
                 const time = dur ? `${Math.floor(dur / 60)}:${String(Math.floor(dur % 60)).padStart(2, '0')}` : '';
                 return [item.channel, time].filter(Boolean).join(' · ');
             }
+            tube_cover(index) {
+                const item = this.tube_item(index);
+                return item ? $bog_music_tube.cover_url(item.id) : '';
+            }
+            /** Прослушать трек стримом с сервера, не скачивая в baza. */
+            tube_play(index) {
+                const item = this.tube_item(index);
+                if (!item)
+                    return;
+                this.Player().play_external($bog_music_tube.audio_url(item.id), item.title, item.channel);
+            }
             tube_status_text(index, next) {
                 return next ?? '';
             }
@@ -30031,6 +30188,9 @@ var $;
         __decorate([
             $mol_mem
         ], $bog_music_app.prototype, "tube_rows", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "tube_play", null);
         __decorate([
             $mol_mem_key
         ], $bog_music_app.prototype, "tube_status_text", null);

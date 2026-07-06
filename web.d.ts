@@ -59895,49 +59895,98 @@ declare namespace $ {
         static base: string;
         /** Поиск. Wire-метод: suspend'ится пока грузится. */
         static search(query: string): $bog_music_tube_item[];
-        /** Аудио-байты трека (m4a). */
+        /** URL стрима аудио — для прослушивания без скачивания в baza. */
+        static audio_url(id: string): string;
+        /** URL превью-обложки YouTube (строится по id, без запроса к серверу). */
+        static cover_url(id: string): string;
+        /** Аудио-байты трека (m4a) — для скачивания в baza. */
         static audio_bytes(id: string): Promise<Uint8Array>;
     }
 }
 
 declare namespace $ {
 
-	type $mol_paragraph__title_bog_music_tube_row_1 = $mol_type_enforce<
-		ReturnType< $bog_music_tube_row['title'] >
-		,
-		ReturnType< $mol_paragraph['title'] >
-	>
-	type $mol_paragraph__title_bog_music_tube_row_2 = $mol_type_enforce<
-		ReturnType< $bog_music_tube_row['subtitle'] >
-		,
-		ReturnType< $mol_paragraph['title'] >
-	>
-	type $mol_view__sub_bog_music_tube_row_3 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_view['sub'] >
-	>
-	type $mol_view__sub_bog_music_tube_row_4 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_view['sub'] >
-	>
-	type $mol_button_minor__hint_bog_music_tube_row_5 = $mol_type_enforce<
+	type $mol_button_minor__hint_bog_music_tube_row_1 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__click_bog_music_tube_row_6 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_tube_row_2 = $mol_type_enforce<
+		ReturnType< $bog_music_tube_row['play'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub_bog_music_tube_row_3 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_image__uri_bog_music_tube_row_4 = $mol_type_enforce<
+		ReturnType< $bog_music_tube_row['cover'] >
+		,
+		ReturnType< $mol_image['uri'] >
+	>
+	type $mol_view__event_bog_music_tube_row_5 = $mol_type_enforce<
+		({ 
+			click( next?: ReturnType< $bog_music_tube_row['play'] > ): ReturnType< $bog_music_tube_row['play'] >,
+		}) 
+		,
+		ReturnType< $mol_view['event'] >
+	>
+	type $mol_view__sub_bog_music_tube_row_6 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_paragraph__title_bog_music_tube_row_7 = $mol_type_enforce<
+		ReturnType< $bog_music_tube_row['title'] >
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_paragraph__title_bog_music_tube_row_8 = $mol_type_enforce<
+		ReturnType< $bog_music_tube_row['subtitle'] >
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_view__event_bog_music_tube_row_9 = $mol_type_enforce<
+		({ 
+			click( next?: ReturnType< $bog_music_tube_row['play'] > ): ReturnType< $bog_music_tube_row['play'] >,
+		}) 
+		,
+		ReturnType< $mol_view['event'] >
+	>
+	type $mol_view__sub_bog_music_tube_row_10 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_music_tube_row_11 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_button_minor__hint_bog_music_tube_row_12 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['hint'] >
+	>
+	type $mol_button_minor__click_bog_music_tube_row_13 = $mol_type_enforce<
 		ReturnType< $bog_music_tube_row['get'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_music_tube_row_7 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_music_tube_row_14 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
 	export class $bog_music_tube_row extends $mol_view {
+		play( next?: any ): any
+		Play_icon( ): $mol_icon_play
+		Play( ): $mol_button_minor
+		Cover( ): $mol_image
+		Cover_placeholder( ): $mol_icon_music
+		Cover_box( ): $mol_view
 		Title( ): $mol_paragraph
 		Subtitle( ): $mol_paragraph
 		Info( ): $mol_view
@@ -59948,12 +59997,21 @@ declare namespace $ {
 		title( ): string
 		subtitle( ): string
 		status( ): string
+		cover( ): string
+		playing( ): boolean
 		sub( ): readonly(any)[]
 	}
 	
 }
 
 //# sourceMappingURL=row.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $bog_music_tube_row extends $.$bog_music_tube_row {
+        Cover(): any;
+        Cover_placeholder(): any;
+    }
+}
+
 declare namespace $ {
 }
 
@@ -60344,6 +60402,9 @@ declare namespace $.$$ {
         account(): $bog_music_account_baza;
         current_track(): $bog_music_track_baza | null;
         current_audio(): $bog_music_api_audio | null;
+        private _ext;
+        /** Прослушать по прямому URL, не сохраняя трек (tube-превью). */
+        play_external(url: string, title: string, artist: string): void;
         private is_extension;
         private _channel?;
         private channel;
@@ -60915,27 +60976,37 @@ declare namespace $ {
 		,
 		ReturnType< $bog_music_tube_row['status'] >
 	>
-	type $bog_music_tube_row__get_bog_music_app_35 = $mol_type_enforce<
+	type $bog_music_tube_row__cover_bog_music_app_35 = $mol_type_enforce<
+		ReturnType< $bog_music_app['tube_cover'] >
+		,
+		ReturnType< $bog_music_tube_row['cover'] >
+	>
+	type $bog_music_tube_row__play_bog_music_app_36 = $mol_type_enforce<
+		ReturnType< $bog_music_app['tube_play'] >
+		,
+		ReturnType< $bog_music_tube_row['play'] >
+	>
+	type $bog_music_tube_row__get_bog_music_app_37 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_get'] >
 		,
 		ReturnType< $bog_music_tube_row['get'] >
 	>
-	type $bog_music_player__queue_keys_bog_music_app_36 = $mol_type_enforce<
+	type $bog_music_player__queue_keys_bog_music_app_38 = $mol_type_enforce<
 		ReturnType< $bog_music_app['visible_keys'] >
 		,
 		ReturnType< $bog_music_player['queue_keys'] >
 	>
-	type $bog_music_player__current_key_bog_music_app_37 = $mol_type_enforce<
+	type $bog_music_player__current_key_bog_music_app_39 = $mol_type_enforce<
 		ReturnType< $bog_music_app['current_key'] >
 		,
 		ReturnType< $bog_music_player['current_key'] >
 	>
-	type $bog_music_player__pick_next_bog_music_app_38 = $mol_type_enforce<
+	type $bog_music_player__pick_next_bog_music_app_40 = $mol_type_enforce<
 		ReturnType< $bog_music_app['player_pick_next'] >
 		,
 		ReturnType< $bog_music_player['pick_next'] >
 	>
-	type $bog_music_nav__section_bog_music_app_39 = $mol_type_enforce<
+	type $bog_music_nav__section_bog_music_app_41 = $mol_type_enforce<
 		ReturnType< $bog_music_app['section'] >
 		,
 		ReturnType< $bog_music_nav['section'] >
@@ -60987,6 +61058,8 @@ declare namespace $ {
 		tube_title( id: any): string
 		tube_meta( id: any): string
 		tube_status_text( id: any): string
+		tube_cover( id: any): string
+		tube_play( id: any, next?: any ): any
 		tube_get( id: any, next?: any ): any
 		Tube_row( id: any): $bog_music_tube_row
 		player_pick_next( next?: any ): any
@@ -61065,10 +61138,13 @@ declare namespace $.$$ {
         tube_committed(next?: string): string;
         tube_find(): void;
         tube_items(): $bog_music_tube_item[];
-        tube_rows(): $bog_music_tube_row[];
+        tube_rows(): $.$bog_music_tube_row[];
         tube_item(index: number): $bog_music_tube_item | null;
         tube_title(index: number): string;
         tube_meta(index: number): string;
+        tube_cover(index: number): string;
+        /** Прослушать трек стримом с сервера, не скачивая в baza. */
+        tube_play(index: number): void;
         tube_status_text(index: number, next?: string): string;
         tube_get(index: number): void;
         tube_download(index: number, item: $bog_music_tube_item): Promise<void>;

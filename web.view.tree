@@ -2459,9 +2459,26 @@ $bog_music_tube_row $mol_view
 	title \
 	subtitle \
 	status \
+	cover \
+	playing false
+	play? null
 	get? null
 	sub /
+		<= Play $mol_button_minor
+			hint \Слушать
+			click? <=> play? null
+			sub /
+				<= Play_icon $mol_icon_play
+		<= Cover_box $mol_view
+			event *
+				click?event <=> play? null
+			sub /
+				<= Cover $mol_image
+					uri <= cover
+				<= Cover_placeholder $mol_icon_music
 		<= Info $mol_view
+			event *
+				click?event <=> play? null
 			sub /
 				<= Title $mol_paragraph
 					title <= title
@@ -2686,10 +2703,12 @@ $bog_music_app $mol_page
 					click? <=> tube_find? null
 		<= Tube_list $mol_view
 			sub <= tube_rows /
-		<= Tube_row*0 $bog_music_tube_row
+		<= Tube_row* $bog_music_tube_row
 			title <= tube_title* \
 			subtitle <= tube_meta* \
 			status <= tube_status_text* \
+			cover <= tube_cover* \
+			play? <=> tube_play*? null
 			get? <=> tube_get*? null
 	foot /
 		<= Player $bog_music_player
