@@ -67,106 +67,6 @@ $mol_image $mol_view
 	minimal_width 16
 	minimal_height 16
 
-$mol_svg $mol_view
-	dom_name \svg
-	dom_name_space \http://www.w3.org/2000/svg
-	font_size 16
-	font_family \
-	style_size *
-
-$mol_svg_root $mol_svg
-	dom_name \svg
-	attr *
-		^
-		viewBox <= view_box \0 0 100 100
-		preserveAspectRatio <= aspect \xMidYMid
-
-$mol_svg_path $mol_svg
-	dom_name \path
-	attr *
-		^
-		d <= geometry \
-
-
-$mol_icon $mol_svg_root
-	view_box \0 0 24 24
-	minimal_width 16
-	minimal_height 16
-	sub /
-		<= Path $mol_svg_path
-			geometry <= path \
-
-$mol_icon_chart_timeline $mol_icon path \M2,2H4V20H22V22H2V2M7,10H17V13H7V10M11,15H21V18H11V15M6,4H22V8H20V6H8V8H6V4Z
-
-$mol_icon_chart_timeline_variant $mol_icon path \M3,14L3.5,14.07L8.07,9.5C7.89,8.85 8.06,8.11 8.59,7.59C9.37,6.8 10.63,6.8 11.41,7.59C11.94,8.11 12.11,8.85 11.93,9.5L14.5,12.07L15,12C15.18,12 15.35,12 15.5,12.07L19.07,8.5C19,8.35 19,8.18 19,8A2,2 0 0,1 21,6A2,2 0 0,1 23,8A2,2 0 0,1 21,10C20.82,10 20.65,10 20.5,9.93L16.93,13.5C17,13.65 17,13.82 17,14A2,2 0 0,1 15,16A2,2 0 0,1 13,14L13.07,13.5L10.5,10.93C10.18,11 9.82,11 9.5,10.93L4.93,15.5L5,16A2,2 0 0,1 3,18A2,2 0 0,1 1,16A2,2 0 0,1 3,14Z
-
-$mol_speck $mol_view
-	theme \$mol_theme_accent
-	sub /
-		<= value null
-
-$mol_button $mol_view
-	enabled true
-	click? null
-	event_click? null
-	status? /
-	event *
-		^
-		click? <=> activate? <=> event_activate? null
-		dblclick? <=> clicks? null
-		keydown? <=> key_press? <=> event_key_press? null
-	attr *
-		^
-		disabled <= disabled false
-		role \button
-		tabindex <= tab_index 0
-		title <= hint_safe <= hint \
-	sub /$mol_view_content
-		<= title
-	Speck $mol_speck
-		value <= error \
-
-$mol_button_typed $mol_button
-	minimal_height 40
-	minimal_width 40
-
-$mol_button_minor $mol_button_typed
-
-$mol_check $mol_button_minor
-	attr *
-		^
-		mol_check_checked <= checked? false
-		aria-checked <= aria_checked \false
-		role <= aria_role \checkbox
-	sub /$mol_view_content
-		<= Icon null
-		<= label /
-			<= Title $mol_view
-				sub /
-					<= title \
-
-$mol_check_icon $mol_check
-
-$mol_icon_upload $mol_icon path \M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z
-
-$mol_button_open $mol_button_minor
-	sub /
-		<= Icon $mol_icon_upload
-		<= Native $mol_button_open_native
-			files? <=> files_handled? <=> files? /File
-			accept <= accept \
-			multiple <= multiple true
-
-$mol_button_open_native $mol_view
-	dom_name \input
-	files? /File
-	attr *
-		type \file
-		accept <= accept \
-		multiple <= multiple true
-	event *
-		change? <=> picked? null
-
 $mol_ghost $mol_view
 	Sub $mol_view
 
@@ -216,126 +116,50 @@ $mol_pop_bubble $mol_view
 		tabindex 0
 		popover \manual
 
-$mol_hotkey $mol_plugin
+$mol_speck $mol_view
+	theme \$mol_theme_accent
+	sub /
+		<= value null
+
+$mol_button $mol_view
+	enabled true
+	click? null
+	event_click? null
+	status? /
 	event *
 		^
-		keydown? <=> keydown? null
-	key *
-	mod_ctrl false
-	mod_alt false
-	mod_shift false
-
-$mol_string $mol_view
-	dom_name \input
-	enabled true
-	minimal_height 40
-	autocomplete false
-	selection? /number
-		0
-		0
-	auto /
-		<= selection_watcher null
-		<= error_report null
-	field *
+		click? <=> activate? <=> event_activate? null
+		dblclick? <=> clicks? null
+		keydown? <=> key_press? <=> event_key_press? null
+	attr *
 		^
 		disabled <= disabled false
-		value <= value_changed? <=> value? \
-		placeholder <= hint_visible <= hint \
-		spellcheck <= spellcheck true
-		autocomplete <= autocomplete_native \
-		selectionEnd <= selection_end 0
-		selectionStart <= selection_start 0
-		inputMode <= keyboard \text
-		enterkeyhint <= enter \go
+		role \button
+		tabindex <= tab_index 0
+		title <= hint_safe <= hint \
+	sub /$mol_view_content
+		<= title
+	Speck $mol_speck
+		value <= error \
+
+$mol_button_typed $mol_button
+	minimal_height 40
+	minimal_width 40
+
+$mol_button_minor $mol_button_typed
+
+$mol_check $mol_button_minor
 	attr *
 		^
-		maxlength <= length_max +Infinity
-		type <= type? \text
-	event *
-		^
-		input? <=> event_change? null
-	plugins /
-		<= Submit $mol_hotkey
-			mod_ctrl <= submit_with_ctrl false
-			key * enter? <=> submit? null
-
-$mol_list $mol_view
-	render_visible_only true
-	render_over 0.1
-	sub <= rows /$mol_view
-		<= Gap_before $mol_view style * paddingTop <= gap_before 0
-		<= Empty $mol_view
-		<= Gap_after $mol_view style * paddingTop <= gap_after 0
-	item_height_min* 1
-	item_width_min* 1
-	view_window_shift? 0
-	view_window /
-		0
-		0
-
-$bog_theme_picker_row $mol_button_minor
-	theme_name \
-	title <= theme_name
-	attr *
-		^
-		bog_theme_picker_row_focused <= focused_str \
-	event *
-		^
-		pointerenter?event <=> hover?event null
-
-$bog_theme_picker $mol_scroll
-	theme_auto $bog_theme_auto
-	close? null
-	query?val \
-	focused_index?val -1
-	Theme_row* $bog_theme_picker_row
-		theme_name <= theme_name* \
-		focused <= theme_focused* false
-		click?event <=> theme_select*?event null
-		hover?event <=> theme_hover*?event null
-	sub /
-		<= Content $mol_list rows /
-			<= Search $mol_string
-				value?val <=> query?val
-				hint @ \Just start typing
-			<= Theme_list $mol_list
-				rows <= theme_rows /
-	event *
-		^
-		keydown?event <=> key_down?event null
-
-$mol_icon_white_balance_sunny $mol_icon path \M3.55 19.09L4.96 20.5L6.76 18.71L5.34 17.29M12 6C8.69 6 6 8.69 6 12S8.69 18 12 18 18 15.31 18 12C18 8.68 15.31 6 12 6M20 13H23V11H20M17.24 18.71L19.04 20.5L20.45 19.09L18.66 17.29M20.45 5L19.04 3.6L17.24 5.39L18.66 6.81M13 1H11V4H13M6.76 5.39L4.96 3.6L3.55 5L5.34 6.81L6.76 5.39M1 13H4V11H1M13 20H11V23H13
-
-$mol_icon_weather_night $mol_icon path \M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,11L19.61,12.25L20.2,14.23L18.5,13.06L16.8,14.23L17.39,12.25L15.75,11L17.81,10.95L18.5,9L19.19,10.95L21.25,11M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C7.79,7.9 8.75,10.87 10.95,13.06C13.14,15.26 16.1,16.22 18.97,15.95M17.33,17.97C14.5,17.81 11.7,16.64 9.53,14.5C7.36,12.31 6.2,9.5 6.04,6.68C3.23,9.82 3.34,14.64 6.35,17.66C9.37,20.67 14.19,20.78 17.33,17.97Z
-
-$mol_icon_monitor $mol_icon path \M21,16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16A2,2 0 0,0 3,18H10V20H8V22H16V20H14V18H21A2,2 0 0,0 23,16V4C23,2.89 22.1,2 21,2Z
-
-$bog_theme_toggle $mol_pop
-	theme_auto $bog_theme_auto
-	showed?val false
-	align \bottom_right
-	Anchor $mol_button_minor
-		sub /
-			<= Icon $mol_view
-		hint <= anchor_hint \Переключить тему
-		click?event <=> clicked?event null
-		event *
-			^
-			pointerdown?event <=> press_start?event null
-			pointermove?event <=> press_move?event null
-			pointerup?event <=> press_end?event null
-			pointercancel?event <=> press_cancel?event null
-			lostpointercapture?event <=> press_lost?event null
-	Icon_light $mol_icon_white_balance_sunny
-	Icon_dark $mol_icon_weather_night
-	Icon_system $mol_icon_monitor
-	bubble_content /
-		<= Backdrop $mol_view
-			event *
-				click?event <=> backdrop_click?event null
-		<= Picker $bog_theme_picker
-			theme_auto <= theme_auto
-			close? <=> picker_close? null
+		mol_check_checked <= checked? false
+		aria-checked <= aria_checked \false
+		role <= aria_role \checkbox
+	sub /$mol_view_content
+		<= Icon null
+		<= label /
+			<= Title $mol_view
+				sub /
+					<= title \
 
 $mol_pick $mol_pop
 	event *
@@ -389,6 +213,92 @@ $mol_nav $mol_plugin
 	event *
 		^
 		keydown? <=> event_key? null
+
+$mol_list $mol_view
+	render_visible_only true
+	render_over 0.1
+	sub <= rows /$mol_view
+		<= Gap_before $mol_view style * paddingTop <= gap_before 0
+		<= Empty $mol_view
+		<= Gap_after $mol_view style * paddingTop <= gap_after 0
+	item_height_min* 1
+	item_width_min* 1
+	view_window_shift? 0
+	view_window /
+		0
+		0
+
+$mol_hotkey $mol_plugin
+	event *
+		^
+		keydown? <=> keydown? null
+	key *
+	mod_ctrl false
+	mod_alt false
+	mod_shift false
+
+$mol_string $mol_view
+	dom_name \input
+	enabled true
+	minimal_height 40
+	autocomplete false
+	selection? /number
+		0
+		0
+	auto /
+		<= selection_watcher null
+		<= error_report null
+	field *
+		^
+		disabled <= disabled false
+		value <= value_changed? <=> value? \
+		placeholder <= hint_visible <= hint \
+		spellcheck <= spellcheck true
+		autocomplete <= autocomplete_native \
+		selectionEnd <= selection_end 0
+		selectionStart <= selection_start 0
+		inputMode <= keyboard \text
+		enterkeyhint <= enter \go
+	attr *
+		^
+		maxlength <= length_max +Infinity
+		type <= type? \text
+	event *
+		^
+		input? <=> event_change? null
+	plugins /
+		<= Submit $mol_hotkey
+			mod_ctrl <= submit_with_ctrl false
+			key * enter? <=> submit? null
+
+$mol_svg $mol_view
+	dom_name \svg
+	dom_name_space \http://www.w3.org/2000/svg
+	font_size 16
+	font_family \
+	style_size *
+
+$mol_svg_root $mol_svg
+	dom_name \svg
+	attr *
+		^
+		viewBox <= view_box \0 0 100 100
+		preserveAspectRatio <= aspect \xMidYMid
+
+$mol_svg_path $mol_svg
+	dom_name \path
+	attr *
+		^
+		d <= geometry \
+
+
+$mol_icon $mol_svg_root
+	view_box \0 0 24 24
+	minimal_width 16
+	minimal_height 16
+	sub /
+		<= Path $mol_svg_path
+			geometry <= path \
 
 $mol_icon_close $mol_icon path \M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z
 
@@ -517,6 +427,96 @@ $giper_baza_status $mol_select
 				<= Fail $mol_icon_sync_off
 			hint <= message <= hint \Sync status
 
+$mol_icon_chart_timeline $mol_icon path \M2,2H4V20H22V22H2V2M7,10H17V13H7V10M11,15H21V18H11V15M6,4H22V8H20V6H8V8H6V4Z
+
+$mol_icon_chart_timeline_variant $mol_icon path \M3,14L3.5,14.07L8.07,9.5C7.89,8.85 8.06,8.11 8.59,7.59C9.37,6.8 10.63,6.8 11.41,7.59C11.94,8.11 12.11,8.85 11.93,9.5L14.5,12.07L15,12C15.18,12 15.35,12 15.5,12.07L19.07,8.5C19,8.35 19,8.18 19,8A2,2 0 0,1 21,6A2,2 0 0,1 23,8A2,2 0 0,1 21,10C20.82,10 20.65,10 20.5,9.93L16.93,13.5C17,13.65 17,13.82 17,14A2,2 0 0,1 15,16A2,2 0 0,1 13,14L13.07,13.5L10.5,10.93C10.18,11 9.82,11 9.5,10.93L4.93,15.5L5,16A2,2 0 0,1 3,18A2,2 0 0,1 1,16A2,2 0 0,1 3,14Z
+
+$mol_check_icon $mol_check
+
+$mol_icon_upload $mol_icon path \M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z
+
+$mol_button_open $mol_button_minor
+	sub /
+		<= Icon $mol_icon_upload
+		<= Native $mol_button_open_native
+			files? <=> files_handled? <=> files? /File
+			accept <= accept \
+			multiple <= multiple true
+
+$mol_button_open_native $mol_view
+	dom_name \input
+	files? /File
+	attr *
+		type \file
+		accept <= accept \
+		multiple <= multiple true
+	event *
+		change? <=> picked? null
+
+$bog_theme_picker_row $mol_button_minor
+	theme_name \
+	title <= theme_name
+	attr *
+		^
+		bog_theme_picker_row_focused <= focused_str \
+	event *
+		^
+		pointerenter?event <=> hover?event null
+
+$bog_theme_picker $mol_scroll
+	theme_auto $bog_theme_auto
+	close? null
+	query?val \
+	focused_index?val -1
+	Theme_row* $bog_theme_picker_row
+		theme_name <= theme_name* \
+		focused <= theme_focused* false
+		click?event <=> theme_select*?event null
+		hover?event <=> theme_hover*?event null
+	sub /
+		<= Content $mol_list rows /
+			<= Search $mol_string
+				value?val <=> query?val
+				hint @ \Just start typing
+			<= Theme_list $mol_list
+				rows <= theme_rows /
+	event *
+		^
+		keydown?event <=> key_down?event null
+
+$mol_icon_white_balance_sunny $mol_icon path \M3.55 19.09L4.96 20.5L6.76 18.71L5.34 17.29M12 6C8.69 6 6 8.69 6 12S8.69 18 12 18 18 15.31 18 12C18 8.68 15.31 6 12 6M20 13H23V11H20M17.24 18.71L19.04 20.5L20.45 19.09L18.66 17.29M20.45 5L19.04 3.6L17.24 5.39L18.66 6.81M13 1H11V4H13M6.76 5.39L4.96 3.6L3.55 5L5.34 6.81L6.76 5.39M1 13H4V11H1M13 20H11V23H13
+
+$mol_icon_weather_night $mol_icon path \M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,11L19.61,12.25L20.2,14.23L18.5,13.06L16.8,14.23L17.39,12.25L15.75,11L17.81,10.95L18.5,9L19.19,10.95L21.25,11M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C7.79,7.9 8.75,10.87 10.95,13.06C13.14,15.26 16.1,16.22 18.97,15.95M17.33,17.97C14.5,17.81 11.7,16.64 9.53,14.5C7.36,12.31 6.2,9.5 6.04,6.68C3.23,9.82 3.34,14.64 6.35,17.66C9.37,20.67 14.19,20.78 17.33,17.97Z
+
+$mol_icon_monitor $mol_icon path \M21,16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16A2,2 0 0,0 3,18H10V20H8V22H16V20H14V18H21A2,2 0 0,0 23,16V4C23,2.89 22.1,2 21,2Z
+
+$bog_theme_toggle $mol_pop
+	theme_auto $bog_theme_auto
+	showed?val false
+	align \bottom_right
+	Anchor $mol_button_minor
+		sub /
+			<= Icon $mol_view
+		hint <= anchor_hint \Переключить тему
+		click?event <=> clicked?event null
+		event *
+			^
+			pointerdown?event <=> press_start?event null
+			pointermove?event <=> press_move?event null
+			pointerup?event <=> press_end?event null
+			pointercancel?event <=> press_cancel?event null
+			lostpointercapture?event <=> press_lost?event null
+	Icon_light $mol_icon_white_balance_sunny
+	Icon_dark $mol_icon_weather_night
+	Icon_system $mol_icon_monitor
+	bubble_content /
+		<= Backdrop $mol_view
+			event *
+				click?event <=> backdrop_click?event null
+		<= Picker $bog_theme_picker
+			theme_auto <= theme_auto
+			close? <=> picker_close? null
+
 $mol_icon_download $mol_icon path \M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z
 
 $mol_labeler $mol_list
@@ -537,108 +537,195 @@ $mol_form_field $mol_labeler
 			sub / <= bid \
 	content / <= control null
 
-$mol_book2 $mol_scroll
-	menu_title \
-	sub /$mol_view
-		^ pages <= pages_deep /$mol_view
-		^ placeholders /$mol_view
-			<= Placeholder $mol_view
+$mol_button_major $mol_button_minor
+	theme \$mol_theme_base
+
+$mol_status $mol_view
+	status <= title
+	minimal_height 24
 	minimal_width 0
-	Gap* $mol_view title \
-
-$mol_book2_catalog $mol_book2
-	param \
-	spread? \
-	spreads *
-	Spread* $mol_view
-	Spread_default null
-	spread_ids /string
-	menu_filter_enabled false
-	spread_ids_filtered /string
-	spread_current null
-	menu_tools /
-	addon_tools /
-	pages /
-		<= Menu $mol_page
-			Title => Menu_title
-			title <= menu_title \
-			Tools => Menu_tools
-			Logo <= Menu_logo null
-			tools /
-				^ menu_tools
-				^ addon_tools
-			head <= menu_head /$mol_view_content
-				<= Menu_title
-				<= Menu_tools
-			body <= menu_body /$mol_view
-				<= Menu_filter $mol_search
-					query? <=> menu_filter? \
-				<= Menu_links $mol_list
-					Empty <= Menu_links_empty $mol_view
-					rows <= menu_links /$mol_view
-						<= Menu_item*0 $mol_view
-							sub <= menu_item_content* /$mol_view
-								<= Menu_link* $mol_link
-									arg <= menu_link_arg* <= arg* *
-									sub <= menu_link_content* /$mol_view_content
-										<= Menu_link_title* $mol_dimmer
-											needle <= menu_filter
-											haystack <= spread_title* \
-			foot <= menu_foot /$mol_view
-	Spread_close $mol_link
-		arg <= spread_close_arg *
-		hint @ \Close page
-		sub /
-			<= Spread_close_icon $mol_icon_close
-
-$mol_icon_script $mol_icon path \M17.8,20C17.4,21.2 16.3,22 15,22H5C3.3,22 2,20.7 2,19V18H5L14.2,18C14.6,19.2 15.7,20 17,20H17.8M19,2H8C6.3,2 5,3.3 5,5V16H16V17C16,17.6 16.4,18 17,18H18V5C18,4.4 18.4,4 19,4C19.6,4 20,4.4 20,5V6H22V5C22,3.3 20.7,2 19,2Z
-
-$mol_icon_script_text $mol_icon path \M17.8,20C17.4,21.2 16.3,22 15,22H5C3.3,22 2,20.7 2,19V18H5L14.2,18C14.6,19.2 15.7,20 17,20H17.8M19,2C20.7,2 22,3.3 22,5V6H20V5C20,4.4 19.6,4 19,4C18.4,4 18,4.4 18,5V18H17C16.4,18 16,17.6 16,17V16H5V5C5,3.3 6.3,2 8,2H19M8,6V8H15V6H8M8,10V12H14V10H8Z
-
-$mol_link_source $mol_link
-	hint @ \Source code
 	sub /
-		<= Icon $mol_icon_script_text
+		<= message \
 
-$mol_embed_native $mol_scroll
-	dom_name \iframe
-	window null
-	attr *
+$mol_row $mol_view
+
+$mol_form $mol_list
+	submit_allowed true
+	submit_blocked false
+	event *
 		^
-		src <= uri? \about:config
+		keydown? <=> keydown? null
+	save? null
+	message_done @ \Saved
+	errors *string
+		\Form invalid
+			<= form_invalid @ \Form is not valid
+	rows /
+		<= Body $mol_list
+			sub <= body <= form_fields /$mol_form_field
+		<= Foot $mol_row
+			sub <= foot <= buttons /$mol_view
+				<= Submit $mol_button_major
+					title <= submit_title @ \Save
+					hint <= submit_hint \
+					activate? => submit_activate?
+					click? <=> submit? null
+				<= Result $mol_status
+					message <= result? null
+
+$bog_music_account $mol_view
 	sub /
-		<= Fallback $mol_link
-			uri <= uri
+		<= Sync_row $mol_view
 			sub /
-				<= title \
-	message *
-		hashchange? <=> uri_change? null
+				<= Download_playlist $mol_button_minor
+					hint <= download_playlist_hint \
+					click? <=> download_playlist? null
+					sub /
+						<= Download_playlist_icon $mol_icon_download
+						<= Download_playlist_label $mol_view sub / <= download_playlist_label \
+				<= Download_playlist_status $mol_view sub / <= download_playlist_status \
+		<= Cards $mol_view
+			sub /
+				<= Profile $mol_view
+					sub /
+						<= Nickname_field $mol_form_field
+							name \Имя
+							Content <= Nickname_input $mol_string
+								value? <=> nickname? \
+								hint \Как тебя зовут?
+						<= Lord $mol_view
+							sub /
+								\ЛК:
+								<= Lord_text $mol_view sub / <= lord_short \
+				<= Export $mol_view
+					sub /
+						<= Warning $mol_paragraph
+							title \Ссылка ниже — СЕКРЕТ. Не делись ей публично.
+						<= Copy $mol_button_minor
+							title \Скопировать ссылку для переноса
+							click? <=> copy? null
+						<= Copy_status $mol_view sub / <= copy_status \
+				<= Import $mol_view
+					sub /
+						<= Import_hint $mol_paragraph
+							title \Перенести с другого устройства — вставь ссылку:
+						<= Import_input $mol_string
+							hint \https://.../music/#account=...
+							value? <=> import_link? \
+						<= Import_apply $mol_button_minor
+							title \Применить
+							click? <=> apply_import? null
+						<= Import_status $mol_view sub / <= import_status \
+				<= Reset $mol_view
+					sub /
+						<= Reset_hint $mol_paragraph
+							title \Сбросить состояние и сгенерировать новый аккаунт. Текущие треки в Giper Baza останутся orphan.
+						<= Reset_button $mol_button_minor
+							title \Сбросить локальный аккаунт
+							click? <=> reset_account? null
+	ext_label @ \Скачать плейлист в расширение
+	ext_hint @ \Скачать треки видимого плейлиста в расширение
+	pwa_label @ \Скачать плейлист zip-архивом
+	pwa_hint @ \Упаковать локально засинканные треки в zip и скачать на устройство
 
-$mol_frame $mol_embed_native
+$bog_music_tracks $mol_list
+	track_keys /
+	current_key \
+	play_key? null
+	archive_mode false
+	reorder_to? null
+	archive_key? null
+	restore_key? null
+	delete_key? null
+	rows <= track_rows /
+		<= Track*0 $bog_music_track
+			key <= track_key* \
+			current <= track_current* false
+			play? <=> track_play*? null
+			archive_mode <= archive_mode
+			can_drag <= track_can_drag* false
+			drag_start? <=> track_drag_start*? null
+			drop_here? <=> track_drop_here*? null
+			archive? <=> track_archive*? null
+			restore? <=> track_restore*? null
+			delete_forever? <=> track_delete*? null
+
+$mol_icon_music $mol_icon path \M21,3V15.5A3.5,3.5 0 0,1 17.5,19A3.5,3.5 0 0,1 14,15.5A3.5,3.5 0 0,1 17.5,12C18.04,12 18.55,12.12 19,12.34V6.47L9,8.6V17.5A3.5,3.5 0 0,1 5.5,21A3.5,3.5 0 0,1 2,17.5A3.5,3.5 0 0,1 5.5,14C6.04,14 6.55,14.12 7,14.34V6L21,3Z
+
+$mol_icon_share $mol_icon path \M21,12L14,5V9C7,10 4,15 3,20C5.5,16.5 9,14.9 14,14.9V19L21,12Z
+
+$mol_icon_delete $mol_icon path \M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z
+
+$mol_icon_archive $mol_icon path \M3,3H21V7H3V3M4,8H20V21H4V8M9.5,11A0.5,0.5 0 0,0 9,11.5V13H15V11.5A0.5,0.5 0 0,0 14.5,11H9.5Z
+
+$mol_icon_restore $mol_icon path \M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z
+
+$mol_icon_delete_forever $mol_icon path \M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8.46,11.88L9.87,10.47L12,12.59L14.12,10.47L15.53,11.88L13.41,14L15.53,16.12L14.12,17.53L12,15.41L9.88,17.53L8.47,16.12L10.59,14L8.46,11.88M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z
+
+$bog_music_track $mol_view
+	key \
+	current false
+	play? null
+	archive_mode false
+	can_drag false
+	drag_start? null
+	drop_here? null
+	archive? null
+	restore? null
+	delete_forever? null
+	share_selected false
 	attr *
-		tabindex <= tabindex
-		allow <= allow \
-		src <= uri
-		srcdoc <= html null
-	fullscreen true
-	accelerometer true
-	autoplay true
-	encription true
-	gyroscope true
-	pip true
-	clipboard_read true
-	clipboard_write true
-
-$mol_icon_account $mol_icon path \M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z
-
-$mol_icon_security $mol_icon path \M12,12H19C18.47,16.11 15.72,19.78 12,20.92V12H5V6.3L12,3.19M12,1L3,5V11C3,16.55 6.84,21.73 12,23C17.16,21.73 21,16.55 21,11V5L12,1Z
-
-$giper_baza_link_chip $mol_link
-	param \link
-	link $giper_baza_link
+		bog_music_track_current <= current
+		bog_music_track_share_selected <= share_selected
+		draggable <= can_drag
+	event *
+		dragstart?event <=> event_drag_start?event null
+		dragover?event <=> event_drag_over?event null
+		drop?event <=> event_drop?event null
 	sub /
-		<= icon \
-		<= title
+		<= Cover_box $mol_view
+			event *
+				click?event <=> on_play_click? null
+			sub /
+				<= Cover_placeholder $mol_icon_music
+		<= Info $mol_view
+			event *
+				click?event <=> on_play_click?
+			sub /
+				<= Title $mol_paragraph
+					title <= title \
+				<= Artist $mol_paragraph
+					title <= artist \
+		<= Share $mol_view
+			attr *
+				bog_music_track_share_button true
+				bog_music_track_share_selected <= share_selected
+			event *
+				pointerdown?event <=> share_pointer_down?event null
+				pointerup?event <=> share_pointer_up?event null
+				pointercancel?event <=> share_pointer_cancel?event null
+				pointerleave?event <=> share_pointer_leave?event null
+			sub /
+				<= Share_icon $mol_icon_share
+		<= Delete $mol_button_minor
+			click? <=> delete_cached? null
+			sub /
+				<= Delete_icon $mol_icon_delete
+		<= Archive $mol_button_minor
+			hint \В архив
+			click? <=> archive? null
+			sub /
+				<= Archive_icon $mol_icon_archive
+		<= Restore $mol_button_minor
+			hint \Восстановить
+			click? <=> restore? null
+			sub /
+				<= Restore_icon $mol_icon_restore
+		<= Delete_forever $mol_button_minor
+			hint \Удалить навсегда
+			click? <=> delete_forever? null
+			sub /
+				<= Delete_forever_icon $mol_icon_delete_forever
 
 $mol_stack $mol_view
 
@@ -716,6 +803,11 @@ $mol_text_code $mol_stack
 			hint @ \Copy whole code
 			text <= text_export \
 
+$mol_float $mol_view
+	style *
+		^
+		minHeight \auto
+
 $mol_icon_chevron $mol_icon path \M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z
 
 $mol_check_expand $mol_check
@@ -727,14 +819,136 @@ $mol_check_expand $mol_check
 	checked? <=> expanded? false
 	enabled <= expandable false
 
-$mol_dump_list $mol_view
-	values /
+$mol_grid $mol_view
+	row_height 32
+	row_ids /string[]
+	row_id* null
+	col_ids /
+	records *
+	record* null
+	hierarchy null
+	hierarchy_col \
+	minimal_width 0
+	-
 	sub /
-		<= Dump*0 $mol_dump_value
-			value <= dump_value* null
-			expanded? <=> dump_expanded*? false
-			prototypes <= prototypes false
-			preview_show <= preview_show true
+		<= Head
+		<= Table $mol_grid_table
+			sub <= rows /$mol_view
+	Head $mol_grid_row
+		cells <= head_cells /$mol_view
+	Row* $mol_grid_row
+		minimal_height <= row_height
+		minimal_width <= minimal_width
+		cells <= cells* /$mol_view
+	-
+	Cell* $mol_view
+	cell* null
+	Cell_text* $mol_grid_cell
+		sub <= cell_content_text* <= cell_content* /$mol_view_content
+	Cell_number* $mol_grid_number
+		sub <= cell_content_number* <= cell_content* /$mol_view_content
+	Col_head* $mol_float
+		dom_name \th
+		sub <= col_head_content* /$mol_view_content
+	Cell_branch* $mol_check_expand
+		level <= cell_level* 0
+		label <= cell_content* /$mol_view_content
+		expanded? <=> cell_expanded*? false
+	Cell_content* /
+		<= Cell_dimmer* $mol_dimmer
+			needle <= needle \
+			haystack <= cell_value* \
+
+$mol_grid_table $mol_list
+	- dom_name \table
+
+$mol_grid_row $mol_view
+	- dom_name \tr
+	sub <= cells /$mol_view
+
+$mol_grid_cell $mol_view
+	- dom_name \td
+	minimal_height 40
+
+$mol_grid_number $mol_grid_cell
+
+$mol_link_iconed $mol_link
+	sub /
+		<= Icon $mol_image
+			uri <= icon \
+			title \
+	content /
+		<= title <= uri
+	host \
+
+$mol_embed_native $mol_scroll
+	dom_name \iframe
+	window null
+	attr *
+		^
+		src <= uri? \about:config
+	sub /
+		<= Fallback $mol_link
+			uri <= uri
+			sub /
+				<= title \
+	message *
+		hashchange? <=> uri_change? null
+
+$mol_icon_youtube $mol_icon path \M10,15L15.19,12L10,9V15M21.56,7.17C21.69,7.64 21.78,8.27 21.84,9.07C21.91,9.87 21.94,10.56 21.94,11.16L22,12C22,14.19 21.84,15.8 21.56,16.83C21.31,17.73 20.73,18.31 19.83,18.56C19.36,18.69 18.5,18.78 17.18,18.84C15.88,18.91 14.69,18.94 13.59,18.94L12,19C7.81,19 5.2,18.84 4.17,18.56C3.27,18.31 2.69,17.73 2.44,16.83C2.31,16.36 2.22,15.73 2.16,14.93C2.09,14.13 2.06,13.44 2.06,12.84L2,12C2,9.81 2.16,8.2 2.44,7.17C2.69,6.27 3.27,5.69 4.17,5.44C4.64,5.31 5.5,5.22 6.82,5.16C8.12,5.09 9.31,5.06 10.41,5.06L12,5C16.19,5 18.8,5.16 19.83,5.44C20.73,5.69 21.31,6.27 21.56,7.17Z
+
+$mol_frame $mol_embed_native
+	attr *
+		tabindex <= tabindex
+		allow <= allow \
+		src <= uri
+		srcdoc <= html null
+	fullscreen true
+	accelerometer true
+	autoplay true
+	encription true
+	gyroscope true
+	pip true
+	clipboard_read true
+	clipboard_write true
+
+$mol_embed_service $mol_check
+	uri \
+	video_preview \
+	video_id \
+	checked? <=> active? false
+	sub /
+		<= Image $mol_image
+			title <= title \
+			uri <= video_preview \
+		<= Hint $mol_icon_youtube
+		<= Frame $mol_frame
+			title <= title \
+			uri <= video_embed \
+
+
+$mol_embed_youtube $mol_embed_service
+
+$mol_embed_rutube $mol_embed_service
+
+$mol_embed_vklive $mol_embed_service
+
+$mol_embed_any $mol_view
+	Image $mol_image
+		title <= title \
+		uri <= uri \
+	Object $mol_embed_native
+		title <= title \
+		uri <= uri \
+	Youtube $mol_embed_youtube
+		title <= title \
+		uri <= uri \
+	Rutube $mol_embed_rutube
+		title <= title \
+		uri <= uri \
+	Vklive $mol_embed_vklive
+		title <= title \
+		uri <= uri \
 
 $mol_expander $mol_list
 	rows /
@@ -748,6 +962,552 @@ $mol_expander $mol_list
 				<= Tools null
 		<= Content $mol_list
 			rows <= content /
+
+$mol_text $mol_list
+	uri_base \
+	text \
+	param \
+	flow_tokens /
+	block_text* \
+	auto /
+		<= auto_scroll null
+	- \Blocks
+	Paragraph* $mol_paragraph
+		sub <= block_content* /
+	Quote* $mol_text
+		uri_resolve* <= uri_resolve* \
+		text <= quote_text* \
+		highlight <= highlight \
+		auto_scroll null
+	List* $mol_text_list
+		uri_resolve* <= uri_resolve* \
+		type <= list_type* \-
+		text <= list_text* \
+		highlight <= highlight \
+	item_index* 0
+	Header* $mol_text_header
+		minimal_height 40
+		level <= header_level* 1
+		content <= block_content* /
+		arg <= header_arg* *
+	Pre* $mol_text_code
+		text <= pre_text* \
+		row_themes <= pre_themes* /string
+		highlight <= highlight \
+		uri_resolve* <= uri_resolve* \
+		sidebar_showed <= pre_sidebar_showed <= code_sidebar_showed true
+	Cut* $mol_view dom_name \hr
+	- \Table
+	Table* $mol_grid
+		head_cells <= table_head_cells* /
+		rows <= table_rows* /
+	Table_row* $mol_grid_row
+		cells <= table_cells* /
+	Table_cell* $mol_text
+		auto_scroll null
+		highlight <= highlight \
+		uri_resolve* <= uri_resolve* \
+		text <= table_cell_text* \
+	- \Grid
+	Grid* $mol_grid
+		rows <= grid_rows* /
+	Grid_row* $mol_grid_row
+		cells <= grid_cells* /
+	Grid_cell* $mol_text
+		auto_scroll null
+		highlight <= highlight \
+		uri_resolve* <= uri_resolve* \
+		text <= grid_cell_text* \
+	- \Lines
+	String* $mol_dimmer
+		dom_name \span
+		needle <= highlight \
+		haystack <= line_text* \
+	Span* $mol_text_span
+		dom_name \span
+		type <= line_type* \
+		sub <= line_content* /
+	Code_line* $mol_text_code_line
+		numb_showed false
+		highlight <= highlight \
+		text <= line_text* \
+		uri_resolve* <= uri_resolve* \
+		syntax <= code_syntax null
+	Link* $mol_link_iconed
+		uri <= link_uri* \
+		content <= line_content* /
+	Link_http* $mol_link_iconed
+		uri <= link_uri* \
+		content / <= link_host* \
+	Embed* $mol_embed_any
+		uri <= link_uri* \
+		title <= line_text* \
+	- \Spoilers
+	Spoiler* $mol_expander
+		label /
+			<= Spoiler_label* $mol_text
+				text <= spoiler_label* \
+		content /
+			<= Spoiler_content* $mol_text
+				text <= spoiler_content* \
+
+$mol_text_header $mol_paragraph
+	level 1
+	sub /
+		<= Link $mol_link
+			arg <= arg *
+			hint @ \Permalink to this section
+			sub <= content /
+
+$mol_text_span $mol_paragraph
+	dom_name \span
+	attr *
+		^
+		mol_text_type <= type \
+
+$mol_textarea $mol_stack
+	attr *
+		^
+		mol_textarea_clickable <= clickable? false
+		mol_textarea_sidebar_showed <= sidebar_showed false
+	event *
+		keydown? <=> press? null
+		pointermove? <=> hover? null
+	sub /
+		<= Edit $mol_textarea_edit
+			value? <=> value? \
+			hint <= hint \ 
+			enabled <= enabled true
+			spellcheck <= spellcheck true
+			length_max <= length_max +Infinity
+			selection? <=> selection? /number
+			bring => bring
+			submit? <=> submit? null
+			submit_with_ctrl <= submit_with_ctrl true
+		<= View $mol_text_code
+			text <= value
+			render_visible_only false
+			row_numb* <= row_numb* 0
+			sidebar_showed <= sidebar_showed
+			highlight <= highlight \
+			syntax <= syntax $mol_syntax2
+	symbols_alt *string
+		comma \<
+		period \>
+		dash \−
+		equals \≈
+		graveAccent \́
+		forwardSlash \÷
+		E \€
+		V \✔
+		X \×
+		C \©
+		P \§
+		H \₽
+		key0 \°
+		key8 \•
+		key2 \@
+		key3 \#
+		key4 \$
+		key6 \^
+		key7 \&
+		bracketOpen \[
+		bracketClose \]
+		slashBack \|
+	symbols_alt_ctrl *string
+		space \ 
+	symbols_alt_shift *string
+		V \✅
+		X \❌
+		O \⭕
+		key1 \❗
+		key4 \💲
+		key7 \❓
+		comma \«
+		period \»
+		semicolon \“
+		quoteSingle \”
+		dash \—
+		equals \≠
+		graveAccent \̱
+		bracketOpen \{
+		bracketClose \}
+
+$mol_textarea_edit $mol_string
+	dom_name \textarea
+	enter \enter
+	field *
+		^
+		scrollTop 0
+
+$mol_section $mol_list
+	level 1
+	rows /
+		<= Head $mol_view
+			sub <= head /
+				<= Title $mol_view
+					dom_name <= title_dom_name \h1
+					sub / <= title
+				<= Tools $mol_view sub <= tools /
+		<= Content $mol_list
+			rows <= content /
+
+$mol_text_list $mol_text
+	auto_scroll null
+	attr *
+		^
+		mol_text_list_type <= type \
+	Paragraph* $mol_text_list_item
+		index <= item_index*
+		sub <= block_content*
+
+$mol_text_list_item $mol_paragraph
+	attr *
+		^
+		mol_text_list_item_index <= index 0
+
+$bog_feedback2_form $mol_page
+	Head null
+	feedback_id \
+	registry_link \c0FEYfG8_tUFJEKfo
+	title @ \Feedback ( one per user )
+	tools /
+		<= Close null
+	body /
+		<= Prompt $mol_text
+			text <= prompt \
+		<= Entry_my $mol_textarea
+			hint @ \Your feedback
+			value? <=> draft_text? \
+		<= Contact_field $mol_string
+			hint @ \Contact (optional)
+			value? <=> draft_contact? \
+		<= Submit $mol_button_major
+			title <= submit_title \
+			click? <=> submit? null
+		<= Entries $mol_section
+			title @ \All feedback
+			content <= entry_rows /
+				<= Entry_row*0 $mol_section
+					title <= entry_row_contact* \
+					content /
+						<= Entry_row_text* $mol_text
+							text <= entry_row_text* \
+						<= Entry_row_reply_wrap* $mol_view
+							sub <= entry_row_reply_sub* /
+								<= Entry_row_reply_display* $mol_view
+									sub /
+										<= Entry_row_reply_header* $mol_paragraph
+											title <= entry_row_reply_header_text* @ \Reply from admin
+										<= Entry_row_reply_text* $mol_text
+											text <= entry_row_reply_text* \
+								<= Entry_row_reply_form* $mol_view
+									sub /
+										<= Entry_row_reply_input* $mol_textarea
+											hint @ \Write a reply...
+											value? <=> entry_row_reply_draft*? \
+										<= Entry_row_reply_submit* $mol_button_major
+											title <= entry_row_reply_submit_title* \
+											click? <=> entry_row_reply_submit*? null
+								<= Entry_row_reply_toggle* $mol_button_minor
+									title <= entry_row_reply_toggle_title* \
+									click? <=> entry_row_reply_toggle*? null
+	Not_configured $mol_status
+		message @ \Form not yet configured
+	Waiting $mol_paragraph
+		title <= waiting_title @ \Waiting…
+
+$mol_check_list $mol_view
+	dictionary *
+	Option* $mol_check
+		checked? <=> option_checked*? false
+		label <= option_label* /
+			<= option_title* \
+		enabled <= option_enabled* <= enabled true
+		hint <= option_hint* \
+		minimal_height 24
+	options *
+	keys /string
+	sub <= items /$mol_check
+
+$mol_switch $mol_check_list
+	value? \
+
+$mol_icon_play $mol_icon path \M8,5.14V19.14L19,12.14L8,5.14Z
+
+$bog_music_tube_row $mol_view
+	title \
+	subtitle \
+	status \
+	cover \
+	playing false
+	play? null
+	get? null
+	sub /
+		<= Play $mol_button_minor
+			hint \Слушать
+			click? <=> play? null
+			sub /
+				<= Play_icon $mol_icon_play
+		<= Cover_box $mol_view
+			event *
+				click?event <=> play? null
+			sub /
+				<= Cover $mol_image
+					uri <= cover
+				<= Cover_placeholder $mol_icon_music
+		<= Info $mol_view
+			event *
+				click?event <=> play? null
+			sub /
+				<= Title $mol_paragraph
+					title <= title
+				<= Subtitle $mol_paragraph
+					title <= subtitle
+		<= Status $mol_view
+			sub / <= status
+		<= Get $mol_button_minor
+			hint \Скачать в Мою музыку
+			click? <=> get? null
+			sub /
+				<= Get_icon $mol_icon_download
+
+$mol_icon_skip_previous $mol_icon path \M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z
+
+$mol_icon_pause $mol_icon path \M14,19H18V5H14M6,19H10V5H6V19Z
+
+$mol_icon_skip_next $mol_icon path \M16,18H18V6H16M6,18L14.5,12L6,6V18Z
+
+$mol_icon_repeat $mol_icon path \M17,17H7V14L3,18L7,22V19H19V13H17M7,7H17V10L21,6L17,2V5H5V11H7V7Z
+
+$mol_icon_repeat_once $mol_icon path \M13,15V9H12L10,10V11H11.5V15M17,17H7V14L3,18L7,22V19H19V13H17M7,7H17V10L21,6L17,2V5H5V11H7V7Z
+
+$mol_icon_shuffle $mol_icon path \M14.83,13.41L13.42,14.82L16.55,17.95L14.5,20H20V14.5L17.96,16.54L14.83,13.41M14.5,4L16.54,6.04L4,18.59L5.41,20L17.96,7.46L20,9.5V4M10.59,9.17L5.41,4L4,5.41L9.17,10.58L10.59,9.17Z
+
+$mol_icon_volume_high $mol_icon path \M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z
+
+$mol_pop_over $mol_pop
+	showed <= hovered? false
+	attr *
+		^
+		tabindex 0
+	event *
+		^
+		mouseenter? <=> event_show? null
+		mouseleave? <=> event_hide? null
+
+$bog_music_player $mol_view
+	current_key? \
+	queue_keys /
+	queue_index? 0
+	play_track? null
+	pick_next? null
+	sub /
+		<= Progress_row $mol_view
+			sub /
+				<= Time_current $mol_paragraph
+					title <= time_current_text \
+				<= Progress $mol_view
+					sub /
+						<= Progress_bar $mol_view
+							style *
+								width <= progress_width \
+						<= Trim_start_handle $mol_view
+							event *
+								pointerdown?event <=> trim_start_pointer_down?event null
+								pointermove?event <=> trim_start_pointer_move?event null
+								pointerup?event <=> trim_pointer_up?event null
+								pointercancel?event <=> trim_pointer_up?event null
+							style *
+								left <= trim_start_left \
+						<= Trim_end_handle $mol_view
+							event *
+								pointerdown?event <=> trim_end_pointer_down?event null
+								pointermove?event <=> trim_end_pointer_move?event null
+								pointerup?event <=> trim_pointer_up?event null
+								pointercancel?event <=> trim_pointer_up?event null
+							style *
+								left <= trim_end_left \
+				<= Time_total $mol_paragraph
+					title <= time_total_text \
+		<= Controls $mol_view
+			sub /
+				<= Left $mol_view
+					sub /
+						<= Cover_placeholder $mol_icon_music
+						<= Track_info $mol_view
+							sub /
+								<= Title $mol_paragraph
+									title <= title \
+								<= Artist $mol_paragraph
+									title <= artist \
+				<= Center $mol_view
+					sub /
+						<= Prev $mol_button_minor
+							click? <=> prev? null
+							sub / <= Prev_icon $mol_icon_skip_previous
+						<= Play $mol_button_minor
+							click? <=> toggle? null
+							sub / <= Play_icon $mol_icon_play
+						<= Pause $mol_button_minor
+							click? <=> toggle? null
+							sub / <= Pause_icon $mol_icon_pause
+						<= Next $mol_button_minor
+							click? <=> next? null
+							sub / <= Next_icon $mol_icon_skip_next
+						<= Repeat $mol_button_minor
+							hint <= repeat_hint \
+							click? <=> repeat_cycle? null
+							sub /
+								<= Repeat_all_icon $mol_icon_repeat
+								<= Repeat_one_icon $mol_icon_repeat_once
+								<= Shuffle_icon $mol_icon_shuffle
+				<= Volume $mol_pop_over
+					align \top_right
+					Anchor <= Volume_anchor $mol_button_minor
+						sub / <= Volume_icon $mol_icon_volume_high
+					bubble_content /
+						<= Volume_panel $mol_view
+							sub /
+								<= Volume_slider $mol_view
+									event *
+										pointerdown?event <=> volume_pointer_down?event null
+										pointermove?event <=> volume_pointer_move?event null
+										pointerup?event <=> volume_pointer_up?event null
+										pointercancel?event <=> volume_pointer_up?event null
+									sub /
+										<= Volume_fill $mol_view
+											style *
+												height <= volume_fill_height \
+
+$bog_music_nav_item $mol_view
+	label \
+	active \off
+	Icon $mol_view
+	click? null
+	attr *
+		^
+		bog_music_nav_active <= active
+	event *
+		^
+		click? <=> click? null
+	sub /
+		<= Icon
+		<= Label $mol_view
+			sub / <= label
+
+$mol_icon_magnify $mol_icon path \M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z
+
+$mol_icon_account $mol_icon path \M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z
+
+$mol_icon_account_circle $mol_icon path \M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z
+
+$mol_icon_chat $mol_icon path \M12,3C17.5,3 22,6.58 22,11C22,15.42 17.5,19 12,19C10.76,19 9.57,18.82 8.47,18.5C5.55,21 2,21 2,21C4.33,18.67 4.7,17.1 4.75,16.5C3.05,15.07 2,13.13 2,11C2,6.58 6.5,3 12,3Z
+
+$bog_music_nav $mol_view
+	section? \music
+	sub /
+		<= Tab_music $bog_music_nav_item
+			label \Музыка
+			active <= music_active \off
+			Icon <= Music_icon $mol_icon_music
+			click? <=> music_click? null
+		<= Tab_search $bog_music_nav_item
+			label \Поиск
+			active <= search_active \off
+			Icon <= Search_icon $mol_icon_magnify
+			click? <=> search_click? null
+		<= Tab_account $bog_music_nav_item
+			label \Аккаунт
+			active <= account_active \off
+			Icon <= Account_icon $mol_icon_account_circle
+			click? <=> account_click? null
+		<= Tab_feedback $bog_music_nav_item
+			label \Отзывы
+			active <= feedback_active \off
+			Icon <= Feedback_icon $mol_icon_chat
+			click? <=> feedback_click? null
+
+$mol_book2 $mol_scroll
+	menu_title \
+	sub /$mol_view
+		^ pages <= pages_deep /$mol_view
+		^ placeholders /$mol_view
+			<= Placeholder $mol_view
+	minimal_width 0
+	Gap* $mol_view title \
+
+$mol_book2_catalog $mol_book2
+	param \
+	spread? \
+	spreads *
+	Spread* $mol_view
+	Spread_default null
+	spread_ids /string
+	menu_filter_enabled false
+	spread_ids_filtered /string
+	spread_current null
+	menu_tools /
+	addon_tools /
+	pages /
+		<= Menu $mol_page
+			Title => Menu_title
+			title <= menu_title \
+			Tools => Menu_tools
+			Logo <= Menu_logo null
+			tools /
+				^ menu_tools
+				^ addon_tools
+			head <= menu_head /$mol_view_content
+				<= Menu_title
+				<= Menu_tools
+			body <= menu_body /$mol_view
+				<= Menu_filter $mol_search
+					query? <=> menu_filter? \
+				<= Menu_links $mol_list
+					Empty <= Menu_links_empty $mol_view
+					rows <= menu_links /$mol_view
+						<= Menu_item*0 $mol_view
+							sub <= menu_item_content* /$mol_view
+								<= Menu_link* $mol_link
+									arg <= menu_link_arg* <= arg* *
+									sub <= menu_link_content* /$mol_view_content
+										<= Menu_link_title* $mol_dimmer
+											needle <= menu_filter
+											haystack <= spread_title* \
+			foot <= menu_foot /$mol_view
+	Spread_close $mol_link
+		arg <= spread_close_arg *
+		hint @ \Close page
+		sub /
+			<= Spread_close_icon $mol_icon_close
+
+$mol_icon_script $mol_icon path \M17.8,20C17.4,21.2 16.3,22 15,22H5C3.3,22 2,20.7 2,19V18H5L14.2,18C14.6,19.2 15.7,20 17,20H17.8M19,2H8C6.3,2 5,3.3 5,5V16H16V17C16,17.6 16.4,18 17,18H18V5C18,4.4 18.4,4 19,4C19.6,4 20,4.4 20,5V6H22V5C22,3.3 20.7,2 19,2Z
+
+$mol_icon_script_text $mol_icon path \M17.8,20C17.4,21.2 16.3,22 15,22H5C3.3,22 2,20.7 2,19V18H5L14.2,18C14.6,19.2 15.7,20 17,20H17.8M19,2C20.7,2 22,3.3 22,5V6H20V5C20,4.4 19.6,4 19,4C18.4,4 18,4.4 18,5V18H17C16.4,18 16,17.6 16,17V16H5V5C5,3.3 6.3,2 8,2H19M8,6V8H15V6H8M8,10V12H14V10H8Z
+
+$mol_link_source $mol_link
+	hint @ \Source code
+	sub /
+		<= Icon $mol_icon_script_text
+
+$mol_icon_security $mol_icon path \M12,12H19C18.47,16.11 15.72,19.78 12,20.92V12H5V6.3L12,3.19M12,1L3,5V11C3,16.55 6.84,21.73 12,23C17.16,21.73 21,16.55 21,11V5L12,1Z
+
+$giper_baza_link_chip $mol_link
+	param \link
+	link $giper_baza_link
+	sub /
+		<= icon \
+		<= title
+
+$mol_dump_list $mol_view
+	values /
+	sub /
+		<= Dump*0 $mol_dump_value
+			value <= dump_value* null
+			expanded? <=> dump_expanded*? false
+			prototypes <= prototypes false
+			preview_show <= preview_show true
 
 $mol_dump_value $mol_view
 	value? null
@@ -862,81 +1622,6 @@ $mol_number $mol_view
 			sub / <= inc_icon $mol_icon_chevron_right
 
 $mol_bar $mol_view
-
-$mol_textarea $mol_stack
-	attr *
-		^
-		mol_textarea_clickable <= clickable? false
-		mol_textarea_sidebar_showed <= sidebar_showed false
-	event *
-		keydown? <=> press? null
-		pointermove? <=> hover? null
-	sub /
-		<= Edit $mol_textarea_edit
-			value? <=> value? \
-			hint <= hint \ 
-			enabled <= enabled true
-			spellcheck <= spellcheck true
-			length_max <= length_max +Infinity
-			selection? <=> selection? /number
-			bring => bring
-			submit? <=> submit? null
-			submit_with_ctrl <= submit_with_ctrl true
-		<= View $mol_text_code
-			text <= value
-			render_visible_only false
-			row_numb* <= row_numb* 0
-			sidebar_showed <= sidebar_showed
-			highlight <= highlight \
-			syntax <= syntax $mol_syntax2
-	symbols_alt *string
-		comma \<
-		period \>
-		dash \−
-		equals \≈
-		graveAccent \́
-		forwardSlash \÷
-		E \€
-		V \✔
-		X \×
-		C \©
-		P \§
-		H \₽
-		key0 \°
-		key8 \•
-		key2 \@
-		key3 \#
-		key4 \$
-		key6 \^
-		key7 \&
-		bracketOpen \[
-		bracketClose \]
-		slashBack \|
-	symbols_alt_ctrl *string
-		space \ 
-	symbols_alt_shift *string
-		V \✅
-		X \❌
-		O \⭕
-		key1 \❗
-		key4 \💲
-		key7 \❓
-		comma \«
-		period \»
-		semicolon \“
-		quoteSingle \”
-		dash \—
-		equals \≠
-		graveAccent \̱
-		bracketOpen \{
-		bracketClose \}
-
-$mol_textarea_edit $mol_string
-	dom_name \textarea
-	enter \enter
-	field *
-		^
-		scrollTop 0
 
 $mol_icon_calendar $mol_icon path \M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H18V1M17,12H12V17H17V12Z
 
@@ -1283,10 +1968,6 @@ $giper_baza_land_page $mol_page
 				hint \Download dump
 				blob <= dump $mol_blob
 				file_name <= dump_name \AAAAAAAA_AAAAAAAA.baza
-
-$mol_icon_delete $mol_icon path \M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z
-
-$mol_icon_delete_forever $mol_icon path \M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8.46,11.88L9.87,10.47L12,12.59L14.12,10.47L15.53,11.88L13.41,14L15.53,16.12L14.12,17.53L12,15.41L9.88,17.53L8.47,16.12L10.59,14L8.46,11.88M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z
 
 $giper_baza_land_grab $mol_select
 	Filter null
@@ -1919,8 +2600,6 @@ $giper_baza_app_stat_page $mol_page
 						graphs /
 							<= Errors
 
-$mol_icon_play $mol_icon path \M8,5.14V19.14L19,12.14L8,5.14Z
-
 $giper_baza_auth_slot $mol_page
 	title \🎰 Beautiful Keys Mining
 	glob $giper_baza_glob
@@ -1966,686 +2645,6 @@ $giper_baza_app $mol_book2_catalog
 				<= Spread_close
 	placeholders /
 
-$mol_button_major $mol_button_minor
-	theme \$mol_theme_base
-
-$mol_status $mol_view
-	status <= title
-	minimal_height 24
-	minimal_width 0
-	sub /
-		<= message \
-
-$mol_row $mol_view
-
-$mol_form $mol_list
-	submit_allowed true
-	submit_blocked false
-	event *
-		^
-		keydown? <=> keydown? null
-	save? null
-	message_done @ \Saved
-	errors *string
-		\Form invalid
-			<= form_invalid @ \Form is not valid
-	rows /
-		<= Body $mol_list
-			sub <= body <= form_fields /$mol_form_field
-		<= Foot $mol_row
-			sub <= foot <= buttons /$mol_view
-				<= Submit $mol_button_major
-					title <= submit_title @ \Save
-					hint <= submit_hint \
-					activate? => submit_activate?
-					click? <=> submit? null
-				<= Result $mol_status
-					message <= result? null
-
-$bog_music_account $mol_view
-	sub /
-		<= Sync_row $mol_view
-			sub /
-				<= Sync_status $giper_baza_status
-				<= Download_playlist $mol_button_minor
-					hint <= download_playlist_hint \
-					click? <=> download_playlist? null
-					sub /
-						<= Download_playlist_icon $mol_icon_download
-						<= Download_playlist_label $mol_view sub / <= download_playlist_label \
-				<= Download_playlist_status $mol_view sub / <= download_playlist_status \
-		<= Cards $mol_view
-			sub /
-				<= Profile $mol_view
-					sub /
-						<= Nickname_field $mol_form_field
-							name \Имя
-							Content <= Nickname_input $mol_string
-								value? <=> nickname? \
-								hint \Как тебя зовут?
-						<= Lord $mol_view
-							sub /
-								\ЛК:
-								<= Lord_text $mol_view sub / <= lord_short \
-				<= Export $mol_view
-					sub /
-						<= Warning $mol_paragraph
-							title \Ссылка ниже — СЕКРЕТ. Не делись ей публично.
-						<= Copy $mol_button_minor
-							title \Скопировать ссылку для переноса
-							click? <=> copy? null
-						<= Copy_status $mol_view sub / <= copy_status \
-				<= Import $mol_view
-					sub /
-						<= Import_hint $mol_paragraph
-							title \Перенести с другого устройства — вставь ссылку:
-						<= Import_input $mol_string
-							hint \https://.../music/#account=...
-							value? <=> import_link? \
-						<= Import_apply $mol_button_minor
-							title \Применить
-							click? <=> apply_import? null
-						<= Import_status $mol_view sub / <= import_status \
-				<= Reset $mol_view
-					sub /
-						<= Reset_hint $mol_paragraph
-							title \Сбросить состояние и сгенерировать новый аккаунт. Текущие треки в Giper Baza останутся orphan.
-						<= Reset_button $mol_button_minor
-							title \Сбросить локальный аккаунт
-							click? <=> reset_account? null
-	ext_label @ \Скачать плейлист в расширение
-	ext_hint @ \Скачать треки видимого плейлиста в расширение
-	pwa_label @ \Скачать плейлист zip-архивом
-	pwa_hint @ \Упаковать локально засинканные треки в zip и скачать на устройство
-
-$bog_music_tracks $mol_list
-	track_keys /
-	current_key \
-	play_key? null
-	archive_mode false
-	reorder_to? null
-	archive_key? null
-	restore_key? null
-	delete_key? null
-	rows <= track_rows /
-		<= Track*0 $bog_music_track
-			key <= track_key* \
-			current <= track_current* false
-			play? <=> track_play*? null
-			archive_mode <= archive_mode
-			can_drag <= track_can_drag* false
-			drag_start? <=> track_drag_start*? null
-			drop_here? <=> track_drop_here*? null
-			archive? <=> track_archive*? null
-			restore? <=> track_restore*? null
-			delete_forever? <=> track_delete*? null
-
-$mol_icon_music $mol_icon path \M21,3V15.5A3.5,3.5 0 0,1 17.5,19A3.5,3.5 0 0,1 14,15.5A3.5,3.5 0 0,1 17.5,12C18.04,12 18.55,12.12 19,12.34V6.47L9,8.6V17.5A3.5,3.5 0 0,1 5.5,21A3.5,3.5 0 0,1 2,17.5A3.5,3.5 0 0,1 5.5,14C6.04,14 6.55,14.12 7,14.34V6L21,3Z
-
-$mol_icon_share $mol_icon path \M21,12L14,5V9C7,10 4,15 3,20C5.5,16.5 9,14.9 14,14.9V19L21,12Z
-
-$mol_icon_archive $mol_icon path \M3,3H21V7H3V3M4,8H20V21H4V8M9.5,11A0.5,0.5 0 0,0 9,11.5V13H15V11.5A0.5,0.5 0 0,0 14.5,11H9.5Z
-
-$mol_icon_restore $mol_icon path \M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z
-
-$bog_music_track $mol_view
-	key \
-	current false
-	play? null
-	archive_mode false
-	can_drag false
-	drag_start? null
-	drop_here? null
-	archive? null
-	restore? null
-	delete_forever? null
-	share_selected false
-	attr *
-		bog_music_track_current <= current
-		bog_music_track_share_selected <= share_selected
-		draggable <= can_drag
-	event *
-		dragstart?event <=> event_drag_start?event null
-		dragover?event <=> event_drag_over?event null
-		drop?event <=> event_drop?event null
-	sub /
-		<= Cover_box $mol_view
-			event *
-				click?event <=> on_play_click? null
-			sub /
-				<= Cover_placeholder $mol_icon_music
-		<= Info $mol_view
-			event *
-				click?event <=> on_play_click?
-			sub /
-				<= Title $mol_paragraph
-					title <= title \
-				<= Artist $mol_paragraph
-					title <= artist \
-		<= Share $mol_view
-			attr *
-				bog_music_track_share_button true
-				bog_music_track_share_selected <= share_selected
-			event *
-				pointerdown?event <=> share_pointer_down?event null
-				pointerup?event <=> share_pointer_up?event null
-				pointercancel?event <=> share_pointer_cancel?event null
-				pointerleave?event <=> share_pointer_leave?event null
-			sub /
-				<= Share_icon $mol_icon_share
-		<= Delete $mol_button_minor
-			click? <=> delete_cached? null
-			sub /
-				<= Delete_icon $mol_icon_delete
-		<= Archive $mol_button_minor
-			hint \В архив
-			click? <=> archive? null
-			sub /
-				<= Archive_icon $mol_icon_archive
-		<= Restore $mol_button_minor
-			hint \Восстановить
-			click? <=> restore? null
-			sub /
-				<= Restore_icon $mol_icon_restore
-		<= Delete_forever $mol_button_minor
-			hint \Удалить навсегда
-			click? <=> delete_forever? null
-			sub /
-				<= Delete_forever_icon $mol_icon_delete_forever
-
-$mol_float $mol_view
-	style *
-		^
-		minHeight \auto
-
-$mol_grid $mol_view
-	row_height 32
-	row_ids /string[]
-	row_id* null
-	col_ids /
-	records *
-	record* null
-	hierarchy null
-	hierarchy_col \
-	minimal_width 0
-	-
-	sub /
-		<= Head
-		<= Table $mol_grid_table
-			sub <= rows /$mol_view
-	Head $mol_grid_row
-		cells <= head_cells /$mol_view
-	Row* $mol_grid_row
-		minimal_height <= row_height
-		minimal_width <= minimal_width
-		cells <= cells* /$mol_view
-	-
-	Cell* $mol_view
-	cell* null
-	Cell_text* $mol_grid_cell
-		sub <= cell_content_text* <= cell_content* /$mol_view_content
-	Cell_number* $mol_grid_number
-		sub <= cell_content_number* <= cell_content* /$mol_view_content
-	Col_head* $mol_float
-		dom_name \th
-		sub <= col_head_content* /$mol_view_content
-	Cell_branch* $mol_check_expand
-		level <= cell_level* 0
-		label <= cell_content* /$mol_view_content
-		expanded? <=> cell_expanded*? false
-	Cell_content* /
-		<= Cell_dimmer* $mol_dimmer
-			needle <= needle \
-			haystack <= cell_value* \
-
-$mol_grid_table $mol_list
-	- dom_name \table
-
-$mol_grid_row $mol_view
-	- dom_name \tr
-	sub <= cells /$mol_view
-
-$mol_grid_cell $mol_view
-	- dom_name \td
-	minimal_height 40
-
-$mol_grid_number $mol_grid_cell
-
-$mol_link_iconed $mol_link
-	sub /
-		<= Icon $mol_image
-			uri <= icon \
-			title \
-	content /
-		<= title <= uri
-	host \
-
-$mol_icon_youtube $mol_icon path \M10,15L15.19,12L10,9V15M21.56,7.17C21.69,7.64 21.78,8.27 21.84,9.07C21.91,9.87 21.94,10.56 21.94,11.16L22,12C22,14.19 21.84,15.8 21.56,16.83C21.31,17.73 20.73,18.31 19.83,18.56C19.36,18.69 18.5,18.78 17.18,18.84C15.88,18.91 14.69,18.94 13.59,18.94L12,19C7.81,19 5.2,18.84 4.17,18.56C3.27,18.31 2.69,17.73 2.44,16.83C2.31,16.36 2.22,15.73 2.16,14.93C2.09,14.13 2.06,13.44 2.06,12.84L2,12C2,9.81 2.16,8.2 2.44,7.17C2.69,6.27 3.27,5.69 4.17,5.44C4.64,5.31 5.5,5.22 6.82,5.16C8.12,5.09 9.31,5.06 10.41,5.06L12,5C16.19,5 18.8,5.16 19.83,5.44C20.73,5.69 21.31,6.27 21.56,7.17Z
-
-$mol_embed_service $mol_check
-	uri \
-	video_preview \
-	video_id \
-	checked? <=> active? false
-	sub /
-		<= Image $mol_image
-			title <= title \
-			uri <= video_preview \
-		<= Hint $mol_icon_youtube
-		<= Frame $mol_frame
-			title <= title \
-			uri <= video_embed \
-
-
-$mol_embed_youtube $mol_embed_service
-
-$mol_embed_rutube $mol_embed_service
-
-$mol_embed_vklive $mol_embed_service
-
-$mol_embed_any $mol_view
-	Image $mol_image
-		title <= title \
-		uri <= uri \
-	Object $mol_embed_native
-		title <= title \
-		uri <= uri \
-	Youtube $mol_embed_youtube
-		title <= title \
-		uri <= uri \
-	Rutube $mol_embed_rutube
-		title <= title \
-		uri <= uri \
-	Vklive $mol_embed_vklive
-		title <= title \
-		uri <= uri \
-
-$mol_text $mol_list
-	uri_base \
-	text \
-	param \
-	flow_tokens /
-	block_text* \
-	auto /
-		<= auto_scroll null
-	- \Blocks
-	Paragraph* $mol_paragraph
-		sub <= block_content* /
-	Quote* $mol_text
-		uri_resolve* <= uri_resolve* \
-		text <= quote_text* \
-		highlight <= highlight \
-		auto_scroll null
-	List* $mol_text_list
-		uri_resolve* <= uri_resolve* \
-		type <= list_type* \-
-		text <= list_text* \
-		highlight <= highlight \
-	item_index* 0
-	Header* $mol_text_header
-		minimal_height 40
-		level <= header_level* 1
-		content <= block_content* /
-		arg <= header_arg* *
-	Pre* $mol_text_code
-		text <= pre_text* \
-		row_themes <= pre_themes* /string
-		highlight <= highlight \
-		uri_resolve* <= uri_resolve* \
-		sidebar_showed <= pre_sidebar_showed <= code_sidebar_showed true
-	Cut* $mol_view dom_name \hr
-	- \Table
-	Table* $mol_grid
-		head_cells <= table_head_cells* /
-		rows <= table_rows* /
-	Table_row* $mol_grid_row
-		cells <= table_cells* /
-	Table_cell* $mol_text
-		auto_scroll null
-		highlight <= highlight \
-		uri_resolve* <= uri_resolve* \
-		text <= table_cell_text* \
-	- \Grid
-	Grid* $mol_grid
-		rows <= grid_rows* /
-	Grid_row* $mol_grid_row
-		cells <= grid_cells* /
-	Grid_cell* $mol_text
-		auto_scroll null
-		highlight <= highlight \
-		uri_resolve* <= uri_resolve* \
-		text <= grid_cell_text* \
-	- \Lines
-	String* $mol_dimmer
-		dom_name \span
-		needle <= highlight \
-		haystack <= line_text* \
-	Span* $mol_text_span
-		dom_name \span
-		type <= line_type* \
-		sub <= line_content* /
-	Code_line* $mol_text_code_line
-		numb_showed false
-		highlight <= highlight \
-		text <= line_text* \
-		uri_resolve* <= uri_resolve* \
-		syntax <= code_syntax null
-	Link* $mol_link_iconed
-		uri <= link_uri* \
-		content <= line_content* /
-	Link_http* $mol_link_iconed
-		uri <= link_uri* \
-		content / <= link_host* \
-	Embed* $mol_embed_any
-		uri <= link_uri* \
-		title <= line_text* \
-	- \Spoilers
-	Spoiler* $mol_expander
-		label /
-			<= Spoiler_label* $mol_text
-				text <= spoiler_label* \
-		content /
-			<= Spoiler_content* $mol_text
-				text <= spoiler_content* \
-
-$mol_text_header $mol_paragraph
-	level 1
-	sub /
-		<= Link $mol_link
-			arg <= arg *
-			hint @ \Permalink to this section
-			sub <= content /
-
-$mol_text_span $mol_paragraph
-	dom_name \span
-	attr *
-		^
-		mol_text_type <= type \
-
-$mol_section $mol_list
-	level 1
-	rows /
-		<= Head $mol_view
-			sub <= head /
-				<= Title $mol_view
-					dom_name <= title_dom_name \h1
-					sub / <= title
-				<= Tools $mol_view sub <= tools /
-		<= Content $mol_list
-			rows <= content /
-
-$mol_text_list $mol_text
-	auto_scroll null
-	attr *
-		^
-		mol_text_list_type <= type \
-	Paragraph* $mol_text_list_item
-		index <= item_index*
-		sub <= block_content*
-
-$mol_text_list_item $mol_paragraph
-	attr *
-		^
-		mol_text_list_item_index <= index 0
-
-$bog_feedback2_form $mol_page
-	Head null
-	feedback_id \
-	registry_link \c0FEYfG8_tUFJEKfo
-	title @ \Feedback ( one per user )
-	tools /
-		<= Close null
-	body /
-		<= Prompt $mol_text
-			text <= prompt \
-		<= Entry_my $mol_textarea
-			hint @ \Your feedback
-			value? <=> draft_text? \
-		<= Contact_field $mol_string
-			hint @ \Contact (optional)
-			value? <=> draft_contact? \
-		<= Submit $mol_button_major
-			title <= submit_title \
-			click? <=> submit? null
-		<= Entries $mol_section
-			title @ \All feedback
-			content <= entry_rows /
-				<= Entry_row*0 $mol_section
-					title <= entry_row_contact* \
-					content /
-						<= Entry_row_text* $mol_text
-							text <= entry_row_text* \
-						<= Entry_row_reply_wrap* $mol_view
-							sub <= entry_row_reply_sub* /
-								<= Entry_row_reply_display* $mol_view
-									sub /
-										<= Entry_row_reply_header* $mol_paragraph
-											title <= entry_row_reply_header_text* @ \Reply from admin
-										<= Entry_row_reply_text* $mol_text
-											text <= entry_row_reply_text* \
-								<= Entry_row_reply_form* $mol_view
-									sub /
-										<= Entry_row_reply_input* $mol_textarea
-											hint @ \Write a reply...
-											value? <=> entry_row_reply_draft*? \
-										<= Entry_row_reply_submit* $mol_button_major
-											title <= entry_row_reply_submit_title* \
-											click? <=> entry_row_reply_submit*? null
-								<= Entry_row_reply_toggle* $mol_button_minor
-									title <= entry_row_reply_toggle_title* \
-									click? <=> entry_row_reply_toggle*? null
-	Not_configured $mol_status
-		message @ \Form not yet configured
-	Waiting $mol_paragraph
-		title <= waiting_title @ \Waiting…
-
-$mol_check_list $mol_view
-	dictionary *
-	Option* $mol_check
-		checked? <=> option_checked*? false
-		label <= option_label* /
-			<= option_title* \
-		enabled <= option_enabled* <= enabled true
-		hint <= option_hint* \
-		minimal_height 24
-	options *
-	keys /string
-	sub <= items /$mol_check
-
-$mol_switch $mol_check_list
-	value? \
-
-$bog_music_tube_row $mol_view
-	title \
-	subtitle \
-	status \
-	cover \
-	playing false
-	play? null
-	get? null
-	sub /
-		<= Play $mol_button_minor
-			hint \Слушать
-			click? <=> play? null
-			sub /
-				<= Play_icon $mol_icon_play
-		<= Cover_box $mol_view
-			event *
-				click?event <=> play? null
-			sub /
-				<= Cover $mol_image
-					uri <= cover
-				<= Cover_placeholder $mol_icon_music
-		<= Info $mol_view
-			event *
-				click?event <=> play? null
-			sub /
-				<= Title $mol_paragraph
-					title <= title
-				<= Subtitle $mol_paragraph
-					title <= subtitle
-		<= Status $mol_view
-			sub / <= status
-		<= Get $mol_button_minor
-			hint \Скачать в Мою музыку
-			click? <=> get? null
-			sub /
-				<= Get_icon $mol_icon_download
-
-$mol_icon_skip_previous $mol_icon path \M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z
-
-$mol_icon_pause $mol_icon path \M14,19H18V5H14M6,19H10V5H6V19Z
-
-$mol_icon_skip_next $mol_icon path \M16,18H18V6H16M6,18L14.5,12L6,6V18Z
-
-$mol_icon_repeat $mol_icon path \M17,17H7V14L3,18L7,22V19H19V13H17M7,7H17V10L21,6L17,2V5H5V11H7V7Z
-
-$mol_icon_repeat_once $mol_icon path \M13,15V9H12L10,10V11H11.5V15M17,17H7V14L3,18L7,22V19H19V13H17M7,7H17V10L21,6L17,2V5H5V11H7V7Z
-
-$mol_icon_shuffle $mol_icon path \M14.83,13.41L13.42,14.82L16.55,17.95L14.5,20H20V14.5L17.96,16.54L14.83,13.41M14.5,4L16.54,6.04L4,18.59L5.41,20L17.96,7.46L20,9.5V4M10.59,9.17L5.41,4L4,5.41L9.17,10.58L10.59,9.17Z
-
-$mol_icon_volume_high $mol_icon path \M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z
-
-$mol_pop_over $mol_pop
-	showed <= hovered? false
-	attr *
-		^
-		tabindex 0
-	event *
-		^
-		mouseenter? <=> event_show? null
-		mouseleave? <=> event_hide? null
-
-$bog_music_player $mol_view
-	current_key? \
-	queue_keys /
-	queue_index? 0
-	play_track? null
-	pick_next? null
-	sub /
-		<= Progress_row $mol_view
-			sub /
-				<= Time_current $mol_paragraph
-					title <= time_current_text \
-				<= Progress $mol_view
-					sub /
-						<= Progress_bar $mol_view
-							style *
-								width <= progress_width \
-						<= Trim_start_handle $mol_view
-							event *
-								pointerdown?event <=> trim_start_pointer_down?event null
-								pointermove?event <=> trim_start_pointer_move?event null
-								pointerup?event <=> trim_pointer_up?event null
-								pointercancel?event <=> trim_pointer_up?event null
-							style *
-								left <= trim_start_left \
-						<= Trim_end_handle $mol_view
-							event *
-								pointerdown?event <=> trim_end_pointer_down?event null
-								pointermove?event <=> trim_end_pointer_move?event null
-								pointerup?event <=> trim_pointer_up?event null
-								pointercancel?event <=> trim_pointer_up?event null
-							style *
-								left <= trim_end_left \
-				<= Time_total $mol_paragraph
-					title <= time_total_text \
-		<= Controls $mol_view
-			sub /
-				<= Left $mol_view
-					sub /
-						<= Cover_placeholder $mol_icon_music
-						<= Track_info $mol_view
-							sub /
-								<= Title $mol_paragraph
-									title <= title \
-								<= Artist $mol_paragraph
-									title <= artist \
-				<= Center $mol_view
-					sub /
-						<= Prev $mol_button_minor
-							click? <=> prev? null
-							sub / <= Prev_icon $mol_icon_skip_previous
-						<= Play $mol_button_minor
-							click? <=> toggle? null
-							sub / <= Play_icon $mol_icon_play
-						<= Pause $mol_button_minor
-							click? <=> toggle? null
-							sub / <= Pause_icon $mol_icon_pause
-						<= Next $mol_button_minor
-							click? <=> next? null
-							sub / <= Next_icon $mol_icon_skip_next
-						<= Repeat $mol_button_minor
-							hint <= repeat_hint \
-							click? <=> repeat_cycle? null
-							sub /
-								<= Repeat_all_icon $mol_icon_repeat
-								<= Repeat_one_icon $mol_icon_repeat_once
-								<= Shuffle_icon $mol_icon_shuffle
-				<= Volume $mol_pop_over
-					align \top_right
-					Anchor <= Volume_anchor $mol_button_minor
-						sub / <= Volume_icon $mol_icon_volume_high
-					bubble_content /
-						<= Volume_panel $mol_view
-							sub /
-								<= Volume_slider $mol_view
-									event *
-										pointerdown?event <=> volume_pointer_down?event null
-										pointermove?event <=> volume_pointer_move?event null
-										pointerup?event <=> volume_pointer_up?event null
-										pointercancel?event <=> volume_pointer_up?event null
-									sub /
-										<= Volume_fill $mol_view
-											style *
-												height <= volume_fill_height \
-
-$bog_music_nav_item $mol_view
-	label \
-	active \off
-	Icon $mol_view
-	click? null
-	attr *
-		^
-		bog_music_nav_active <= active
-	event *
-		^
-		click? <=> click? null
-	sub /
-		<= Icon
-		<= Label $mol_view
-			sub / <= label
-
-$mol_icon_magnify $mol_icon path \M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z
-
-$mol_icon_account_circle $mol_icon path \M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z
-
-$mol_icon_chat $mol_icon path \M12,3C17.5,3 22,6.58 22,11C22,15.42 17.5,19 12,19C10.76,19 9.57,18.82 8.47,18.5C5.55,21 2,21 2,21C4.33,18.67 4.7,17.1 4.75,16.5C3.05,15.07 2,13.13 2,11C2,6.58 6.5,3 12,3Z
-
-$bog_music_nav $mol_view
-	section? \music
-	sub /
-		<= Tab_music $bog_music_nav_item
-			label \Музыка
-			active <= music_active \off
-			Icon <= Music_icon $mol_icon_music
-			click? <=> music_click? null
-		<= Tab_search $bog_music_nav_item
-			label \Поиск
-			active <= search_active \off
-			Icon <= Search_icon $mol_icon_magnify
-			click? <=> search_click? null
-		<= Tab_account $bog_music_nav_item
-			label \Аккаунт
-			active <= account_active \off
-			Icon <= Account_icon $mol_icon_account_circle
-			click? <=> account_click? null
-		<= Tab_feedback $bog_music_nav_item
-			label \Отзывы
-			active <= feedback_active \off
-			Icon <= Feedback_icon $mol_icon_chat
-			click? <=> feedback_click? null
-
 $bog_music_app $mol_page
 	plugins /
 		<= Theme $bog_theme_auto
@@ -2656,6 +2655,7 @@ $bog_music_app $mol_page
 		uri \bog/music/app/favicon.svg
 		title <= title
 	tools /
+		<= Sync_status $giper_baza_status
 		<= Nickname_label $mol_view
 			sub / <= nickname_label \
 		<= Version $mol_view

@@ -2303,112 +2303,153 @@ declare namespace $ {
 }
 
 declare namespace $ {
-    /** State of time moment */
-    class $mol_state_time extends $mol_object {
-        static task(precision: number, reset?: null): $mol_after_timeout | $mol_after_frame;
-        static now(precision: number): number;
-    }
-}
 
-declare namespace $ {
-
-	export class $mol_svg extends $mol_view {
-		dom_name( ): string
-		dom_name_space( ): string
-		font_size( ): number
-		font_family( ): string
-		style_size( ): Record<string, any>
+	export class $mol_ghost extends $mol_view {
+		Sub( ): $mol_view
 	}
 	
 }
 
-//# sourceMappingURL=svg.view.tree.d.ts.map
+//# sourceMappingURL=ghost.view.tree.d.ts.map
 declare namespace $.$$ {
-    /** Base SVG component to display SVG images or icons. */
-    class $mol_svg extends $.$mol_svg {
-        computed_style(): Record<string, any>;
-        font_size(): number;
-        font_family(): any;
+    /**
+     * Mixin view logic to DOM node of another component.
+     */
+    class $mol_ghost extends $.$mol_ghost {
+        dom_node_external(next?: Element): Element;
+        dom_node_actual(): Element;
+        dom_tree(): Element;
+        title(): string;
+        minimal_width(): number;
+        minimal_height(): number;
+    }
+}
+
+declare namespace $ {
+
+	export class $mol_follower extends $mol_ghost {
+		transform( ): string
+		Anchor( ): $mol_view
+		align( ): readonly(number)[]
+		offset( ): readonly(number)[]
+		style( ): ({ 
+			'transform': ReturnType< $mol_follower['transform'] >,
+		})  & ReturnType< $mol_ghost['style'] >
+	}
+	
+}
+
+//# sourceMappingURL=follower.view.tree.d.ts.map
+declare namespace $.$$ {
+    /**
+     * Marker on top of another component with tracking of its position.
+     */
+    class $mol_follower extends $.$mol_follower {
+        pos(): {
+            left: number;
+            top: number;
+        } | null;
+        transform(): string;
     }
 }
 
 declare namespace $ {
 }
 
-declare namespace $ {
-
-	export class $mol_svg_root extends $mol_svg {
-		view_box( ): string
-		aspect( ): string
-		dom_name( ): string
-		attr( ): ({ 
-			'viewBox': ReturnType< $mol_svg_root['view_box'] >,
-			'preserveAspectRatio': ReturnType< $mol_svg_root['aspect'] >,
-		})  & ReturnType< $mol_svg['attr'] >
-	}
-	
-}
-
-//# sourceMappingURL=root.view.tree.d.ts.map
-declare namespace $ {
-
-	export class $mol_svg_path extends $mol_svg {
-		geometry( ): string
-		dom_name( ): string
-		attr( ): ({ 
-			'd': ReturnType< $mol_svg_path['geometry'] >,
-		})  & ReturnType< $mol_svg['attr'] >
-	}
-	
-}
-
-//# sourceMappingURL=path.view.tree.d.ts.map
-declare namespace $ {
-}
-
-declare namespace $ {
-
-	type $mol_svg_path__geometry_mol_icon_1 = $mol_type_enforce<
-		ReturnType< $mol_icon['path'] >
-		,
-		ReturnType< $mol_svg_path['geometry'] >
-	>
-	export class $mol_icon extends $mol_svg_root {
-		path( ): string
-		Path( ): $mol_svg_path
-		view_box( ): string
-		minimal_width( ): number
-		minimal_height( ): number
-		sub( ): readonly(any)[]
-	}
-	
-}
-
-//# sourceMappingURL=icon.view.tree.d.ts.map
-declare namespace $ {
-
-	export class $mol_icon_chart_timeline extends $mol_icon {
-		path( ): string
-	}
-	
-}
-
-//# sourceMappingURL=timeline.view.tree.d.ts.map
-declare namespace $ {
-
-	export class $mol_icon_chart_timeline_variant extends $mol_icon {
-		path( ): string
-	}
-	
-}
-
-//# sourceMappingURL=variant.view.tree.d.ts.map
 declare namespace $ {
     /**
      * Z-index values for layers
      * https://page.hyoo.ru/#!=xthcpx_wqmiba
      */
     let $mol_layer: Record<"focus" | "float" | "hover" | "speck" | "popup", $mol_style_func<"var", unknown>>;
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	type $mol_pop_bubble__content_mol_pop_1 = $mol_type_enforce<
+		ReturnType< $mol_pop['bubble_content'] >
+		,
+		ReturnType< $mol_pop_bubble['content'] >
+	>
+	type $mol_pop_bubble__height_max_mol_pop_2 = $mol_type_enforce<
+		ReturnType< $mol_pop['height_max'] >
+		,
+		ReturnType< $mol_pop_bubble['height_max'] >
+	>
+	type $mol_follower__offset_mol_pop_3 = $mol_type_enforce<
+		ReturnType< $mol_pop['bubble_offset'] >
+		,
+		ReturnType< $mol_follower['offset'] >
+	>
+	type $mol_follower__align_mol_pop_4 = $mol_type_enforce<
+		ReturnType< $mol_pop['bubble_align'] >
+		,
+		ReturnType< $mol_follower['align'] >
+	>
+	type $mol_follower__Anchor_mol_pop_5 = $mol_type_enforce<
+		ReturnType< $mol_pop['Anchor'] >
+		,
+		ReturnType< $mol_follower['Anchor'] >
+	>
+	type $mol_follower__Sub_mol_pop_6 = $mol_type_enforce<
+		ReturnType< $mol_pop['Bubble'] >
+		,
+		ReturnType< $mol_follower['Sub'] >
+	>
+	export class $mol_pop extends $mol_view {
+		bubble( ): any
+		Anchor( ): any
+		bubble_offset( ): readonly(number)[]
+		bubble_align( ): readonly(number)[]
+		bubble_content( ): readonly($mol_view_content)[]
+		height_max( ): number
+		Bubble( ): $mol_pop_bubble
+		Follower( ): $mol_follower
+		showed( next?: boolean ): boolean
+		align_vert( ): string
+		align_hor( ): string
+		align( ): string
+		prefer( ): string
+		auto( ): readonly(any)[]
+		sub( ): readonly(any)[]
+		sub_visible( ): readonly(any)[]
+	}
+	
+	export class $mol_pop_bubble extends $mol_view {
+		content( ): readonly($mol_view_content)[]
+		height_max( ): number
+		sub( ): ReturnType< $mol_pop_bubble['content'] >
+		style( ): ({ 
+			'maxHeight': ReturnType< $mol_pop_bubble['height_max'] >,
+		})  & ReturnType< $mol_view['style'] >
+		attr( ): ({ 
+			'tabindex': number,
+			'popover': string,
+		})  & ReturnType< $mol_view['attr'] >
+	}
+	
+}
+
+//# sourceMappingURL=pop.view.tree.d.ts.map
+declare namespace $.$$ {
+    /**
+     * `Bubble` that can be shown anchored to `Anchor` element.
+     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_pop_demo
+     */
+    class $mol_pop extends $.$mol_pop {
+        showed(next?: boolean): boolean;
+        sub_visible(): any[];
+        height_max(): number;
+        align(): string;
+        align_vert(): "suspense" | "top" | "bottom";
+        align_hor(): "suspense" | "left" | "right";
+        bubble_offset(): number[];
+        bubble_align(): number[];
+        bubble(): void;
+    }
 }
 
 declare namespace $ {
@@ -2669,662 +2710,6 @@ declare namespace $.$$ {
         label(): readonly any[];
         aria_checked(): string;
     }
-}
-
-declare namespace $ {
-}
-
-declare namespace $ {
-
-	export class $mol_check_icon extends $mol_check {
-	}
-	
-}
-
-//# sourceMappingURL=icon.view.tree.d.ts.map
-declare namespace $ {
-
-	export class $mol_icon_upload extends $mol_icon {
-		path( ): string
-	}
-	
-}
-
-//# sourceMappingURL=upload.view.tree.d.ts.map
-declare namespace $ {
-
-	type $mol_button_open_native__files_mol_button_open_1 = $mol_type_enforce<
-		ReturnType< $mol_button_open['files_handled'] >
-		,
-		ReturnType< $mol_button_open_native['files'] >
-	>
-	type $mol_button_open_native__accept_mol_button_open_2 = $mol_type_enforce<
-		ReturnType< $mol_button_open['accept'] >
-		,
-		ReturnType< $mol_button_open_native['accept'] >
-	>
-	type $mol_button_open_native__multiple_mol_button_open_3 = $mol_type_enforce<
-		ReturnType< $mol_button_open['multiple'] >
-		,
-		ReturnType< $mol_button_open_native['multiple'] >
-	>
-	export class $mol_button_open extends $mol_button_minor {
-		Icon( ): $mol_icon_upload
-		files( next?: readonly(File)[] ): readonly(File)[]
-		files_handled( next?: ReturnType< $mol_button_open['files'] > ): ReturnType< $mol_button_open['files'] >
-		accept( ): string
-		multiple( ): boolean
-		Native( ): $mol_button_open_native
-		sub( ): readonly(any)[]
-	}
-	
-	export class $mol_button_open_native extends $mol_view {
-		accept( ): string
-		multiple( ): boolean
-		picked( next?: any ): any
-		dom_name( ): string
-		files( next?: readonly(File)[] ): readonly(File)[]
-		attr( ): ({ 
-			'type': string,
-			'accept': ReturnType< $mol_button_open_native['accept'] >,
-			'multiple': ReturnType< $mol_button_open_native['multiple'] >,
-		}) 
-		event( ): ({ 
-			change( next?: ReturnType< $mol_button_open_native['picked'] > ): ReturnType< $mol_button_open_native['picked'] >,
-		}) 
-	}
-	
-}
-
-//# sourceMappingURL=open.view.tree.d.ts.map
-declare namespace $.$$ {
-    class $mol_button_open extends $.$mol_button_open {
-        files_handled(next?: readonly File[]): readonly File[];
-    }
-    /**
-     * File open button
-     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_button_demo
-     */
-    class $mol_button_open_native extends $.$mol_button_open_native {
-        dom_node(): HTMLInputElement;
-        picked(): void;
-    }
-}
-
-declare namespace $ {
-}
-
-declare namespace $ {
-
-	export class $mol_ghost extends $mol_view {
-		Sub( ): $mol_view
-	}
-	
-}
-
-//# sourceMappingURL=ghost.view.tree.d.ts.map
-declare namespace $.$$ {
-    /**
-     * Mixin view logic to DOM node of another component.
-     */
-    class $mol_ghost extends $.$mol_ghost {
-        dom_node_external(next?: Element): Element;
-        dom_node_actual(): Element;
-        dom_tree(): Element;
-        title(): string;
-        minimal_width(): number;
-        minimal_height(): number;
-    }
-}
-
-declare namespace $ {
-
-	export class $mol_follower extends $mol_ghost {
-		transform( ): string
-		Anchor( ): $mol_view
-		align( ): readonly(number)[]
-		offset( ): readonly(number)[]
-		style( ): ({ 
-			'transform': ReturnType< $mol_follower['transform'] >,
-		})  & ReturnType< $mol_ghost['style'] >
-	}
-	
-}
-
-//# sourceMappingURL=follower.view.tree.d.ts.map
-declare namespace $.$$ {
-    /**
-     * Marker on top of another component with tracking of its position.
-     */
-    class $mol_follower extends $.$mol_follower {
-        pos(): {
-            left: number;
-            top: number;
-        } | null;
-        transform(): string;
-    }
-}
-
-declare namespace $ {
-}
-
-declare namespace $ {
-
-	type $mol_pop_bubble__content_mol_pop_1 = $mol_type_enforce<
-		ReturnType< $mol_pop['bubble_content'] >
-		,
-		ReturnType< $mol_pop_bubble['content'] >
-	>
-	type $mol_pop_bubble__height_max_mol_pop_2 = $mol_type_enforce<
-		ReturnType< $mol_pop['height_max'] >
-		,
-		ReturnType< $mol_pop_bubble['height_max'] >
-	>
-	type $mol_follower__offset_mol_pop_3 = $mol_type_enforce<
-		ReturnType< $mol_pop['bubble_offset'] >
-		,
-		ReturnType< $mol_follower['offset'] >
-	>
-	type $mol_follower__align_mol_pop_4 = $mol_type_enforce<
-		ReturnType< $mol_pop['bubble_align'] >
-		,
-		ReturnType< $mol_follower['align'] >
-	>
-	type $mol_follower__Anchor_mol_pop_5 = $mol_type_enforce<
-		ReturnType< $mol_pop['Anchor'] >
-		,
-		ReturnType< $mol_follower['Anchor'] >
-	>
-	type $mol_follower__Sub_mol_pop_6 = $mol_type_enforce<
-		ReturnType< $mol_pop['Bubble'] >
-		,
-		ReturnType< $mol_follower['Sub'] >
-	>
-	export class $mol_pop extends $mol_view {
-		bubble( ): any
-		Anchor( ): any
-		bubble_offset( ): readonly(number)[]
-		bubble_align( ): readonly(number)[]
-		bubble_content( ): readonly($mol_view_content)[]
-		height_max( ): number
-		Bubble( ): $mol_pop_bubble
-		Follower( ): $mol_follower
-		showed( next?: boolean ): boolean
-		align_vert( ): string
-		align_hor( ): string
-		align( ): string
-		prefer( ): string
-		auto( ): readonly(any)[]
-		sub( ): readonly(any)[]
-		sub_visible( ): readonly(any)[]
-	}
-	
-	export class $mol_pop_bubble extends $mol_view {
-		content( ): readonly($mol_view_content)[]
-		height_max( ): number
-		sub( ): ReturnType< $mol_pop_bubble['content'] >
-		style( ): ({ 
-			'maxHeight': ReturnType< $mol_pop_bubble['height_max'] >,
-		})  & ReturnType< $mol_view['style'] >
-		attr( ): ({ 
-			'tabindex': number,
-			'popover': string,
-		})  & ReturnType< $mol_view['attr'] >
-	}
-	
-}
-
-//# sourceMappingURL=pop.view.tree.d.ts.map
-declare namespace $.$$ {
-    /**
-     * `Bubble` that can be shown anchored to `Anchor` element.
-     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_pop_demo
-     */
-    class $mol_pop extends $.$mol_pop {
-        showed(next?: boolean): boolean;
-        sub_visible(): any[];
-        height_max(): number;
-        align(): string;
-        align_vert(): "suspense" | "top" | "bottom";
-        align_hor(): "suspense" | "left" | "right";
-        bubble_offset(): number[];
-        bubble_align(): number[];
-        bubble(): void;
-    }
-}
-
-declare namespace $ {
-}
-
-declare namespace $ {
-
-	export class $mol_hotkey extends $mol_plugin {
-		keydown( next?: any ): any
-		event( ): ({ 
-			keydown( next?: ReturnType< $mol_hotkey['keydown'] > ): ReturnType< $mol_hotkey['keydown'] >,
-		})  & ReturnType< $mol_plugin['event'] >
-		key( ): Record<string, any>
-		mod_ctrl( ): boolean
-		mod_alt( ): boolean
-		mod_shift( ): boolean
-	}
-	
-}
-
-//# sourceMappingURL=hotkey.view.tree.d.ts.map
-declare namespace $.$$ {
-    /**
-     * Plugin which adds handlers for keyboard keys.
-     * @see [mol_keyboard_code](../keyboard/code/code.ts)
-     */
-    class $mol_hotkey extends $.$mol_hotkey {
-        key(): { [key in keyof typeof $mol_keyboard_code]?: (event: KeyboardEvent) => void; };
-        keydown(event?: KeyboardEvent): void;
-    }
-}
-
-declare namespace $ {
-
-	type $mol_hotkey__mod_ctrl_mol_string_1 = $mol_type_enforce<
-		ReturnType< $mol_string['submit_with_ctrl'] >
-		,
-		ReturnType< $mol_hotkey['mod_ctrl'] >
-	>
-	type $mol_hotkey__key_mol_string_2 = $mol_type_enforce<
-		({ 
-			enter( next?: ReturnType< $mol_string['submit'] > ): ReturnType< $mol_string['submit'] >,
-		}) 
-		,
-		ReturnType< $mol_hotkey['key'] >
-	>
-	export class $mol_string extends $mol_view {
-		selection_watcher( ): any
-		error_report( ): any
-		disabled( ): boolean
-		value( next?: string ): string
-		value_changed( next?: ReturnType< $mol_string['value'] > ): ReturnType< $mol_string['value'] >
-		hint( ): string
-		hint_visible( ): ReturnType< $mol_string['hint'] >
-		spellcheck( ): boolean
-		autocomplete_native( ): string
-		selection_end( ): number
-		selection_start( ): number
-		keyboard( ): string
-		enter( ): string
-		length_max( ): number
-		type( next?: string ): string
-		event_change( next?: any ): any
-		submit_with_ctrl( ): boolean
-		submit( next?: any ): any
-		Submit( ): $mol_hotkey
-		dom_name( ): string
-		enabled( ): boolean
-		minimal_height( ): number
-		autocomplete( ): boolean
-		selection( next?: readonly(number)[] ): readonly(number)[]
-		auto( ): readonly(any)[]
-		field( ): ({ 
-			'disabled': ReturnType< $mol_string['disabled'] >,
-			'value': ReturnType< $mol_string['value_changed'] >,
-			'placeholder': ReturnType< $mol_string['hint_visible'] >,
-			'spellcheck': ReturnType< $mol_string['spellcheck'] >,
-			'autocomplete': ReturnType< $mol_string['autocomplete_native'] >,
-			'selectionEnd': ReturnType< $mol_string['selection_end'] >,
-			'selectionStart': ReturnType< $mol_string['selection_start'] >,
-			'inputMode': ReturnType< $mol_string['keyboard'] >,
-			'enterkeyhint': ReturnType< $mol_string['enter'] >,
-		})  & ReturnType< $mol_view['field'] >
-		attr( ): ({ 
-			'maxlength': ReturnType< $mol_string['length_max'] >,
-			'type': ReturnType< $mol_string['type'] >,
-		})  & ReturnType< $mol_view['attr'] >
-		event( ): ({ 
-			input( next?: ReturnType< $mol_string['event_change'] > ): ReturnType< $mol_string['event_change'] >,
-		})  & ReturnType< $mol_view['event'] >
-		plugins( ): readonly(any)[]
-	}
-	
-}
-
-//# sourceMappingURL=string.view.tree.d.ts.map
-declare namespace $.$$ {
-    /**
-     * An input field for entering single line text.
-     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_string_demo
-     */
-    class $mol_string extends $.$mol_string {
-        event_change(next?: Event): void;
-        error_report(): void;
-        hint_visible(): string;
-        disabled(): boolean;
-        autocomplete_native(): "on" | "off";
-        selection_watcher(): $mol_dom_listener;
-        selection_change(event: Event): void;
-        selection_start(): number;
-        selection_end(): number;
-    }
-}
-
-declare namespace $ {
-}
-
-declare namespace $ {
-    interface $mol_locale_dict {
-        [key: string]: string;
-    }
-    /**
-     * Localisation in $mol framework
-     * @see https://mol.hyoo.ru/#!section=docs/=s5aqnb_odub8l
-     */
-    class $mol_locale extends $mol_object {
-        static lang_default(): string;
-        static lang(next?: string): string;
-        static source(lang: string): any;
-        static texts(lang: string, next?: $mol_locale_dict): $mol_locale_dict;
-        static text(key: string): string;
-        static warn(key: string): null;
-    }
-}
-
-declare namespace $ {
-    function $mol_support_css_overflow_anchor(this: $): boolean;
-}
-
-declare namespace $ {
-
-	type $mol_view__style_mol_list_1 = $mol_type_enforce<
-		({ 
-			'paddingTop': ReturnType< $mol_list['gap_before'] >,
-		}) 
-		,
-		ReturnType< $mol_view['style'] >
-	>
-	type $mol_view__style_mol_list_2 = $mol_type_enforce<
-		({ 
-			'paddingTop': ReturnType< $mol_list['gap_after'] >,
-		}) 
-		,
-		ReturnType< $mol_view['style'] >
-	>
-	export class $mol_list extends $mol_view {
-		gap_before( ): number
-		Gap_before( ): $mol_view
-		Empty( ): $mol_view
-		gap_after( ): number
-		Gap_after( ): $mol_view
-		rows( ): readonly($mol_view)[]
-		render_visible_only( ): boolean
-		render_over( ): number
-		sub( ): ReturnType< $mol_list['rows'] >
-		item_height_min( id: any): number
-		item_width_min( id: any): number
-		view_window_shift( next?: number ): number
-		view_window( ): readonly(any)[]
-	}
-	
-}
-
-//# sourceMappingURL=list.view.tree.d.ts.map
-declare namespace $.$$ {
-    /**
-     * The list of rows with lazy/virtual rendering support based on `minimal_height` of rows.
-     * `mol_list` should contain only components that inherits `mol_view`. You should not place raw strings or numbers in list.
-     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_list_demo
-     */
-    class $mol_list extends $.$mol_list {
-        sub(): readonly $mol_view[];
-        render_visible_only(): boolean;
-        _view_window_last: number[];
-        view_window(next?: [number, number]): [number, number];
-        item_height_min(index: number): number;
-        row_width_min(index: number): number;
-        gap_before(): number;
-        gap_after(): number;
-        sub_visible(): $mol_view[];
-        minimal_height(): number;
-        minimal_width(): number;
-        force_render(path: Set<$mol_view>): void;
-    }
-}
-
-declare namespace $ {
-}
-
-declare namespace $ {
-
-	export class $bog_theme_picker_row extends $mol_button_minor {
-		focused_str( ): string
-		hover( next?: any ): any
-		theme_name( ): string
-		title( ): ReturnType< $bog_theme_picker_row['theme_name'] >
-		attr( ): ({ 
-			'bog_theme_picker_row_focused': ReturnType< $bog_theme_picker_row['focused_str'] >,
-		})  & ReturnType< $mol_button_minor['attr'] >
-		event( ): ({ 
-			pointerenter( next?: ReturnType< $bog_theme_picker_row['hover'] > ): ReturnType< $bog_theme_picker_row['hover'] >,
-		})  & ReturnType< $mol_button_minor['event'] >
-	}
-	
-}
-
-//# sourceMappingURL=row.view.tree.d.ts.map
-declare namespace $.$$ {
-    class $bog_theme_picker_row extends $.$bog_theme_picker_row {
-        focused_str(): "" | "true";
-    }
-}
-
-declare namespace $.$$ {
-}
-
-declare namespace $ {
-
-	type $mol_string__value_bog_theme_picker_1 = $mol_type_enforce<
-		ReturnType< $bog_theme_picker['query'] >
-		,
-		ReturnType< $mol_string['value'] >
-	>
-	type $mol_string__hint_bog_theme_picker_2 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_string['hint'] >
-	>
-	type $mol_list__rows_bog_theme_picker_3 = $mol_type_enforce<
-		ReturnType< $bog_theme_picker['theme_rows'] >
-		,
-		ReturnType< $mol_list['rows'] >
-	>
-	type $mol_list__rows_bog_theme_picker_4 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_list['rows'] >
-	>
-	type $bog_theme_picker_row__theme_name_bog_theme_picker_5 = $mol_type_enforce<
-		ReturnType< $bog_theme_picker['theme_name'] >
-		,
-		ReturnType< $bog_theme_picker_row['theme_name'] >
-	>
-	type $bog_theme_picker_row__focused_bog_theme_picker_6 = $mol_type_enforce<
-		ReturnType< $bog_theme_picker['theme_focused'] >
-		,
-		ReturnType< $bog_theme_picker_row['focused'] >
-	>
-	type $bog_theme_picker_row__click_bog_theme_picker_7 = $mol_type_enforce<
-		ReturnType< $bog_theme_picker['theme_select'] >
-		,
-		ReturnType< $bog_theme_picker_row['click'] >
-	>
-	type $bog_theme_picker_row__hover_bog_theme_picker_8 = $mol_type_enforce<
-		ReturnType< $bog_theme_picker['theme_hover'] >
-		,
-		ReturnType< $bog_theme_picker_row['hover'] >
-	>
-	export class $bog_theme_picker extends $mol_scroll {
-		theme_name( id: any): string
-		theme_focused( id: any): boolean
-		theme_select( id: any, next?: any ): any
-		theme_hover( id: any, next?: any ): any
-		Search( ): $mol_string
-		theme_rows( ): readonly(any)[]
-		Theme_list( ): $mol_list
-		Content( ): $mol_list
-		key_down( next?: any ): any
-		theme_auto( ): $bog_theme_auto
-		close( next?: any ): any
-		query( next?: string ): string
-		focused_index( next?: number ): number
-		Theme_row( id: any): $bog_theme_picker_row
-		sub( ): readonly(any)[]
-		event( ): ({ 
-			keydown( next?: ReturnType< $bog_theme_picker['key_down'] > ): ReturnType< $bog_theme_picker['key_down'] >,
-		})  & ReturnType< $mol_scroll['event'] >
-	}
-	
-}
-
-//# sourceMappingURL=picker.view.tree.d.ts.map
-declare namespace $.$$ {
-    /**
-     * Theme picker popup with search and list
-     */
-    class $bog_theme_picker extends $.$bog_theme_picker {
-        theme_rows(): $.$bog_theme_picker_row[];
-        filtered_themes(): ("$mol_theme_giper_smash_dark" | "$mol_theme_giper_smash_light" | "$mol_theme_light" | "$mol_theme_dark" | "$mol_theme_monefro_light" | "$mol_theme_monefro_dark" | "$mol_theme_homerent_light" | "$mol_theme_homerent_dark" | "$mol_theme_upwork" | "$mol_theme_ainews_light" | "$mol_theme_ainews_dark" | "$mol_theme_calm_dark" | "$mol_theme_calm_light")[];
-        theme_name(index: number): "$mol_theme_giper_smash_dark" | "$mol_theme_giper_smash_light" | "$mol_theme_light" | "$mol_theme_dark" | "$mol_theme_monefro_light" | "$mol_theme_monefro_dark" | "$mol_theme_homerent_light" | "$mol_theme_homerent_dark" | "$mol_theme_upwork" | "$mol_theme_ainews_light" | "$mol_theme_ainews_dark" | "$mol_theme_calm_dark" | "$mol_theme_calm_light";
-        theme_focused(index: number): boolean;
-        theme_select(index: number, event?: MouseEvent): null;
-        theme_hover(index: number, event?: PointerEvent): null;
-        key_down(event?: KeyboardEvent): null;
-        private select_theme;
-        private preview_theme;
-    }
-}
-
-declare namespace $.$$ {
-}
-
-declare namespace $ {
-
-	export class $mol_icon_white_balance_sunny extends $mol_icon {
-		path( ): string
-	}
-	
-}
-
-//# sourceMappingURL=sunny.view.tree.d.ts.map
-declare namespace $ {
-
-	export class $mol_icon_weather_night extends $mol_icon {
-		path( ): string
-	}
-	
-}
-
-//# sourceMappingURL=night.view.tree.d.ts.map
-declare namespace $ {
-
-	export class $mol_icon_monitor extends $mol_icon {
-		path( ): string
-	}
-	
-}
-
-//# sourceMappingURL=monitor.view.tree.d.ts.map
-declare namespace $ {
-
-	type $mol_view__event_bog_theme_toggle_1 = $mol_type_enforce<
-		({ 
-			click( next?: ReturnType< $bog_theme_toggle['backdrop_click'] > ): ReturnType< $bog_theme_toggle['backdrop_click'] >,
-		}) 
-		,
-		ReturnType< $mol_view['event'] >
-	>
-	type $bog_theme_picker__theme_auto_bog_theme_toggle_2 = $mol_type_enforce<
-		ReturnType< $bog_theme_toggle['theme_auto'] >
-		,
-		ReturnType< $bog_theme_picker['theme_auto'] >
-	>
-	type $bog_theme_picker__close_bog_theme_toggle_3 = $mol_type_enforce<
-		ReturnType< $bog_theme_toggle['picker_close'] >
-		,
-		ReturnType< $bog_theme_picker['close'] >
-	>
-	type $mol_button_minor__sub_bog_theme_toggle_4 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_button_minor['sub'] >
-	>
-	type $mol_button_minor__hint_bog_theme_toggle_5 = $mol_type_enforce<
-		ReturnType< $bog_theme_toggle['anchor_hint'] >
-		,
-		ReturnType< $mol_button_minor['hint'] >
-	>
-	type $mol_button_minor__click_bog_theme_toggle_6 = $mol_type_enforce<
-		ReturnType< $bog_theme_toggle['clicked'] >
-		,
-		ReturnType< $mol_button_minor['click'] >
-	>
-	type $mol_button_minor__event_bog_theme_toggle_7 = $mol_type_enforce<
-		({ 
-			pointerdown( next?: ReturnType< $bog_theme_toggle['press_start'] > ): ReturnType< $bog_theme_toggle['press_start'] >,
-			pointermove( next?: ReturnType< $bog_theme_toggle['press_move'] > ): ReturnType< $bog_theme_toggle['press_move'] >,
-			pointerup( next?: ReturnType< $bog_theme_toggle['press_end'] > ): ReturnType< $bog_theme_toggle['press_end'] >,
-			pointercancel( next?: ReturnType< $bog_theme_toggle['press_cancel'] > ): ReturnType< $bog_theme_toggle['press_cancel'] >,
-			lostpointercapture( next?: ReturnType< $bog_theme_toggle['press_lost'] > ): ReturnType< $bog_theme_toggle['press_lost'] >,
-		})  & ReturnType< $mol_button_minor['event'] >
-		,
-		ReturnType< $mol_button_minor['event'] >
-	>
-	export class $bog_theme_toggle extends $mol_pop {
-		Icon( ): $mol_view
-		anchor_hint( ): string
-		clicked( next?: any ): any
-		press_start( next?: any ): any
-		press_move( next?: any ): any
-		press_end( next?: any ): any
-		press_cancel( next?: any ): any
-		press_lost( next?: any ): any
-		backdrop_click( next?: any ): any
-		Backdrop( ): $mol_view
-		picker_close( next?: any ): any
-		Picker( ): $bog_theme_picker
-		theme_auto( ): $bog_theme_auto
-		showed( next?: boolean ): boolean
-		align( ): string
-		Anchor( ): $mol_button_minor
-		Icon_light( ): $mol_icon_white_balance_sunny
-		Icon_dark( ): $mol_icon_weather_night
-		Icon_system( ): $mol_icon_monitor
-		bubble_content( ): readonly(any)[]
-	}
-	
-}
-
-//# sourceMappingURL=toggle.view.tree.d.ts.map
-declare namespace $.$$ {
-    class $bog_theme_toggle extends $.$bog_theme_toggle {
-        long_press_delay: number;
-        move_threshold: number;
-        private press_timer;
-        private press_start_x;
-        private press_start_y;
-        private is_long_press;
-        Icon(): $mol_icon_white_balance_sunny | $mol_icon_weather_night | $mol_icon_monitor;
-        anchor_hint(): "Светлая тема" | "Тёмная тема" | "Пользовательская тема" | "Как в системе";
-        clicked(event?: MouseEvent): null;
-        press_start(event?: PointerEvent): null;
-        press_move(event?: PointerEvent): null;
-        press_end(event?: PointerEvent): null;
-        press_cancel(event?: PointerEvent): null;
-        press_lost(event?: Event): null;
-        private clear_press_timer;
-        private on_long_press;
-        picker_close(): void;
-        backdrop_click(event?: MouseEvent): null;
-    }
-}
-
-declare namespace $.$$ {
 }
 
 declare namespace $ {
@@ -3607,6 +2992,24 @@ declare namespace $ {
 }
 
 declare namespace $ {
+    interface $mol_locale_dict {
+        [key: string]: string;
+    }
+    /**
+     * Localisation in $mol framework
+     * @see https://mol.hyoo.ru/#!section=docs/=s5aqnb_odub8l
+     */
+    class $mol_locale extends $mol_object {
+        static lang_default(): string;
+        static lang(next?: string): string;
+        static source(lang: string): any;
+        static texts(lang: string, next?: $mol_locale_dict): $mol_locale_dict;
+        static text(key: string): string;
+        static warn(key: string): null;
+    }
+}
+
+declare namespace $ {
 
 	export class $mol_nav extends $mol_plugin {
 		event_key( next?: any ): any
@@ -3646,6 +3049,265 @@ declare namespace $.$$ {
     }
 }
 
+declare namespace $ {
+    function $mol_support_css_overflow_anchor(this: $): boolean;
+}
+
+declare namespace $ {
+
+	type $mol_view__style_mol_list_1 = $mol_type_enforce<
+		({ 
+			'paddingTop': ReturnType< $mol_list['gap_before'] >,
+		}) 
+		,
+		ReturnType< $mol_view['style'] >
+	>
+	type $mol_view__style_mol_list_2 = $mol_type_enforce<
+		({ 
+			'paddingTop': ReturnType< $mol_list['gap_after'] >,
+		}) 
+		,
+		ReturnType< $mol_view['style'] >
+	>
+	export class $mol_list extends $mol_view {
+		gap_before( ): number
+		Gap_before( ): $mol_view
+		Empty( ): $mol_view
+		gap_after( ): number
+		Gap_after( ): $mol_view
+		rows( ): readonly($mol_view)[]
+		render_visible_only( ): boolean
+		render_over( ): number
+		sub( ): ReturnType< $mol_list['rows'] >
+		item_height_min( id: any): number
+		item_width_min( id: any): number
+		view_window_shift( next?: number ): number
+		view_window( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=list.view.tree.d.ts.map
+declare namespace $.$$ {
+    /**
+     * The list of rows with lazy/virtual rendering support based on `minimal_height` of rows.
+     * `mol_list` should contain only components that inherits `mol_view`. You should not place raw strings or numbers in list.
+     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_list_demo
+     */
+    class $mol_list extends $.$mol_list {
+        sub(): readonly $mol_view[];
+        render_visible_only(): boolean;
+        _view_window_last: number[];
+        view_window(next?: [number, number]): [number, number];
+        item_height_min(index: number): number;
+        row_width_min(index: number): number;
+        gap_before(): number;
+        gap_after(): number;
+        sub_visible(): $mol_view[];
+        minimal_height(): number;
+        minimal_width(): number;
+        force_render(path: Set<$mol_view>): void;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_hotkey extends $mol_plugin {
+		keydown( next?: any ): any
+		event( ): ({ 
+			keydown( next?: ReturnType< $mol_hotkey['keydown'] > ): ReturnType< $mol_hotkey['keydown'] >,
+		})  & ReturnType< $mol_plugin['event'] >
+		key( ): Record<string, any>
+		mod_ctrl( ): boolean
+		mod_alt( ): boolean
+		mod_shift( ): boolean
+	}
+	
+}
+
+//# sourceMappingURL=hotkey.view.tree.d.ts.map
+declare namespace $.$$ {
+    /**
+     * Plugin which adds handlers for keyboard keys.
+     * @see [mol_keyboard_code](../keyboard/code/code.ts)
+     */
+    class $mol_hotkey extends $.$mol_hotkey {
+        key(): { [key in keyof typeof $mol_keyboard_code]?: (event: KeyboardEvent) => void; };
+        keydown(event?: KeyboardEvent): void;
+    }
+}
+
+declare namespace $ {
+
+	type $mol_hotkey__mod_ctrl_mol_string_1 = $mol_type_enforce<
+		ReturnType< $mol_string['submit_with_ctrl'] >
+		,
+		ReturnType< $mol_hotkey['mod_ctrl'] >
+	>
+	type $mol_hotkey__key_mol_string_2 = $mol_type_enforce<
+		({ 
+			enter( next?: ReturnType< $mol_string['submit'] > ): ReturnType< $mol_string['submit'] >,
+		}) 
+		,
+		ReturnType< $mol_hotkey['key'] >
+	>
+	export class $mol_string extends $mol_view {
+		selection_watcher( ): any
+		error_report( ): any
+		disabled( ): boolean
+		value( next?: string ): string
+		value_changed( next?: ReturnType< $mol_string['value'] > ): ReturnType< $mol_string['value'] >
+		hint( ): string
+		hint_visible( ): ReturnType< $mol_string['hint'] >
+		spellcheck( ): boolean
+		autocomplete_native( ): string
+		selection_end( ): number
+		selection_start( ): number
+		keyboard( ): string
+		enter( ): string
+		length_max( ): number
+		type( next?: string ): string
+		event_change( next?: any ): any
+		submit_with_ctrl( ): boolean
+		submit( next?: any ): any
+		Submit( ): $mol_hotkey
+		dom_name( ): string
+		enabled( ): boolean
+		minimal_height( ): number
+		autocomplete( ): boolean
+		selection( next?: readonly(number)[] ): readonly(number)[]
+		auto( ): readonly(any)[]
+		field( ): ({ 
+			'disabled': ReturnType< $mol_string['disabled'] >,
+			'value': ReturnType< $mol_string['value_changed'] >,
+			'placeholder': ReturnType< $mol_string['hint_visible'] >,
+			'spellcheck': ReturnType< $mol_string['spellcheck'] >,
+			'autocomplete': ReturnType< $mol_string['autocomplete_native'] >,
+			'selectionEnd': ReturnType< $mol_string['selection_end'] >,
+			'selectionStart': ReturnType< $mol_string['selection_start'] >,
+			'inputMode': ReturnType< $mol_string['keyboard'] >,
+			'enterkeyhint': ReturnType< $mol_string['enter'] >,
+		})  & ReturnType< $mol_view['field'] >
+		attr( ): ({ 
+			'maxlength': ReturnType< $mol_string['length_max'] >,
+			'type': ReturnType< $mol_string['type'] >,
+		})  & ReturnType< $mol_view['attr'] >
+		event( ): ({ 
+			input( next?: ReturnType< $mol_string['event_change'] > ): ReturnType< $mol_string['event_change'] >,
+		})  & ReturnType< $mol_view['event'] >
+		plugins( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=string.view.tree.d.ts.map
+declare namespace $.$$ {
+    /**
+     * An input field for entering single line text.
+     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_string_demo
+     */
+    class $mol_string extends $.$mol_string {
+        event_change(next?: Event): void;
+        error_report(): void;
+        hint_visible(): string;
+        disabled(): boolean;
+        autocomplete_native(): "on" | "off";
+        selection_watcher(): $mol_dom_listener;
+        selection_change(event: Event): void;
+        selection_start(): number;
+        selection_end(): number;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+    /** State of time moment */
+    class $mol_state_time extends $mol_object {
+        static task(precision: number, reset?: null): $mol_after_timeout | $mol_after_frame;
+        static now(precision: number): number;
+    }
+}
+
+declare namespace $ {
+
+	export class $mol_svg extends $mol_view {
+		dom_name( ): string
+		dom_name_space( ): string
+		font_size( ): number
+		font_family( ): string
+		style_size( ): Record<string, any>
+	}
+	
+}
+
+//# sourceMappingURL=svg.view.tree.d.ts.map
+declare namespace $.$$ {
+    /** Base SVG component to display SVG images or icons. */
+    class $mol_svg extends $.$mol_svg {
+        computed_style(): Record<string, any>;
+        font_size(): number;
+        font_family(): any;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_svg_root extends $mol_svg {
+		view_box( ): string
+		aspect( ): string
+		dom_name( ): string
+		attr( ): ({ 
+			'viewBox': ReturnType< $mol_svg_root['view_box'] >,
+			'preserveAspectRatio': ReturnType< $mol_svg_root['aspect'] >,
+		})  & ReturnType< $mol_svg['attr'] >
+	}
+	
+}
+
+//# sourceMappingURL=root.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_svg_path extends $mol_svg {
+		geometry( ): string
+		dom_name( ): string
+		attr( ): ({ 
+			'd': ReturnType< $mol_svg_path['geometry'] >,
+		})  & ReturnType< $mol_svg['attr'] >
+	}
+	
+}
+
+//# sourceMappingURL=path.view.tree.d.ts.map
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	type $mol_svg_path__geometry_mol_icon_1 = $mol_type_enforce<
+		ReturnType< $mol_icon['path'] >
+		,
+		ReturnType< $mol_svg_path['geometry'] >
+	>
+	export class $mol_icon extends $mol_svg_root {
+		path( ): string
+		Path( ): $mol_svg_path
+		view_box( ): string
+		minimal_width( ): number
+		minimal_height( ): number
+		sub( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=icon.view.tree.d.ts.map
 declare namespace $ {
 
 	export class $mol_icon_close extends $mol_icon {
@@ -34536,6 +34198,344 @@ declare namespace $ {
 
 declare namespace $ {
 
+	export class $mol_icon_chart_timeline extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=timeline.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_chart_timeline_variant extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=variant.view.tree.d.ts.map
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_check_icon extends $mol_check {
+	}
+	
+}
+
+//# sourceMappingURL=icon.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_upload extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=upload.view.tree.d.ts.map
+declare namespace $ {
+
+	type $mol_button_open_native__files_mol_button_open_1 = $mol_type_enforce<
+		ReturnType< $mol_button_open['files_handled'] >
+		,
+		ReturnType< $mol_button_open_native['files'] >
+	>
+	type $mol_button_open_native__accept_mol_button_open_2 = $mol_type_enforce<
+		ReturnType< $mol_button_open['accept'] >
+		,
+		ReturnType< $mol_button_open_native['accept'] >
+	>
+	type $mol_button_open_native__multiple_mol_button_open_3 = $mol_type_enforce<
+		ReturnType< $mol_button_open['multiple'] >
+		,
+		ReturnType< $mol_button_open_native['multiple'] >
+	>
+	export class $mol_button_open extends $mol_button_minor {
+		Icon( ): $mol_icon_upload
+		files( next?: readonly(File)[] ): readonly(File)[]
+		files_handled( next?: ReturnType< $mol_button_open['files'] > ): ReturnType< $mol_button_open['files'] >
+		accept( ): string
+		multiple( ): boolean
+		Native( ): $mol_button_open_native
+		sub( ): readonly(any)[]
+	}
+	
+	export class $mol_button_open_native extends $mol_view {
+		accept( ): string
+		multiple( ): boolean
+		picked( next?: any ): any
+		dom_name( ): string
+		files( next?: readonly(File)[] ): readonly(File)[]
+		attr( ): ({ 
+			'type': string,
+			'accept': ReturnType< $mol_button_open_native['accept'] >,
+			'multiple': ReturnType< $mol_button_open_native['multiple'] >,
+		}) 
+		event( ): ({ 
+			change( next?: ReturnType< $mol_button_open_native['picked'] > ): ReturnType< $mol_button_open_native['picked'] >,
+		}) 
+	}
+	
+}
+
+//# sourceMappingURL=open.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_button_open extends $.$mol_button_open {
+        files_handled(next?: readonly File[]): readonly File[];
+    }
+    /**
+     * File open button
+     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_button_demo
+     */
+    class $mol_button_open_native extends $.$mol_button_open_native {
+        dom_node(): HTMLInputElement;
+        picked(): void;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $bog_theme_picker_row extends $mol_button_minor {
+		focused_str( ): string
+		hover( next?: any ): any
+		theme_name( ): string
+		title( ): ReturnType< $bog_theme_picker_row['theme_name'] >
+		attr( ): ({ 
+			'bog_theme_picker_row_focused': ReturnType< $bog_theme_picker_row['focused_str'] >,
+		})  & ReturnType< $mol_button_minor['attr'] >
+		event( ): ({ 
+			pointerenter( next?: ReturnType< $bog_theme_picker_row['hover'] > ): ReturnType< $bog_theme_picker_row['hover'] >,
+		})  & ReturnType< $mol_button_minor['event'] >
+	}
+	
+}
+
+//# sourceMappingURL=row.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $bog_theme_picker_row extends $.$bog_theme_picker_row {
+        focused_str(): "" | "true";
+    }
+}
+
+declare namespace $.$$ {
+}
+
+declare namespace $ {
+
+	type $mol_string__value_bog_theme_picker_1 = $mol_type_enforce<
+		ReturnType< $bog_theme_picker['query'] >
+		,
+		ReturnType< $mol_string['value'] >
+	>
+	type $mol_string__hint_bog_theme_picker_2 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_string['hint'] >
+	>
+	type $mol_list__rows_bog_theme_picker_3 = $mol_type_enforce<
+		ReturnType< $bog_theme_picker['theme_rows'] >
+		,
+		ReturnType< $mol_list['rows'] >
+	>
+	type $mol_list__rows_bog_theme_picker_4 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_list['rows'] >
+	>
+	type $bog_theme_picker_row__theme_name_bog_theme_picker_5 = $mol_type_enforce<
+		ReturnType< $bog_theme_picker['theme_name'] >
+		,
+		ReturnType< $bog_theme_picker_row['theme_name'] >
+	>
+	type $bog_theme_picker_row__focused_bog_theme_picker_6 = $mol_type_enforce<
+		ReturnType< $bog_theme_picker['theme_focused'] >
+		,
+		ReturnType< $bog_theme_picker_row['focused'] >
+	>
+	type $bog_theme_picker_row__click_bog_theme_picker_7 = $mol_type_enforce<
+		ReturnType< $bog_theme_picker['theme_select'] >
+		,
+		ReturnType< $bog_theme_picker_row['click'] >
+	>
+	type $bog_theme_picker_row__hover_bog_theme_picker_8 = $mol_type_enforce<
+		ReturnType< $bog_theme_picker['theme_hover'] >
+		,
+		ReturnType< $bog_theme_picker_row['hover'] >
+	>
+	export class $bog_theme_picker extends $mol_scroll {
+		theme_name( id: any): string
+		theme_focused( id: any): boolean
+		theme_select( id: any, next?: any ): any
+		theme_hover( id: any, next?: any ): any
+		Search( ): $mol_string
+		theme_rows( ): readonly(any)[]
+		Theme_list( ): $mol_list
+		Content( ): $mol_list
+		key_down( next?: any ): any
+		theme_auto( ): $bog_theme_auto
+		close( next?: any ): any
+		query( next?: string ): string
+		focused_index( next?: number ): number
+		Theme_row( id: any): $bog_theme_picker_row
+		sub( ): readonly(any)[]
+		event( ): ({ 
+			keydown( next?: ReturnType< $bog_theme_picker['key_down'] > ): ReturnType< $bog_theme_picker['key_down'] >,
+		})  & ReturnType< $mol_scroll['event'] >
+	}
+	
+}
+
+//# sourceMappingURL=picker.view.tree.d.ts.map
+declare namespace $.$$ {
+    /**
+     * Theme picker popup with search and list
+     */
+    class $bog_theme_picker extends $.$bog_theme_picker {
+        theme_rows(): $.$bog_theme_picker_row[];
+        filtered_themes(): ("$mol_theme_giper_smash_dark" | "$mol_theme_giper_smash_light" | "$mol_theme_light" | "$mol_theme_dark" | "$mol_theme_monefro_light" | "$mol_theme_monefro_dark" | "$mol_theme_homerent_light" | "$mol_theme_homerent_dark" | "$mol_theme_upwork" | "$mol_theme_ainews_light" | "$mol_theme_ainews_dark" | "$mol_theme_calm_dark" | "$mol_theme_calm_light")[];
+        theme_name(index: number): "$mol_theme_giper_smash_dark" | "$mol_theme_giper_smash_light" | "$mol_theme_light" | "$mol_theme_dark" | "$mol_theme_monefro_light" | "$mol_theme_monefro_dark" | "$mol_theme_homerent_light" | "$mol_theme_homerent_dark" | "$mol_theme_upwork" | "$mol_theme_ainews_light" | "$mol_theme_ainews_dark" | "$mol_theme_calm_dark" | "$mol_theme_calm_light";
+        theme_focused(index: number): boolean;
+        theme_select(index: number, event?: MouseEvent): null;
+        theme_hover(index: number, event?: PointerEvent): null;
+        key_down(event?: KeyboardEvent): null;
+        private select_theme;
+        private preview_theme;
+    }
+}
+
+declare namespace $.$$ {
+}
+
+declare namespace $ {
+
+	export class $mol_icon_white_balance_sunny extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=sunny.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_weather_night extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=night.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_monitor extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=monitor.view.tree.d.ts.map
+declare namespace $ {
+
+	type $mol_view__event_bog_theme_toggle_1 = $mol_type_enforce<
+		({ 
+			click( next?: ReturnType< $bog_theme_toggle['backdrop_click'] > ): ReturnType< $bog_theme_toggle['backdrop_click'] >,
+		}) 
+		,
+		ReturnType< $mol_view['event'] >
+	>
+	type $bog_theme_picker__theme_auto_bog_theme_toggle_2 = $mol_type_enforce<
+		ReturnType< $bog_theme_toggle['theme_auto'] >
+		,
+		ReturnType< $bog_theme_picker['theme_auto'] >
+	>
+	type $bog_theme_picker__close_bog_theme_toggle_3 = $mol_type_enforce<
+		ReturnType< $bog_theme_toggle['picker_close'] >
+		,
+		ReturnType< $bog_theme_picker['close'] >
+	>
+	type $mol_button_minor__sub_bog_theme_toggle_4 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_button_minor__hint_bog_theme_toggle_5 = $mol_type_enforce<
+		ReturnType< $bog_theme_toggle['anchor_hint'] >
+		,
+		ReturnType< $mol_button_minor['hint'] >
+	>
+	type $mol_button_minor__click_bog_theme_toggle_6 = $mol_type_enforce<
+		ReturnType< $bog_theme_toggle['clicked'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__event_bog_theme_toggle_7 = $mol_type_enforce<
+		({ 
+			pointerdown( next?: ReturnType< $bog_theme_toggle['press_start'] > ): ReturnType< $bog_theme_toggle['press_start'] >,
+			pointermove( next?: ReturnType< $bog_theme_toggle['press_move'] > ): ReturnType< $bog_theme_toggle['press_move'] >,
+			pointerup( next?: ReturnType< $bog_theme_toggle['press_end'] > ): ReturnType< $bog_theme_toggle['press_end'] >,
+			pointercancel( next?: ReturnType< $bog_theme_toggle['press_cancel'] > ): ReturnType< $bog_theme_toggle['press_cancel'] >,
+			lostpointercapture( next?: ReturnType< $bog_theme_toggle['press_lost'] > ): ReturnType< $bog_theme_toggle['press_lost'] >,
+		})  & ReturnType< $mol_button_minor['event'] >
+		,
+		ReturnType< $mol_button_minor['event'] >
+	>
+	export class $bog_theme_toggle extends $mol_pop {
+		Icon( ): $mol_view
+		anchor_hint( ): string
+		clicked( next?: any ): any
+		press_start( next?: any ): any
+		press_move( next?: any ): any
+		press_end( next?: any ): any
+		press_cancel( next?: any ): any
+		press_lost( next?: any ): any
+		backdrop_click( next?: any ): any
+		Backdrop( ): $mol_view
+		picker_close( next?: any ): any
+		Picker( ): $bog_theme_picker
+		theme_auto( ): $bog_theme_auto
+		showed( next?: boolean ): boolean
+		align( ): string
+		Anchor( ): $mol_button_minor
+		Icon_light( ): $mol_icon_white_balance_sunny
+		Icon_dark( ): $mol_icon_weather_night
+		Icon_system( ): $mol_icon_monitor
+		bubble_content( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=toggle.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $bog_theme_toggle extends $.$bog_theme_toggle {
+        long_press_delay: number;
+        move_threshold: number;
+        private press_timer;
+        private press_start_x;
+        private press_start_y;
+        private is_long_press;
+        Icon(): $mol_icon_white_balance_sunny | $mol_icon_weather_night | $mol_icon_monitor;
+        anchor_hint(): "Светлая тема" | "Тёмная тема" | "Пользовательская тема" | "Как в системе";
+        clicked(event?: MouseEvent): null;
+        press_start(event?: PointerEvent): null;
+        press_move(event?: PointerEvent): null;
+        press_end(event?: PointerEvent): null;
+        press_cancel(event?: PointerEvent): null;
+        press_lost(event?: Event): null;
+        private clear_press_timer;
+        private on_long_press;
+        picker_close(): void;
+        backdrop_click(event?: MouseEvent): null;
+    }
+}
+
+declare namespace $.$$ {
+}
+
+declare namespace $ {
+
 	export class $mol_icon_download extends $mol_icon {
 		path( ): string
 	}
@@ -49596,7 +49596,6 @@ declare namespace $ {
 		ReturnType< $mol_view['sub'] >
 	>
 	export class $bog_music_account extends $mol_view {
-		Sync_status( ): $giper_baza_status
 		download_playlist_hint( ): string
 		download_playlist( next?: any ): any
 		Download_playlist_icon( ): $mol_icon_download
@@ -54950,6 +54949,7 @@ declare namespace $ {
 		Popup_fix( ): $bog_popup_plugin
 		Tooltip( ): $bog_tooltip_plugin
 		Brand( ): $mol_image
+		Sync_status( ): $giper_baza_status
 		nickname_label( ): string
 		Nickname_label( ): $mol_view
 		version_label( ): string

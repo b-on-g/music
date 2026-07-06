@@ -67,106 +67,6 @@ $mol_image $mol_view
 	minimal_width 16
 	minimal_height 16
 
-$mol_svg $mol_view
-	dom_name \svg
-	dom_name_space \http://www.w3.org/2000/svg
-	font_size 16
-	font_family \
-	style_size *
-
-$mol_svg_root $mol_svg
-	dom_name \svg
-	attr *
-		^
-		viewBox <= view_box \0 0 100 100
-		preserveAspectRatio <= aspect \xMidYMid
-
-$mol_svg_path $mol_svg
-	dom_name \path
-	attr *
-		^
-		d <= geometry \
-
-
-$mol_icon $mol_svg_root
-	view_box \0 0 24 24
-	minimal_width 16
-	minimal_height 16
-	sub /
-		<= Path $mol_svg_path
-			geometry <= path \
-
-$mol_icon_chart_timeline $mol_icon path \M2,2H4V20H22V22H2V2M7,10H17V13H7V10M11,15H21V18H11V15M6,4H22V8H20V6H8V8H6V4Z
-
-$mol_icon_chart_timeline_variant $mol_icon path \M3,14L3.5,14.07L8.07,9.5C7.89,8.85 8.06,8.11 8.59,7.59C9.37,6.8 10.63,6.8 11.41,7.59C11.94,8.11 12.11,8.85 11.93,9.5L14.5,12.07L15,12C15.18,12 15.35,12 15.5,12.07L19.07,8.5C19,8.35 19,8.18 19,8A2,2 0 0,1 21,6A2,2 0 0,1 23,8A2,2 0 0,1 21,10C20.82,10 20.65,10 20.5,9.93L16.93,13.5C17,13.65 17,13.82 17,14A2,2 0 0,1 15,16A2,2 0 0,1 13,14L13.07,13.5L10.5,10.93C10.18,11 9.82,11 9.5,10.93L4.93,15.5L5,16A2,2 0 0,1 3,18A2,2 0 0,1 1,16A2,2 0 0,1 3,14Z
-
-$mol_speck $mol_view
-	theme \$mol_theme_accent
-	sub /
-		<= value null
-
-$mol_button $mol_view
-	enabled true
-	click? null
-	event_click? null
-	status? /
-	event *
-		^
-		click? <=> activate? <=> event_activate? null
-		dblclick? <=> clicks? null
-		keydown? <=> key_press? <=> event_key_press? null
-	attr *
-		^
-		disabled <= disabled false
-		role \button
-		tabindex <= tab_index 0
-		title <= hint_safe <= hint \
-	sub /$mol_view_content
-		<= title
-	Speck $mol_speck
-		value <= error \
-
-$mol_button_typed $mol_button
-	minimal_height 40
-	minimal_width 40
-
-$mol_button_minor $mol_button_typed
-
-$mol_check $mol_button_minor
-	attr *
-		^
-		mol_check_checked <= checked? false
-		aria-checked <= aria_checked \false
-		role <= aria_role \checkbox
-	sub /$mol_view_content
-		<= Icon null
-		<= label /
-			<= Title $mol_view
-				sub /
-					<= title \
-
-$mol_check_icon $mol_check
-
-$mol_icon_upload $mol_icon path \M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z
-
-$mol_button_open $mol_button_minor
-	sub /
-		<= Icon $mol_icon_upload
-		<= Native $mol_button_open_native
-			files? <=> files_handled? <=> files? /File
-			accept <= accept \
-			multiple <= multiple true
-
-$mol_button_open_native $mol_view
-	dom_name \input
-	files? /File
-	attr *
-		type \file
-		accept <= accept \
-		multiple <= multiple true
-	event *
-		change? <=> picked? null
-
 $mol_ghost $mol_view
 	Sub $mol_view
 
@@ -216,126 +116,50 @@ $mol_pop_bubble $mol_view
 		tabindex 0
 		popover \manual
 
-$mol_hotkey $mol_plugin
+$mol_speck $mol_view
+	theme \$mol_theme_accent
+	sub /
+		<= value null
+
+$mol_button $mol_view
+	enabled true
+	click? null
+	event_click? null
+	status? /
 	event *
 		^
-		keydown? <=> keydown? null
-	key *
-	mod_ctrl false
-	mod_alt false
-	mod_shift false
-
-$mol_string $mol_view
-	dom_name \input
-	enabled true
-	minimal_height 40
-	autocomplete false
-	selection? /number
-		0
-		0
-	auto /
-		<= selection_watcher null
-		<= error_report null
-	field *
+		click? <=> activate? <=> event_activate? null
+		dblclick? <=> clicks? null
+		keydown? <=> key_press? <=> event_key_press? null
+	attr *
 		^
 		disabled <= disabled false
-		value <= value_changed? <=> value? \
-		placeholder <= hint_visible <= hint \
-		spellcheck <= spellcheck true
-		autocomplete <= autocomplete_native \
-		selectionEnd <= selection_end 0
-		selectionStart <= selection_start 0
-		inputMode <= keyboard \text
-		enterkeyhint <= enter \go
+		role \button
+		tabindex <= tab_index 0
+		title <= hint_safe <= hint \
+	sub /$mol_view_content
+		<= title
+	Speck $mol_speck
+		value <= error \
+
+$mol_button_typed $mol_button
+	minimal_height 40
+	minimal_width 40
+
+$mol_button_minor $mol_button_typed
+
+$mol_check $mol_button_minor
 	attr *
 		^
-		maxlength <= length_max +Infinity
-		type <= type? \text
-	event *
-		^
-		input? <=> event_change? null
-	plugins /
-		<= Submit $mol_hotkey
-			mod_ctrl <= submit_with_ctrl false
-			key * enter? <=> submit? null
-
-$mol_list $mol_view
-	render_visible_only true
-	render_over 0.1
-	sub <= rows /$mol_view
-		<= Gap_before $mol_view style * paddingTop <= gap_before 0
-		<= Empty $mol_view
-		<= Gap_after $mol_view style * paddingTop <= gap_after 0
-	item_height_min* 1
-	item_width_min* 1
-	view_window_shift? 0
-	view_window /
-		0
-		0
-
-$bog_theme_picker_row $mol_button_minor
-	theme_name \
-	title <= theme_name
-	attr *
-		^
-		bog_theme_picker_row_focused <= focused_str \
-	event *
-		^
-		pointerenter?event <=> hover?event null
-
-$bog_theme_picker $mol_scroll
-	theme_auto $bog_theme_auto
-	close? null
-	query?val \
-	focused_index?val -1
-	Theme_row* $bog_theme_picker_row
-		theme_name <= theme_name* \
-		focused <= theme_focused* false
-		click?event <=> theme_select*?event null
-		hover?event <=> theme_hover*?event null
-	sub /
-		<= Content $mol_list rows /
-			<= Search $mol_string
-				value?val <=> query?val
-				hint @ \Just start typing
-			<= Theme_list $mol_list
-				rows <= theme_rows /
-	event *
-		^
-		keydown?event <=> key_down?event null
-
-$mol_icon_white_balance_sunny $mol_icon path \M3.55 19.09L4.96 20.5L6.76 18.71L5.34 17.29M12 6C8.69 6 6 8.69 6 12S8.69 18 12 18 18 15.31 18 12C18 8.68 15.31 6 12 6M20 13H23V11H20M17.24 18.71L19.04 20.5L20.45 19.09L18.66 17.29M20.45 5L19.04 3.6L17.24 5.39L18.66 6.81M13 1H11V4H13M6.76 5.39L4.96 3.6L3.55 5L5.34 6.81L6.76 5.39M1 13H4V11H1M13 20H11V23H13
-
-$mol_icon_weather_night $mol_icon path \M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,11L19.61,12.25L20.2,14.23L18.5,13.06L16.8,14.23L17.39,12.25L15.75,11L17.81,10.95L18.5,9L19.19,10.95L21.25,11M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C7.79,7.9 8.75,10.87 10.95,13.06C13.14,15.26 16.1,16.22 18.97,15.95M17.33,17.97C14.5,17.81 11.7,16.64 9.53,14.5C7.36,12.31 6.2,9.5 6.04,6.68C3.23,9.82 3.34,14.64 6.35,17.66C9.37,20.67 14.19,20.78 17.33,17.97Z
-
-$mol_icon_monitor $mol_icon path \M21,16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16A2,2 0 0,0 3,18H10V20H8V22H16V20H14V18H21A2,2 0 0,0 23,16V4C23,2.89 22.1,2 21,2Z
-
-$bog_theme_toggle $mol_pop
-	theme_auto $bog_theme_auto
-	showed?val false
-	align \bottom_right
-	Anchor $mol_button_minor
-		sub /
-			<= Icon $mol_view
-		hint <= anchor_hint \Переключить тему
-		click?event <=> clicked?event null
-		event *
-			^
-			pointerdown?event <=> press_start?event null
-			pointermove?event <=> press_move?event null
-			pointerup?event <=> press_end?event null
-			pointercancel?event <=> press_cancel?event null
-			lostpointercapture?event <=> press_lost?event null
-	Icon_light $mol_icon_white_balance_sunny
-	Icon_dark $mol_icon_weather_night
-	Icon_system $mol_icon_monitor
-	bubble_content /
-		<= Backdrop $mol_view
-			event *
-				click?event <=> backdrop_click?event null
-		<= Picker $bog_theme_picker
-			theme_auto <= theme_auto
-			close? <=> picker_close? null
+		mol_check_checked <= checked? false
+		aria-checked <= aria_checked \false
+		role <= aria_role \checkbox
+	sub /$mol_view_content
+		<= Icon null
+		<= label /
+			<= Title $mol_view
+				sub /
+					<= title \
 
 $mol_pick $mol_pop
 	event *
@@ -389,6 +213,92 @@ $mol_nav $mol_plugin
 	event *
 		^
 		keydown? <=> event_key? null
+
+$mol_list $mol_view
+	render_visible_only true
+	render_over 0.1
+	sub <= rows /$mol_view
+		<= Gap_before $mol_view style * paddingTop <= gap_before 0
+		<= Empty $mol_view
+		<= Gap_after $mol_view style * paddingTop <= gap_after 0
+	item_height_min* 1
+	item_width_min* 1
+	view_window_shift? 0
+	view_window /
+		0
+		0
+
+$mol_hotkey $mol_plugin
+	event *
+		^
+		keydown? <=> keydown? null
+	key *
+	mod_ctrl false
+	mod_alt false
+	mod_shift false
+
+$mol_string $mol_view
+	dom_name \input
+	enabled true
+	minimal_height 40
+	autocomplete false
+	selection? /number
+		0
+		0
+	auto /
+		<= selection_watcher null
+		<= error_report null
+	field *
+		^
+		disabled <= disabled false
+		value <= value_changed? <=> value? \
+		placeholder <= hint_visible <= hint \
+		spellcheck <= spellcheck true
+		autocomplete <= autocomplete_native \
+		selectionEnd <= selection_end 0
+		selectionStart <= selection_start 0
+		inputMode <= keyboard \text
+		enterkeyhint <= enter \go
+	attr *
+		^
+		maxlength <= length_max +Infinity
+		type <= type? \text
+	event *
+		^
+		input? <=> event_change? null
+	plugins /
+		<= Submit $mol_hotkey
+			mod_ctrl <= submit_with_ctrl false
+			key * enter? <=> submit? null
+
+$mol_svg $mol_view
+	dom_name \svg
+	dom_name_space \http://www.w3.org/2000/svg
+	font_size 16
+	font_family \
+	style_size *
+
+$mol_svg_root $mol_svg
+	dom_name \svg
+	attr *
+		^
+		viewBox <= view_box \0 0 100 100
+		preserveAspectRatio <= aspect \xMidYMid
+
+$mol_svg_path $mol_svg
+	dom_name \path
+	attr *
+		^
+		d <= geometry \
+
+
+$mol_icon $mol_svg_root
+	view_box \0 0 24 24
+	minimal_width 16
+	minimal_height 16
+	sub /
+		<= Path $mol_svg_path
+			geometry <= path \
 
 $mol_icon_close $mol_icon path \M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z
 
@@ -517,6 +427,96 @@ $giper_baza_status $mol_select
 				<= Fail $mol_icon_sync_off
 			hint <= message <= hint \Sync status
 
+$mol_icon_chart_timeline $mol_icon path \M2,2H4V20H22V22H2V2M7,10H17V13H7V10M11,15H21V18H11V15M6,4H22V8H20V6H8V8H6V4Z
+
+$mol_icon_chart_timeline_variant $mol_icon path \M3,14L3.5,14.07L8.07,9.5C7.89,8.85 8.06,8.11 8.59,7.59C9.37,6.8 10.63,6.8 11.41,7.59C11.94,8.11 12.11,8.85 11.93,9.5L14.5,12.07L15,12C15.18,12 15.35,12 15.5,12.07L19.07,8.5C19,8.35 19,8.18 19,8A2,2 0 0,1 21,6A2,2 0 0,1 23,8A2,2 0 0,1 21,10C20.82,10 20.65,10 20.5,9.93L16.93,13.5C17,13.65 17,13.82 17,14A2,2 0 0,1 15,16A2,2 0 0,1 13,14L13.07,13.5L10.5,10.93C10.18,11 9.82,11 9.5,10.93L4.93,15.5L5,16A2,2 0 0,1 3,18A2,2 0 0,1 1,16A2,2 0 0,1 3,14Z
+
+$mol_check_icon $mol_check
+
+$mol_icon_upload $mol_icon path \M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z
+
+$mol_button_open $mol_button_minor
+	sub /
+		<= Icon $mol_icon_upload
+		<= Native $mol_button_open_native
+			files? <=> files_handled? <=> files? /File
+			accept <= accept \
+			multiple <= multiple true
+
+$mol_button_open_native $mol_view
+	dom_name \input
+	files? /File
+	attr *
+		type \file
+		accept <= accept \
+		multiple <= multiple true
+	event *
+		change? <=> picked? null
+
+$bog_theme_picker_row $mol_button_minor
+	theme_name \
+	title <= theme_name
+	attr *
+		^
+		bog_theme_picker_row_focused <= focused_str \
+	event *
+		^
+		pointerenter?event <=> hover?event null
+
+$bog_theme_picker $mol_scroll
+	theme_auto $bog_theme_auto
+	close? null
+	query?val \
+	focused_index?val -1
+	Theme_row* $bog_theme_picker_row
+		theme_name <= theme_name* \
+		focused <= theme_focused* false
+		click?event <=> theme_select*?event null
+		hover?event <=> theme_hover*?event null
+	sub /
+		<= Content $mol_list rows /
+			<= Search $mol_string
+				value?val <=> query?val
+				hint @ \Just start typing
+			<= Theme_list $mol_list
+				rows <= theme_rows /
+	event *
+		^
+		keydown?event <=> key_down?event null
+
+$mol_icon_white_balance_sunny $mol_icon path \M3.55 19.09L4.96 20.5L6.76 18.71L5.34 17.29M12 6C8.69 6 6 8.69 6 12S8.69 18 12 18 18 15.31 18 12C18 8.68 15.31 6 12 6M20 13H23V11H20M17.24 18.71L19.04 20.5L20.45 19.09L18.66 17.29M20.45 5L19.04 3.6L17.24 5.39L18.66 6.81M13 1H11V4H13M6.76 5.39L4.96 3.6L3.55 5L5.34 6.81L6.76 5.39M1 13H4V11H1M13 20H11V23H13
+
+$mol_icon_weather_night $mol_icon path \M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,11L19.61,12.25L20.2,14.23L18.5,13.06L16.8,14.23L17.39,12.25L15.75,11L17.81,10.95L18.5,9L19.19,10.95L21.25,11M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C7.79,7.9 8.75,10.87 10.95,13.06C13.14,15.26 16.1,16.22 18.97,15.95M17.33,17.97C14.5,17.81 11.7,16.64 9.53,14.5C7.36,12.31 6.2,9.5 6.04,6.68C3.23,9.82 3.34,14.64 6.35,17.66C9.37,20.67 14.19,20.78 17.33,17.97Z
+
+$mol_icon_monitor $mol_icon path \M21,16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16A2,2 0 0,0 3,18H10V20H8V22H16V20H14V18H21A2,2 0 0,0 23,16V4C23,2.89 22.1,2 21,2Z
+
+$bog_theme_toggle $mol_pop
+	theme_auto $bog_theme_auto
+	showed?val false
+	align \bottom_right
+	Anchor $mol_button_minor
+		sub /
+			<= Icon $mol_view
+		hint <= anchor_hint \Переключить тему
+		click?event <=> clicked?event null
+		event *
+			^
+			pointerdown?event <=> press_start?event null
+			pointermove?event <=> press_move?event null
+			pointerup?event <=> press_end?event null
+			pointercancel?event <=> press_cancel?event null
+			lostpointercapture?event <=> press_lost?event null
+	Icon_light $mol_icon_white_balance_sunny
+	Icon_dark $mol_icon_weather_night
+	Icon_system $mol_icon_monitor
+	bubble_content /
+		<= Backdrop $mol_view
+			event *
+				click?event <=> backdrop_click?event null
+		<= Picker $bog_theme_picker
+			theme_auto <= theme_auto
+			close? <=> picker_close? null
+
 $mol_icon_download $mol_icon path \M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z
 
 $mol_labeler $mol_list
@@ -577,7 +577,6 @@ $bog_music_account $mol_view
 	sub /
 		<= Sync_row $mol_view
 			sub /
-				<= Sync_status $giper_baza_status
 				<= Download_playlist $mol_button_minor
 					hint <= download_playlist_hint \
 					click? <=> download_playlist? null
@@ -1439,6 +1438,7 @@ $bog_music_app $mol_page
 		uri \bog/music/app/favicon.svg
 		title <= title
 	tools /
+		<= Sync_status $giper_baza_status
 		<= Nickname_label $mol_view
 			sub / <= nickname_label \
 		<= Version $mol_view
