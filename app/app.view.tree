@@ -55,10 +55,12 @@ $bog_music_app $mol_page
 					click? <=> tube_find? null
 		<= Tube_list $mol_view
 			sub <= tube_rows /
-		<= Tube_row*0 $bog_music_tube_row
+		<= Tube_row* $bog_music_tube_row
 			title <= tube_title* \
 			subtitle <= tube_meta* \
 			status <= tube_status_text* \
+			cover <= tube_cover* \
+			play? <=> tube_play*? null
 			get? <=> tube_get*? null
 	foot /
 		<= Player $bog_music_player

@@ -26,9 +26,19 @@ namespace $ {
 			) as any ?? []
 		}
 
-		/** Аудио-байты трека (m4a). */
+		/** URL стрима аудио — для прослушивания без скачивания в baza. */
+		static audio_url(id: string): string {
+			return `${this.base}/tube/audio?id=${encodeURIComponent(id)}`
+		}
+
+		/** URL превью-обложки YouTube (строится по id, без запроса к серверу). */
+		static cover_url(id: string): string {
+			return `https://i.ytimg.com/vi/${encodeURIComponent(id)}/mqdefault.jpg`
+		}
+
+		/** Аудио-байты трека (m4a) — для скачивания в baza. */
 		static async audio_bytes(id: string): Promise<Uint8Array> {
-			const resp = await fetch(`${this.base}/tube/audio?id=${encodeURIComponent(id)}`)
+			const resp = await fetch(this.audio_url(id))
 			if (!resp.ok) throw new Error(`tube audio ${resp.status}`)
 			const buf = new Uint8Array(await resp.arrayBuffer())
 			if (!buf.byteLength) throw new Error('tube audio: пустой ответ')

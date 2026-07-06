@@ -2,9 +2,26 @@ $bog_music_tube_row $mol_view
 	title \
 	subtitle \
 	status \
+	cover \
+	playing false
+	play? null
 	get? null
 	sub /
+		<= Play $mol_button_minor
+			hint \Слушать
+			click? <=> play? null
+			sub /
+				<= Play_icon $mol_icon_play
+		<= Cover_box $mol_view
+			event *
+				click?event <=> play? null
+			sub /
+				<= Cover $mol_image
+					uri <= cover
+				<= Cover_placeholder $mol_icon_music
 		<= Info $mol_view
+			event *
+				click?event <=> play? null
 			sub /
 				<= Title $mol_paragraph
 					title <= title

@@ -22,7 +22,36 @@ namespace $.$$ {
 		}
 
 		current_audio(): $bog_music_api_audio | null {
+			if (this._ext) return { id: 0, owner_id: 0, artist: this._ext.artist, title: this._ext.title, duration: 0, url: this._ext.url }
 			return this.current_track()?.audio() ?? null
+		}
+
+		// Внешний источник (стрим tube-превью), играющий без записи в baza.
+		// Пока задан — плеер работает по url, а не по ключу из baza.
+		private _ext: { url: string, title: string, artist: string } | null = null
+
+		/** Прослушать по прямому URL, не сохраняя трек (tube-превью). */
+		play_external(url: string, title: string, artist: string) {
+			if (this.is_extension()) {
+				// В extension нет прямого <audio>; превью работает только в PWA/сайте.
+				return
+			}
+			this._ext = { url, title, artist }
+			this.current_key('')
+			this.current_time(0)
+			this.duration(0)
+			this._trim_end_skip = ''
+			this.apply_media_metadata(this.current_audio()!)
+			this.keepalive_unlock()
+			this.gain_chain_unlock()
+			const el = this.audio_el()
+			if (this._last_blob_url) {
+				URL.revokeObjectURL(this._last_blob_url)
+				this._last_blob_url = ''
+			}
+			this._dispatch_token++
+			el.src = url
+			el.play().catch(() => {})
 		}
 
 		// ---------- окружение ----------
@@ -543,6 +572,8 @@ namespace $.$$ {
 			const audio = this.account().track(key)?.audio()
 			if (!audio) return
 
+			this._ext = null // возвращаемся к baza-треку, гасим tube-превью
+
 			// Сброс времени ДО смены трека: иначе apply_trim в auto() прочитает
 			// stale-значения предыдущего трека и может мгновенно дёрнуть next().
 			this.current_time(0)
@@ -794,7 +825,7 @@ namespace $.$$ {
 		}
 
 		sub() {
-			if (!this.current_key()) return []
+			if (!this.current_key() && !this._ext) return []
 			return super.sub()
 		}
 

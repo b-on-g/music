@@ -371,6 +371,23 @@ namespace $.$$ {
 			return [item.channel, time].filter(Boolean).join(' · ')
 		}
 
+		tube_cover(index: number) {
+			const item = this.tube_item(index)
+			return item ? $bog_music_tube.cover_url(item.id) : ''
+		}
+
+		/** Прослушать трек стримом с сервера, не скачивая в baza. */
+		@$mol_action
+		tube_play(index: number) {
+			const item = this.tube_item(index)
+			if (!item) return
+			;(this.Player() as any).play_external(
+				$bog_music_tube.audio_url(item.id),
+				item.title,
+				item.channel,
+			)
+		}
+
 		@$mol_mem_key
 		tube_status_text(index: number, next?: string): string {
 			return next ?? ''
