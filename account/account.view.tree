@@ -2,7 +2,6 @@ $bog_music_account $mol_view
 	sub /
 		<= Sync_row $mol_view
 			sub /
-				- <= Sync_status $giper_baza_status
 				<= Download_playlist $mol_button_minor
 					hint <= download_playlist_hint \
 					click? <=> download_playlist? null
