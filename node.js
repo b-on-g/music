@@ -25964,6 +25964,32 @@ var $;
         port() {
             return Number(process.env.BOG_MUSIC_TUBE_PORT ?? 9092);
         }
+        // Предохранитель от форк-бомбы: каждый search/audio форкает yt-dlp
+        // (search ~5с CPU, audio ~10-30с). Без лимита спам с прода забивает
+        // CPU/память и вешает всю машину (вплоть до отказа ssh). Держим не
+        // больше MAX_JOBS одновременно, лишние запросы сразу отвечают 503,
+        // а не копят процессы.
+        static MAX_JOBS = 3;
+        active_jobs = 0;
+        /** Разрешить новый yt-dlp job? Если да — резервирует слот. */
+        take_slot() {
+            if (this.active_jobs >= $bog_music_tube_api.MAX_JOBS)
+                return false;
+            this.active_jobs++;
+            return true;
+        }
+        free_slot() {
+            if (this.active_jobs > 0)
+                this.active_jobs--;
+        }
+        busy(res) {
+            res.statusCode = 503;
+            res.setHeader('Retry-After', '5');
+            try {
+                res.end('{"error":"busy"}');
+            }
+            catch { }
+        }
         expressHandlers() {
             return [
                 this.expressCors(),
@@ -25996,6 +26022,10 @@ var $;
                 res.end('{"error":"no query"}');
                 return;
             }
+            if (!this.take_slot()) {
+                this.busy(res);
+                return;
+            }
             const child = spawn('yt-dlp', [
                 '--dump-json',
                 '--flat-playlist',
@@ -26018,8 +26048,14 @@ var $;
                 child.kill('SIGKILL');
             }
             catch { } }, 30000);
+            // Клиент ушёл (закрыл вкладку/отменил) — не держим yt-dlp зря.
+            req.on('close', () => { try {
+                child.kill('SIGKILL');
+            }
+            catch { } });
             child.on('close', (code) => {
                 clearTimeout(timer);
+                this.free_slot();
                 if (res.writableEnded)
                     return;
                 if (code !== 0 && !out) {
@@ -26060,6 +26096,10 @@ var $;
                 res.end();
                 return;
             }
+            if (!this.take_slot()) {
+                this.busy(res);
+                return;
+            }
             const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tube-'));
             const file = path.join(dir, `${id}.m4a`);
             const cleanup = () => { try {
@@ -26084,16 +26124,18 @@ var $;
             });
             let err = '';
             child.stderr.on('data', (d) => err += d);
+            // 3 мин достаточно на трек; раньше 10 мин копили процессы при спаме.
             const timer = setTimeout(() => { try {
                 child.kill('SIGKILL');
             }
-            catch { } }, 10 * 60000);
+            catch { } }, 3 * 60000);
             req.on('close', () => { try {
                 child.kill('SIGKILL');
             }
             catch { } });
             child.on('close', (code) => {
                 clearTimeout(timer);
+                this.free_slot();
                 if (res.writableEnded)
                     return;
                 if (code !== 0 || !fs.existsSync(file)) {
@@ -29206,8 +29248,8 @@ var $;
 			return [];
 		}
 		Tube_list(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ((this.tube_rows()));
+			const obj = new this.$.$mol_list();
+			(obj.rows) = () => ((this.tube_rows()));
 			return obj;
 		}
 		tube_title(id){
@@ -29667,7 +29709,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.8';
+    $.$bog_music_version = 'v1.9';
 })($ || ($ = {}));
 
 ;
@@ -30277,9 +30319,6 @@ var $;
             },
             Tube_query: {
                 flex: { grow: 1 },
-            },
-            Tube_list: {
-                flex: { direction: 'column' },
             },
             Foot: {
                 flex: {

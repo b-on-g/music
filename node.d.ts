@@ -53729,6 +53729,12 @@ declare namespace $ {
      */
     class $bog_music_tube_api extends $mol_server {
         port(): number;
+        static MAX_JOBS: number;
+        private active_jobs;
+        /** Разрешить новый yt-dlp job? Если да — резервирует слот. */
+        private take_slot;
+        private free_slot;
+        private busy;
         expressHandlers(): readonly $mol_server_middleware[];
         expressApi(): $mol_server_middleware;
         search(req: any, res: any): void;
@@ -54889,10 +54895,10 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_app_31 = $mol_type_enforce<
+	type $mol_list__rows_bog_music_app_31 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_rows'] >
 		,
-		ReturnType< $mol_view['sub'] >
+		ReturnType< $mol_list['rows'] >
 	>
 	type $bog_music_tube_row__title_bog_music_app_32 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_title'] >
@@ -54988,7 +54994,7 @@ declare namespace $ {
 		Tube_find( ): $mol_button_major
 		Tube_bar( ): $mol_view
 		tube_rows( ): readonly(any)[]
-		Tube_list( ): $mol_view
+		Tube_list( ): $mol_list
 		tube_title( id: any): string
 		tube_meta( id: any): string
 		tube_status_text( id: any): string

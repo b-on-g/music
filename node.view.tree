@@ -1484,8 +1484,8 @@ $bog_music_app $mol_page
 				<= Tube_find $mol_button_major
 					title \Найти
 					click? <=> tube_find? null
-		<= Tube_list $mol_view
-			sub <= tube_rows /
+		<= Tube_list $mol_list
+			rows <= tube_rows /
 		<= Tube_row* $bog_music_tube_row
 			title <= tube_title* \
 			subtitle <= tube_meta* \

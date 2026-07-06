@@ -36482,8 +36482,8 @@ var $;
 			return [];
 		}
 		Tube_list(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ((this.tube_rows()));
+			const obj = new this.$.$mol_list();
+			(obj.rows) = () => ((this.tube_rows()));
 			return obj;
 		}
 		tube_title(id){
@@ -36943,7 +36943,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.8';
+    $.$bog_music_version = 'v1.9';
 })($ || ($ = {}));
 
 ;
@@ -37553,9 +37553,6 @@ var $;
             },
             Tube_query: {
                 flex: { grow: 1 },
-            },
-            Tube_list: {
-                flex: { direction: 'column' },
             },
             Foot: {
                 flex: {
