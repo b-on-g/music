@@ -36943,7 +36943,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.10';
+    $.$bog_music_version = 'v1.11';
 })($ || ($ = {}));
 
 ;

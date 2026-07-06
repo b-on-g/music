@@ -26072,6 +26072,9 @@ var $;
                 }))
                     .filter((v) => v.id);
                 res.setHeader('Content-Type', 'application/json');
+                // Кэш: одинаковые запросы часты (переключение вкладок, повторный
+                // ввод). 5 мин в браузере снимают нагрузку и убирают скелетон.
+                res.setHeader('Cache-Control', 'public, max-age=300');
                 res.end(JSON.stringify(items));
             });
         }
@@ -26141,6 +26144,9 @@ var $;
                 }
                 res.setHeader('Content-Type', 'audio/mp4');
                 res.setHeader('Content-Length', String(fs.statSync(file).size));
+                // Аудио трека по id неизменно — кэшируем надолго (сутки, immutable).
+                // Экономит и трафик, и дорогие yt-dlp-перекачки.
+                res.setHeader('Cache-Control', 'public, max-age=86400, immutable');
                 const stream = fs.createReadStream(file);
                 stream.pipe(res);
                 stream.on('close', cleanup);
@@ -29700,7 +29706,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.10';
+    $.$bog_music_version = 'v1.11';
 })($ || ($ = {}));
 
 ;
