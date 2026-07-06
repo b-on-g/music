@@ -2455,6 +2455,26 @@ $mol_check_list $mol_view
 $mol_switch $mol_check_list
 	value? \
 
+$bog_music_tube_row $mol_view
+	title \
+	subtitle \
+	status \
+	get? null
+	sub /
+		<= Info $mol_view
+			sub /
+				<= Title $mol_paragraph
+					title <= title
+				<= Subtitle $mol_paragraph
+					title <= subtitle
+		<= Status $mol_view
+			sub / <= status
+		<= Get $mol_button_minor
+			hint \Скачать в Мою музыку
+			click? <=> get? null
+			sub /
+				<= Get_icon $mol_icon_download
+
 $mol_icon_skip_previous $mol_icon path \M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z
 
 $mol_icon_pause $mol_icon path \M14,19H18V5H14M6,19H10V5H6V19Z
@@ -2579,6 +2599,8 @@ $bog_music_nav_item $mol_view
 		<= Label $mol_view
 			sub / <= label
 
+$mol_icon_magnify $mol_icon path \M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z
+
 $mol_icon_account_circle $mol_icon path \M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z
 
 $mol_icon_chat $mol_icon path \M12,3C17.5,3 22,6.58 22,11C22,15.42 17.5,19 12,19C10.76,19 9.57,18.82 8.47,18.5C5.55,21 2,21 2,21C4.33,18.67 4.7,17.1 4.75,16.5C3.05,15.07 2,13.13 2,11C2,6.58 6.5,3 12,3Z
@@ -2591,6 +2613,11 @@ $bog_music_nav $mol_view
 			active <= music_active \off
 			Icon <= Music_icon $mol_icon_music
 			click? <=> music_click? null
+		<= Tab_search $bog_music_nav_item
+			label \Поиск
+			active <= search_active \off
+			Icon <= Search_icon $mol_icon_magnify
+			click? <=> search_click? null
 		<= Tab_account $bog_music_nav_item
 			label \Аккаунт
 			active <= account_active \off
@@ -2649,6 +2676,21 @@ $bog_music_app $mol_page
 			archive_key? <=> archive_key? null
 			restore_key? <=> restore_key? null
 			delete_key? <=> delete_key? null
+		<= Tube_bar $mol_view
+			sub /
+				<= Tube_query $mol_string
+					hint \Что ищем на YouTube?
+					value? <=> tube_query? \
+				<= Tube_find $mol_button_major
+					title \Найти
+					click? <=> tube_find? null
+		<= Tube_list $mol_view
+			sub <= tube_rows /
+		<= Tube_row*0 $bog_music_tube_row
+			title <= tube_title* \
+			subtitle <= tube_meta* \
+			status <= tube_status_text* \
+			get? <=> tube_get*? null
 	foot /
 		<= Player $bog_music_player
 			queue_keys <= visible_keys /

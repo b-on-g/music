@@ -33628,6 +33628,142 @@ var $;
 })($ || ($ = {}));
 
 ;
+"use strict";
+var $;
+(function ($) {
+    /**
+     * Клиент поиска и скачивания музыки из YouTube. Сервер — наш
+     * $bog_music_tube_api в докере (yt-dlp + ffmpeg), см. tube/deploy/.
+     */
+    class $bog_music_tube extends $mol_object {
+        static base = 'https://tube.87.120.36.150.ip.giper.dev';
+        /** Поиск. Wire-метод: suspend'ится пока грузится. */
+        static search(query) {
+            const q = query.trim();
+            if (!q)
+                return [];
+            return $mol_fetch.json(`${this.base}/tube/search?q=${encodeURIComponent(q)}`) ?? [];
+        }
+        /** Аудио-байты трека (m4a). */
+        static async audio_bytes(id) {
+            const resp = await fetch(`${this.base}/tube/audio?id=${encodeURIComponent(id)}`);
+            if (!resp.ok)
+                throw new Error(`tube audio ${resp.status}`);
+            const buf = new Uint8Array(await resp.arrayBuffer());
+            if (!buf.byteLength)
+                throw new Error('tube audio: пустой ответ');
+            return buf;
+        }
+    }
+    __decorate([
+        $mol_mem_key
+    ], $bog_music_tube, "search", null);
+    $.$bog_music_tube = $bog_music_tube;
+})($ || ($ = {}));
+
+;
+	($.$bog_music_tube_row) = class $bog_music_tube_row extends ($.$mol_view) {
+		Title(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.title()));
+			return obj;
+		}
+		Subtitle(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.subtitle()));
+			return obj;
+		}
+		Info(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Title()), (this.Subtitle())]);
+			return obj;
+		}
+		Status(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.status())]);
+			return obj;
+		}
+		get(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Get_icon(){
+			const obj = new this.$.$mol_icon_download();
+			return obj;
+		}
+		Get(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.hint) = () => ("Скачать в Мою музыку");
+			(obj.click) = (next) => ((this.get(next)));
+			(obj.sub) = () => ([(this.Get_icon())]);
+			return obj;
+		}
+		title(){
+			return "";
+		}
+		subtitle(){
+			return "";
+		}
+		status(){
+			return "";
+		}
+		sub(){
+			return [
+				(this.Info()), 
+				(this.Status()), 
+				(this.Get())
+			];
+		}
+	};
+	($mol_mem(($.$bog_music_tube_row.prototype), "Title"));
+	($mol_mem(($.$bog_music_tube_row.prototype), "Subtitle"));
+	($mol_mem(($.$bog_music_tube_row.prototype), "Info"));
+	($mol_mem(($.$bog_music_tube_row.prototype), "Status"));
+	($mol_mem(($.$bog_music_tube_row.prototype), "get"));
+	($mol_mem(($.$bog_music_tube_row.prototype), "Get_icon"));
+	($mol_mem(($.$bog_music_tube_row.prototype), "Get"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_define($bog_music_tube_row, {
+        flex: { direction: 'row' },
+        align: { items: 'center' },
+        gap: '0.5rem',
+        padding: {
+            top: '0.5rem',
+            bottom: '0.5rem',
+            left: '0.75rem',
+            right: '0.75rem',
+        },
+        Info: {
+            flex: { direction: 'column', grow: 1 },
+            minWidth: 0,
+        },
+        Title: {
+            whiteSpace: 'nowrap',
+            overflow: { x: 'hidden', y: 'hidden' },
+            textOverflow: 'ellipsis',
+        },
+        Subtitle: {
+            font: { size: '0.8125rem' },
+            color: $mol_theme.shade,
+        },
+        Status: {
+            font: { size: '0.8125rem' },
+            color: $mol_theme.shade,
+            whiteSpace: 'nowrap',
+        },
+    });
+})($ || ($ = {}));
+
+;
 	($.$mol_icon_skip_previous) = class $mol_icon_skip_previous extends ($.$mol_icon) {
 		path(){
 			return "M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z";
@@ -35485,6 +35621,18 @@ var $;
 })($ || ($ = {}));
 
 ;
+	($.$mol_icon_magnify) = class $mol_icon_magnify extends ($.$mol_icon) {
+		path(){
+			return "M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
 	($.$mol_icon_account_circle) = class $mol_icon_account_circle extends ($.$mol_icon) {
 		path(){
 			return "M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z";
@@ -35527,6 +35675,25 @@ var $;
 			(obj.active) = () => ((this.music_active()));
 			(obj.Icon) = () => ((this.Music_icon()));
 			(obj.click) = (next) => ((this.music_click(next)));
+			return obj;
+		}
+		search_active(){
+			return "off";
+		}
+		Search_icon(){
+			const obj = new this.$.$mol_icon_magnify();
+			return obj;
+		}
+		search_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Tab_search(){
+			const obj = new this.$.$bog_music_nav_item();
+			(obj.label) = () => ("Поиск");
+			(obj.active) = () => ((this.search_active()));
+			(obj.Icon) = () => ((this.Search_icon()));
+			(obj.click) = (next) => ((this.search_click(next)));
 			return obj;
 		}
 		account_active(){
@@ -35574,6 +35741,7 @@ var $;
 		sub(){
 			return [
 				(this.Tab_music()), 
+				(this.Tab_search()), 
 				(this.Tab_account()), 
 				(this.Tab_feedback())
 			];
@@ -35582,6 +35750,9 @@ var $;
 	($mol_mem(($.$bog_music_nav.prototype), "Music_icon"));
 	($mol_mem(($.$bog_music_nav.prototype), "music_click"));
 	($mol_mem(($.$bog_music_nav.prototype), "Tab_music"));
+	($mol_mem(($.$bog_music_nav.prototype), "Search_icon"));
+	($mol_mem(($.$bog_music_nav.prototype), "search_click"));
+	($mol_mem(($.$bog_music_nav.prototype), "Tab_search"));
 	($mol_mem(($.$bog_music_nav.prototype), "Account_icon"));
 	($mol_mem(($.$bog_music_nav.prototype), "account_click"));
 	($mol_mem(($.$bog_music_nav.prototype), "Tab_account"));
@@ -35603,12 +35774,19 @@ var $;
     (function ($$) {
         class $bog_music_nav extends $.$bog_music_nav {
             music_active() { return this.section() === 'music' ? 'on' : 'off'; }
+            search_active() { return this.section() === 'search' ? 'on' : 'off'; }
             account_active() { return this.section() === 'account' ? 'on' : 'off'; }
             feedback_active() { return this.section() === 'feedback' ? 'on' : 'off'; }
             music_click(e) {
                 if (e)
                     e.preventDefault();
                 this.section('music');
+                return null;
+            }
+            search_click(e) {
+                if (e)
+                    e.preventDefault();
+                this.section('search');
                 return null;
             }
             account_click(e) {
@@ -35627,6 +35805,9 @@ var $;
         __decorate([
             $mol_action
         ], $bog_music_nav.prototype, "music_click", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_nav.prototype, "search_click", null);
         __decorate([
             $mol_action
         ], $bog_music_nav.prototype, "account_click", null);
@@ -36141,6 +36322,60 @@ var $;
 			(obj.delete_key) = (next) => ((this.delete_key(next)));
 			return obj;
 		}
+		tube_query(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		Tube_query(){
+			const obj = new this.$.$mol_string();
+			(obj.hint) = () => ("Что ищем на YouTube?");
+			(obj.value) = (next) => ((this.tube_query(next)));
+			return obj;
+		}
+		tube_find(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Tube_find(){
+			const obj = new this.$.$mol_button_major();
+			(obj.title) = () => ("Найти");
+			(obj.click) = (next) => ((this.tube_find(next)));
+			return obj;
+		}
+		Tube_bar(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Tube_query()), (this.Tube_find())]);
+			return obj;
+		}
+		tube_rows(){
+			return [];
+		}
+		Tube_list(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ((this.tube_rows()));
+			return obj;
+		}
+		tube_title(id){
+			return "";
+		}
+		tube_meta(id){
+			return "";
+		}
+		tube_status_text(id){
+			return "";
+		}
+		tube_get(id, next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Tube_row(id){
+			const obj = new this.$.$bog_music_tube_row();
+			(obj.title) = () => ((this.tube_title(id)));
+			(obj.subtitle) = () => ((this.tube_meta(id)));
+			(obj.status) = () => ((this.tube_status_text(id)));
+			(obj.get) = (next) => ((this.tube_get(id, next)));
+			return obj;
+		}
 		player_pick_next(next){
 			if(next !== undefined) return next;
 			return null;
@@ -36192,7 +36427,10 @@ var $;
 				(this.Feedback()), 
 				(this.Share_toast()), 
 				(this.Tabs()), 
-				(this.Tracks())
+				(this.Tracks()), 
+				(this.Tube_bar()), 
+				(this.Tube_list()), 
+				(this.Tube_row("0"))
 			];
 		}
 		foot(){
@@ -36225,6 +36463,14 @@ var $;
 	($mol_mem(($.$bog_music_app.prototype), "restore_key"));
 	($mol_mem(($.$bog_music_app.prototype), "delete_key"));
 	($mol_mem(($.$bog_music_app.prototype), "Tracks"));
+	($mol_mem(($.$bog_music_app.prototype), "tube_query"));
+	($mol_mem(($.$bog_music_app.prototype), "Tube_query"));
+	($mol_mem(($.$bog_music_app.prototype), "tube_find"));
+	($mol_mem(($.$bog_music_app.prototype), "Tube_find"));
+	($mol_mem(($.$bog_music_app.prototype), "Tube_bar"));
+	($mol_mem(($.$bog_music_app.prototype), "Tube_list"));
+	($mol_mem_key(($.$bog_music_app.prototype), "tube_get"));
+	($mol_mem_key(($.$bog_music_app.prototype), "Tube_row"));
 	($mol_mem(($.$bog_music_app.prototype), "player_pick_next"));
 	($mol_mem(($.$bog_music_app.prototype), "Player"));
 	($mol_mem(($.$bog_music_app.prototype), "section"));
@@ -36554,7 +36800,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.1';
+    $.$bog_music_version = 'v1.4';
 })($ || ($ = {}));
 
 ;
@@ -36856,12 +37102,83 @@ var $;
                 switch (this.section()) {
                     case 'account': return [this.Account()];
                     case 'feedback': return [this.Feedback()];
+                    case 'search': return [this.Tube_bar(), this.Tube_list()];
                 }
                 return [
                     this.Share_toast(),
                     this.Tabs(),
                     this.Tracks(),
                 ];
+            }
+            // =====================================================================
+            // Поиск и скачивание из YouTube (сервер bog/music/tube)
+            // =====================================================================
+            tube_query(next) {
+                return next ?? '';
+            }
+            /** Запрос, по которому реально ищем — коммитится кнопкой «Найти». */
+            tube_committed(next) {
+                return next ?? '';
+            }
+            tube_find() {
+                this.tube_committed(this.tube_query());
+            }
+            tube_items() {
+                const q = this.tube_committed();
+                if (!q.trim())
+                    return [];
+                return $bog_music_tube.search(q);
+            }
+            tube_rows() {
+                return this.tube_items().map((_, i) => this.Tube_row(i));
+            }
+            tube_item(index) {
+                return this.tube_items()[index] ?? null;
+            }
+            tube_title(index) {
+                return this.tube_item(index)?.title ?? '';
+            }
+            tube_meta(index) {
+                const item = this.tube_item(index);
+                if (!item)
+                    return '';
+                const dur = item.duration;
+                const time = dur ? `${Math.floor(dur / 60)}:${String(Math.floor(dur % 60)).padStart(2, '0')}` : '';
+                return [item.channel, time].filter(Boolean).join(' · ');
+            }
+            tube_status_text(index, next) {
+                return next ?? '';
+            }
+            tube_get(index) {
+                const item = this.tube_item(index);
+                if (!item)
+                    return;
+                $mol_wire_async(this).tube_download(index, item);
+            }
+            async tube_download(index, item) {
+                if (this.tube_status_text(index))
+                    return;
+                this.tube_status_text(index, 'Качаю…');
+                try {
+                    const bytes = await $bog_music_tube.audio_bytes(item.id);
+                    const audio = {
+                        id: $bog_music_account_baza.hash_str('yt:' + item.id),
+                        owner_id: 0,
+                        artist: item.channel,
+                        title: item.title,
+                        duration: item.duration,
+                        url: '',
+                    };
+                    await $mol_wire_async(this.account()).import_audio(audio, bytes, 'audio/mp4');
+                    this.tube_status_text(index, '✓ в Моей музыке');
+                }
+                catch (e) {
+                    if (e instanceof Promise)
+                        throw e;
+                    console.warn('[tube] download failed:', e?.message ?? e);
+                    this.tube_status_text(index, 'Ошибка');
+                    setTimeout(() => this.tube_status_text(index, ''), 4000);
+                }
             }
             nickname_label() {
                 return this.account().nickname();
@@ -36986,6 +37303,27 @@ var $;
         ], $bog_music_app.prototype, "section", null);
         __decorate([
             $mol_mem
+        ], $bog_music_app.prototype, "tube_query", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "tube_committed", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "tube_find", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "tube_items", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "tube_rows", null);
+        __decorate([
+            $mol_mem_key
+        ], $bog_music_app.prototype, "tube_status_text", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "tube_get", null);
+        __decorate([
+            $mol_mem
         ], $bog_music_app.prototype, "pending_listener", null);
         $$.$bog_music_app = $bog_music_app;
     })($$ = $.$$ || ($.$$ = {}));
@@ -37044,6 +37382,23 @@ var $;
                     left: '0.25rem',
                     right: '0.25rem',
                 },
+            },
+            Tube_bar: {
+                flex: { direction: 'row' },
+                gap: '0.5rem',
+                padding: {
+                    top: '0.75rem',
+                    bottom: '0.5rem',
+                    left: '0.75rem',
+                    right: '0.75rem',
+                },
+                align: { items: 'center' },
+            },
+            Tube_query: {
+                flex: { grow: 1 },
+            },
+            Tube_list: {
+                flex: { direction: 'column' },
             },
             Foot: {
                 flex: {

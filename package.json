@@ -396,6 +396,13 @@
     "$mol_section",
     "$mol_switch",
     "$mol_check_list",
+    "$bog_music_tube_row",
+    "$bog_music_tube",
+    "$bog_music_tube_api",
+    "$mol_server",
+    "$mol_fetch",
+    "$mol_error_enriched",
+    "$mol_error_fence",
     "$bog_music_player",
     "$mol_icon_skip_previous",
     "$mol_icon_skip",
@@ -411,6 +418,7 @@
     "$bog_music_gain",
     "$bog_music_nav",
     "$bog_music_nav_item",
+    "$mol_icon_magnify",
     "$mol_icon_account_circle",
     "$mol_icon_account",
     "$mol_icon_chat",
@@ -420,6 +428,12 @@
   ],
   "dependencies": {
     "autoinstall": "*",
-    "jsdom": "*"
+    "jsdom": "*",
+    "express": "*",
+    "ws": "*",
+    "compression": "*",
+    "cors": "*",
+    "body-parser": "*",
+    "serve-index": "*"
   }
 }

@@ -25824,6 +25824,646 @@ var $;
 })($ || ($ = {}));
 
 ;
+"use strict";
+var $;
+(function ($) {
+    class $mol_server extends $mol_object {
+        express() {
+            var express = $node['express']();
+            this.expressHandlers().forEach(plugin => express.use(plugin));
+            return express;
+        }
+        internal_ip() {
+            const nets = $node.os.networkInterfaces();
+            const results = Object.create(null);
+            for (const name of Object.keys(nets)) {
+                for (const net of nets[name]) {
+                    // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+                    // 'IPv4' is in Node <= 17, from 18 it's a number 4 or 6
+                    const familyV4Value = typeof net.family === 'string' ? 'IPv4' : 4;
+                    if (net.family === familyV4Value && !net.internal) {
+                        if (!results[name]) {
+                            results[name] = [];
+                        }
+                        results[name].push(net.address);
+                    }
+                }
+            }
+            const internal = Object.values(results).at(-1);
+            return internal?.[0] ?? '0.0.0.0';
+        }
+        http() {
+            const server = $node.http.createServer(this.express());
+            server.listen(this.port());
+            this.$.$mol_log3_done({
+                place: `${this}.http`,
+                message: `Started`,
+                network: `http://${this.internal_ip()}:${this.port()}/`,
+                loopback: `http://localhost:${this.port()}/`,
+            });
+            return server;
+        }
+        connections = new Set();
+        socket() {
+            const socket = new $node.ws.WebSocketServer({
+                server: this.http(),
+                // perMessageDeflate: {
+                // 	zlibDeflateOptions: {
+                // 		chunkSize: 1024,
+                // 		memLevel: 7,
+                // 		level: 3
+                // 	},
+                // 	zlibInflateOptions: {
+                // 		chunkSize: 10 * 1024
+                // 	},
+                // }
+            });
+            socket.on('connection', line => {
+                this.connections.add(line);
+                line.on('message', (message, isBinary) => {
+                    for (const other of this.connections) {
+                        if (line === other)
+                            continue;
+                        other.send(message, { binary: isBinary });
+                    }
+                });
+            });
+            return socket;
+        }
+        expressHandlers() {
+            return [
+                this.expressCors(),
+                this.expressCompressor(),
+                this.expressBodier(),
+                this.expressGenerator(),
+                this.expressIndex(),
+                this.expressFiler(),
+                this.expressDirector(),
+            ];
+        }
+        expressCompressor() {
+            return $node['compression']();
+        }
+        expressCors() {
+            return $node.cors();
+        }
+        expressBodier() {
+            return $node['body-parser'].json({
+                limit: this.bodyLimit()
+            });
+        }
+        expressFiler() {
+            return $node.express.static($node.path.resolve(this.rootPublic()), {
+                maxAge: this.cacheTime(),
+                dotfiles: 'allow'
+            });
+        }
+        expressDirector() {
+            return $node['serve-index'](this.rootPublic(), { icons: true });
+        }
+        expressIndex() {
+            return (req, res, next) => next();
+        }
+        expressGenerator() {
+            return (req, res, next) => next();
+        }
+        bodyLimit() {
+            return '1mb';
+        }
+        cacheTime() {
+            return 1000 * 60 * 60 * 24 * 365 * 1000;
+        }
+        port() {
+            return 80;
+        }
+        rootPublic() {
+            return '.';
+        }
+    }
+    __decorate([
+        $mol_mem
+    ], $mol_server.prototype, "express", null);
+    __decorate([
+        $mol_mem
+    ], $mol_server.prototype, "http", null);
+    __decorate([
+        $mol_mem
+    ], $mol_server.prototype, "socket", null);
+    $.$mol_server = $mol_server;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    const { spawn } = $node['child_process'];
+    const fs = $node['fs'];
+    const os = $node['os'];
+    const path = $node['path'];
+    /**
+     * Сервер поиска и скачивания музыки из YouTube (yt-dlp + ffmpeg).
+     *
+     * GET /tube/health     → ok
+     * GET /tube/search?q=  → [{ id, title, channel, duration }]
+     * GET /tube/audio?id=  → байты m4a (audio/mp4)
+     *
+     * Запуск: node bog/music/tube/api/-/node.js (в докере, см. tube/deploy/).
+     */
+    class $bog_music_tube_api extends $mol_server {
+        port() {
+            return Number(process.env.BOG_MUSIC_TUBE_PORT ?? 9092);
+        }
+        expressHandlers() {
+            return [
+                this.expressCors(),
+                this.expressApi(),
+            ];
+        }
+        expressApi() {
+            return (req, res, next) => {
+                if (req.method !== 'GET')
+                    return next();
+                if (req.path === '/tube/health') {
+                    res.end('ok');
+                    return;
+                }
+                if (req.path === '/tube/search') {
+                    this.search(req, res);
+                    return;
+                }
+                if (req.path === '/tube/audio') {
+                    this.audio(req, res);
+                    return;
+                }
+                next();
+            };
+        }
+        search(req, res) {
+            const q = String(req.query.q ?? '').slice(0, 200);
+            if (!q) {
+                res.statusCode = 400;
+                res.end('{"error":"no query"}');
+                return;
+            }
+            const child = spawn('yt-dlp', [
+                '--dump-json',
+                '--flat-playlist',
+                '--no-warnings',
+                `ytsearch15:${q}`,
+            ]);
+            child.on('error', (e) => {
+                console.error('[tube] spawn fail:', e?.message);
+                res.statusCode = 500;
+                try {
+                    res.end('{"error":"yt-dlp not available"}');
+                }
+                catch { }
+            });
+            let out = '';
+            let err = '';
+            child.stdout.on('data', (d) => out += d);
+            child.stderr.on('data', (d) => err += d);
+            const timer = setTimeout(() => { try {
+                child.kill('SIGKILL');
+            }
+            catch { } }, 30000);
+            child.on('close', (code) => {
+                clearTimeout(timer);
+                if (res.writableEnded)
+                    return;
+                if (code !== 0 && !out) {
+                    console.error('[tube] search fail:', err.slice(0, 300));
+                    res.statusCode = 502;
+                    res.end(JSON.stringify({ error: 'search failed' }));
+                    return;
+                }
+                const items = out.split('\n')
+                    .filter(Boolean)
+                    .map(line => { try {
+                    return JSON.parse(line);
+                }
+                catch {
+                    return null;
+                } })
+                    .filter(Boolean)
+                    .map((v) => ({
+                    id: String(v.id ?? ''),
+                    title: String(v.title ?? ''),
+                    channel: String(v.channel ?? v.uploader ?? ''),
+                    duration: Number(v.duration ?? 0) || 0,
+                }))
+                    .filter((v) => v.id);
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify(items));
+            });
+        }
+        /**
+         * Качаем с конверсией в m4a во временный файл (ffmpeg-постпроцессинг
+         * yt-dlp не умеет в stdout), отдаём и удаляем. m4a — ради iOS Safari,
+         * который не играет webm/opus.
+         */
+        audio(req, res) {
+            const id = String(req.query.id ?? '');
+            if (!/^[\w-]{6,16}$/.test(id)) {
+                res.statusCode = 400;
+                res.end();
+                return;
+            }
+            const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tube-'));
+            const file = path.join(dir, `${id}.m4a`);
+            const cleanup = () => { try {
+                fs.rmSync(dir, { recursive: true, force: true });
+            }
+            catch { } };
+            const child = spawn('yt-dlp', [
+                '-f', 'bestaudio[ext=m4a]/bestaudio',
+                '-x', '--audio-format', 'm4a',
+                '--no-warnings', '--no-playlist',
+                '-o', file,
+                `https://www.youtube.com/watch?v=${id}`,
+            ]);
+            child.on('error', (e) => {
+                console.error('[tube] spawn fail:', e?.message);
+                cleanup();
+                res.statusCode = 500;
+                try {
+                    res.end();
+                }
+                catch { }
+            });
+            let err = '';
+            child.stderr.on('data', (d) => err += d);
+            const timer = setTimeout(() => { try {
+                child.kill('SIGKILL');
+            }
+            catch { } }, 10 * 60000);
+            req.on('close', () => { try {
+                child.kill('SIGKILL');
+            }
+            catch { } });
+            child.on('close', (code) => {
+                clearTimeout(timer);
+                if (res.writableEnded)
+                    return;
+                if (code !== 0 || !fs.existsSync(file)) {
+                    console.error('[tube] audio fail:', id, err.slice(0, 300));
+                    res.statusCode = 502;
+                    cleanup();
+                    try {
+                        res.end();
+                    }
+                    catch { }
+                    return;
+                }
+                res.setHeader('Content-Type', 'audio/mp4');
+                res.setHeader('Content-Length', String(fs.statSync(file).size));
+                const stream = fs.createReadStream(file);
+                stream.pipe(res);
+                stream.on('close', cleanup);
+                stream.on('error', () => { cleanup(); try {
+                    res.end();
+                }
+                catch { } });
+            });
+        }
+    }
+    $.$bog_music_tube_api = $bog_music_tube_api;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    setTimeout(() => {
+        const server = new $bog_music_tube_api();
+        server.http();
+        console.log('[tube] up on port', server.port());
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    function pass(data) {
+        return data;
+    }
+    function $mol_error_fence(task, fallback, loading = pass) {
+        try {
+            return task();
+        }
+        catch (error) {
+            let normalized;
+            try {
+                normalized = $mol_promise_like(error) ? loading(error) : fallback(error);
+            }
+            catch (sub_error) {
+                normalized = $mol_promise_like(sub_error) ? sub_error : new $mol_error_mix(sub_error.message, { error }, sub_error);
+            }
+            if (normalized instanceof Error || $mol_promise_like(normalized)) {
+                $mol_fail_hidden(normalized);
+            }
+            return normalized;
+        }
+    }
+    $.$mol_error_fence = $mol_error_fence;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    function $mol_error_enriched(cause, cb) {
+        return $mol_error_fence(cb, e => new $mol_error_mix(e.message, cause, e));
+    }
+    $.$mol_error_enriched = $mol_error_enriched;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $mol_fetch_response extends $mol_object {
+        native;
+        request;
+        status() {
+            const types = ['unknown', 'inform', 'success', 'redirect', 'wrong', 'failed'];
+            return types[Math.floor(this.native.status / 100)];
+        }
+        code() {
+            return this.native.status;
+        }
+        ok() {
+            return this.native.ok;
+        }
+        message() {
+            return $mol_rest_code[this.code()] || `HTTP Error ${this.code()}`;
+        }
+        headers() {
+            return this.native.headers;
+        }
+        mime() {
+            return this.headers().get('content-type');
+        }
+        stream() {
+            return this.native.body;
+        }
+        text() {
+            const buffer = this.buffer();
+            const mime = this.mime() || '';
+            const [, charset] = /charset=(.*)/.exec(mime) || [, 'utf-8'];
+            const decoder = new TextDecoder(charset);
+            return decoder.decode(buffer);
+        }
+        json() {
+            return $mol_error_enriched(this, () => $mol_wire_sync(this.native).json());
+        }
+        blob() {
+            return $mol_error_enriched(this, () => $mol_wire_sync(this.native).blob());
+        }
+        buffer() {
+            return $mol_error_enriched(this, () => $mol_wire_sync(this.native).arrayBuffer());
+        }
+        xml() {
+            return $mol_dom_parse(this.text(), 'application/xml');
+        }
+        xhtml() {
+            return $mol_dom_parse(this.text(), 'application/xhtml+xml');
+        }
+        html() {
+            return $mol_dom_parse(this.text(), 'text/html');
+        }
+    }
+    __decorate([
+        $mol_action
+    ], $mol_fetch_response.prototype, "stream", null);
+    __decorate([
+        $mol_action
+    ], $mol_fetch_response.prototype, "text", null);
+    __decorate([
+        $mol_action
+    ], $mol_fetch_response.prototype, "xml", null);
+    __decorate([
+        $mol_action
+    ], $mol_fetch_response.prototype, "xhtml", null);
+    __decorate([
+        $mol_action
+    ], $mol_fetch_response.prototype, "html", null);
+    $.$mol_fetch_response = $mol_fetch_response;
+    class $mol_fetch_request extends $mol_object {
+        native;
+        response_async() {
+            const controller = new AbortController();
+            let done = false;
+            const request = new Request(this.native, { signal: controller.signal });
+            const promise = fetch(request).finally(() => {
+                done = true;
+            });
+            return Object.assign(promise, {
+                destructor: () => {
+                    // Abort of done request breaks response parsing
+                    if (!done && !controller.signal.aborted)
+                        controller.abort();
+                },
+            });
+        }
+        response() {
+            return this.$.$mol_fetch_response.make({
+                native: $mol_wire_sync(this).response_async(),
+                request: this
+            });
+        }
+        success() {
+            const response = this.response();
+            if (response.status() === 'success')
+                return response;
+            throw new Error(response.message(), { cause: response });
+        }
+    }
+    __decorate([
+        $mol_action
+    ], $mol_fetch_request.prototype, "response", null);
+    $.$mol_fetch_request = $mol_fetch_request;
+    class $mol_fetch extends $mol_object {
+        static request(input, init) {
+            return this.$.$mol_fetch_request.make({
+                native: new Request(input, init)
+            });
+        }
+        static response(input, init) {
+            return this.request(input, init).response();
+        }
+        static success(input, init) {
+            return this.request(input, init).success();
+        }
+        static stream(input, init) {
+            return this.success(input, init).stream();
+        }
+        static text(input, init) {
+            return this.success(input, init).text();
+        }
+        static json(input, init) {
+            return this.success(input, init).json();
+        }
+        static blob(input, init) {
+            return this.success(input, init).blob();
+        }
+        static buffer(input, init) {
+            return this.success(input, init).buffer();
+        }
+        static xml(input, init) {
+            return this.success(input, init).xml();
+        }
+        static xhtml(input, init) {
+            return this.success(input, init).xhtml();
+        }
+        static html(input, init) {
+            return this.success(input, init).html();
+        }
+    }
+    __decorate([
+        $mol_action
+    ], $mol_fetch, "request", null);
+    $.$mol_fetch = $mol_fetch;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /**
+     * Клиент поиска и скачивания музыки из YouTube. Сервер — наш
+     * $bog_music_tube_api в докере (yt-dlp + ffmpeg), см. tube/deploy/.
+     */
+    class $bog_music_tube extends $mol_object {
+        static base = 'https://tube.87.120.36.150.ip.giper.dev';
+        /** Поиск. Wire-метод: suspend'ится пока грузится. */
+        static search(query) {
+            const q = query.trim();
+            if (!q)
+                return [];
+            return $mol_fetch.json(`${this.base}/tube/search?q=${encodeURIComponent(q)}`) ?? [];
+        }
+        /** Аудио-байты трека (m4a). */
+        static async audio_bytes(id) {
+            const resp = await fetch(`${this.base}/tube/audio?id=${encodeURIComponent(id)}`);
+            if (!resp.ok)
+                throw new Error(`tube audio ${resp.status}`);
+            const buf = new Uint8Array(await resp.arrayBuffer());
+            if (!buf.byteLength)
+                throw new Error('tube audio: пустой ответ');
+            return buf;
+        }
+    }
+    __decorate([
+        $mol_mem_key
+    ], $bog_music_tube, "search", null);
+    $.$bog_music_tube = $bog_music_tube;
+})($ || ($ = {}));
+
+;
+	($.$bog_music_tube_row) = class $bog_music_tube_row extends ($.$mol_view) {
+		Title(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.title()));
+			return obj;
+		}
+		Subtitle(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.subtitle()));
+			return obj;
+		}
+		Info(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Title()), (this.Subtitle())]);
+			return obj;
+		}
+		Status(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.status())]);
+			return obj;
+		}
+		get(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Get_icon(){
+			const obj = new this.$.$mol_icon_download();
+			return obj;
+		}
+		Get(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.hint) = () => ("Скачать в Мою музыку");
+			(obj.click) = (next) => ((this.get(next)));
+			(obj.sub) = () => ([(this.Get_icon())]);
+			return obj;
+		}
+		title(){
+			return "";
+		}
+		subtitle(){
+			return "";
+		}
+		status(){
+			return "";
+		}
+		sub(){
+			return [
+				(this.Info()), 
+				(this.Status()), 
+				(this.Get())
+			];
+		}
+	};
+	($mol_mem(($.$bog_music_tube_row.prototype), "Title"));
+	($mol_mem(($.$bog_music_tube_row.prototype), "Subtitle"));
+	($mol_mem(($.$bog_music_tube_row.prototype), "Info"));
+	($mol_mem(($.$bog_music_tube_row.prototype), "Status"));
+	($mol_mem(($.$bog_music_tube_row.prototype), "get"));
+	($mol_mem(($.$bog_music_tube_row.prototype), "Get_icon"));
+	($mol_mem(($.$bog_music_tube_row.prototype), "Get"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_define($bog_music_tube_row, {
+        flex: { direction: 'row' },
+        align: { items: 'center' },
+        gap: '0.5rem',
+        padding: {
+            top: '0.5rem',
+            bottom: '0.5rem',
+            left: '0.75rem',
+            right: '0.75rem',
+        },
+        Info: {
+            flex: { direction: 'column', grow: 1 },
+            minWidth: 0,
+        },
+        Title: {
+            whiteSpace: 'nowrap',
+            overflow: { x: 'hidden', y: 'hidden' },
+            textOverflow: 'ellipsis',
+        },
+        Subtitle: {
+            font: { size: '0.8125rem' },
+            color: $mol_theme.shade,
+        },
+        Status: {
+            font: { size: '0.8125rem' },
+            color: $mol_theme.shade,
+            whiteSpace: 'nowrap',
+        },
+    });
+})($ || ($ = {}));
+
+;
 	($.$mol_icon_skip_previous) = class $mol_icon_skip_previous extends ($.$mol_icon) {
 		path(){
 			return "M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z";
@@ -27693,6 +28333,18 @@ var $;
 })($ || ($ = {}));
 
 ;
+	($.$mol_icon_magnify) = class $mol_icon_magnify extends ($.$mol_icon) {
+		path(){
+			return "M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
 	($.$mol_icon_account) = class $mol_icon_account extends ($.$mol_icon) {
 		path(){
 			return "M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z";
@@ -27749,6 +28401,25 @@ var $;
 			(obj.click) = (next) => ((this.music_click(next)));
 			return obj;
 		}
+		search_active(){
+			return "off";
+		}
+		Search_icon(){
+			const obj = new this.$.$mol_icon_magnify();
+			return obj;
+		}
+		search_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Tab_search(){
+			const obj = new this.$.$bog_music_nav_item();
+			(obj.label) = () => ("Поиск");
+			(obj.active) = () => ((this.search_active()));
+			(obj.Icon) = () => ((this.Search_icon()));
+			(obj.click) = (next) => ((this.search_click(next)));
+			return obj;
+		}
 		account_active(){
 			return "off";
 		}
@@ -27794,6 +28465,7 @@ var $;
 		sub(){
 			return [
 				(this.Tab_music()), 
+				(this.Tab_search()), 
 				(this.Tab_account()), 
 				(this.Tab_feedback())
 			];
@@ -27802,6 +28474,9 @@ var $;
 	($mol_mem(($.$bog_music_nav.prototype), "Music_icon"));
 	($mol_mem(($.$bog_music_nav.prototype), "music_click"));
 	($mol_mem(($.$bog_music_nav.prototype), "Tab_music"));
+	($mol_mem(($.$bog_music_nav.prototype), "Search_icon"));
+	($mol_mem(($.$bog_music_nav.prototype), "search_click"));
+	($mol_mem(($.$bog_music_nav.prototype), "Tab_search"));
 	($mol_mem(($.$bog_music_nav.prototype), "Account_icon"));
 	($mol_mem(($.$bog_music_nav.prototype), "account_click"));
 	($mol_mem(($.$bog_music_nav.prototype), "Tab_account"));
@@ -27823,12 +28498,19 @@ var $;
     (function ($$) {
         class $bog_music_nav extends $.$bog_music_nav {
             music_active() { return this.section() === 'music' ? 'on' : 'off'; }
+            search_active() { return this.section() === 'search' ? 'on' : 'off'; }
             account_active() { return this.section() === 'account' ? 'on' : 'off'; }
             feedback_active() { return this.section() === 'feedback' ? 'on' : 'off'; }
             music_click(e) {
                 if (e)
                     e.preventDefault();
                 this.section('music');
+                return null;
+            }
+            search_click(e) {
+                if (e)
+                    e.preventDefault();
+                this.section('search');
                 return null;
             }
             account_click(e) {
@@ -27847,6 +28529,9 @@ var $;
         __decorate([
             $mol_action
         ], $bog_music_nav.prototype, "music_click", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_nav.prototype, "search_click", null);
         __decorate([
             $mol_action
         ], $bog_music_nav.prototype, "account_click", null);
@@ -28361,6 +29046,60 @@ var $;
 			(obj.delete_key) = (next) => ((this.delete_key(next)));
 			return obj;
 		}
+		tube_query(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		Tube_query(){
+			const obj = new this.$.$mol_string();
+			(obj.hint) = () => ("Что ищем на YouTube?");
+			(obj.value) = (next) => ((this.tube_query(next)));
+			return obj;
+		}
+		tube_find(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Tube_find(){
+			const obj = new this.$.$mol_button_major();
+			(obj.title) = () => ("Найти");
+			(obj.click) = (next) => ((this.tube_find(next)));
+			return obj;
+		}
+		Tube_bar(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Tube_query()), (this.Tube_find())]);
+			return obj;
+		}
+		tube_rows(){
+			return [];
+		}
+		Tube_list(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ((this.tube_rows()));
+			return obj;
+		}
+		tube_title(id){
+			return "";
+		}
+		tube_meta(id){
+			return "";
+		}
+		tube_status_text(id){
+			return "";
+		}
+		tube_get(id, next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Tube_row(id){
+			const obj = new this.$.$bog_music_tube_row();
+			(obj.title) = () => ((this.tube_title(id)));
+			(obj.subtitle) = () => ((this.tube_meta(id)));
+			(obj.status) = () => ((this.tube_status_text(id)));
+			(obj.get) = (next) => ((this.tube_get(id, next)));
+			return obj;
+		}
 		player_pick_next(next){
 			if(next !== undefined) return next;
 			return null;
@@ -28412,7 +29151,10 @@ var $;
 				(this.Feedback()), 
 				(this.Share_toast()), 
 				(this.Tabs()), 
-				(this.Tracks())
+				(this.Tracks()), 
+				(this.Tube_bar()), 
+				(this.Tube_list()), 
+				(this.Tube_row("0"))
 			];
 		}
 		foot(){
@@ -28445,6 +29187,14 @@ var $;
 	($mol_mem(($.$bog_music_app.prototype), "restore_key"));
 	($mol_mem(($.$bog_music_app.prototype), "delete_key"));
 	($mol_mem(($.$bog_music_app.prototype), "Tracks"));
+	($mol_mem(($.$bog_music_app.prototype), "tube_query"));
+	($mol_mem(($.$bog_music_app.prototype), "Tube_query"));
+	($mol_mem(($.$bog_music_app.prototype), "tube_find"));
+	($mol_mem(($.$bog_music_app.prototype), "Tube_find"));
+	($mol_mem(($.$bog_music_app.prototype), "Tube_bar"));
+	($mol_mem(($.$bog_music_app.prototype), "Tube_list"));
+	($mol_mem_key(($.$bog_music_app.prototype), "tube_get"));
+	($mol_mem_key(($.$bog_music_app.prototype), "Tube_row"));
 	($mol_mem(($.$bog_music_app.prototype), "player_pick_next"));
 	($mol_mem(($.$bog_music_app.prototype), "Player"));
 	($mol_mem(($.$bog_music_app.prototype), "section"));
@@ -28774,7 +29524,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.1';
+    $.$bog_music_version = 'v1.4';
 })($ || ($ = {}));
 
 ;
@@ -29076,12 +29826,83 @@ var $;
                 switch (this.section()) {
                     case 'account': return [this.Account()];
                     case 'feedback': return [this.Feedback()];
+                    case 'search': return [this.Tube_bar(), this.Tube_list()];
                 }
                 return [
                     this.Share_toast(),
                     this.Tabs(),
                     this.Tracks(),
                 ];
+            }
+            // =====================================================================
+            // Поиск и скачивание из YouTube (сервер bog/music/tube)
+            // =====================================================================
+            tube_query(next) {
+                return next ?? '';
+            }
+            /** Запрос, по которому реально ищем — коммитится кнопкой «Найти». */
+            tube_committed(next) {
+                return next ?? '';
+            }
+            tube_find() {
+                this.tube_committed(this.tube_query());
+            }
+            tube_items() {
+                const q = this.tube_committed();
+                if (!q.trim())
+                    return [];
+                return $bog_music_tube.search(q);
+            }
+            tube_rows() {
+                return this.tube_items().map((_, i) => this.Tube_row(i));
+            }
+            tube_item(index) {
+                return this.tube_items()[index] ?? null;
+            }
+            tube_title(index) {
+                return this.tube_item(index)?.title ?? '';
+            }
+            tube_meta(index) {
+                const item = this.tube_item(index);
+                if (!item)
+                    return '';
+                const dur = item.duration;
+                const time = dur ? `${Math.floor(dur / 60)}:${String(Math.floor(dur % 60)).padStart(2, '0')}` : '';
+                return [item.channel, time].filter(Boolean).join(' · ');
+            }
+            tube_status_text(index, next) {
+                return next ?? '';
+            }
+            tube_get(index) {
+                const item = this.tube_item(index);
+                if (!item)
+                    return;
+                $mol_wire_async(this).tube_download(index, item);
+            }
+            async tube_download(index, item) {
+                if (this.tube_status_text(index))
+                    return;
+                this.tube_status_text(index, 'Качаю…');
+                try {
+                    const bytes = await $bog_music_tube.audio_bytes(item.id);
+                    const audio = {
+                        id: $bog_music_account_baza.hash_str('yt:' + item.id),
+                        owner_id: 0,
+                        artist: item.channel,
+                        title: item.title,
+                        duration: item.duration,
+                        url: '',
+                    };
+                    await $mol_wire_async(this.account()).import_audio(audio, bytes, 'audio/mp4');
+                    this.tube_status_text(index, '✓ в Моей музыке');
+                }
+                catch (e) {
+                    if (e instanceof Promise)
+                        throw e;
+                    console.warn('[tube] download failed:', e?.message ?? e);
+                    this.tube_status_text(index, 'Ошибка');
+                    setTimeout(() => this.tube_status_text(index, ''), 4000);
+                }
             }
             nickname_label() {
                 return this.account().nickname();
@@ -29206,6 +30027,27 @@ var $;
         ], $bog_music_app.prototype, "section", null);
         __decorate([
             $mol_mem
+        ], $bog_music_app.prototype, "tube_query", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "tube_committed", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "tube_find", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "tube_items", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "tube_rows", null);
+        __decorate([
+            $mol_mem_key
+        ], $bog_music_app.prototype, "tube_status_text", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "tube_get", null);
+        __decorate([
+            $mol_mem
         ], $bog_music_app.prototype, "pending_listener", null);
         $$.$bog_music_app = $bog_music_app;
     })($$ = $.$$ || ($.$$ = {}));
@@ -29264,6 +30106,23 @@ var $;
                     left: '0.25rem',
                     right: '0.25rem',
                 },
+            },
+            Tube_bar: {
+                flex: { direction: 'row' },
+                gap: '0.5rem',
+                padding: {
+                    top: '0.75rem',
+                    bottom: '0.5rem',
+                    left: '0.75rem',
+                    right: '0.75rem',
+                },
+                align: { items: 'center' },
+            },
+            Tube_query: {
+                flex: { grow: 1 },
+            },
+            Tube_list: {
+                flex: { direction: 'column' },
             },
             Foot: {
                 flex: {
