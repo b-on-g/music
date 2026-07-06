@@ -195,6 +195,11 @@ namespace $ {
 			track.File('auto')!.val(null)
 		}
 
+		@$mol_action
+		save_loudness(key: string, db: number): void {
+			this.track(key)?.loudness(db)
+		}
+
 		// ---------- последняя сессия (трек + позиция) ----------
 
 		last_session(): { key: string, position: number } | null {

@@ -54,7 +54,7 @@ namespace $.$$ {
 
 		// 4 сэмпла тишины 8kHz — минимальный валидный wav.
 		private static SILENCE = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAACAgICA'
-		private static KEEPALIVE_MAX_MS = 15 * 60 * 1000 // дальше пусть засыпает, батарея дороже
+		private static KEEPALIVE_MAX_MS = 3 * 24 * 60 * 60 * 1000 // 3 дня
 
 		private is_ios() {
 			return /iPad|iPhone|iPod/.test(navigator.userAgent)
@@ -86,6 +86,64 @@ namespace $.$$ {
 			this._keepalive?.pause()
 		}
 
+		// ---------- выравнивание громкости ----------
+		// На iOS volume у <audio> игнорируется — гейним через WebAudio.
+		// На остальных платформах гейн умножается на volume напрямую.
+
+		private _gain_ctx?: AudioContext
+		private _gain_node?: GainNode
+
+		/** Собрать цепочку el → gain → limiter. Только iOS и только в жесте. */
+		private gain_chain_unlock() {
+			if (!this.is_ios()) return
+			if (this._gain_ctx) {
+				this.gain_resume()
+				return
+			}
+			try {
+				const AC = (window as any).AudioContext || (window as any).webkitAudioContext
+				const ctx: AudioContext = new AC()
+				const src = ctx.createMediaElementSource(this.audio_el())
+				const gain = ctx.createGain()
+				const limiter = ctx.createDynamicsCompressor() // страховка от клиппинга при усилении
+				src.connect(gain)
+				gain.connect(limiter)
+				limiter.connect(ctx.destination)
+				this._gain_ctx = ctx
+				this._gain_node = gain
+			} catch (e: any) {
+				console.warn('[player] gain chain failed:', e?.message)
+			}
+		}
+
+		/** После разморозки/interruption iOS контекст надо будить, иначе тишина. */
+		private gain_resume() {
+			const ctx = this._gain_ctx
+			if (ctx && ctx.state !== 'running') ctx.resume().catch(() => {})
+		}
+
+		/** Множитель выравнивания текущего трека. 1 пока громкость не измерена. */
+		track_gain(): number {
+			return $bog_music_gain.factor(this.current_track()?.loudness() ?? null)
+		}
+
+		loudness_known(key: string): boolean {
+			return this.account().track(key)?.loudness() != null
+		}
+
+		/** Ленивое измерение громкости трека — один раз, фоном. */
+		private async analyze_loudness(key: string) {
+			try {
+				if (await ($mol_wire_async(this) as any).loudness_known(key)) return
+				const blob = await ($mol_wire_async(this) as any).blob_of(key) as Blob | null
+				if (!blob) return
+				const db = await $bog_music_gain.measure_db(await blob.arrayBuffer())
+				await ($mol_wire_async(this.account()) as any).save_loudness(key, db)
+			} catch (e: any) {
+				console.warn('[player] loudness analyze failed:', e?.message ?? e)
+			}
+		}
+
 		// ---------- <audio> для PWA-режима ----------
 
 		private _audio_el?: HTMLAudioElement
@@ -100,6 +158,7 @@ namespace $.$$ {
 				try { this.playing(true) } catch {}
 				if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing'
 				this.keepalive_pause()
+				this.gain_resume()
 			})
 			el.addEventListener('pause', () => {
 				try { this.playing(false) } catch {}
@@ -271,6 +330,7 @@ namespace $.$$ {
 		private resume_robust() {
 			const el = this.audio_el()
 			this.keepalive_pause()
+			this.gain_resume()
 			el.play().catch(() => {})
 			setTimeout(() => {
 				if (!el.error && el.readyState >= 2 && !el.paused) return
@@ -333,12 +393,17 @@ namespace $.$$ {
 		@$mol_mem
 		private apply_volume() {
 			const v = this.volume()
+			// Реактивно: когда фоновый анализ допишет Loudness, гейн подтянется.
+			const gain = this.track_gain()
 			if (this.is_extension()) {
-				this.send('volume', { value: v })
+				this.send('volume', { value: Math.max(0, Math.min(1, v * gain)) })
+			} else if (this._gain_node) {
+				if (this._audio_el) this._audio_el.volume = v
+				this._gain_node.gain.value = gain
 			} else if (this._audio_el) {
-				this._audio_el.volume = v
+				this._audio_el.volume = Math.max(0, Math.min(1, v * gain))
 			}
-			return v
+			return v * gain
 		}
 
 		title() {
@@ -489,14 +554,18 @@ namespace $.$$ {
 
 			this.apply_media_metadata(audio)
 
+			// Фоновое одноразовое измерение громкости для выравнивания.
+			;($mol_wire_async(this) as any).analyze_loudness(key)
+
 			if (this.is_extension()) {
 				this.dispatch_play_offscreen(key, audio, start_at)
 				return
 			}
 
 			// Обычно play_track — следствие клика: единственный шанс разлочить
-			// беззвучный keep-alive элемент для iOS (см. выше).
+			// беззвучный keep-alive элемент и WebAudio-цепочку для iOS.
 			this.keepalive_unlock()
+			this.gain_chain_unlock()
 
 			const el = this.audio_el()
 			// iOS PWA: при заблокированном экране любой await перед el.play()
@@ -652,6 +721,7 @@ namespace $.$$ {
 				else this.send('resume')
 			} else {
 				this.keepalive_unlock()
+				this.gain_chain_unlock()
 				const el = this.audio_el()
 				if (was_playing) el.pause()
 				else el.play()
