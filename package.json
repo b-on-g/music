@@ -411,6 +411,7 @@
     "$mol_icon_volume_high",
     "$mol_icon_volume",
     "$mol_pop_over",
+    "$bog_music_gain",
     "$bog_recsys",
     "$bog_music_zip",
     "$bog_music_pending"

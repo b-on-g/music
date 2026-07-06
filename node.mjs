@@ -21463,6 +21463,9 @@ var $;
         // Персональный обрез песни (секунды). Trim_end = null — «без обреза».
         Trim_start: $giper_baza_atom.of($mol_schema_float),
         Trim_end: $giper_baza_atom.of($mol_schema_float),
+        // Интегральная громкость записи (dB RMS), меряется один раз при первом
+        // проигрывании — для выравнивания треков между собой ($bog_music_gain).
+        Loudness: $giper_baza_atom.of($mol_schema_float),
     }) {
         /** Метаданные в форме VK-audio. null если Vk_id не парсится. */
         audio() {
@@ -21515,6 +21518,13 @@ var $;
                     throw e;
                 return false; // битый pawn/CBOR — считаем что кеша нет
             }
+        }
+        /** Интегральная громкость (dB RMS). null — ещё не измерена. */
+        loudness(next) {
+            if (next !== undefined)
+                this.Loudness('auto').val(next);
+            const v = this.Loudness()?.val();
+            return v == null ? null : Number(v);
         }
         /** Обрез начала (сек). 0 = без обреза. */
         trim_start(next) {
@@ -22001,6 +22011,9 @@ var $;
                 return;
             track.File('auto').val(null);
         }
+        save_loudness(key, db) {
+            this.track(key)?.loudness(db);
+        }
         // ---------- последняя сессия (трек + позиция) ----------
         last_session() {
             const key = this.Last_track_key()?.val() ?? '';
@@ -22073,6 +22086,9 @@ var $;
     __decorate([
         $mol_action
     ], $bog_music_account_baza.prototype, "drop_blob", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "save_loudness", null);
     __decorate([
         $mol_action
     ], $bog_music_account_baza.prototype, "save_last_session", null);
@@ -26359,6 +26375,46 @@ var $;
 
 ;
 "use strict";
+var $;
+(function ($) {
+    /**
+     * Выравнивание громкости треков: интегральный RMS-уровень записи меряется
+     * один раз (лениво, при первом проигрывании) и хранится в baza; при
+     * воспроизведении все треки приводятся к target_db.
+     */
+    class $bog_music_gain extends $mol_object {
+        /** Целевой уровень (dB RMS относительно full scale). */
+        static target_db = -14;
+        /** Интегральный RMS-уровень записи в dBFS. */
+        static async measure_db(buf) {
+            const AC = globalThis.OfflineAudioContext || globalThis.webkitOfflineAudioContext;
+            const probe = new AC(1, 1, 44100);
+            const audio = await probe.decodeAudioData(buf);
+            let sum = 0;
+            let count = 0;
+            for (let ch = 0; ch < audio.numberOfChannels; ch++) {
+                const data = audio.getChannelData(ch);
+                // каждый 4-й сэмпл: точности для выравнивания хватает, в 4 раза быстрее
+                for (let i = 0; i < data.length; i += 4)
+                    sum += data[i] * data[i];
+                count += Math.ceil(data.length / 4);
+            }
+            const rms = Math.sqrt(sum / Math.max(1, count));
+            return 20 * Math.log10(Math.max(rms, 1e-6));
+        }
+        /** Линейный множитель приведения к target_db. 1 — уровень неизвестен. */
+        static factor(db) {
+            if (db == null || !Number.isFinite(db))
+                return 1;
+            const f = Math.pow(10, (this.target_db - db) / 20);
+            return Math.max(0.2, Math.min(2.5, f));
+        }
+    }
+    $.$bog_music_gain = $bog_music_gain;
+})($ || ($ = {}));
+
+;
+"use strict";
 
 
 ;
@@ -26410,7 +26466,7 @@ var $;
             _keepalive_stop_timer;
             // 4 сэмпла тишины 8kHz — минимальный валидный wav.
             static SILENCE = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAACAgICA';
-            static KEEPALIVE_MAX_MS = 15 * 60 * 1000; // дальше пусть засыпает, батарея дороже
+            static KEEPALIVE_MAX_MS = 3 * 24 * 60 * 60 * 1000; // 3 дня
             is_ios() {
                 return /iPad|iPhone|iPod/.test(navigator.userAgent)
                     || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -26436,6 +26492,63 @@ var $;
                 clearTimeout(this._keepalive_stop_timer);
                 this._keepalive?.pause();
             }
+            // ---------- выравнивание громкости ----------
+            // На iOS volume у <audio> игнорируется — гейним через WebAudio.
+            // На остальных платформах гейн умножается на volume напрямую.
+            _gain_ctx;
+            _gain_node;
+            /** Собрать цепочку el → gain → limiter. Только iOS и только в жесте. */
+            gain_chain_unlock() {
+                if (!this.is_ios())
+                    return;
+                if (this._gain_ctx) {
+                    this.gain_resume();
+                    return;
+                }
+                try {
+                    const AC = window.AudioContext || window.webkitAudioContext;
+                    const ctx = new AC();
+                    const src = ctx.createMediaElementSource(this.audio_el());
+                    const gain = ctx.createGain();
+                    const limiter = ctx.createDynamicsCompressor(); // страховка от клиппинга при усилении
+                    src.connect(gain);
+                    gain.connect(limiter);
+                    limiter.connect(ctx.destination);
+                    this._gain_ctx = ctx;
+                    this._gain_node = gain;
+                }
+                catch (e) {
+                    console.warn('[player] gain chain failed:', e?.message);
+                }
+            }
+            /** После разморозки/interruption iOS контекст надо будить, иначе тишина. */
+            gain_resume() {
+                const ctx = this._gain_ctx;
+                if (ctx && ctx.state !== 'running')
+                    ctx.resume().catch(() => { });
+            }
+            /** Множитель выравнивания текущего трека. 1 пока громкость не измерена. */
+            track_gain() {
+                return $bog_music_gain.factor(this.current_track()?.loudness() ?? null);
+            }
+            loudness_known(key) {
+                return this.account().track(key)?.loudness() != null;
+            }
+            /** Ленивое измерение громкости трека — один раз, фоном. */
+            async analyze_loudness(key) {
+                try {
+                    if (await $mol_wire_async(this).loudness_known(key))
+                        return;
+                    const blob = await $mol_wire_async(this).blob_of(key);
+                    if (!blob)
+                        return;
+                    const db = await $bog_music_gain.measure_db(await blob.arrayBuffer());
+                    await $mol_wire_async(this.account()).save_loudness(key, db);
+                }
+                catch (e) {
+                    console.warn('[player] loudness analyze failed:', e?.message ?? e);
+                }
+            }
             // ---------- <audio> для PWA-режима ----------
             _audio_el;
             _last_blob_url = '';
@@ -26453,6 +26566,7 @@ var $;
                     if ('mediaSession' in navigator)
                         navigator.mediaSession.playbackState = 'playing';
                     this.keepalive_pause();
+                    this.gain_resume();
                 });
                 el.addEventListener('pause', () => {
                     try {
@@ -26641,6 +26755,7 @@ var $;
             resume_robust() {
                 const el = this.audio_el();
                 this.keepalive_pause();
+                this.gain_resume();
                 el.play().catch(() => { });
                 setTimeout(() => {
                     if (!el.error && el.readyState >= 2 && !el.paused)
@@ -26696,13 +26811,20 @@ var $;
             }
             apply_volume() {
                 const v = this.volume();
+                // Реактивно: когда фоновый анализ допишет Loudness, гейн подтянется.
+                const gain = this.track_gain();
                 if (this.is_extension()) {
-                    this.send('volume', { value: v });
+                    this.send('volume', { value: Math.max(0, Math.min(1, v * gain)) });
+                }
+                else if (this._gain_node) {
+                    if (this._audio_el)
+                        this._audio_el.volume = v;
+                    this._gain_node.gain.value = gain;
                 }
                 else if (this._audio_el) {
-                    this._audio_el.volume = v;
+                    this._audio_el.volume = Math.max(0, Math.min(1, v * gain));
                 }
-                return v;
+                return v * gain;
             }
             title() {
                 return this.current_audio()?.title ?? '';
@@ -26850,13 +26972,15 @@ var $;
                 }
                 catch { }
                 this.apply_media_metadata(audio);
+                $mol_wire_async(this).analyze_loudness(key);
                 if (this.is_extension()) {
                     this.dispatch_play_offscreen(key, audio, start_at);
                     return;
                 }
                 // Обычно play_track — следствие клика: единственный шанс разлочить
-                // беззвучный keep-alive элемент для iOS (см. выше).
+                // беззвучный keep-alive элемент и WebAudio-цепочку для iOS.
                 this.keepalive_unlock();
+                this.gain_chain_unlock();
                 const el = this.audio_el();
                 // iOS PWA: при заблокированном экране любой await перед el.play()
                 // рвёт audio-session continuation от ended-обработчика. Пробуем
@@ -27018,6 +27142,7 @@ var $;
                 }
                 else {
                     this.keepalive_unlock();
+                    this.gain_chain_unlock();
                     const el = this.audio_el();
                     if (was_playing)
                         el.pause();
