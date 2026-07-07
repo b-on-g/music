@@ -103,6 +103,12 @@ namespace $.$$ {
 		private _paused_pos = 0
 		/** Сейчас в элементе крутится беззвучный keep-alive-цикл (не трек). */
 		private _silent = false
+		/**
+		 * Ждём, пока трек после resume домотается до сохранённой позиции.
+		 * Пока >0 — timeupdate не пишет current_time (иначе полоска мигнёт в 0:
+		 * смена src сбрасывает el.currentTime до отработки seek).
+		 */
+		private _await_seek = 0
 
 		private is_ios() {
 			return /iPad|iPhone|iPod/.test(navigator.userAgent)
@@ -125,6 +131,7 @@ namespace $.$$ {
 		private ios_pause(el: HTMLAudioElement) {
 			this._paused_pos = el.currentTime || this._paused_pos
 			this._silent = true
+			this.current_time(this._paused_pos) // заморозить полоску на позиции
 			el.loop = true
 			el.src = $bog_music_player.silence_url()
 			el.play().catch(() => {})
@@ -139,6 +146,8 @@ namespace $.$$ {
 		 */
 		private ios_resume(el: HTMLAudioElement) {
 			if (this._track_src) {
+				this._await_seek = this._paused_pos
+				this.current_time(this._paused_pos) // держим полоску до досинка seek
 				this.set_track_src(el, this._track_src)
 				this.attach_seek_listener(el, this._paused_pos)
 				el.play().catch(() => {})
@@ -250,6 +259,12 @@ namespace $.$$ {
 			})
 			el.addEventListener('timeupdate', () => {
 				if (this._silent) return
+				// После resume игнорим нулевой скачок, пока трек не домотается
+				// до сохранённой позиции (иначе полоска мигнёт в 0).
+				if (this._await_seek > 0) {
+					if (el.currentTime >= this._await_seek - 1.5) this._await_seek = 0
+					else return
+				}
 				this.current_time(el.currentTime)
 			})
 			el.addEventListener('loadedmetadata', () => {
@@ -621,6 +636,7 @@ namespace $.$$ {
 			// stale-значения предыдущего трека и может мгновенно дёрнуть next().
 			this.current_time(0)
 			this.duration(0)
+			this._await_seek = 0 // новый трек — не ждём resume-seek
 			this.current_key(key)
 			this._trim_end_skip = ''
 			const start_at = this.account().track(key)?.trim_start() ?? 0
