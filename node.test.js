@@ -27362,9 +27362,19 @@ var $;
             // На остальных платформах гейн умножается на volume напрямую.
             _gain_ctx;
             _gain_node;
+            /**
+             * ЭКСПЕРИМЕНТ (баг «пустой звук при выходе на iOS»): WebAudio-гейн на iOS
+             * отключён. Гипотеза — AudioContext засыпает в фоне и звук через него
+             * глохнет. С флагом=false звук идёт из <audio> напрямую → фон должен
+             * работать, но выравнивание громкости на iOS не применяется (на
+             * десктопе/андроиде оно через el.volume и работает). Вернуть = true.
+             */
+            static GAIN_ON_IOS = false;
             /** Собрать цепочку el → gain → limiter. Только iOS и только в жесте. */
             gain_chain_unlock() {
                 if (!this.is_ios())
+                    return;
+                if (!$bog_music_player.GAIN_ON_IOS)
                     return;
                 if (this._gain_ctx) {
                     this.gain_resume();
@@ -29814,7 +29824,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.13';
+    $.$bog_music_version = 'v1.14';
 })($ || ($ = {}));
 
 ;
