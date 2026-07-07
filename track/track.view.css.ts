@@ -127,6 +127,27 @@ namespace $.$$ {
 					color: $mol_theme.card,
 				},
 			},
+			// Blob ещё не на устройстве (докачивается после переноса аккаунта):
+			// приглушаем и блокируем клик по play-области.
+			bog_music_track_available: {
+				false: {
+					opacity: 0.4,
+					Cover_box: { cursor: 'default' },
+					Info: { cursor: 'default' },
+				},
+			},
+			// Пока идёт докачка blob с мастера — мигаем тем же mol-миганием
+			// (keyframes mol_view_wait определён в mol/view). Перекрывает static
+			// opacity выше, поэтому виден пульс, а не постоянное приглушение.
+			bog_music_track_syncing: {
+				true: {
+					animation: {
+						name: 'mol_view_wait',
+						duration: '1s',
+						iterationCount: 'infinite',
+					},
+				},
+			},
 		},
 	})
 }

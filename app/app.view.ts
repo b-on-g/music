@@ -401,6 +401,11 @@ namespace $.$$ {
 			return next ?? ''
 		}
 
+		/** Идёт ли скачивание этой строки — для мигания кнопки Get. */
+		tube_busy(index: number): boolean {
+			return this.tube_status_text(index).startsWith('Качаю')
+		}
+
 		@$mol_action
 		tube_get(index: number) {
 			const item = this.tube_item(index)

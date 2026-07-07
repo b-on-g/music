@@ -61,6 +61,7 @@ $bog_music_app $mol_page
 			subtitle <= tube_meta* \
 			status <= tube_status_text* \
 			cover <= tube_cover* \
+			busy <= tube_busy* false
 			play? <=> tube_play*? null
 			get? <=> tube_get*? null
 	foot /

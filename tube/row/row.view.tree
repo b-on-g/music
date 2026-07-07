@@ -4,8 +4,11 @@ $bog_music_tube_row $mol_view
 	status \
 	cover \
 	playing false
+	busy false
 	play? null
 	get? null
+	attr *
+		bog_music_tube_row_busy <= busy
 	sub /
 		<= Play $mol_button_minor
 			hint \Слушать

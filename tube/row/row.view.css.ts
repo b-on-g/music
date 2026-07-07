@@ -69,6 +69,22 @@ namespace $ {
 		Get: {
 			flex: { shrink: 0 },
 		},
+
+		'@': {
+			// Пока идёт скачивание — мигаем кнопкой Get (тем же mol-миганием,
+			// что и Upload), в дополнение к текстовому статусу «Качаю…».
+			bog_music_tube_row_busy: {
+				true: {
+					Get: {
+						animation: {
+							name: 'mol_view_wait',
+							duration: '1s',
+							iterationCount: 'infinite',
+						},
+					},
+				},
+			},
+		},
 	})
 
 }

@@ -18,6 +18,32 @@ namespace $.$$ {
 			return this.track()?.cached() ?? false
 		}
 
+		/**
+		 * Состояние blob'а трека. Полностью реактивно и без ручной синхронизации:
+		 * `blob()` читает File→remote→buffer, а обёртка atom_link_synced сама
+		 * тянет blob-land с мастера. Пока чанки идут — `buffer()` кидает Promise
+		 * (ловим → 'syncing'); приехали — 'ready'; нет источника — 'none'.
+		 * Когда baza досинкает, ячейка пересчитается и трек станет 'ready' сам.
+		 */
+		blob_state(): 'ready' | 'syncing' | 'none' {
+			try {
+				return this.track()?.blob() != null ? 'ready' : 'none'
+			} catch (e: any) {
+				if (e instanceof Promise) return 'syncing'
+				return 'none'
+			}
+		}
+
+		/** Доступен для проигрывания (blob уже на этом устройстве). */
+		available() {
+			return this.blob_state() === 'ready'
+		}
+
+		/** Идёт докачка blob с мастера — для индикатора-мигания. */
+		syncing() {
+			return this.blob_state() === 'syncing'
+		}
+
 		is_local() {
 			return this.track()?.audio()?.owner_id === 0
 		}
@@ -49,6 +75,10 @@ namespace $.$$ {
 		}
 
 		on_play_click() {
+			// Единственный источник трека — blob из baza. Пока не досинкался
+			// (после переноса аккаунта) — не пытаемся играть, чтобы не ловить
+			// «no source»; трек оживёт сам, когда blob приедет.
+			if (!this.available()) return
 			this.play(this.key())
 		}
 
