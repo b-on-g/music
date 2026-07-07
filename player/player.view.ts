@@ -675,17 +675,37 @@ namespace $.$$ {
 			this.play_source_local(key, audio, el, start_at)
 		}
 
-		/** Прогреть blob следующего в очереди трека (fire-and-forget). */
+		// Готовые Blob'ы в RAM. Критично для авто-next: на iOS звук в фоне даётся
+		// только если el.play() вызван СИНХРОННО в обработчике 'ended'
+		// (continuation). Для этого blob следующего трека должен быть доступен
+		// без suspend — держим его здесь, прогретым заранее.
+		private _blob_cache = new Map<string, Blob>()
+
+		/** Прогреть blob следующего трека в RAM-кеш (fire-and-forget). */
 		private prefetch_next(key: string) {
 			const q = this.queue_keys()
 			const idx = q.indexOf(key)
 			const next_key = idx >= 0 ? q[idx + 1] : undefined
-			if (!next_key) return
-			try { ($mol_wire_async(this) as any).blob_of_wait(next_key).catch(() => {}) } catch {}
+			if (!next_key || this._blob_cache.has(next_key)) return
+			try { ($mol_wire_async(this) as any).cache_blob(next_key) } catch {}
 		}
 
-		/** Sync-чтение блоба — зовётся и напрямую (best-effort), и через фибру. */
+		/** Sync-метод (через фибру): дождаться blob и положить в RAM-кеш. */
+		cache_blob(key: string): boolean {
+			const blob = this.account().track(key)?.blob_wait()
+			if (!blob) return false
+			// Держим компактно: только текущий + этот (следующий).
+			for (const k of [...this._blob_cache.keys()]) {
+				if (k !== this.current_key() && k !== key) this._blob_cache.delete(k)
+			}
+			this._blob_cache.set(key, blob)
+			return true
+		}
+
+		/** Sync-чтение блоба: сперва RAM-кеш (без suspend), потом baza. */
 		blob_of(key: string): Blob | null {
+			const cached = this._blob_cache.get(key)
+			if (cached) return cached
 			return this.account().track(key)?.blob() ?? null
 		}
 
