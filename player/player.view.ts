@@ -657,6 +657,11 @@ namespace $.$$ {
 			// Клик — единственный шанс разлочить WebAudio-цепочку для iOS.
 			this.gain_chain_unlock()
 
+			// Предзагружаем blob следующего трека, чтобы к его 'ended'-переходу
+			// он был готов и play прошёл СИНХРОННО в continuation — иначе в фоне
+			// на iOS автопереход играет без звука (async-путь глушится).
+			this.prefetch_next(key)
+
 			const el = this.audio_el()
 			// iOS PWA: при заблокированном экране любой await перед el.play()
 			// рвёт audio-session continuation от ended-обработчика. Пробуем
@@ -668,6 +673,15 @@ namespace $.$$ {
 				el.play().catch(() => {})
 			}
 			this.play_source_local(key, audio, el, start_at)
+		}
+
+		/** Прогреть blob следующего в очереди трека (fire-and-forget). */
+		private prefetch_next(key: string) {
+			const q = this.queue_keys()
+			const idx = q.indexOf(key)
+			const next_key = idx >= 0 ? q[idx + 1] : undefined
+			if (!next_key) return
+			try { ($mol_wire_async(this) as any).blob_of_wait(next_key).catch(() => {}) } catch {}
 		}
 
 		/** Sync-чтение блоба — зовётся и напрямую (best-effort), и через фибру. */
@@ -846,6 +860,16 @@ namespace $.$$ {
 			}
 		}
 
+		/** Рекомендация «Моей волны» из app (null если режим выключен). */
+		private wave_pick(key: string): string | null {
+			try {
+				return ($bog_music_app.Root(0) as any).player_pick_next(key) ?? null
+			} catch (e: any) {
+				if (e instanceof Promise) throw e
+				return null
+			}
+		}
+
 		next(manual: boolean = true) {
 			const mode = this.repeat_mode()
 			const queue = this.queue_keys()
@@ -876,10 +900,12 @@ namespace $.$$ {
 				}
 			}
 
-			// «Моя волна» — рекомендалка (binding в app).
+			// «Моя волна» — рекомендалка. Зовём app напрямую: event-binding
+			// `pick_next?` возвращал бы свой аргумент (echo), а не рекомендацию,
+			// из-за чего next() играл текущий трек заново вместо следующего.
 			try {
-				const picked = this.pick_next(this.current_key()) as string | null
-				if (picked) {
+				const picked = this.wave_pick(this.current_key())
+				if (picked && picked !== this.current_key()) {
 					const idx = queue.indexOf(picked)
 					if (idx >= 0) this.queue_index(idx)
 					this.play_track(picked)
@@ -887,7 +913,7 @@ namespace $.$$ {
 				}
 			} catch (e: any) {
 				if (e instanceof Promise) throw e
-				console.warn('[player] pick_next failed:', e?.message)
+				console.warn('[player] wave_pick failed:', e?.message)
 			}
 
 			if (!queue.length) return

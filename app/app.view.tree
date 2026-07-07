@@ -68,6 +68,5 @@ $bog_music_app $mol_page
 		<= Player $bog_music_player
 			queue_keys <= visible_keys /
 			current_key? <=> current_key? \
-			pick_next? <=> player_pick_next? null
 		<= Nav $bog_music_nav
 			section? <=> section? \music
