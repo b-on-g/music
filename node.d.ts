@@ -54369,7 +54369,8 @@ declare namespace $.$$ {
         private _channel?;
         private channel;
         private send;
-        private static SILENCE;
+        private static _silence_url;
+        private static silence_url;
         /** src текущего трека (blob url) — чтобы вернуть его после silence-паузы. */
         private _track_src;
         /** Позиция трека на момент паузы (для seek при возобновлении). */

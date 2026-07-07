@@ -26414,8 +26414,35 @@ var $;
             // элемент, который никогда не останавливается: на «паузе» его src
             // подменяется на беззвучный цикл (сессия и страница живы), по play —
             // возвращается src трека и перематывается на сохранённую позицию.
-            // 4 сэмпла тишины 8kHz — минимальный валидный wav, крутится в loop.
-            static SILENCE = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAACAgICA';
+            // Тишина для keep-alive. 3 сек 8kHz — короткий обрывок (пара сэмплов)
+            // iOS Safari не считает валидным медиа и не держит на нём сессию
+            // («нет аудио»). Генерим полноценный WAV как Blob URL один раз.
+            static _silence_url = '';
+            static silence_url() {
+                if (this._silence_url)
+                    return this._silence_url;
+                const rate = 8000, n = rate * 3;
+                const buf = new Uint8Array(44 + n);
+                const dv = new DataView(buf.buffer);
+                const w = (o, s) => { for (let i = 0; i < s.length; i++)
+                    buf[o + i] = s.charCodeAt(i); };
+                w(0, 'RIFF');
+                dv.setUint32(4, 36 + n, true);
+                w(8, 'WAVE');
+                w(12, 'fmt ');
+                dv.setUint32(16, 16, true);
+                dv.setUint16(20, 1, true);
+                dv.setUint16(22, 1, true);
+                dv.setUint32(24, rate, true);
+                dv.setUint32(28, rate, true);
+                dv.setUint16(32, 1, true);
+                dv.setUint16(34, 8, true);
+                w(36, 'data');
+                dv.setUint32(40, n, true);
+                buf.fill(128, 44); // 8-bit unsigned: 128 = тишина
+                this._silence_url = URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+                return this._silence_url;
+            }
             /** src текущего трека (blob url) — чтобы вернуть его после silence-паузы. */
             _track_src = '';
             /** Позиция трека на момент паузы (для seek при возобновлении). */
@@ -26442,7 +26469,7 @@ var $;
                 this._paused_pos = el.currentTime || this._paused_pos;
                 this._silent = true;
                 el.loop = true;
-                el.src = $bog_music_player.SILENCE;
+                el.src = $bog_music_player.silence_url();
                 el.play().catch(() => { });
                 this.playing(false);
                 if ('mediaSession' in navigator)
@@ -37090,7 +37117,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.16';
+    $.$bog_music_version = 'v1.17';
 })($ || ($ = {}));
 
 ;
