@@ -122,9 +122,19 @@ namespace $.$$ {
 		private _gain_ctx?: AudioContext
 		private _gain_node?: GainNode
 
+		/**
+		 * ЭКСПЕРИМЕНТ (баг «пустой звук при выходе на iOS»): WebAudio-гейн на iOS
+		 * отключён. Гипотеза — AudioContext засыпает в фоне и звук через него
+		 * глохнет. С флагом=false звук идёт из <audio> напрямую → фон должен
+		 * работать, но выравнивание громкости на iOS не применяется (на
+		 * десктопе/андроиде оно через el.volume и работает). Вернуть = true.
+		 */
+		private static GAIN_ON_IOS = false
+
 		/** Собрать цепочку el → gain → limiter. Только iOS и только в жесте. */
 		private gain_chain_unlock() {
 			if (!this.is_ios()) return
+			if (!$bog_music_player.GAIN_ON_IOS) return
 			if (this._gain_ctx) {
 				this.gain_resume()
 				return
