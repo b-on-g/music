@@ -27540,7 +27540,10 @@ var $;
                 el.addEventListener('loadedmetadata', () => {
                     if (this._silent)
                         return;
-                    this.duration(el.duration);
+                    // Не писать NaN/0 (промельк при смене src на resume) — иначе
+                    // trim-ручки считаются как trim/NaN и уезжают.
+                    if (el.duration > 0 && isFinite(el.duration))
+                        this.duration(el.duration);
                 });
                 el.addEventListener('error', () => {
                     console.error('[player] audio error:', el.error?.code, el.error?.message);
@@ -29898,7 +29901,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.18';
+    $.$bog_music_version = 'v1.19';
 })($ || ($ = {}));
 
 ;
