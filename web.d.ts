@@ -56126,6 +56126,12 @@ declare namespace $.$$ {
         private _paused_pos;
         /** Сейчас в элементе крутится беззвучный keep-alive-цикл (не трек). */
         private _silent;
+        /**
+         * Ждём, пока трек после resume домотается до сохранённой позиции.
+         * Пока >0 — timeupdate не пишет current_time (иначе полоска мигнёт в 0:
+         * смена src сбрасывает el.currentTime до отработки seek).
+         */
+        private _await_seek;
         private is_ios;
         /** Ставит src трека, запоминая его для последующего swap. */
         private set_track_src;
