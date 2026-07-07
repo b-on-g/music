@@ -616,6 +616,11 @@ namespace $.$$ {
 			return this.account().track(key)?.blob() ?? null
 		}
 
+		/** Блоб, ДОЖИДАЯСЬ докачки land (suspend). Для проигрывания через фибру. */
+		blob_of_wait(key: string): Blob | null {
+			return this.account().track(key)?.blob_wait() ?? null
+		}
+
 		private try_play_local_sync(key: string, el: HTMLAudioElement, start_at: number): boolean {
 			let blob: Blob | null = null
 			try {
@@ -659,12 +664,16 @@ namespace $.$$ {
 			return this.current_key() === key
 		}
 
-		/** Дожидается блоба: из baza, при неудаче докачивает с VK. */
+		/**
+		 * Дожидается блоба: сначала ждём докачку blob-land с мастера
+		 * (blob_of_wait suspend'ится, фибра ретраит пока не досинкается),
+		 * при неудаче докачиваем с VK.
+		 */
 		private async blob_ready(key: string, audio: $bog_music_api_audio): Promise<Blob | null> {
-			let blob = await ($mol_wire_async(this) as any).blob_of(key).catch(() => null) as Blob | null
+			let blob = await ($mol_wire_async(this) as any).blob_of_wait(key).catch(() => null) as Blob | null
 			if (!blob && audio.url) {
 				await this.account().save_hls(audio).catch(() => {})
-				blob = await ($mol_wire_async(this) as any).blob_of(key).catch(() => null) as Blob | null
+				blob = await ($mol_wire_async(this) as any).blob_of_wait(key).catch(() => null) as Blob | null
 			}
 			return blob
 		}

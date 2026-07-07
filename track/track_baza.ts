@@ -74,6 +74,28 @@ namespace $ {
 			)
 		}
 
+		/**
+		 * Blob, ДОЖИДАЯСЬ докачки blob-land с мастера. Для проигрывания.
+		 *
+		 * Обычный `blob()` через atom_link_synced.remote() глотает Promise
+		 * (чтобы не блокировать рендер списка), поэтому сразу после клика buffer
+		 * ещё пуст → «no source». Здесь зовём `land().sync()` НАПРЯМУЮ и
+		 * пробрасываем его Promise: под `$mol_wire_async` фибра ретраится, пока
+		 * land не досинкается, и возвращает готовый blob — без второго клика.
+		 */
+		blob_wait(): Blob | null {
+			const file = this.File()?.remote()
+			if (!file) return null
+			file.land().sync() // проброс Promise → suspend пока не досинкается
+			const buf = file.buffer()
+			if (!buf || buf.byteLength === 0) return null
+			const type = file.type() || 'audio/mpeg'
+			return new Blob(
+				[buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer],
+				{ type },
+			)
+		}
+
 		cached(): boolean {
 			try {
 				return this.blob() !== null
