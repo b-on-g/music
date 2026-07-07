@@ -42,7 +42,6 @@ namespace $.$$ {
 			this.duration(0)
 			this._trim_end_skip = ''
 			this.apply_media_metadata(this.current_audio()!)
-			this.keepalive_unlock()
 			this.gain_chain_unlock()
 			const el = this.audio_el()
 			if (this._last_blob_url) {
@@ -50,7 +49,7 @@ namespace $.$$ {
 				this._last_blob_url = ''
 			}
 			this._dispatch_token++
-			el.src = url
+			this.set_track_src(el, url)
 			el.play().catch(() => {})
 		}
 
@@ -72,60 +71,76 @@ namespace $.$$ {
 			chrome.runtime.sendMessage({ target: 'offscreen', type, ...payload }).catch(() => {})
 		}
 
-		// ---------- iOS keep-alive ----------
-		// iOS замораживает PWA через ~30-60с после паузы в фоне: JS мёртв,
-		// кнопки локскрина двигают Now Playing, но звука нет. Пока крутится
-		// беззвучный loop, WebKit держит audio session и страницу живыми,
-		// и play с локскрина реально отрабатывает.
+		// ---------- iOS фоновое воспроизведение (один элемент, swap src) ----------
+		// iOS PWA: два <audio> дерутся за единственную аудио-сессию, и play с
+		// локскрина попадает в silence-элемент вместо трека. Решение — ОДИН
+		// элемент, который никогда не останавливается: на «паузе» его src
+		// подменяется на беззвучный цикл (сессия и страница живы), по play —
+		// возвращается src трека и перематывается на сохранённую позицию.
 
-		private _keepalive?: HTMLAudioElement
-		private _keepalive_stop_timer: any
-
-		// 4 сэмпла тишины 8kHz — минимальный валидный wav.
+		// 4 сэмпла тишины 8kHz — минимальный валидный wav, крутится в loop.
 		private static SILENCE = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAACAgICA'
-		private static KEEPALIVE_MAX_MS = 3 * 24 * 60 * 60 * 1000 // 3 дня
 
-		/**
-		 * ЭКСПЕРИМЕНТ (баг «пустой звук при play с локскрина»): keep-alive silence
-		 * отключён. Гипотеза — беззвучный loop занимает единственную iOS-аудио-
-		 * сессию, и play с локскрина не переключает её обратно на трек. С
-		 * флагом=false silence не играет; проверяем, работает ли пауза/плей с
-		 * локскрина сразу после паузы. Цена: после ~30-60с паузы в фоне iOS может
-		 * заморозить страницу и play с локскрина перестанет отвечать (надо будет
-		 * открыть приложение). Вернуть keep-alive = true.
-		 */
-		private static KEEPALIVE_ON = false
+		/** src текущего трека (blob url) — чтобы вернуть его после silence-паузы. */
+		private _track_src = ''
+		/** Позиция трека на момент паузы (для seek при возобновлении). */
+		private _paused_pos = 0
+		/** Сейчас в элементе крутится беззвучный keep-alive-цикл (не трек). */
+		private _silent = false
 
 		private is_ios() {
 			return /iPad|iPhone|iPod/.test(navigator.userAgent)
 				|| (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
 		}
 
-		/** Создать и «разлочить» тихий элемент — только в контексте юзер-жеста. */
-		private keepalive_unlock() {
-			if (!$bog_music_player.KEEPALIVE_ON) return
-			if (!this.is_ios() || this._keepalive) return
-			const el = new Audio($bog_music_player.SILENCE)
+		/** Ставит src трека, запоминая его для последующего swap. */
+		private set_track_src(el: HTMLAudioElement, url: string) {
+			this._silent = false
+			this._track_src = url
+			el.loop = false
+			el.src = url
+		}
+
+		/**
+		 * «Пауза» на iOS: не останавливаем элемент (иначе iOS заморозит страницу
+		 * и локскрин умрёт), а крутим в нём беззвучный цикл. Сессия остаётся у
+		 * этого же элемента — play с локскрина гарантированно попадёт в него.
+		 */
+		private ios_pause(el: HTMLAudioElement) {
+			this._paused_pos = el.currentTime || this._paused_pos
+			this._silent = true
 			el.loop = true
-			el.play().then(() => el.pause()).catch(() => { this._keepalive = undefined })
-			this._keepalive = el
-		}
-
-		private keepalive_start() {
-			if (!$bog_music_player.KEEPALIVE_ON) return
-			const el = this._keepalive
-			if (!el) return
+			el.src = $bog_music_player.SILENCE
 			el.play().catch(() => {})
-			clearTimeout(this._keepalive_stop_timer)
-			this._keepalive_stop_timer = setTimeout(
-				() => this.keepalive_pause(),
-				$bog_music_player.KEEPALIVE_MAX_MS,
-			)
+			this.playing(false)
+			if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused'
 		}
 
-		private keepalive_pause() {
-			clearTimeout(this._keepalive_stop_timer)
-			this._keepalive?.pause()
+		/**
+		 * Возобновление на iOS: возвращаем src трека в тот же элемент и
+		 * перематываем на сохранённую позицию. Синхронно в юзер-жесте (toggle /
+		 * mediaSession play), поэтому iOS разрешает воспроизведение.
+		 */
+		private ios_resume(el: HTMLAudioElement) {
+			if (this._track_src) {
+				this.set_track_src(el, this._track_src)
+				this.attach_seek_listener(el, this._paused_pos)
+				el.play().catch(() => {})
+				this.playing(true)
+				if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing'
+				return
+			}
+			// src трека потерян — пересобираем из blob по текущему ключу.
+			const key = this.current_key()
+			if (!key) return
+			const pos = this._paused_pos
+			;($mol_wire_async(this) as any).blob_of(key).then((blob: Blob | null) => {
+				if (!blob) return
+				const url = URL.createObjectURL(blob)
+				this.set_track_src(el, url)
+				this.attach_seek_listener(el, pos)
+				el.play().catch(() => {})
+			}).catch(() => {})
 		}
 
 		// ---------- выравнивание громкости ----------
@@ -205,22 +220,24 @@ namespace $.$$ {
 			if (this._audio_el) return this._audio_el
 			const el = new Audio()
 			el.volume = this.volume()
-			el.addEventListener('ended', () => this.on_ended())
+			el.addEventListener('ended', () => { if (!this._silent) this.on_ended() })
 			el.addEventListener('play', () => {
+				if (this._silent) return // это беззвучный keep-alive-цикл, не трек
 				try { this.playing(true) } catch {}
 				if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing'
-				this.keepalive_pause()
 				this.gain_resume()
 			})
 			el.addEventListener('pause', () => {
+				if (this._silent) return
 				try { this.playing(false) } catch {}
 				if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused'
-				if (this.is_ios()) this.keepalive_start()
 			})
 			el.addEventListener('timeupdate', () => {
+				if (this._silent) return
 				this.current_time(el.currentTime)
 			})
 			el.addEventListener('loadedmetadata', () => {
+				if (this._silent) return
 				this.duration(el.duration)
 			})
 			el.addEventListener('error', () => {
@@ -342,9 +359,9 @@ namespace $.$$ {
 				if (this._last_blob_url) URL.revokeObjectURL(this._last_blob_url)
 				const url = URL.createObjectURL(blob)
 				this._last_blob_url = url
-				el.src = url
+				this.set_track_src(el, url)
 			} else if (session.audio.url) {
-				el.src = session.audio.url
+				this.set_track_src(el, session.audio.url)
 			} else {
 				return
 			}
@@ -370,35 +387,22 @@ namespace $.$$ {
 					if (details.seekTime != null) el.currentTime = details.seekTime
 				})
 				ms.setActionHandler('play', () => { this.resume_robust() })
-				ms.setActionHandler('pause', () => { el.pause() })
+				ms.setActionHandler('pause', () => {
+					if (this.is_ios()) this.ios_pause(el)
+					else el.pause()
+				})
 			}
 		}
 
-		/**
-		 * Возобновление с локскрина/Control Center. Если страница успела
-		 * замёрзнуть и source умер (играет «молча»), пересобираем src из blob
-		 * и продолжаем с той же позиции.
-		 */
+		/** Возобновление с локскрина/Control Center. */
 		private resume_robust() {
 			const el = this.audio_el()
-			this.keepalive_pause()
 			this.gain_resume()
+			if (this.is_ios()) {
+				this.ios_resume(el)
+				return
+			}
 			el.play().catch(() => {})
-			setTimeout(() => {
-				if (!el.error && el.readyState >= 2 && !el.paused) return
-				const key = this.current_key()
-				if (!key) return
-				const pos = this.current_time()
-				;($mol_wire_async(this) as any).blob_of(key).then((blob: Blob | null) => {
-					if (!blob) return
-					if (this._last_blob_url) URL.revokeObjectURL(this._last_blob_url)
-					const url = URL.createObjectURL(blob)
-					this._last_blob_url = url
-					el.src = url
-					this.attach_seek_listener(el, pos)
-					el.play().catch(() => {})
-				}).catch(() => {})
-			}, 500)
 		}
 
 		private apply_media_metadata(audio: $bog_music_api_audio) {
@@ -616,9 +620,7 @@ namespace $.$$ {
 				return
 			}
 
-			// Обычно play_track — следствие клика: единственный шанс разлочить
-			// беззвучный keep-alive элемент и WebAudio-цепочку для iOS.
-			this.keepalive_unlock()
+			// Клик — единственный шанс разлочить WebAudio-цепочку для iOS.
 			this.gain_chain_unlock()
 
 			const el = this.audio_el()
@@ -627,8 +629,8 @@ namespace $.$$ {
 			// СИНХРОННО взять blob и запустить в том же tick.
 			if (this.try_play_local_sync(key, el, start_at)) return
 			if (audio.url) {
+				this.set_track_src(el, audio.url)
 				this.attach_seek_listener(el, start_at)
-				el.src = audio.url
 				el.play().catch(() => {})
 			}
 			this.play_source_local(key, audio, el, start_at)
@@ -656,8 +658,8 @@ namespace $.$$ {
 			const url = URL.createObjectURL(blob)
 			this._last_blob_url = url
 			this._dispatch_token++
+			this.set_track_src(el, url)
 			this.attach_seek_listener(el, start_at)
-			el.src = url
 			el.play().catch(() => {})
 			return true
 		}
@@ -741,15 +743,15 @@ namespace $.$$ {
 				if (blob) {
 					const url = URL.createObjectURL(blob)
 					this._last_blob_url = url
+					this.set_track_src(el, url)
 					this.attach_seek_listener(el, start_at)
-					el.src = url
 					await this.safe_play(el)
 					return
 				}
 
 				if (audio.url) {
+					this.set_track_src(el, audio.url)
 					this.attach_seek_listener(el, start_at)
-					el.src = audio.url
 					await this.safe_play(el)
 					return
 				}
@@ -783,11 +785,15 @@ namespace $.$$ {
 				if (was_playing) this.send('pause')
 				else this.send('resume')
 			} else {
-				this.keepalive_unlock()
 				this.gain_chain_unlock()
 				const el = this.audio_el()
-				if (was_playing) el.pause()
-				else el.play()
+				if (this.is_ios()) {
+					if (was_playing) this.ios_pause(el)
+					else this.ios_resume(el)
+				} else {
+					if (was_playing) el.pause()
+					else el.play()
+				}
 			}
 			if (was_playing) {
 				const key = this.current_key()
