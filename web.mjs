@@ -26239,10 +26239,6 @@ var $;
 			if(next !== undefined) return next;
 			return null;
 		}
-		pick_next(next){
-			if(next !== undefined) return next;
-			return null;
-		}
 		sub(){
 			return [(this.Progress_row()), (this.Controls())];
 		}
@@ -26294,7 +26290,6 @@ var $;
 	($mol_mem(($.$bog_music_player.prototype), "current_key"));
 	($mol_mem(($.$bog_music_player.prototype), "queue_index"));
 	($mol_mem(($.$bog_music_player.prototype), "play_track"));
-	($mol_mem(($.$bog_music_player.prototype), "pick_next"));
 
 
 ;
@@ -27014,6 +27009,10 @@ var $;
                 }
                 // Клик — единственный шанс разлочить WebAudio-цепочку для iOS.
                 this.gain_chain_unlock();
+                // Предзагружаем blob следующего трека, чтобы к его 'ended'-переходу
+                // он был готов и play прошёл СИНХРОННО в continuation — иначе в фоне
+                // на iOS автопереход играет без звука (async-путь глушится).
+                this.prefetch_next(key);
                 const el = this.audio_el();
                 // iOS PWA: при заблокированном экране любой await перед el.play()
                 // рвёт audio-session continuation от ended-обработчика. Пробуем
@@ -27026,6 +27025,18 @@ var $;
                     el.play().catch(() => { });
                 }
                 this.play_source_local(key, audio, el, start_at);
+            }
+            /** Прогреть blob следующего в очереди трека (fire-and-forget). */
+            prefetch_next(key) {
+                const q = this.queue_keys();
+                const idx = q.indexOf(key);
+                const next_key = idx >= 0 ? q[idx + 1] : undefined;
+                if (!next_key)
+                    return;
+                try {
+                    $mol_wire_async(this).blob_of_wait(next_key).catch(() => { });
+                }
+                catch { }
             }
             /** Sync-чтение блоба — зовётся и напрямую (best-effort), и через фибру. */
             blob_of(key) {
@@ -27215,6 +27226,17 @@ var $;
                     this.play_track(queue[idx - 1]);
                 }
             }
+            /** Рекомендация «Моей волны» из app (null если режим выключен). */
+            wave_pick(key) {
+                try {
+                    return $bog_music_app.Root(0).player_pick_next(key) ?? null;
+                }
+                catch (e) {
+                    if (e instanceof Promise)
+                        throw e;
+                    return null;
+                }
+            }
             next(manual = true) {
                 const mode = this.repeat_mode();
                 const queue = this.queue_keys();
@@ -27242,10 +27264,12 @@ var $;
                         return;
                     }
                 }
-                // «Моя волна» — рекомендалка (binding в app).
+                // «Моя волна» — рекомендалка. Зовём app напрямую: event-binding
+                // `pick_next?` возвращал бы свой аргумент (echo), а не рекомендацию,
+                // из-за чего next() играл текущий трек заново вместо следующего.
                 try {
-                    const picked = this.pick_next(this.current_key());
-                    if (picked) {
+                    const picked = this.wave_pick(this.current_key());
+                    if (picked && picked !== this.current_key()) {
                         const idx = queue.indexOf(picked);
                         if (idx >= 0)
                             this.queue_index(idx);
@@ -27256,7 +27280,7 @@ var $;
                 catch (e) {
                     if (e instanceof Promise)
                         throw e;
-                    console.warn('[player] pick_next failed:', e?.message);
+                    console.warn('[player] wave_pick failed:', e?.message);
                 }
                 if (!queue.length)
                     return;
@@ -36711,15 +36735,10 @@ var $;
 			(obj.get) = (next) => ((this.tube_get(id, next)));
 			return obj;
 		}
-		player_pick_next(next){
-			if(next !== undefined) return next;
-			return null;
-		}
 		Player(){
 			const obj = new this.$.$bog_music_player();
 			(obj.queue_keys) = () => ((this.visible_keys()));
 			(obj.current_key) = (next) => ((this.current_key(next)));
-			(obj.pick_next) = (next) => ((this.player_pick_next(next)));
 			return obj;
 		}
 		section(next){
@@ -36809,7 +36828,6 @@ var $;
 	($mol_mem_key(($.$bog_music_app.prototype), "tube_play"));
 	($mol_mem_key(($.$bog_music_app.prototype), "tube_get"));
 	($mol_mem_key(($.$bog_music_app.prototype), "Tube_row"));
-	($mol_mem(($.$bog_music_app.prototype), "player_pick_next"));
 	($mol_mem(($.$bog_music_app.prototype), "Player"));
 	($mol_mem(($.$bog_music_app.prototype), "section"));
 	($mol_mem(($.$bog_music_app.prototype), "Nav"));
@@ -37138,7 +37156,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.19';
+    $.$bog_music_version = 'v1.20';
 })($ || ($ = {}));
 
 ;

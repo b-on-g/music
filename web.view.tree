@@ -1306,7 +1306,6 @@ $bog_music_player $mol_view
 	queue_keys /
 	queue_index? 0
 	play_track? null
-	pick_next? null
 	sub /
 		<= Progress_row $mol_view
 			sub /
@@ -2720,6 +2719,5 @@ $bog_music_app $mol_page
 		<= Player $bog_music_player
 			queue_keys <= visible_keys /
 			current_key? <=> current_key? \
-			pick_next? <=> player_pick_next? null
 		<= Nav $bog_music_nav
 			section? <=> section? \music

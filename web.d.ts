@@ -56090,7 +56090,6 @@ declare namespace $ {
 		queue_keys( ): readonly(any)[]
 		queue_index( next?: number ): number
 		play_track( next?: any ): any
-		pick_next( next?: any ): any
 		sub( ): readonly(any)[]
 	}
 	
@@ -56215,6 +56214,8 @@ declare namespace $.$$ {
         private _shuffle_last_key;
         private ensure_shuffle_bag;
         play_track(key?: string | null): void;
+        /** Прогреть blob следующего в очереди трека (fire-and-forget). */
+        private prefetch_next;
         /** Sync-чтение блоба — зовётся и напрямую (best-effort), и через фибру. */
         blob_of(key: string): Blob | null;
         /** Блоб, ДОЖИДАЯСЬ докачки land (suspend). Для проигрывания через фибру. */
@@ -56235,6 +56236,8 @@ declare namespace $.$$ {
         private safe_play;
         toggle(): void;
         prev(): void;
+        /** Рекомендация «Моей волны» из app (null если режим выключен). */
+        private wave_pick;
         next(manual?: boolean): void;
         sub(): readonly any[];
         Play(): any;
@@ -61065,12 +61068,7 @@ declare namespace $ {
 		,
 		ReturnType< $bog_music_player['current_key'] >
 	>
-	type $bog_music_player__pick_next_bog_music_app_41 = $mol_type_enforce<
-		ReturnType< $bog_music_app['player_pick_next'] >
-		,
-		ReturnType< $bog_music_player['pick_next'] >
-	>
-	type $bog_music_nav__section_bog_music_app_42 = $mol_type_enforce<
+	type $bog_music_nav__section_bog_music_app_41 = $mol_type_enforce<
 		ReturnType< $bog_music_app['section'] >
 		,
 		ReturnType< $bog_music_nav['section'] >
@@ -61128,7 +61126,6 @@ declare namespace $ {
 		tube_play( id: any, next?: any ): any
 		tube_get( id: any, next?: any ): any
 		Tube_row( id: any): $bog_music_tube_row
-		player_pick_next( next?: any ): any
 		Player( ): $bog_music_player
 		section( next?: string ): string
 		Nav( ): $bog_music_nav
