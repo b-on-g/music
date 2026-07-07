@@ -54373,6 +54373,16 @@ declare namespace $.$$ {
         private _keepalive_stop_timer;
         private static SILENCE;
         private static KEEPALIVE_MAX_MS;
+        /**
+         * ЭКСПЕРИМЕНТ (баг «пустой звук при play с локскрина»): keep-alive silence
+         * отключён. Гипотеза — беззвучный loop занимает единственную iOS-аудио-
+         * сессию, и play с локскрина не переключает её обратно на трек. С
+         * флагом=false silence не играет; проверяем, работает ли пауза/плей с
+         * локскрина сразу после паузы. Цена: после ~30-60с паузы в фоне iOS может
+         * заморозить страницу и play с локскрина перестанет отвечать (надо будет
+         * открыть приложение). Вернуть keep-alive = true.
+         */
+        private static KEEPALIVE_ON;
         private is_ios;
         /** Создать и «разлочить» тихий элемент — только в контексте юзер-жеста. */
         private keepalive_unlock;

@@ -27341,12 +27341,24 @@ var $;
             // 4 сэмпла тишины 8kHz — минимальный валидный wav.
             static SILENCE = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAACAgICA';
             static KEEPALIVE_MAX_MS = 3 * 24 * 60 * 60 * 1000; // 3 дня
+            /**
+             * ЭКСПЕРИМЕНТ (баг «пустой звук при play с локскрина»): keep-alive silence
+             * отключён. Гипотеза — беззвучный loop занимает единственную iOS-аудио-
+             * сессию, и play с локскрина не переключает её обратно на трек. С
+             * флагом=false silence не играет; проверяем, работает ли пауза/плей с
+             * локскрина сразу после паузы. Цена: после ~30-60с паузы в фоне iOS может
+             * заморозить страницу и play с локскрина перестанет отвечать (надо будет
+             * открыть приложение). Вернуть keep-alive = true.
+             */
+            static KEEPALIVE_ON = false;
             is_ios() {
                 return /iPad|iPhone|iPod/.test(navigator.userAgent)
                     || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
             }
             /** Создать и «разлочить» тихий элемент — только в контексте юзер-жеста. */
             keepalive_unlock() {
+                if (!$bog_music_player.KEEPALIVE_ON)
+                    return;
                 if (!this.is_ios() || this._keepalive)
                     return;
                 const el = new Audio($bog_music_player.SILENCE);
@@ -27355,6 +27367,8 @@ var $;
                 this._keepalive = el;
             }
             keepalive_start() {
+                if (!$bog_music_player.KEEPALIVE_ON)
+                    return;
                 const el = this._keepalive;
                 if (!el)
                     return;
@@ -29833,7 +29847,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.14';
+    $.$bog_music_version = 'v1.15';
 })($ || ($ = {}));
 
 ;
