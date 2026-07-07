@@ -20427,6 +20427,12 @@ var $;
 
 ;
 	($.$bog_music_track) = class $bog_music_track extends ($.$mol_view) {
+		available(){
+			return true;
+		}
+		syncing(){
+			return false;
+		}
 		event_drag_start(next){
 			if(next !== undefined) return next;
 			return null;
@@ -20597,6 +20603,8 @@ var $;
 			return {
 				"bog_music_track_current": (this.current()), 
 				"bog_music_track_share_selected": (this.share_selected()), 
+				"bog_music_track_available": (this.available()), 
+				"bog_music_track_syncing": (this.syncing()), 
 				"draggable": (this.can_drag())
 			};
 		}
@@ -21260,6 +21268,31 @@ var $;
             cached() {
                 return this.track()?.cached() ?? false;
             }
+            /**
+             * Состояние blob'а трека. Полностью реактивно и без ручной синхронизации:
+             * `blob()` читает File→remote→buffer, а обёртка atom_link_synced сама
+             * тянет blob-land с мастера. Пока чанки идут — `buffer()` кидает Promise
+             * (ловим → 'syncing'); приехали — 'ready'; нет источника — 'none'.
+             * Когда baza досинкает, ячейка пересчитается и трек станет 'ready' сам.
+             */
+            blob_state() {
+                try {
+                    return this.track()?.blob() != null ? 'ready' : 'none';
+                }
+                catch (e) {
+                    if (e instanceof Promise)
+                        return 'syncing';
+                    return 'none';
+                }
+            }
+            /** Доступен для проигрывания (blob уже на этом устройстве). */
+            available() {
+                return this.blob_state() === 'ready';
+            }
+            /** Идёт докачка blob с мастера — для индикатора-мигания. */
+            syncing() {
+                return this.blob_state() === 'syncing';
+            }
             is_local() {
                 return this.track()?.audio()?.owner_id === 0;
             }
@@ -21291,6 +21324,11 @@ var $;
                 return super.Delete();
             }
             on_play_click() {
+                // Единственный источник трека — blob из baza. Пока не досинкался
+                // (после переноса аккаунта) — не пытаемся играть, чтобы не ловить
+                // «no source»; трек оживёт сам, когда blob приедет.
+                if (!this.available())
+                    return;
                 this.play(this.key());
             }
             event_drag_start(event) {
@@ -21617,6 +21655,27 @@ var $;
                     true: {
                         background: { color: $mol_theme.focus },
                         color: $mol_theme.card,
+                    },
+                },
+                // Blob ещё не на устройстве (докачивается после переноса аккаунта):
+                // приглушаем и блокируем клик по play-области.
+                bog_music_track_available: {
+                    false: {
+                        opacity: 0.4,
+                        Cover_box: { cursor: 'default' },
+                        Info: { cursor: 'default' },
+                    },
+                },
+                // Пока идёт докачка blob с мастера — мигаем тем же mol-миганием
+                // (keyframes mol_view_wait определён в mol/view). Перекрывает static
+                // opacity выше, поэтому виден пульс, а не постоянное приглушение.
+                bog_music_track_syncing: {
+                    true: {
+                        animation: {
+                            name: 'mol_view_wait',
+                            duration: '1s',
+                            iterationCount: 'infinite',
+                        },
                     },
                 },
             },
@@ -26494,6 +26553,12 @@ var $;
 		playing(){
 			return false;
 		}
+		busy(){
+			return false;
+		}
+		attr(){
+			return {"bog_music_tube_row_busy": (this.busy())};
+		}
 		sub(){
 			return [
 				(this.Play()), 
@@ -26608,6 +26673,21 @@ var $;
         },
         Get: {
             flex: { shrink: 0 },
+        },
+        '@': {
+            // Пока идёт скачивание — мигаем кнопкой Get (тем же mol-миганием,
+            // что и Upload), в дополнение к текстовому статусу «Качаю…».
+            bog_music_tube_row_busy: {
+                true: {
+                    Get: {
+                        animation: {
+                            name: 'mol_view_wait',
+                            duration: '1s',
+                            iterationCount: 'infinite',
+                        },
+                    },
+                },
+            },
         },
     });
 })($ || ($ = {}));
@@ -29261,6 +29341,9 @@ var $;
 		tube_cover(id){
 			return "";
 		}
+		tube_busy(id){
+			return false;
+		}
 		tube_play(id, next){
 			if(next !== undefined) return next;
 			return null;
@@ -29275,6 +29358,7 @@ var $;
 			(obj.subtitle) = () => ((this.tube_meta(id)));
 			(obj.status) = () => ((this.tube_status_text(id)));
 			(obj.cover) = () => ((this.tube_cover(id)));
+			(obj.busy) = () => ((this.tube_busy(id)));
 			(obj.play) = (next) => ((this.tube_play(id, next)));
 			(obj.get) = (next) => ((this.tube_get(id, next)));
 			return obj;
@@ -29706,7 +29790,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.11';
+    $.$bog_music_version = 'v1.12';
 })($ || ($ = {}));
 
 ;
@@ -30074,6 +30158,10 @@ var $;
             }
             tube_status_text(index, next) {
                 return next ?? '';
+            }
+            /** Идёт ли скачивание этой строки — для мигания кнопки Get. */
+            tube_busy(index) {
+                return this.tube_status_text(index).startsWith('Качаю');
             }
             tube_get(index) {
                 const item = this.tube_item(index);

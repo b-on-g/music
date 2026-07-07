@@ -42764,6 +42764,8 @@ declare namespace $ {
 		ReturnType< $mol_button_minor['sub'] >
 	>
 	export class $bog_music_track extends $mol_view {
+		available( ): boolean
+		syncing( ): boolean
 		event_drag_start( next?: any ): any
 		event_drag_over( next?: any ): any
 		event_drop( next?: any ): any
@@ -42804,6 +42806,8 @@ declare namespace $ {
 		attr( ): ({ 
 			'bog_music_track_current': ReturnType< $bog_music_track['current'] >,
 			'bog_music_track_share_selected': ReturnType< $bog_music_track['share_selected'] >,
+			'bog_music_track_available': ReturnType< $bog_music_track['available'] >,
+			'bog_music_track_syncing': ReturnType< $bog_music_track['syncing'] >,
 			'draggable': ReturnType< $bog_music_track['can_drag'] >,
 		}) 
 		event( ): ({ 
@@ -42824,6 +42828,18 @@ declare namespace $.$$ {
         title(): string;
         artist(): string;
         cached(): boolean;
+        /**
+         * Состояние blob'а трека. Полностью реактивно и без ручной синхронизации:
+         * `blob()` читает File→remote→buffer, а обёртка atom_link_synced сама
+         * тянет blob-land с мастера. Пока чанки идут — `buffer()` кидает Promise
+         * (ловим → 'syncing'); приехали — 'ready'; нет источника — 'none'.
+         * Когда baza досинкает, ячейка пересчитается и трек станет 'ready' сам.
+         */
+        blob_state(): 'ready' | 'syncing' | 'none';
+        /** Доступен для проигрывания (blob уже на этом устройстве). */
+        available(): boolean;
+        /** Идёт докачка blob с мастера — для индикатора-мигания. */
+        syncing(): boolean;
         is_local(): boolean;
         can_drag(): boolean;
         Archive(): any;
@@ -55678,6 +55694,10 @@ declare namespace $ {
 		status( ): string
 		cover( ): string
 		playing( ): boolean
+		busy( ): boolean
+		attr( ): ({ 
+			'bog_music_tube_row_busy': ReturnType< $bog_music_tube_row['busy'] >,
+		}) 
 		sub( ): readonly(any)[]
 	}
 	
@@ -60980,32 +61000,37 @@ declare namespace $ {
 		,
 		ReturnType< $bog_music_tube_row['cover'] >
 	>
-	type $bog_music_tube_row__play_bog_music_app_36 = $mol_type_enforce<
+	type $bog_music_tube_row__busy_bog_music_app_36 = $mol_type_enforce<
+		ReturnType< $bog_music_app['tube_busy'] >
+		,
+		ReturnType< $bog_music_tube_row['busy'] >
+	>
+	type $bog_music_tube_row__play_bog_music_app_37 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_play'] >
 		,
 		ReturnType< $bog_music_tube_row['play'] >
 	>
-	type $bog_music_tube_row__get_bog_music_app_37 = $mol_type_enforce<
+	type $bog_music_tube_row__get_bog_music_app_38 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_get'] >
 		,
 		ReturnType< $bog_music_tube_row['get'] >
 	>
-	type $bog_music_player__queue_keys_bog_music_app_38 = $mol_type_enforce<
+	type $bog_music_player__queue_keys_bog_music_app_39 = $mol_type_enforce<
 		ReturnType< $bog_music_app['visible_keys'] >
 		,
 		ReturnType< $bog_music_player['queue_keys'] >
 	>
-	type $bog_music_player__current_key_bog_music_app_39 = $mol_type_enforce<
+	type $bog_music_player__current_key_bog_music_app_40 = $mol_type_enforce<
 		ReturnType< $bog_music_app['current_key'] >
 		,
 		ReturnType< $bog_music_player['current_key'] >
 	>
-	type $bog_music_player__pick_next_bog_music_app_40 = $mol_type_enforce<
+	type $bog_music_player__pick_next_bog_music_app_41 = $mol_type_enforce<
 		ReturnType< $bog_music_app['player_pick_next'] >
 		,
 		ReturnType< $bog_music_player['pick_next'] >
 	>
-	type $bog_music_nav__section_bog_music_app_41 = $mol_type_enforce<
+	type $bog_music_nav__section_bog_music_app_42 = $mol_type_enforce<
 		ReturnType< $bog_music_app['section'] >
 		,
 		ReturnType< $bog_music_nav['section'] >
@@ -61059,6 +61084,7 @@ declare namespace $ {
 		tube_meta( id: any): string
 		tube_status_text( id: any): string
 		tube_cover( id: any): string
+		tube_busy( id: any): boolean
 		tube_play( id: any, next?: any ): any
 		tube_get( id: any, next?: any ): any
 		Tube_row( id: any): $bog_music_tube_row
@@ -61153,6 +61179,8 @@ declare namespace $.$$ {
         /** Прослушать трек стримом с сервера, не скачивая в baza. */
         tube_play(index: number): void;
         tube_status_text(index: number, next?: string): string;
+        /** Идёт ли скачивание этой строки — для мигания кнопки Get. */
+        tube_busy(index: number): boolean;
         tube_get(index: number): void;
         tube_download(index: number, item: $bog_music_tube_item): Promise<void>;
         nickname_label(): string;

@@ -677,6 +677,8 @@ $bog_music_track $mol_view
 	attr *
 		bog_music_track_current <= current
 		bog_music_track_share_selected <= share_selected
+		bog_music_track_available <= available true
+		bog_music_track_syncing <= syncing false
 		draggable <= can_drag
 	event *
 		dragstart?event <=> event_drag_start?event null
@@ -1241,8 +1243,11 @@ $bog_music_tube_row $mol_view
 	status \
 	cover \
 	playing false
+	busy false
 	play? null
 	get? null
+	attr *
+		bog_music_tube_row_busy <= busy
 	sub /
 		<= Play $mol_button_minor
 			hint \Слушать
@@ -2708,6 +2713,7 @@ $bog_music_app $mol_page
 			subtitle <= tube_meta* \
 			status <= tube_status_text* \
 			cover <= tube_cover* \
+			busy <= tube_busy* false
 			play? <=> tube_play*? null
 			get? <=> tube_get*? null
 	foot /
