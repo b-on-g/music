@@ -54465,9 +54465,12 @@ declare namespace $.$$ {
         private _shuffle_last_key;
         private ensure_shuffle_bag;
         play_track(key?: string | null): void;
-        /** Прогреть blob следующего в очереди трека (fire-and-forget). */
+        private _blob_cache;
+        /** Прогреть blob следующего трека в RAM-кеш (fire-and-forget). */
         private prefetch_next;
-        /** Sync-чтение блоба — зовётся и напрямую (best-effort), и через фибру. */
+        /** Sync-метод (через фибру): дождаться blob и положить в RAM-кеш. */
+        cache_blob(key: string): boolean;
+        /** Sync-чтение блоба: сперва RAM-кеш (без suspend), потом baza. */
         blob_of(key: string): Blob | null;
         /** Блоб, ДОЖИДАЯСЬ докачки land (suspend). Для проигрывания через фибру. */
         blob_of_wait(key: string): Blob | null;
