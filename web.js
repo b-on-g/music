@@ -21017,11 +21017,9 @@ var $;
                 return super.Delete();
             }
             on_play_click() {
-                // Единственный источник трека — blob из baza. Пока не досинкался
-                // (после переноса аккаунта) — не пытаемся играть, чтобы не ловить
-                // «no source»; трек оживёт сам, когда blob приедет.
-                if (!this.available())
-                    return;
+                // Клик играет всегда: если blob ещё докачивается, плеер сам дождётся
+                // (blob_wait suspend'ится до досинка) и заиграет без второго клика.
+                // Приглушение/мигание строки — лишь индикатор, клик не блокирует.
                 this.play(this.key());
             }
             event_drag_start(event) {
@@ -21180,6 +21178,26 @@ var $;
             const file = this.File()?.remote();
             if (!file)
                 return null;
+            const buf = file.buffer();
+            if (!buf || buf.byteLength === 0)
+                return null;
+            const type = file.type() || 'audio/mpeg';
+            return new Blob([buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)], { type });
+        }
+        /**
+         * Blob, ДОЖИДАЯСЬ докачки blob-land с мастера. Для проигрывания.
+         *
+         * Обычный `blob()` через atom_link_synced.remote() глотает Promise
+         * (чтобы не блокировать рендер списка), поэтому сразу после клика buffer
+         * ещё пуст → «no source». Здесь зовём `land().sync()` НАПРЯМУЮ и
+         * пробрасываем его Promise: под `$mol_wire_async` фибра ретраится, пока
+         * land не досинкается, и возвращает готовый blob — без второго клика.
+         */
+        blob_wait() {
+            const file = this.File()?.remote();
+            if (!file)
+                return null;
+            file.land().sync(); // проброс Promise → suspend пока не досинкается
             const buf = file.buffer();
             if (!buf || buf.byteLength === 0)
                 return null;
@@ -21351,12 +21369,10 @@ var $;
                     },
                 },
                 // Blob ещё не на устройстве (докачивается после переноса аккаунта):
-                // приглушаем и блокируем клик по play-области.
+                // приглушаем как индикатор. Клик работает — плеер дождётся blob.
                 bog_music_track_available: {
                     false: {
                         opacity: 0.4,
-                        Cover_box: { cursor: 'default' },
-                        Info: { cursor: 'default' },
                     },
                 },
                 // Пока идёт докачка blob с мастера — мигаем тем же mol-миганием
@@ -26935,6 +26951,10 @@ var $;
             blob_of(key) {
                 return this.account().track(key)?.blob() ?? null;
             }
+            /** Блоб, ДОЖИДАЯСЬ докачки land (suspend). Для проигрывания через фибру. */
+            blob_of_wait(key) {
+                return this.account().track(key)?.blob_wait() ?? null;
+            }
             try_play_local_sync(key, el, start_at) {
                 let blob = null;
                 try {
@@ -26984,12 +27004,16 @@ var $;
             is_current(key) {
                 return this.current_key() === key;
             }
-            /** Дожидается блоба: из baza, при неудаче докачивает с VK. */
+            /**
+             * Дожидается блоба: сначала ждём докачку blob-land с мастера
+             * (blob_of_wait suspend'ится, фибра ретраит пока не досинкается),
+             * при неудаче докачиваем с VK.
+             */
             async blob_ready(key, audio) {
-                let blob = await $mol_wire_async(this).blob_of(key).catch(() => null);
+                let blob = await $mol_wire_async(this).blob_of_wait(key).catch(() => null);
                 if (!blob && audio.url) {
                     await this.account().save_hls(audio).catch(() => { });
-                    blob = await $mol_wire_async(this).blob_of(key).catch(() => null);
+                    blob = await $mol_wire_async(this).blob_of_wait(key).catch(() => null);
                 }
                 return blob;
             }
@@ -37027,7 +37051,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.12';
+    $.$bog_music_version = 'v1.13';
 })($ || ($ = {}));
 
 ;

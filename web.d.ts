@@ -51020,6 +51020,16 @@ declare namespace $ {
         order_set(next: number): void;
         /** Blob из baza. null если не закеширован. */
         blob(): Blob | null;
+        /**
+         * Blob, ДОЖИДАЯСЬ докачки blob-land с мастера. Для проигрывания.
+         *
+         * Обычный `blob()` через atom_link_synced.remote() глотает Promise
+         * (чтобы не блокировать рендер списка), поэтому сразу после клика buffer
+         * ещё пуст → «no source». Здесь зовём `land().sync()` НАПРЯМУЮ и
+         * пробрасываем его Promise: под `$mol_wire_async` фибра ретраится, пока
+         * land не досинкается, и возвращает готовый blob — без второго клика.
+         */
+        blob_wait(): Blob | null;
         cached(): boolean;
         /** Интегральная громкость (dB RMS). null — ещё не измерена. */
         loudness(next?: number): number | null;
@@ -56183,12 +56193,18 @@ declare namespace $.$$ {
         play_track(key?: string | null): void;
         /** Sync-чтение блоба — зовётся и напрямую (best-effort), и через фибру. */
         blob_of(key: string): Blob | null;
+        /** Блоб, ДОЖИДАЯСЬ докачки land (suspend). Для проигрывания через фибру. */
+        blob_of_wait(key: string): Blob | null;
         private try_play_local_sync;
         private attach_seek_listener;
         private seek_to;
         private _dispatch_token;
         private is_current;
-        /** Дожидается блоба: из baza, при неудаче докачивает с VK. */
+        /**
+         * Дожидается блоба: сначала ждём докачку blob-land с мастера
+         * (blob_of_wait suspend'ится, фибра ретраит пока не досинкается),
+         * при неудаче докачиваем с VK.
+         */
         private blob_ready;
         private dispatch_play_offscreen;
         private play_source_local;
