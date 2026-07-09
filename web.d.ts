@@ -34535,10 +34535,14 @@ declare namespace $ {
 		ReturnType< $mol_view['sub'] >
 	>
 	export class $mol_form_field extends $mol_labeler {
+		state( ): string | null
 		name( ): string
 		bid( ): string
 		Bid( ): $mol_view
 		control( ): any
+		attr( ): ({ 
+			'mol_form_field_state': ReturnType< $mol_form_field['state'] >,
+		})  & ReturnType< $mol_labeler['attr'] >
 		bids( ): readonly(string)[]
 		label( ): readonly(any)[]
 		content( ): readonly(any)[]
@@ -34552,6 +34556,7 @@ declare namespace $.$$ {
      * @see https://mol.hyoo.ru/#!section=demos/demo=mol_form_demo
      */
     class $mol_form_field extends $.$mol_form_field {
+        state(): string | null;
         bid(): string;
     }
 }
@@ -36247,52 +36252,6 @@ declare namespace $ {
         [Symbol.toPrimitive](): any;
         [$mol_key_handle](): any;
     };
-}
-
-declare namespace $ {
-    type $mol_blob = Blob;
-    let $mol_blob: {
-        prototype: Blob;
-        new (blobParts?: readonly BlobPart[], options?: BlobPropertyBag): Blob;
-    };
-}
-
-declare namespace $ {
-    const $giper_baza_file_base: Omit<typeof $giper_baza_dict, "prototype"> & {
-        new (...args: any[]): $mol_type_override<$giper_baza_dict, {
-            readonly Name: (auto?: any) => $giper_baza_atom_text | null;
-            readonly Type: (auto?: any) => $giper_baza_atom_text | null;
-            readonly Chunks: (auto?: any) => $giper_baza_list_bin | null;
-        }>;
-        path: string;
-    } & {
-        schema: {
-            [x: string]: typeof $giper_baza_pawn;
-        } & {
-            /** File name */
-            readonly Name: typeof $giper_baza_atom_text;
-            /** File Content-Type */
-            readonly Type: typeof $giper_baza_atom_text;
-            /** File content in chunks - list of binaries */
-            readonly Chunks: typeof $giper_baza_list_bin;
-        };
-    };
-    export class $giper_baza_file extends $giper_baza_file_base {
-        /** Persistent URI to file content */
-        uri(): string;
-        /** File name */
-        name(next?: string | null): string;
-        /** Mime type */
-        type(next?: string | null): string;
-        /** Blob, File etc. */
-        blob(next?: $mol_blob): $mol_blob;
-        /** Solid byte buffer. */
-        buffer(next?: Uint8Array<ArrayBuffer>): Uint8Array<ArrayBuffer>;
-        chunks(next?: readonly Uint8Array<ArrayBuffer>[]): Uint8Array<ArrayBuffer>[];
-        str(next?: string, type?: string): string;
-        json(next?: any, type?: string): any;
-    }
-    export {};
 }
 
 declare namespace $ {
@@ -38212,6 +38171,1293 @@ declare namespace $ {
             } extends infer T_7 extends Record<string, $mol_data_value<any, any>> ? { [key in keyof T_7]: ReturnType<T_7[key]>; } : never) extends infer T_6 ? { [Field in keyof T_6]: undefined extends T_6[Field] ? never : Field; } : never)["+" | "=" | "!=" | "_num" | keyof Sub | "_len" | "_max" | "_min" | "_sum"]>>>>;
         }>[0]): string;
     };
+}
+
+declare namespace $ {
+    type $mol_blob = Blob;
+    let $mol_blob: {
+        prototype: Blob;
+        new (blobParts?: readonly BlobPart[], options?: BlobPropertyBag): Blob;
+    };
+}
+
+declare namespace $ {
+    export const $giper_baza_file_query: ((val: {
+        '+'?: boolean | undefined;
+        '='?: readonly (readonly number[])[] | undefined;
+        '!='?: readonly (readonly number[])[] | undefined;
+        _num?: {
+            '=': readonly (readonly (string | number)[])[];
+        } | undefined;
+        _len?: Readonly<{
+            BAZA: {
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly number[])[] | undefined;
+                '!='?: readonly (readonly number[])[] | undefined;
+                _num?: {
+                    '=': readonly (readonly (string | number)[])[];
+                } | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            };
+            file: {
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly string[])[] | undefined;
+                '!='?: readonly (readonly string[])[] | undefined;
+                _num?: {
+                    '=': readonly (readonly (string | number)[])[];
+                } | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            };
+        }> | undefined;
+        _max?: Readonly<{
+            BAZA: {
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly number[])[] | undefined;
+                '!='?: readonly (readonly number[])[] | undefined;
+                _num?: {
+                    '=': readonly (readonly (string | number)[])[];
+                } | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            };
+            file: {
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly string[])[] | undefined;
+                '!='?: readonly (readonly string[])[] | undefined;
+                _num?: {
+                    '=': readonly (readonly (string | number)[])[];
+                } | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            };
+        }> | undefined;
+        _min?: Readonly<{
+            BAZA: {
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly number[])[] | undefined;
+                '!='?: readonly (readonly number[])[] | undefined;
+                _num?: {
+                    '=': readonly (readonly (string | number)[])[];
+                } | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            };
+            file: {
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly string[])[] | undefined;
+                '!='?: readonly (readonly string[])[] | undefined;
+                _num?: {
+                    '=': readonly (readonly (string | number)[])[];
+                } | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            };
+        }> | undefined;
+        _sum?: Readonly<{
+            BAZA: {
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly number[])[] | undefined;
+                '!='?: readonly (readonly number[])[] | undefined;
+                _num?: {
+                    '=': readonly (readonly (string | number)[])[];
+                } | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            };
+            file: {
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly string[])[] | undefined;
+                '!='?: readonly (readonly string[])[] | undefined;
+                _num?: {
+                    '=': readonly (readonly (string | number)[])[];
+                } | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            };
+        }> | undefined;
+        BAZA: {
+            '+'?: boolean | undefined;
+            '='?: readonly (readonly number[])[] | undefined;
+            '!='?: readonly (readonly number[])[] | undefined;
+            _num?: {
+                '=': readonly (readonly (string | number)[])[];
+            } | undefined;
+            _len?: Readonly<{}> | undefined;
+            _max?: Readonly<{}> | undefined;
+            _min?: Readonly<{}> | undefined;
+            _sum?: Readonly<{}> | undefined;
+        };
+        file: {
+            '+'?: boolean | undefined;
+            '='?: readonly (readonly string[])[] | undefined;
+            '!='?: readonly (readonly string[])[] | undefined;
+            _num?: {
+                '=': readonly (readonly (string | number)[])[];
+            } | undefined;
+            _len?: Readonly<{}> | undefined;
+            _max?: Readonly<{}> | undefined;
+            _min?: Readonly<{}> | undefined;
+            _sum?: Readonly<{}> | undefined;
+        };
+    }) => Readonly<{
+        '+'?: boolean | undefined;
+        '='?: readonly (readonly number[])[] | undefined;
+        '!='?: readonly (readonly number[])[] | undefined;
+        _num?: Readonly<{
+            '=': readonly (readonly number[])[];
+        }> | undefined;
+        _len?: Readonly<{
+            BAZA: Readonly<{
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly number[])[] | undefined;
+                '!='?: readonly (readonly number[])[] | undefined;
+                _num?: Readonly<{
+                    '=': readonly (readonly number[])[];
+                }> | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            }>;
+            file: Readonly<{
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly string[])[] | undefined;
+                '!='?: readonly (readonly string[])[] | undefined;
+                _num?: Readonly<{
+                    '=': readonly (readonly number[])[];
+                }> | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            }>;
+        }> | undefined;
+        _max?: Readonly<{
+            BAZA: Readonly<{
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly number[])[] | undefined;
+                '!='?: readonly (readonly number[])[] | undefined;
+                _num?: Readonly<{
+                    '=': readonly (readonly number[])[];
+                }> | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            }>;
+            file: Readonly<{
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly string[])[] | undefined;
+                '!='?: readonly (readonly string[])[] | undefined;
+                _num?: Readonly<{
+                    '=': readonly (readonly number[])[];
+                }> | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            }>;
+        }> | undefined;
+        _min?: Readonly<{
+            BAZA: Readonly<{
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly number[])[] | undefined;
+                '!='?: readonly (readonly number[])[] | undefined;
+                _num?: Readonly<{
+                    '=': readonly (readonly number[])[];
+                }> | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            }>;
+            file: Readonly<{
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly string[])[] | undefined;
+                '!='?: readonly (readonly string[])[] | undefined;
+                _num?: Readonly<{
+                    '=': readonly (readonly number[])[];
+                }> | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            }>;
+        }> | undefined;
+        _sum?: Readonly<{
+            BAZA: Readonly<{
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly number[])[] | undefined;
+                '!='?: readonly (readonly number[])[] | undefined;
+                _num?: Readonly<{
+                    '=': readonly (readonly number[])[];
+                }> | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            }>;
+            file: Readonly<{
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly string[])[] | undefined;
+                '!='?: readonly (readonly string[])[] | undefined;
+                _num?: Readonly<{
+                    '=': readonly (readonly number[])[];
+                }> | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            }>;
+        }> | undefined;
+        BAZA: Readonly<{
+            '+'?: boolean | undefined;
+            '='?: readonly (readonly number[])[] | undefined;
+            '!='?: readonly (readonly number[])[] | undefined;
+            _num?: Readonly<{
+                '=': readonly (readonly number[])[];
+            }> | undefined;
+            _len?: Readonly<{}> | undefined;
+            _max?: Readonly<{}> | undefined;
+            _min?: Readonly<{}> | undefined;
+            _sum?: Readonly<{}> | undefined;
+        }>;
+        file: Readonly<{
+            '+'?: boolean | undefined;
+            '='?: readonly (readonly string[])[] | undefined;
+            '!='?: readonly (readonly string[])[] | undefined;
+            _num?: Readonly<{
+                '=': readonly (readonly number[])[];
+            }> | undefined;
+            _len?: Readonly<{}> | undefined;
+            _max?: Readonly<{}> | undefined;
+            _min?: Readonly<{}> | undefined;
+            _sum?: Readonly<{}> | undefined;
+        }>;
+    }>) & {
+        config: {
+            BAZA: ((val: {
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly number[])[] | undefined;
+                '!='?: readonly (readonly number[])[] | undefined;
+                _num?: {
+                    '=': readonly (readonly (string | number)[])[];
+                } | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            }) => Readonly<{
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly number[])[] | undefined;
+                '!='?: readonly (readonly number[])[] | undefined;
+                _num?: Readonly<{
+                    '=': readonly (readonly number[])[];
+                }> | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            }>) & {
+                config: {
+                    '+': ((val: boolean | undefined) => boolean | undefined) & {
+                        config: {
+                            sub: (val: boolean) => boolean;
+                            fallback: (() => boolean) | undefined;
+                        };
+                        Value: boolean | undefined;
+                    };
+                    '=': ((val: readonly (readonly number[])[] | undefined) => readonly (readonly number[])[] | undefined) & {
+                        config: {
+                            sub: ((val: readonly (readonly number[])[]) => readonly (readonly number[])[]) & {
+                                config: ((val: readonly number[]) => readonly number[]) & {
+                                    config: typeof $mol_data_integer;
+                                    Value: readonly number[];
+                                };
+                                Value: readonly (readonly number[])[];
+                            };
+                            fallback: (() => readonly (readonly number[])[]) | undefined;
+                        };
+                        Value: readonly (readonly number[])[] | undefined;
+                    };
+                    '!=': ((val: readonly (readonly number[])[] | undefined) => readonly (readonly number[])[] | undefined) & {
+                        config: {
+                            sub: ((val: readonly (readonly number[])[]) => readonly (readonly number[])[]) & {
+                                config: ((val: readonly number[]) => readonly number[]) & {
+                                    config: typeof $mol_data_integer;
+                                    Value: readonly number[];
+                                };
+                                Value: readonly (readonly number[])[];
+                            };
+                            fallback: (() => readonly (readonly number[])[]) | undefined;
+                        };
+                        Value: readonly (readonly number[])[] | undefined;
+                    };
+                    _num: ((val: {
+                        '=': readonly (readonly (string | number)[])[];
+                    } | undefined) => Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined) & {
+                        config: {
+                            sub: ((val: {
+                                '=': readonly (readonly (string | number)[])[];
+                            }) => Readonly<{
+                                '=': readonly (readonly number[])[];
+                            }>) & {
+                                config: {
+                                    '=': ((val: readonly (readonly (string | number)[])[]) => readonly (readonly number[])[]) & {
+                                        config: ((val: readonly (string | number)[]) => readonly number[]) & {
+                                            config: ((this: any, input: string | number) => number) & {
+                                                config: {
+                                                    funcs: [((val: string | number) => string | number) & {
+                                                        config: [(val: string) => string, typeof $mol_data_integer];
+                                                        Value: string | number;
+                                                    }, NumberConstructor] & [(input: string | number) => any, (input: any) => unknown];
+                                                };
+                                                Value: number;
+                                            };
+                                            Value: readonly number[];
+                                        };
+                                        Value: readonly (readonly number[])[];
+                                    };
+                                };
+                                Value: Readonly<{
+                                    '=': readonly (readonly number[])[];
+                                }>;
+                            };
+                            fallback: (() => Readonly<{
+                                '=': readonly (readonly number[])[];
+                            }>) | undefined;
+                        };
+                        Value: Readonly<{
+                            '=': readonly (readonly number[])[];
+                        }> | undefined;
+                    };
+                    _len: $mol_data_value<Readonly<{}> | undefined, Readonly<{}> | undefined>;
+                    _max: $mol_data_value<Readonly<{}> | undefined, Readonly<{}> | undefined>;
+                    _min: $mol_data_value<Readonly<{}> | undefined, Readonly<{}> | undefined>;
+                    _sum: $mol_data_value<Readonly<{}> | undefined, Readonly<{}> | undefined>;
+                };
+                Value: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+            } & {
+                parse(str: string): Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+                build(query: {
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: {
+                        '=': readonly (readonly (string | number)[])[];
+                    } | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }): string;
+            };
+            file: ((val: {
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly string[])[] | undefined;
+                '!='?: readonly (readonly string[])[] | undefined;
+                _num?: {
+                    '=': readonly (readonly (string | number)[])[];
+                } | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            }) => Readonly<{
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly string[])[] | undefined;
+                '!='?: readonly (readonly string[])[] | undefined;
+                _num?: Readonly<{
+                    '=': readonly (readonly number[])[];
+                }> | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            }>) & {
+                config: {
+                    '+': ((val: boolean | undefined) => boolean | undefined) & {
+                        config: {
+                            sub: (val: boolean) => boolean;
+                            fallback: (() => boolean) | undefined;
+                        };
+                        Value: boolean | undefined;
+                    };
+                    '=': ((val: readonly (readonly string[])[] | undefined) => readonly (readonly string[])[] | undefined) & {
+                        config: {
+                            sub: ((val: readonly (readonly string[])[]) => readonly (readonly string[])[]) & {
+                                config: ((val: readonly string[]) => readonly string[]) & {
+                                    config: (val: string) => string;
+                                    Value: readonly string[];
+                                };
+                                Value: readonly (readonly string[])[];
+                            };
+                            fallback: (() => readonly (readonly string[])[]) | undefined;
+                        };
+                        Value: readonly (readonly string[])[] | undefined;
+                    };
+                    '!=': ((val: readonly (readonly string[])[] | undefined) => readonly (readonly string[])[] | undefined) & {
+                        config: {
+                            sub: ((val: readonly (readonly string[])[]) => readonly (readonly string[])[]) & {
+                                config: ((val: readonly string[]) => readonly string[]) & {
+                                    config: (val: string) => string;
+                                    Value: readonly string[];
+                                };
+                                Value: readonly (readonly string[])[];
+                            };
+                            fallback: (() => readonly (readonly string[])[]) | undefined;
+                        };
+                        Value: readonly (readonly string[])[] | undefined;
+                    };
+                    _num: ((val: {
+                        '=': readonly (readonly (string | number)[])[];
+                    } | undefined) => Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined) & {
+                        config: {
+                            sub: ((val: {
+                                '=': readonly (readonly (string | number)[])[];
+                            }) => Readonly<{
+                                '=': readonly (readonly number[])[];
+                            }>) & {
+                                config: {
+                                    '=': ((val: readonly (readonly (string | number)[])[]) => readonly (readonly number[])[]) & {
+                                        config: ((val: readonly (string | number)[]) => readonly number[]) & {
+                                            config: ((this: any, input: string | number) => number) & {
+                                                config: {
+                                                    funcs: [((val: string | number) => string | number) & {
+                                                        config: [(val: string) => string, typeof $mol_data_integer];
+                                                        Value: string | number;
+                                                    }, NumberConstructor] & [(input: string | number) => any, (input: any) => unknown];
+                                                };
+                                                Value: number;
+                                            };
+                                            Value: readonly number[];
+                                        };
+                                        Value: readonly (readonly number[])[];
+                                    };
+                                };
+                                Value: Readonly<{
+                                    '=': readonly (readonly number[])[];
+                                }>;
+                            };
+                            fallback: (() => Readonly<{
+                                '=': readonly (readonly number[])[];
+                            }>) | undefined;
+                        };
+                        Value: Readonly<{
+                            '=': readonly (readonly number[])[];
+                        }> | undefined;
+                    };
+                    _len: $mol_data_value<Readonly<{}> | undefined, Readonly<{}> | undefined>;
+                    _max: $mol_data_value<Readonly<{}> | undefined, Readonly<{}> | undefined>;
+                    _min: $mol_data_value<Readonly<{}> | undefined, Readonly<{}> | undefined>;
+                    _sum: $mol_data_value<Readonly<{}> | undefined, Readonly<{}> | undefined>;
+                };
+                Value: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+            } & {
+                parse(str: string): Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+                build(query: {
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: {
+                        '=': readonly (readonly (string | number)[])[];
+                    } | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }): string;
+            };
+        } & {
+            '+': ((val: boolean | undefined) => boolean | undefined) & {
+                config: {
+                    sub: (val: boolean) => boolean;
+                    fallback: (() => boolean) | undefined;
+                };
+                Value: boolean | undefined;
+            };
+            '=': ((val: readonly (readonly number[])[] | undefined) => readonly (readonly number[])[] | undefined) & {
+                config: {
+                    sub: ((val: readonly (readonly number[])[]) => readonly (readonly number[])[]) & {
+                        config: ((val: readonly number[]) => readonly number[]) & {
+                            config: typeof $mol_data_integer;
+                            Value: readonly number[];
+                        };
+                        Value: readonly (readonly number[])[];
+                    };
+                    fallback: (() => readonly (readonly number[])[]) | undefined;
+                };
+                Value: readonly (readonly number[])[] | undefined;
+            };
+            '!=': ((val: readonly (readonly number[])[] | undefined) => readonly (readonly number[])[] | undefined) & {
+                config: {
+                    sub: ((val: readonly (readonly number[])[]) => readonly (readonly number[])[]) & {
+                        config: ((val: readonly number[]) => readonly number[]) & {
+                            config: typeof $mol_data_integer;
+                            Value: readonly number[];
+                        };
+                        Value: readonly (readonly number[])[];
+                    };
+                    fallback: (() => readonly (readonly number[])[]) | undefined;
+                };
+                Value: readonly (readonly number[])[] | undefined;
+            };
+            _num: ((val: {
+                '=': readonly (readonly (string | number)[])[];
+            } | undefined) => Readonly<{
+                '=': readonly (readonly number[])[];
+            }> | undefined) & {
+                config: {
+                    sub: ((val: {
+                        '=': readonly (readonly (string | number)[])[];
+                    }) => Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }>) & {
+                        config: {
+                            '=': ((val: readonly (readonly (string | number)[])[]) => readonly (readonly number[])[]) & {
+                                config: ((val: readonly (string | number)[]) => readonly number[]) & {
+                                    config: ((this: any, input: string | number) => number) & {
+                                        config: {
+                                            funcs: [((val: string | number) => string | number) & {
+                                                config: [(val: string) => string, typeof $mol_data_integer];
+                                                Value: string | number;
+                                            }, NumberConstructor] & [(input: string | number) => any, (input: any) => unknown];
+                                        };
+                                        Value: number;
+                                    };
+                                    Value: readonly number[];
+                                };
+                                Value: readonly (readonly number[])[];
+                            };
+                        };
+                        Value: Readonly<{
+                            '=': readonly (readonly number[])[];
+                        }>;
+                    };
+                    fallback: (() => Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }>) | undefined;
+                };
+                Value: Readonly<{
+                    '=': readonly (readonly number[])[];
+                }> | undefined;
+            };
+            _len: $mol_data_value<Readonly<{
+                BAZA: {
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: {
+                        '=': readonly (readonly (string | number)[])[];
+                    } | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                };
+                file: {
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: {
+                        '=': readonly (readonly (string | number)[])[];
+                    } | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                };
+            }> | undefined, Readonly<{
+                BAZA: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+                file: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+            }> | undefined>;
+            _max: $mol_data_value<Readonly<{
+                BAZA: {
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: {
+                        '=': readonly (readonly (string | number)[])[];
+                    } | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                };
+                file: {
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: {
+                        '=': readonly (readonly (string | number)[])[];
+                    } | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                };
+            }> | undefined, Readonly<{
+                BAZA: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+                file: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+            }> | undefined>;
+            _min: $mol_data_value<Readonly<{
+                BAZA: {
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: {
+                        '=': readonly (readonly (string | number)[])[];
+                    } | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                };
+                file: {
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: {
+                        '=': readonly (readonly (string | number)[])[];
+                    } | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                };
+            }> | undefined, Readonly<{
+                BAZA: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+                file: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+            }> | undefined>;
+            _sum: $mol_data_value<Readonly<{
+                BAZA: {
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: {
+                        '=': readonly (readonly (string | number)[])[];
+                    } | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                };
+                file: {
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: {
+                        '=': readonly (readonly (string | number)[])[];
+                    } | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                };
+            }> | undefined, Readonly<{
+                BAZA: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+                file: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+            }> | undefined>;
+        };
+        Value: Readonly<{
+            '+'?: boolean | undefined;
+            '='?: readonly (readonly number[])[] | undefined;
+            '!='?: readonly (readonly number[])[] | undefined;
+            _num?: Readonly<{
+                '=': readonly (readonly number[])[];
+            }> | undefined;
+            _len?: Readonly<{
+                BAZA: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+                file: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+            }> | undefined;
+            _max?: Readonly<{
+                BAZA: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+                file: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+            }> | undefined;
+            _min?: Readonly<{
+                BAZA: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+                file: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+            }> | undefined;
+            _sum?: Readonly<{
+                BAZA: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+                file: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+            }> | undefined;
+            BAZA: Readonly<{
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly number[])[] | undefined;
+                '!='?: readonly (readonly number[])[] | undefined;
+                _num?: Readonly<{
+                    '=': readonly (readonly number[])[];
+                }> | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            }>;
+            file: Readonly<{
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly string[])[] | undefined;
+                '!='?: readonly (readonly string[])[] | undefined;
+                _num?: Readonly<{
+                    '=': readonly (readonly number[])[];
+                }> | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            }>;
+        }>;
+    } & {
+        parse(str: string): Readonly<{
+            '+'?: boolean | undefined;
+            '='?: readonly (readonly number[])[] | undefined;
+            '!='?: readonly (readonly number[])[] | undefined;
+            _num?: Readonly<{
+                '=': readonly (readonly number[])[];
+            }> | undefined;
+            _len?: Readonly<{
+                BAZA: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+                file: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+            }> | undefined;
+            _max?: Readonly<{
+                BAZA: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+                file: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+            }> | undefined;
+            _min?: Readonly<{
+                BAZA: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+                file: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+            }> | undefined;
+            _sum?: Readonly<{
+                BAZA: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+                file: Readonly<{
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: Readonly<{
+                        '=': readonly (readonly number[])[];
+                    }> | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                }>;
+            }> | undefined;
+            BAZA: Readonly<{
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly number[])[] | undefined;
+                '!='?: readonly (readonly number[])[] | undefined;
+                _num?: Readonly<{
+                    '=': readonly (readonly number[])[];
+                }> | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            }>;
+            file: Readonly<{
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly string[])[] | undefined;
+                '!='?: readonly (readonly string[])[] | undefined;
+                _num?: Readonly<{
+                    '=': readonly (readonly number[])[];
+                }> | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            }>;
+        }>;
+        build(query: {
+            '+'?: boolean | undefined;
+            '='?: readonly (readonly number[])[] | undefined;
+            '!='?: readonly (readonly number[])[] | undefined;
+            _num?: {
+                '=': readonly (readonly (string | number)[])[];
+            } | undefined;
+            _len?: Readonly<{
+                BAZA: {
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: {
+                        '=': readonly (readonly (string | number)[])[];
+                    } | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                };
+                file: {
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: {
+                        '=': readonly (readonly (string | number)[])[];
+                    } | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                };
+            }> | undefined;
+            _max?: Readonly<{
+                BAZA: {
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: {
+                        '=': readonly (readonly (string | number)[])[];
+                    } | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                };
+                file: {
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: {
+                        '=': readonly (readonly (string | number)[])[];
+                    } | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                };
+            }> | undefined;
+            _min?: Readonly<{
+                BAZA: {
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: {
+                        '=': readonly (readonly (string | number)[])[];
+                    } | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                };
+                file: {
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: {
+                        '=': readonly (readonly (string | number)[])[];
+                    } | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                };
+            }> | undefined;
+            _sum?: Readonly<{
+                BAZA: {
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly number[])[] | undefined;
+                    '!='?: readonly (readonly number[])[] | undefined;
+                    _num?: {
+                        '=': readonly (readonly (string | number)[])[];
+                    } | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                };
+                file: {
+                    '+'?: boolean | undefined;
+                    '='?: readonly (readonly string[])[] | undefined;
+                    '!='?: readonly (readonly string[])[] | undefined;
+                    _num?: {
+                        '=': readonly (readonly (string | number)[])[];
+                    } | undefined;
+                    _len?: Readonly<{}> | undefined;
+                    _max?: Readonly<{}> | undefined;
+                    _min?: Readonly<{}> | undefined;
+                    _sum?: Readonly<{}> | undefined;
+                };
+            }> | undefined;
+            BAZA: {
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly number[])[] | undefined;
+                '!='?: readonly (readonly number[])[] | undefined;
+                _num?: {
+                    '=': readonly (readonly (string | number)[])[];
+                } | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            };
+            file: {
+                '+'?: boolean | undefined;
+                '='?: readonly (readonly string[])[] | undefined;
+                '!='?: readonly (readonly string[])[] | undefined;
+                _num?: {
+                    '=': readonly (readonly (string | number)[])[];
+                } | undefined;
+                _len?: Readonly<{}> | undefined;
+                _max?: Readonly<{}> | undefined;
+                _min?: Readonly<{}> | undefined;
+                _sum?: Readonly<{}> | undefined;
+            };
+        }): string;
+    };
+    const $giper_baza_file_base: Omit<typeof $giper_baza_dict, "prototype"> & {
+        new (...args: any[]): $mol_type_override<$giper_baza_dict, {
+            readonly Name: (auto?: any) => $giper_baza_atom_text | null;
+            readonly Type: (auto?: any) => $giper_baza_atom_text | null;
+            readonly Chunks: (auto?: any) => $giper_baza_list_bin | null;
+        }>;
+        path: string;
+    } & {
+        schema: {
+            [x: string]: typeof $giper_baza_pawn;
+        } & {
+            /** File name */
+            readonly Name: typeof $giper_baza_atom_text;
+            /** File Content-Type */
+            readonly Type: typeof $giper_baza_atom_text;
+            /** File content in chunks - list of binaries */
+            readonly Chunks: typeof $giper_baza_list_bin;
+        };
+    };
+    export class $giper_baza_file extends $giper_baza_file_base {
+        /** Persistent URI to file content */
+        uri(): string;
+        /** File name */
+        name(next?: string | null): string;
+        /** Mime type */
+        type(next?: string | null): string;
+        /** Blob, File etc. */
+        blob(next?: $mol_blob): $mol_blob;
+        /** Solid byte buffer. */
+        buffer(next?: Uint8Array<ArrayBuffer>): Uint8Array<ArrayBuffer>;
+        chunks(next?: readonly Uint8Array<ArrayBuffer>[]): Uint8Array<ArrayBuffer>[];
+        str(next?: string, type?: string): string;
+        json(next?: any, type?: string): any;
+    }
+    export {};
 }
 
 declare namespace $ {
