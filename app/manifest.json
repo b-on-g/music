@@ -1,5 +1,6 @@
 {
 	"manifest_version": 3,
+	"scope": "./",
 	"name": "Bog Music",
 	"short_name": "Bog Music",
 	"description": "Music player with offline cache and Giper Baza sync",
