@@ -44055,8 +44055,6 @@ declare namespace $ {
 		ReturnType< $mol_button_minor['sub'] >
 	>
 	export class $bog_music_track extends $mol_view {
-		available( ): boolean
-		syncing( ): boolean
 		event_drag_start( next?: any ): any
 		event_drag_over( next?: any ): any
 		event_drop( next?: any ): any
@@ -44097,8 +44095,6 @@ declare namespace $ {
 		attr( ): ({ 
 			'bog_music_track_current': ReturnType< $bog_music_track['current'] >,
 			'bog_music_track_share_selected': ReturnType< $bog_music_track['share_selected'] >,
-			'bog_music_track_available': ReturnType< $bog_music_track['available'] >,
-			'bog_music_track_syncing': ReturnType< $bog_music_track['syncing'] >,
 			'draggable': ReturnType< $bog_music_track['can_drag'] >,
 		}) 
 		event( ): ({ 
@@ -44119,18 +44115,6 @@ declare namespace $.$$ {
         title(): string;
         artist(): string;
         cached(): boolean;
-        /**
-         * Состояние blob'а трека. Полностью реактивно и без ручной синхронизации:
-         * `blob()` читает File→remote→buffer, а обёртка atom_link_synced сама
-         * тянет blob-land с мастера. Пока чанки идут — `buffer()` кидает Promise
-         * (ловим → 'syncing'); приехали — 'ready'; нет источника — 'none'.
-         * Когда baza досинкает, ячейка пересчитается и трек станет 'ready' сам.
-         */
-        blob_state(): 'ready' | 'syncing' | 'none';
-        /** Доступен для проигрывания (blob уже на этом устройстве). */
-        available(): boolean;
-        /** Идёт докачка blob с мастера — для индикатора-мигания. */
-        syncing(): boolean;
         is_local(): boolean;
         can_drag(): boolean;
         Archive(): any;
@@ -52321,6 +52305,14 @@ declare namespace $ {
          * land не досинкается, и возвращает готовый blob — без второго клика.
          */
         blob_wait(): Blob | null;
+        /**
+         * Blob полностью на устройстве — ЛЁГКАЯ проверка (без материализации
+         * Blob, в отличие от cached()): зовётся из keys_in на каждый трек.
+         * Само чтение File→remote через link_synced запускает sync blob-land,
+         * так что недосинканный трек начнёт качаться и по готовности реактивно
+         * появится в списке.
+         */
+        has_blob(): boolean;
         cached(): boolean;
         /** Интегральная громкость (dB RMS). null — ещё не измерена. */
         loudness(next?: number): number | null;
@@ -57888,6 +57880,8 @@ declare namespace $.$$ {
         music_click(e?: Event): null;
         search_click(e?: Event): null;
         account_click(e?: Event): null;
+        /** Отзывы пока скрыты: форма не работает. Вернуть — удалить override. */
+        Tab_feedback(): any;
         feedback_click(e?: Event): null;
     }
 }

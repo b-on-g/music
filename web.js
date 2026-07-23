@@ -19606,12 +19606,6 @@ var $;
 
 ;
 	($.$bog_music_track) = class $bog_music_track extends ($.$mol_view) {
-		available(){
-			return true;
-		}
-		syncing(){
-			return false;
-		}
 		event_drag_start(next){
 			if(next !== undefined) return next;
 			return null;
@@ -19782,8 +19776,6 @@ var $;
 			return {
 				"bog_music_track_current": (this.current()), 
 				"bog_music_track_share_selected": (this.share_selected()), 
-				"bog_music_track_available": (this.available()), 
-				"bog_music_track_syncing": (this.syncing()), 
 				"draggable": (this.can_drag())
 			};
 		}
@@ -20969,31 +20961,6 @@ var $;
             cached() {
                 return this.track()?.cached() ?? false;
             }
-            /**
-             * Состояние blob'а трека. Полностью реактивно и без ручной синхронизации:
-             * `blob()` читает File→remote→buffer, а обёртка atom_link_synced сама
-             * тянет blob-land с мастера. Пока чанки идут — `buffer()` кидает Promise
-             * (ловим → 'syncing'); приехали — 'ready'; нет источника — 'none'.
-             * Когда baza досинкает, ячейка пересчитается и трек станет 'ready' сам.
-             */
-            blob_state() {
-                try {
-                    return this.track()?.blob() != null ? 'ready' : 'none';
-                }
-                catch (e) {
-                    if (e instanceof Promise)
-                        return 'syncing';
-                    return 'none';
-                }
-            }
-            /** Доступен для проигрывания (blob уже на этом устройстве). */
-            available() {
-                return this.blob_state() === 'ready';
-            }
-            /** Идёт докачка blob с мастера — для индикатора-мигания. */
-            syncing() {
-                return this.blob_state() === 'syncing';
-            }
             is_local() {
                 return this.track()?.audio()?.owner_id === 0;
             }
@@ -21220,6 +21187,25 @@ var $;
             const type = file.type() || 'audio/mpeg';
             return new Blob([buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)], { type });
         }
+        /**
+         * Blob полностью на устройстве — ЛЁГКАЯ проверка (без материализации
+         * Blob, в отличие от cached()): зовётся из keys_in на каждый трек.
+         * Само чтение File→remote через link_synced запускает sync blob-land,
+         * так что недосинканный трек начнёт качаться и по готовности реактивно
+         * появится в списке.
+         */
+        has_blob() {
+            try {
+                const file = this.File()?.remote();
+                if (!file)
+                    return false;
+                const buf = file.buffer();
+                return !!buf && buf.byteLength > 0;
+            }
+            catch (e) {
+                return false; // Promise (ещё синкается) или битый pawn — пока нет
+            }
+        }
         cached() {
             try {
                 return this.blob() !== null;
@@ -21382,25 +21368,6 @@ var $;
                     true: {
                         background: { color: $mol_theme.focus },
                         color: $mol_theme.card,
-                    },
-                },
-                // Blob ещё не на устройстве (докачивается после переноса аккаунта):
-                // приглушаем как индикатор. Клик работает — плеер дождётся blob.
-                bog_music_track_available: {
-                    false: {
-                        opacity: 0.4,
-                    },
-                },
-                // Пока идёт докачка blob с мастера — мигаем тем же mol-миганием
-                // (keyframes mol_view_wait определён в mol/view). Перекрывает static
-                // opacity выше, поэтому виден пульс, а не постоянное приглушение.
-                bog_music_track_syncing: {
-                    true: {
-                        animation: {
-                            name: 'mol_view_wait',
-                            duration: '1s',
-                            iterationCount: 'infinite',
-                        },
                     },
                 },
             },
@@ -21600,6 +21567,11 @@ var $;
                     if (track.playlist() !== playlist)
                         continue;
                     if (!track.audio())
+                        continue;
+                    // Недосинканный трек (blob ещё не доехал) не показываем вовсе:
+                    // has_blob сам стартует докачку, по готовности список
+                    // пересчитается и трек появится уже играбельным.
+                    if (!track.has_blob())
                         continue;
                     rows.push({ key, order: track.order(), added: track.added() });
                 }
@@ -26502,6 +26474,10 @@ var $;
              * этого же элемента — play с локскрина гарантированно попадёт в него.
              */
             ios_pause(el) {
+                // Уже на тишине: повторная «пауза» затёрла бы _paused_pos позицией
+                // silence-цикла (0..3с) и resume отмотал бы трек в начало.
+                if (this._silent)
+                    return;
                 this._paused_pos = el.currentTime || this._paused_pos;
                 this._silent = true;
                 this.current_time(this._paused_pos); // заморозить полоску на позиции
@@ -26632,8 +26608,27 @@ var $;
                     this.gain_resume();
                 });
                 el.addEventListener('pause', () => {
-                    if (this._silent)
+                    if (this._silent) {
+                        // Системная пауза (выдернули наушники) остановила и беззвучный
+                        // keep-alive → страница замёрзнет и iOS прибьёт PWA. Будим тишину.
+                        el.play().catch(() => { });
                         return;
+                    }
+                    // iOS: системная пауза (наушники, interruption) мимо mediaSession
+                    // бьёт прямо в элемент. Просто принять её = потерять audio-сессию →
+                    // iOS закроет приложение. Переводим в наш swap-на-тишину: позиция
+                    // сохранена, сессия жива, UI показывает паузу.
+                    if (this.is_ios() && this.playing() && !el.ended) {
+                        this.ios_pause(el);
+                        const key = this.current_key();
+                        if (key) {
+                            try {
+                                this.account().save_last_session(key, this.current_time());
+                            }
+                            catch { }
+                        }
+                        return;
+                    }
                     try {
                         this.playing(false);
                     }
@@ -27329,6 +27324,9 @@ var $;
                 this._paused_pos = 0;
                 this._await_seek = 0;
                 this._trim_end_skip = '';
+                // ДО el.pause(): его синхронный 'pause'-event при playing()=true был бы
+                // принят за системную паузу и воскресил бы keep-alive-тишину.
+                this.playing(false);
                 if (this.is_extension()) {
                     this.send('pause');
                 }
@@ -27349,7 +27347,6 @@ var $;
                     navigator.mediaSession.metadata = null;
                     navigator.mediaSession.playbackState = 'none';
                 }
-                this.playing(false);
                 this.current_time(0);
                 this.duration(0);
                 this.queue_index(0);
@@ -28137,6 +28134,10 @@ var $;
                 if (e)
                     e.preventDefault();
                 this.section('account');
+                return null;
+            }
+            /** Отзывы пока скрыты: форма не работает. Вернуть — удалить override. */
+            Tab_feedback() {
                 return null;
             }
             feedback_click(e) {
@@ -37308,7 +37309,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.22';
+    $.$bog_music_version = 'v1.23';
 })($ || ($ = {}));
 
 ;
