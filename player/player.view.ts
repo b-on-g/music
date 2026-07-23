@@ -129,6 +129,9 @@ namespace $.$$ {
 		 * этого же элемента — play с локскрина гарантированно попадёт в него.
 		 */
 		private ios_pause(el: HTMLAudioElement) {
+			// Уже на тишине: повторная «пауза» затёрла бы _paused_pos позицией
+			// silence-цикла (0..3с) и resume отмотал бы трек в начало.
+			if (this._silent) return
 			this._paused_pos = el.currentTime || this._paused_pos
 			this._silent = true
 			this.current_time(this._paused_pos) // заморозить полоску на позиции
@@ -253,7 +256,24 @@ namespace $.$$ {
 				this.gain_resume()
 			})
 			el.addEventListener('pause', () => {
-				if (this._silent) return
+				if (this._silent) {
+					// Системная пауза (выдернули наушники) остановила и беззвучный
+					// keep-alive → страница замёрзнет и iOS прибьёт PWA. Будим тишину.
+					el.play().catch(() => {})
+					return
+				}
+				// iOS: системная пауза (наушники, interruption) мимо mediaSession
+				// бьёт прямо в элемент. Просто принять её = потерять audio-сессию →
+				// iOS закроет приложение. Переводим в наш swap-на-тишину: позиция
+				// сохранена, сессия жива, UI показывает паузу.
+				if (this.is_ios() && this.playing() && !el.ended) {
+					this.ios_pause(el)
+					const key = this.current_key()
+					if (key) {
+						try { this.account().save_last_session(key, this.current_time()) } catch {}
+					}
+					return
+				}
 				try { this.playing(false) } catch {}
 				if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused'
 			})
@@ -925,6 +945,9 @@ namespace $.$$ {
 			this._paused_pos = 0
 			this._await_seek = 0
 			this._trim_end_skip = ''
+			// ДО el.pause(): его синхронный 'pause'-event при playing()=true был бы
+			// принят за системную паузу и воскресил бы keep-alive-тишину.
+			this.playing(false)
 			if (this.is_extension()) {
 				this.send('pause')
 			} else if (this._audio_el) {
@@ -941,7 +964,6 @@ namespace $.$$ {
 				navigator.mediaSession.metadata = null
 				navigator.mediaSession.playbackState = 'none'
 			}
-			this.playing(false)
 			this.current_time(0)
 			this.duration(0)
 			this.queue_index(0)

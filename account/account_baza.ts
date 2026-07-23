@@ -56,6 +56,10 @@ namespace $ {
 					if (!track) continue
 					if (track.playlist() !== playlist) continue
 					if (!track.audio()) continue
+					// Недосинканный трек (blob ещё не доехал) не показываем вовсе:
+					// has_blob сам стартует докачку, по готовности список
+					// пересчитается и трек появится уже играбельным.
+					if (!track.has_blob()) continue
 					rows.push({ key, order: track.order(), added: track.added() })
 				} catch {
 					continue

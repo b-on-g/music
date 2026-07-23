@@ -28,6 +28,11 @@ namespace $.$$ {
 			return null
 		}
 
+		/** Отзывы пока скрыты: форма не работает. Вернуть — удалить override. */
+		Tab_feedback() {
+			return null as any
+		}
+
 		@$mol_action
 		feedback_click(e?: Event) {
 			if (e) e.preventDefault()

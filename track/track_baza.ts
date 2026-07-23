@@ -104,6 +104,24 @@ namespace $ {
 			)
 		}
 
+		/**
+		 * Blob полностью на устройстве — ЛЁГКАЯ проверка (без материализации
+		 * Blob, в отличие от cached()): зовётся из keys_in на каждый трек.
+		 * Само чтение File→remote через link_synced запускает sync blob-land,
+		 * так что недосинканный трек начнёт качаться и по готовности реактивно
+		 * появится в списке.
+		 */
+		has_blob(): boolean {
+			try {
+				const file = this.File()?.remote()
+				if (!file) return false
+				const buf = file.buffer()
+				return !!buf && buf.byteLength > 0
+			} catch (e: any) {
+				return false // Promise (ещё синкается) или битый pawn — пока нет
+			}
+		}
+
 		cached(): boolean {
 			try {
 				return this.blob() !== null
