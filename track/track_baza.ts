@@ -84,8 +84,16 @@ namespace $ {
 		 * land не досинкается, и возвращает готовый blob — без второго клика.
 		 */
 		blob_wait(): Blob | null {
-			const file = this.File()?.remote()
-			if (!file) return null
+			let file = this.File()?.remote()
+			if (!file) {
+				// Трек прилетел с другого устройства, а ссылка File ещё не доехала
+				// в home land — ждём его досинка (suspend) и перечитываем. Без
+				// этого возвращали null сразу, фибра не ретраилась и трек не играл
+				// до повторного клика.
+				this.land().sync()
+				file = this.File()?.remote()
+				if (!file) return null
+			}
 			file.land().sync() // проброс Promise → suspend пока не досинкается
 			const buf = file.buffer()
 			if (!buf || buf.byteLength === 0) return null

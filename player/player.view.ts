@@ -681,13 +681,52 @@ namespace $.$$ {
 		// без suspend — держим его здесь, прогретым заранее.
 		private _blob_cache = new Map<string, Blob>()
 
-		/** Прогреть blob следующего трека в RAM-кеш (fire-and-forget). */
+		/** Прогреть blob СЛЕДУЮЩЕГО трека в RAM-кеш (fire-and-forget). */
 		private prefetch_next(key: string) {
-			const q = this.queue_keys()
-			const idx = q.indexOf(key)
-			const next_key = idx >= 0 ? q[idx + 1] : undefined
-			if (!next_key || this._blob_cache.has(next_key)) return
-			try { ($mol_wire_async(this) as any).cache_blob(next_key) } catch {}
+			try { ($mol_wire_async(this) as any).cache_next(key) } catch {}
+		}
+
+		/**
+		 * Sync-метод (через фибру): вычислить РЕАЛЬНЫЙ следующий трек с учётом
+		 * режима (repeat/shuffle/«Моя волна») и прогреть его blob. Раньше грелся
+		 * queue[idx+1], а next() при волне/shuffle выбирал другой трек → на
+		 * 'ended' cache miss → async-путь → в фоне на iOS тишина.
+		 */
+		cache_next(key: string): boolean {
+			const next_key = this.predict_next_key(key)
+			if (!next_key) return false
+			if (this._blob_cache.has(next_key)) return true
+			return this.cache_blob(next_key)
+		}
+
+		/**
+		 * Выбор «Моей волны», сделанный ЗАРАНЕЕ (при старте текущего трека).
+		 * Волна рандомная, поэтому предсказать её на 'ended' нельзя — вместо
+		 * этого выбираем следующий трек сразу, греем его blob, а next() потом
+		 * использует именно этот выбор.
+		 */
+		private _planned_wave: { from: string, key: string } | null = null
+
+		/** Зеркало логики next() без побочных эффектов (кроме плана волны). */
+		private predict_next_key(key: string): string | null {
+			if (this.repeat_mode() === 'one') return key
+			const queue = this.queue_keys()
+			if (this.repeat_mode() === 'shuffle' && queue.length) {
+				// Peek следующего из shuffle-bag: детерминирован, next() возьмёт его же.
+				this.ensure_shuffle_bag(queue)
+				return this._shuffle_bag[this._shuffle_bag_idx] ?? null
+			}
+			// Фибра ретраится при suspend — рандомный выбор волны делаем один раз
+			// и переиспользуем на ретраях, иначе план скакал бы на каждом заходе.
+			if (this._planned_wave?.from === key) return this._planned_wave.key
+			const picked = this.wave_pick(key)
+			if (picked && picked !== key) {
+				this._planned_wave = { from: key, key: picked }
+				return picked
+			}
+			if (!queue.length) return null
+			const idx = queue.indexOf(key)
+			return queue[idx >= 0 && idx + 1 < queue.length ? idx + 1 : 0] ?? null
 		}
 
 		/** Sync-метод (через фибру): дождаться blob и положить в RAM-кеш. */
@@ -871,6 +910,46 @@ namespace $.$$ {
 			}
 		}
 
+		/**
+		 * Полный сброс плеера (крестик): стоп звука, очистка всего внутреннего
+		 * состояния (swap-паузы, RAM-кеша, плана волны) и сохранённой сессии —
+		 * чтобы после перезагрузки плеер не воскрес сам.
+		 */
+		close() {
+			this._dispatch_token++ // инвалидировать pending dispatch'и
+			this._ext = null
+			this._planned_wave = null
+			this._blob_cache.clear()
+			this._silent = false
+			this._track_src = ''
+			this._paused_pos = 0
+			this._await_seek = 0
+			this._trim_end_skip = ''
+			if (this.is_extension()) {
+				this.send('pause')
+			} else if (this._audio_el) {
+				const el = this._audio_el
+				el.pause()
+				el.removeAttribute('src')
+				try { el.load() } catch {}
+			}
+			if (this._last_blob_url) {
+				URL.revokeObjectURL(this._last_blob_url)
+				this._last_blob_url = ''
+			}
+			if ('mediaSession' in navigator) {
+				navigator.mediaSession.metadata = null
+				navigator.mediaSession.playbackState = 'none'
+			}
+			this.playing(false)
+			this.current_time(0)
+			this.duration(0)
+			this.queue_index(0)
+			this._session_restored = true // не воскрешать сессию в этой вкладке
+			try { this.account().save_last_session('', 0) } catch {}
+			this.current_key('')
+		}
+
 		prev() {
 			const queue = this.queue_keys()
 			const idx = this.queue_index()
@@ -923,8 +1002,17 @@ namespace $.$$ {
 			// «Моя волна» — рекомендалка. Зовём app напрямую: event-binding
 			// `pick_next?` возвращал бы свой аргумент (echo), а не рекомендацию,
 			// из-за чего next() играл текущий трек заново вместо следующего.
+			// Сперва — выбор, сделанный заранее в cache_next: его blob уже прогрет
+			// в RAM → play пройдёт синхронно в ended-continuation (звук в фоне).
 			try {
-				const picked = this.wave_pick(this.current_key())
+				const cur = this.current_key()
+				let picked: string | null = null
+				if (this._planned_wave?.from === cur) {
+					picked = this._planned_wave.key
+					this._planned_wave = null
+				} else {
+					picked = this.wave_pick(cur)
+				}
 				if (picked && picked !== this.current_key()) {
 					const idx = queue.indexOf(picked)
 					if (idx >= 0) this.queue_index(idx)
