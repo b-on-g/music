@@ -57424,7 +57424,22 @@ declare namespace $ {
 		,
 		ReturnType< $mol_pop_over['bubble_content'] >
 	>
-	type $mol_view__sub_bog_music_player_34 = $mol_type_enforce<
+	type $mol_button_minor__hint_bog_music_player_34 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['hint'] >
+	>
+	type $mol_button_minor__click_bog_music_player_35 = $mol_type_enforce<
+		ReturnType< $bog_music_player['close'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub_bog_music_player_36 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_view__sub_bog_music_player_37 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
@@ -57482,6 +57497,9 @@ declare namespace $ {
 		Volume_slider( ): $mol_view
 		Volume_panel( ): $mol_view
 		Volume( ): $mol_pop_over
+		close( next?: any ): any
+		Close_icon( ): $mol_icon_close
+		Close( ): $mol_button_minor
 		Controls( ): $mol_view
 		current_key( next?: string ): string
 		queue_keys( ): readonly(any)[]
@@ -57612,8 +57630,24 @@ declare namespace $.$$ {
         private ensure_shuffle_bag;
         play_track(key?: string | null): void;
         private _blob_cache;
-        /** Прогреть blob следующего трека в RAM-кеш (fire-and-forget). */
+        /** Прогреть blob СЛЕДУЮЩЕГО трека в RAM-кеш (fire-and-forget). */
         private prefetch_next;
+        /**
+         * Sync-метод (через фибру): вычислить РЕАЛЬНЫЙ следующий трек с учётом
+         * режима (repeat/shuffle/«Моя волна») и прогреть его blob. Раньше грелся
+         * queue[idx+1], а next() при волне/shuffle выбирал другой трек → на
+         * 'ended' cache miss → async-путь → в фоне на iOS тишина.
+         */
+        cache_next(key: string): boolean;
+        /**
+         * Выбор «Моей волны», сделанный ЗАРАНЕЕ (при старте текущего трека).
+         * Волна рандомная, поэтому предсказать её на 'ended' нельзя — вместо
+         * этого выбираем следующий трек сразу, греем его blob, а next() потом
+         * использует именно этот выбор.
+         */
+        private _planned_wave;
+        /** Зеркало логики next() без побочных эффектов (кроме плана волны). */
+        private predict_next_key;
         /** Sync-метод (через фибру): дождаться blob и положить в RAM-кеш. */
         cache_blob(key: string): boolean;
         /** Sync-чтение блоба: сперва RAM-кеш (без suspend), потом baza. */
@@ -57635,6 +57669,12 @@ declare namespace $.$$ {
         private play_source_local;
         private safe_play;
         toggle(): void;
+        /**
+         * Полный сброс плеера (крестик): стоп звука, очистка всего внутреннего
+         * состояния (swap-паузы, RAM-кеша, плана волны) и сохранённой сессии —
+         * чтобы после перезагрузки плеер не воскрес сам.
+         */
+        close(): void;
         prev(): void;
         /** Рекомендация «Моей волны» из app (null если режим выключен). */
         private wave_pick;

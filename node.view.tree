@@ -1386,6 +1386,10 @@ $bog_music_player $mol_view
 										<= Volume_fill $mol_view
 											style *
 												height <= volume_fill_height \
+				<= Close $mol_button_minor
+					hint \Закрыть плеер
+					click? <=> close? null
+					sub / <= Close_icon $mol_icon_close
 
 $bog_music_nav_item $mol_view
 	label \
