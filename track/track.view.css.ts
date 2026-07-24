@@ -121,6 +121,13 @@ namespace $.$$ {
 					color: $mol_theme.focus,
 				},
 			},
+			bog_music_track_pending: {
+				true: {
+					// blob ещё качается фоном — приглушаем строку, но она кликабельна
+					// (клик играет через blob_wait, дождавшись докачки).
+					opacity: 0.55,
+				},
+			},
 			bog_music_track_share_selected: {
 				true: {
 					background: { color: $mol_theme.focus },

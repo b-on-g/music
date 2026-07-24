@@ -15,7 +15,14 @@ namespace $.$$ {
 		}
 
 		cached() {
-			return this.track()?.cached() ?? false
+			// Неблокирующая проверка: НЕ триггерит sync (иначе рендер списка поднял
+			// бы загрузку всех blob-лендов разом). blob догоняет фоновый prefetch.
+			return this.track()?.blob_local() ?? false
+		}
+
+		/** Blob ещё не на устройстве — строка приглушается до докачки. */
+		blob_pending() {
+			return !this.cached()
 		}
 
 		is_local() {

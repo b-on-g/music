@@ -122,6 +122,39 @@ namespace $ {
 			}
 		}
 
+		/**
+		 * Есть ли blob локально — БЕЗ запуска sync (в отличие от has_blob/cached).
+		 * Использует `remote_local`, поэтому проверка на каждый трек в списке НЕ
+		 * поднимает загрузку всех blob-лендов. Реактивна: когда префетч догонит
+		 * этот трек и blob доедет, флипнется в true и строка перестанет тускнеть.
+		 */
+		blob_local(): boolean {
+			const link: any = this.File()
+			if (!link) return false
+			const file = link.remote_local ? link.remote_local() : link.remote()
+			if (!file) return false
+			const buf = file.buffer()
+			return !!buf && buf.byteLength > 0
+		}
+
+		/**
+		 * Дожидается докачки blob-land с мастера (suspend под $mol_wire_sync) и
+		 * возвращает, доехал ли blob. Как blob_wait, но без материализации Blob —
+		 * для фонового префетча «по одной песне»: драйвер зовёт это на один трек,
+		 * фибра висит пока не досинкается, потом берётся за следующий.
+		 */
+		blob_ensure(): boolean {
+			let file = this.File()?.remote()
+			if (!file) {
+				this.land().sync()
+				file = this.File()?.remote()
+				if (!file) return false
+			}
+			file.land().sync() // проброс Promise → suspend пока не досинкается
+			const buf = file.buffer()
+			return !!buf && buf.byteLength > 0
+		}
+
 		cached(): boolean {
 			try {
 				return this.blob() !== null

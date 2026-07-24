@@ -22,6 +22,15 @@ namespace $ {
 				}
 				return r
 			}
+
+			/**
+			 * Чтение ссылки БЕЗ запуска sync target-land'а. Для проверок «есть ли
+			 * blob уже локально» (индикатор строки, выбор следующего в префетче) —
+			 * чтобы простой рендер списка не поднимал загрузку всех blob-лендов разом.
+			 */
+			remote_local(next?: any) {
+				return (super.remote as any)(next)
+			}
 		}
 		return $bog_music_link_synced as typeof Base
 	}

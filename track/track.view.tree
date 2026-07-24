@@ -13,6 +13,7 @@ $bog_music_track $mol_view
 	attr *
 		bog_music_track_current <= current
 		bog_music_track_share_selected <= share_selected
+		bog_music_track_pending <= blob_pending false
 		draggable <= can_drag
 	event *
 		dragstart?event <=> event_drag_start?event null

@@ -77,6 +77,20 @@ namespace $.$$ {
 			return next ?? ''
 		}
 
+		/**
+		 * Фоновый драйвер докачки blob'ов «по одной песне». Detached-атом (как
+		 * land.sync_yard): его suspend'ы на текущем blob'е не блокируют рендер UI.
+		 * @$mol_mem здесь — во view-слое (на baza-объекте @$mol_mem запрещён).
+		 * Востребован из auto(), пока приложение открыто.
+		 */
+		@$mol_mem
+		prefetch() {
+			const account = this.account()
+			const root = new $mol_wire_atom('bog_music_prefetch', () => account.prefetch_step())
+			setTimeout(() => root.fresh())
+			return root
+		}
+
 		@$mol_action
 		play_key(key?: string | null) {
 			if (!key) return
@@ -504,6 +518,7 @@ namespace $.$$ {
 
 		auto() {
 			this.pending_listener()
+			this.prefetch() // фоновая докачка blob'ов по одной песне
 			$mol_wire_async(this).drain_pending()
 			const token = $bog_music_boot.share_token
 			if (token) {

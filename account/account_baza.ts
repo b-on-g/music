@@ -56,10 +56,10 @@ namespace $ {
 					if (!track) continue
 					if (track.playlist() !== playlist) continue
 					if (!track.audio()) continue
-					// Недосинканный трек (blob ещё не доехал) не показываем вовсе:
-					// has_blob сам стартует докачку, по готовности список
-					// пересчитается и трек появится уже играбельным.
-					if (!track.has_blob()) continue
+					// Трек показываем сразу по метаданным (home land лёгкий), не
+					// дожидаясь blob. Аудио догоняет фоновый префетч «по одной
+					// песне» (prefetch), а клик играет через blob_wait. Строка
+					// тускнеет пока blob не доехал (см. track.view: blob_local).
 					rows.push({ key, order: track.order(), added: track.added() })
 				} catch {
 					continue
@@ -73,6 +73,45 @@ namespace $ {
 			return this.keys_in(playlist)
 				.map(key => this.track(key)?.audio())
 				.filter(Boolean) as $bog_music_api_audio[]
+		}
+
+		// ---------- фоновый префетч blob'ов «по одной песне» ----------
+
+		/**
+		 * Ключ следующего трека для докачки: первый (в порядке словаря), у кого
+		 * blob ещё НЕ локально. Проверка через `blob_local` не запускает sync, так
+		 * что перебор не поднимает загрузку всех лендов — качается строго по одному.
+		 * '' — вся библиотека уже на устройстве. БЕЗ @$mol_mem (baza-объект): мемо
+		 * держит view-атом, реактивность даёт чтение baza-атомов внутри blob_local.
+		 */
+		prefetch_active_key(): string {
+			const dict = this.tracks()
+			for (const key of (dict.keys() ?? []) as string[]) {
+				try {
+					const track = dict.key(key)
+					if (!track || !track.audio()) continue
+					if (track.blob_local()) continue
+					return key
+				} catch {
+					continue // атом ещё синкается — этот трек пропустим на этом проходе
+				}
+			}
+			return ''
+		}
+
+		/**
+		 * Один шаг фонового префетча «по одной песне»: докачать текущий недостающий
+		 * blob (suspend до готовности). Одна закачка в полёте — фибра висит на этом
+		 * blob'е; когда доедет, blob_local флипнется → prefetch_active_key укажет на
+		 * следующий → атом-драйвер (в app.view) перезапустится и возьмётся за него.
+		 * Драйвер живёт во view ($bog_music_app.prefetch), не на baza-объекте.
+		 */
+		prefetch_step(): void {
+			const key = this.prefetch_active_key()
+			if (!key) return
+			const track = this.track(key)
+			if (!track) return
+			$mol_wire_sync(track).blob_ensure()
 		}
 
 		/** Плейлисты, импортированные из шаров, с числом треков. */
