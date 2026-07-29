@@ -26207,7 +26207,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.25';
+    $.$bog_music_version = 'v1.26';
 })($ || ($ = {}));
 
 ;
@@ -28472,16 +28472,18 @@ var $;
                 count,
             }));
         }
-        max_order() {
-            let max = 0;
+        /** Минимальный эффективный order среди существующих треков (свежесозданный
+         * трек без Order даёт added-timestamp — на минимум не влияет). */
+        min_order() {
+            let min = Infinity;
             const dict = this.tracks();
             for (const key of (dict.keys() ?? [])) {
                 const track = dict.key(key);
                 if (!track)
                     continue;
-                max = Math.max(max, track.order(), track.added());
+                min = Math.min(min, track.order());
             }
-            return max;
+            return Number.isFinite(min) ? min : 1;
         }
         /** Создаёт/обновляет метаданные трека. Blob — отдельно (save_blob). */
         save_track(audio) {
@@ -28504,8 +28506,9 @@ var $;
                 track.Url('auto').val(audio.url);
             if (track.Added()?.val() == null)
                 track.Added('auto').val(Date.now());
+            // Новый трек — наверх списка (order по возрастанию, верх = минимум).
             if (track.Order()?.val() == null)
-                track.Order('auto').val(this.max_order() + 1);
+                track.Order('auto').val(this.min_order() - 1);
         }
         /**
          * Пишет blob трека в отдельный land с публичным чтением.

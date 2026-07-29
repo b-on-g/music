@@ -61902,7 +61902,9 @@ declare namespace $ {
             sender: string;
             count: number;
         }[];
-        max_order(): number;
+        /** Минимальный эффективный order среди существующих треков (свежесозданный
+         * трек без Order даёт added-timestamp — на минимум не влияет). */
+        min_order(): number;
         /** Создаёт/обновляет метаданные трека. Blob — отдельно (save_blob). */
         save_track(audio: $bog_music_api_audio): void;
         /**
