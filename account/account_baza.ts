@@ -134,15 +134,17 @@ namespace $ {
 			}))
 		}
 
-		max_order(): number {
-			let max = 0
+		/** Минимальный эффективный order среди существующих треков (свежесозданный
+		 * трек без Order даёт added-timestamp — на минимум не влияет). */
+		min_order(): number {
+			let min = Infinity
 			const dict = this.tracks()
 			for (const key of (dict.keys() ?? []) as string[]) {
 				const track = dict.key(key)
 				if (!track) continue
-				max = Math.max(max, track.order(), track.added())
+				min = Math.min(min, track.order())
 			}
-			return max
+			return Number.isFinite(min) ? min : 1
 		}
 
 		/** Создаёт/обновляет метаданные трека. Blob — отдельно (save_blob). */
@@ -160,7 +162,8 @@ namespace $ {
 			if (track.Duration()?.val() !== dur) track.Duration('auto')!.val(dur)
 			if (audio.url && track.Url()?.val() !== audio.url) track.Url('auto')!.val(audio.url)
 			if (track.Added()?.val() == null) track.Added('auto')!.val(Date.now())
-			if (track.Order()?.val() == null) track.Order('auto')!.val(this.max_order() + 1)
+			// Новый трек — наверх списка (order по возрастанию, верх = минимум).
+			if (track.Order()?.val() == null) track.Order('auto')!.val(this.min_order() - 1)
 		}
 
 		/**
