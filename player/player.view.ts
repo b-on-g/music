@@ -41,6 +41,7 @@ namespace $.$$ {
 			this.current_time(0)
 			this.duration(0)
 			this._trim_end_skip = ''
+			this._trim_start_done = ''
 			this.apply_media_metadata(this.current_audio()!)
 			this.gain_chain_unlock()
 			const el = this.audio_el()
@@ -301,15 +302,24 @@ namespace $.$$ {
 		}
 
 		private on_ended() {
+			let finished: $bog_music_api_audio | null = null
+			try { finished = this.current_audio() } catch {}
 			try {
-				const finished = this.current_audio()
+				// Синхронно и вне фибры: на iOS звук в фоне даётся только если
+				// el.play() ушёл в continuation этого же 'ended'-обработчика.
 				this.next(false)
-				// Дослушанный трек докачиваем в кеш, если ещё не там.
-				if (finished && navigator.onLine) {
-					this.account().save_hls(finished).catch(() => {})
+			} catch (e: any) {
+				if (e instanceof Promise) {
+					// Что-то в цепочке ещё не прогрето (холодный baza-атом, крипта):
+					// вне фибры Promise = молчаливая остановка. Ретраим в фибре.
+					;($mol_wire_async(this) as any).next_auto()
+				} else {
+					console.warn('[player] ended handler error:', e)
 				}
-			} catch (e) {
-				console.warn('[player] ended handler error:', e)
+			}
+			// Дослушанный трек докачиваем в кеш, если ещё не там.
+			if (finished && navigator.onLine) {
+				try { this.account().save_hls(finished).catch(() => {}) } catch {}
 			}
 		}
 
@@ -649,7 +659,7 @@ namespace $.$$ {
 
 		play_track(key?: string | null) {
 			if (!key) return
-			const audio = this.account().track(key)?.audio()
+			const audio = this.audio_of(key)
 			if (!audio) return
 
 			this._ext = null // возвращаемся к baza-треку, гасим tube-превью
@@ -661,7 +671,15 @@ namespace $.$$ {
 			this._await_seek = 0 // новый трек — не ждём resume-seek
 			this.current_key(key)
 			this._trim_end_skip = ''
-			const start_at = this.account().track(key)?.trim_start() ?? 0
+			// Обрез начала может быть ещё не прогрет: play_track зовётся из
+			// 'ended'/микротаска — ВНЕ фибры, а холодный baza-атом там суспендится.
+			// Раньше Promise улетал наружу и рвал play_track уже после смены
+			// current_key: трек выбран, src не выставлен, звука нет — «стоп» при
+			// автопереходе на обрезанную песню. Теперь стартуем с нуля, а seek
+			// догоняет реактивно в apply_trim_start (там фибра auto() ретраит).
+			const trim = this.trim_start_of(key)
+			const start_at = trim ?? 0
+			this._trim_start_done = trim === null ? '' : key
 			try { this.account().save_last_session(key, start_at) } catch {}
 
 			this.apply_media_metadata(audio)
@@ -715,8 +733,65 @@ namespace $.$$ {
 		cache_next(key: string): boolean {
 			const next_key = this.predict_next_key(key)
 			if (!next_key) return false
+			this.track_warm(next_key)
 			if (this._blob_cache.has(next_key)) return true
 			return this.cache_blob(next_key)
+		}
+
+		/**
+		 * Прогрев холодных baza-атомов трека. Обрез и метаданные для НЕтекущего
+		 * трека не читает никто, поэтому их первое чтение подвисает (land.sync →
+		 * loading/крипта). play_track читает их вне фибры — прогреваем заранее,
+		 * из фибры, чтобы автопереход не спотыкался.
+		 */
+		private track_warm(key: string) {
+			const track = this.account().track(key)
+			if (!track) return
+			track.audio()
+			track.trim_start()
+			track.trim_end(0)
+		}
+
+		/**
+		 * Метаданные трека без риска оборвать play_track: если атом ещё холодный
+		 * (вне фибры = Promise наружу), догреваем в фибре и повторяем ЭТОТ же
+		 * трек — иначе автопереход молча терял бы песню.
+		 */
+		private audio_of(key: string): $bog_music_api_audio | null {
+			try {
+				return this.account().track(key)?.audio() ?? null
+			} catch (e: any) {
+				if (!(e instanceof Promise)) throw e
+				;($mol_wire_async(this) as any).play_track_warm(key)
+				return null
+			}
+		}
+
+		/** Прогреть трек в фибре (ретраит подвисания) и запустить его же. */
+		play_track_warm(key: string) {
+			this.track_warm(key)
+			this.play_track(key)
+		}
+
+		/** Обрез начала трека. null — атом ещё холодный (подвис вне фибры). */
+		private trim_start_of(key: string): number | null {
+			try {
+				return this.account().track(key)?.trim_start() ?? 0
+			} catch (e: any) {
+				if (!(e instanceof Promise)) console.warn('[player] trim_start read failed:', e?.message ?? e)
+				return null
+			}
+		}
+
+		/**
+		 * Автопереход (ended / trim_end) в фибре — фолбэк, когда синхронный путь
+		 * подвис. Подвисающие чтения ПЕРВЫМИ: ретрай фибры не должен повторно
+		 * прокручивать shuffle-мешок. predict_next_key только подглядывает.
+		 */
+		next_auto() {
+			const key = this.predict_next_key(this.current_key())
+			if (key) this.track_warm(key)
+			this.next(false)
 		}
 
 		/**
@@ -945,6 +1020,7 @@ namespace $.$$ {
 			this._paused_pos = 0
 			this._await_seek = 0
 			this._trim_end_skip = ''
+			this._trim_start_done = ''
 			// ДО el.pause(): его синхронный 'pause'-event при playing()=true был бы
 			// принят за системную паузу и воскресил бы keep-alive-тишину.
 			this.playing(false)
@@ -1070,7 +1146,35 @@ namespace $.$$ {
 		// ---------- обрез трека (trim handles на прогресс-баре) ----------
 
 		private _trim_end_skip = ''
+		private _trim_start_done = ''
 		private _trim_drag: 'start' | 'end' | null = null
+
+		/**
+		 * Догоняющий seek на trim_start: применяется, только если play_track не
+		 * смог прочитать обрез (холодный атом). Здесь мы уже в фибре auto(), она
+		 * ретраится — значение доедет. Один раз на трек и не во время драга,
+		 * иначе спам инвалидаций рождает гонку seek'ов с pending play_track.
+		 */
+		private apply_trim_start() {
+			const key = this.current_key()
+			if (!key) return
+			if (this._trim_start_done === key) return
+			if (this._trim_drag) return
+			const track = this.current_track()
+			if (!track) return
+			const dur = this.duration()
+			if (!dur) return
+			const ts = track.trim_start()
+			this._trim_start_done = key
+			if (ts <= 0 || ts >= dur) return
+			if (this.current_time() >= ts - 0.5) return
+			queueMicrotask(() => {
+				try { this.seek_to(ts) } catch (e: any) {
+					if (e instanceof Promise) return
+					console.warn('[player] trim_start seek failed:', e?.message)
+				}
+			})
+		}
 
 		/**
 		 * Реактивный apply ТОЛЬКО end-trim'а: current_time >= trim_end → next().
@@ -1094,7 +1198,9 @@ namespace $.$$ {
 			const audio = track.audio()
 			queueMicrotask(() => {
 				try {
-					this.next(false)
+					// В фибре: цепочка next() читает baza (очередь, обрез следующего)
+					// и может подвиснуть — вне фибры это была бы тихая остановка.
+					;($mol_wire_async(this) as any).next_auto()
 					if (audio && navigator.onLine) this.account().save_hls(audio).catch(() => {})
 				} catch (e: any) {
 					if (e instanceof Promise) return
@@ -1206,6 +1312,9 @@ namespace $.$$ {
 				this.try_restore_session()
 			}
 			this.apply_volume()
+			try { this.apply_trim_start() } catch (e: any) {
+				if (e instanceof Promise) throw e
+			}
 			try { this.apply_trim() } catch (e: any) {
 				if (e instanceof Promise) throw e
 			}
