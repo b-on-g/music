@@ -12652,7 +12652,7 @@ var $;
         let page_offset = 0;
         const read_code = () => {
             let code = buffer[pos++];
-            if (code > 0x80)
+            if (code >= 0x80)
                 code = ((mode + code) & 0x7F) | 0x80;
             return code;
         };
@@ -12668,17 +12668,23 @@ var $;
             let code = read_code();
             if (code < full_mode) { // Char Code
                 if (mode === tiny_mode) {
-                    if (code > 0x80) {
+                    if (code >= 0x80) {
                         code = diacr_set[code - 0x080] | (6 << 7);
                     }
                 }
                 else if (!ascii_map[code]) {
                     if (code >= 0x80)
                         code = ascii_set[code - 0x80];
-                    if (mode < tiny_mode)
+                    if (mode < tiny_mode) {
+                        if (pos === buffer.length)
+                            $mol_fail(new Error('Expected 2 bytes', { cause: { text, pos: pos - 1 } }));
                         code |= read_remap() << 7;
-                    if (mode === full_mode)
+                    }
+                    if (mode === full_mode) {
+                        if (pos === buffer.length)
+                            $mol_fail(new Error('Expected 3 bytes', { cause: { text, pos: pos - 2 } }));
                         code |= read_remap() << 14;
+                    }
                     code += page_offset;
                 }
                 text += String.fromCodePoint(code);
@@ -12908,7 +12914,7 @@ var $;
                 const offset = offsets.get(val);
                 if (offset !== undefined)
                     return dump_unum($mol_vary_tip.link, offset);
-                const len_max = val.length * 3;
+                const len_max = val.length * 3 + 2;
                 const len_size = calc_size(len_max);
                 acquire(len_max);
                 const len = $mol_charset_ucf_encode_to(val, this.array, pos + len_size);
@@ -33239,7 +33245,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.26';
+    $.$bog_music_version = 'v1.27';
 })($ || ($ = {}));
 
 ;
@@ -36622,6 +36628,7 @@ var $;
                 this.current_time(0);
                 this.duration(0);
                 this._trim_end_skip = '';
+                this._trim_start_done = '';
                 this.apply_media_metadata(this.current_audio());
                 this.gain_chain_unlock();
                 const el = this.audio_el();
@@ -36902,16 +36909,33 @@ var $;
                 return el;
             }
             on_ended() {
+                let finished = null;
                 try {
-                    const finished = this.current_audio();
+                    finished = this.current_audio();
+                }
+                catch { }
+                try {
+                    // Синхронно и вне фибры: на iOS звук в фоне даётся только если
+                    // el.play() ушёл в continuation этого же 'ended'-обработчика.
                     this.next(false);
-                    // Дослушанный трек докачиваем в кеш, если ещё не там.
-                    if (finished && navigator.onLine) {
-                        this.account().save_hls(finished).catch(() => { });
-                    }
                 }
                 catch (e) {
-                    console.warn('[player] ended handler error:', e);
+                    if (e instanceof Promise) {
+                        // Что-то в цепочке ещё не прогрето (холодный baza-атом, крипта):
+                        // вне фибры Promise = молчаливая остановка. Ретраим в фибре.
+                        ;
+                        $mol_wire_async(this).next_auto();
+                    }
+                    else {
+                        console.warn('[player] ended handler error:', e);
+                    }
+                }
+                // Дослушанный трек докачиваем в кеш, если ещё не там.
+                if (finished && navigator.onLine) {
+                    try {
+                        this.account().save_hls(finished).catch(() => { });
+                    }
+                    catch { }
                 }
             }
             // ---------- связь с offscreen (extension) ----------
@@ -37253,7 +37277,7 @@ var $;
             play_track(key) {
                 if (!key)
                     return;
-                const audio = this.account().track(key)?.audio();
+                const audio = this.audio_of(key);
                 if (!audio)
                     return;
                 this._ext = null; // возвращаемся к baza-треку, гасим tube-превью
@@ -37264,7 +37288,15 @@ var $;
                 this._await_seek = 0; // новый трек — не ждём resume-seek
                 this.current_key(key);
                 this._trim_end_skip = '';
-                const start_at = this.account().track(key)?.trim_start() ?? 0;
+                // Обрез начала может быть ещё не прогрет: play_track зовётся из
+                // 'ended'/микротаска — ВНЕ фибры, а холодный baza-атом там суспендится.
+                // Раньше Promise улетал наружу и рвал play_track уже после смены
+                // current_key: трек выбран, src не выставлен, звука нет — «стоп» при
+                // автопереходе на обрезанную песню. Теперь стартуем с нуля, а seek
+                // догоняет реактивно в apply_trim_start (там фибра auto() ретраит).
+                const trim = this.trim_start_of(key);
+                const start_at = trim ?? 0;
+                this._trim_start_done = trim === null ? '' : key;
                 try {
                     this.account().save_last_session(key, start_at);
                 }
@@ -37316,9 +37348,67 @@ var $;
                 const next_key = this.predict_next_key(key);
                 if (!next_key)
                     return false;
+                this.track_warm(next_key);
                 if (this._blob_cache.has(next_key))
                     return true;
                 return this.cache_blob(next_key);
+            }
+            /**
+             * Прогрев холодных baza-атомов трека. Обрез и метаданные для НЕтекущего
+             * трека не читает никто, поэтому их первое чтение подвисает (land.sync →
+             * loading/крипта). play_track читает их вне фибры — прогреваем заранее,
+             * из фибры, чтобы автопереход не спотыкался.
+             */
+            track_warm(key) {
+                const track = this.account().track(key);
+                if (!track)
+                    return;
+                track.audio();
+                track.trim_start();
+                track.trim_end(0);
+            }
+            /**
+             * Метаданные трека без риска оборвать play_track: если атом ещё холодный
+             * (вне фибры = Promise наружу), догреваем в фибре и повторяем ЭТОТ же
+             * трек — иначе автопереход молча терял бы песню.
+             */
+            audio_of(key) {
+                try {
+                    return this.account().track(key)?.audio() ?? null;
+                }
+                catch (e) {
+                    if (!(e instanceof Promise))
+                        throw e;
+                    $mol_wire_async(this).play_track_warm(key);
+                    return null;
+                }
+            }
+            /** Прогреть трек в фибре (ретраит подвисания) и запустить его же. */
+            play_track_warm(key) {
+                this.track_warm(key);
+                this.play_track(key);
+            }
+            /** Обрез начала трека. null — атом ещё холодный (подвис вне фибры). */
+            trim_start_of(key) {
+                try {
+                    return this.account().track(key)?.trim_start() ?? 0;
+                }
+                catch (e) {
+                    if (!(e instanceof Promise))
+                        console.warn('[player] trim_start read failed:', e?.message ?? e);
+                    return null;
+                }
+            }
+            /**
+             * Автопереход (ended / trim_end) в фибре — фолбэк, когда синхронный путь
+             * подвис. Подвисающие чтения ПЕРВЫМИ: ретрай фибры не должен повторно
+             * прокручивать shuffle-мешок. predict_next_key только подглядывает.
+             */
+            next_auto() {
+                const key = this.predict_next_key(this.current_key());
+                if (key)
+                    this.track_warm(key);
+                this.next(false);
             }
             /**
              * Выбор «Моей волны», сделанный ЗАРАНЕЕ (при старте текущего трека).
@@ -37562,6 +37652,7 @@ var $;
                 this._paused_pos = 0;
                 this._await_seek = 0;
                 this._trim_end_skip = '';
+                this._trim_start_done = '';
                 // ДО el.pause(): его синхронный 'pause'-event при playing()=true был бы
                 // принят за системную паузу и воскресил бы keep-alive-тишину.
                 this.playing(false);
@@ -37692,7 +37783,45 @@ var $;
             }
             // ---------- обрез трека (trim handles на прогресс-баре) ----------
             _trim_end_skip = '';
+            _trim_start_done = '';
             _trim_drag = null;
+            /**
+             * Догоняющий seek на trim_start: применяется, только если play_track не
+             * смог прочитать обрез (холодный атом). Здесь мы уже в фибре auto(), она
+             * ретраится — значение доедет. Один раз на трек и не во время драга,
+             * иначе спам инвалидаций рождает гонку seek'ов с pending play_track.
+             */
+            apply_trim_start() {
+                const key = this.current_key();
+                if (!key)
+                    return;
+                if (this._trim_start_done === key)
+                    return;
+                if (this._trim_drag)
+                    return;
+                const track = this.current_track();
+                if (!track)
+                    return;
+                const dur = this.duration();
+                if (!dur)
+                    return;
+                const ts = track.trim_start();
+                this._trim_start_done = key;
+                if (ts <= 0 || ts >= dur)
+                    return;
+                if (this.current_time() >= ts - 0.5)
+                    return;
+                queueMicrotask(() => {
+                    try {
+                        this.seek_to(ts);
+                    }
+                    catch (e) {
+                        if (e instanceof Promise)
+                            return;
+                        console.warn('[player] trim_start seek failed:', e?.message);
+                    }
+                });
+            }
             /**
              * Реактивный apply ТОЛЬКО end-trim'а: current_time >= trim_end → next().
              * Через microtask, чтобы не писать в cell внутри auto-фибры.
@@ -37719,7 +37848,10 @@ var $;
                 const audio = track.audio();
                 queueMicrotask(() => {
                     try {
-                        this.next(false);
+                        // В фибре: цепочка next() читает baza (очередь, обрез следующего)
+                        // и может подвиснуть — вне фибры это была бы тихая остановка.
+                        ;
+                        $mol_wire_async(this).next_auto();
                         if (audio && navigator.onLine)
                             this.account().save_hls(audio).catch(() => { });
                     }
@@ -37847,6 +37979,13 @@ var $;
                     this.try_restore_session();
                 }
                 this.apply_volume();
+                try {
+                    this.apply_trim_start();
+                }
+                catch (e) {
+                    if (e instanceof Promise)
+                        throw e;
+                }
                 try {
                     this.apply_trim();
                 }
