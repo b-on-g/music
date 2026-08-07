@@ -58314,6 +58314,16 @@ declare namespace $.$$ {
         /** Возобновление с локскрина/Control Center. */
         private resume_robust;
         private apply_media_metadata;
+        /**
+         * Позиция для системного плеера — локскрин и Пункт управления (шторка
+         * справа сверху). Без setPositionState шторка не знает ни длительности,
+         * ни позиции: прогресс стоит на нуле, а скраб-бар не двигается, хотя
+         * обработчик seekto давно есть. Локскрин это переживал, шторка — нет.
+         *
+         * Значения обязаны быть валидными: NaN-длительность или позиция за её
+         * пределами роняют setPositionState с TypeError.
+         */
+        private apply_position_state;
         playing(next?: boolean): boolean;
         current_time(next?: number): number;
         duration(next?: number): number;
