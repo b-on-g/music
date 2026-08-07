@@ -26222,7 +26222,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.27';
+    $.$bog_music_version = 'v1.28';
 })($ || ($ = {}));
 
 ;
@@ -29812,16 +29812,41 @@ var $;
              * смена src сбрасывает el.currentTime до отработки seek).
              */
             _await_seek = 0;
+            /**
+             * Идёт смена трека: элемент перезагружает ресурс и ещё не заиграл.
+             * Транзиентные 'pause' в этом окне — не системная пауза, и уводить по ним
+             * элемент в keep-alive-тишину нельзя: он застревает на беззвучном цикле,
+             * трек «играет» без звука, а toggle не помогает (ios_pause на _silent
+             * молча выходит). Сбрасывается по 'playing'/'timeupdate' или по таймауту.
+             */
+            _switching = false;
+            _switch_gen = 0;
             is_ios() {
                 return /iPad|iPhone|iPod/.test(navigator.userAgent)
                     || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
             }
-            /** Ставит src трека, запоминая его для последующего swap. */
-            set_track_src(el, url) {
+            /**
+             * Ставит src трека, запоминая его для последующего swap.
+             *
+             * start_at уходит медиа-фрагментом (#t=): элемент начинает СРАЗУ с
+             * обреза, без seek'а после loadedmetadata. Тот seek и был причиной
+             * «играет без звука» на iOS: в фоне перемотка роняет буфер, iOS шлёт
+             * 'pause', обработчик принимает её за системную и свапает элемент на
+             * тишину. Фрагмент вешаем только на blob: — у сетевых HLS-ссылок он
+             * ломает загрузку. Для них (и для браузеров без поддержки #t=) seek
+             * остаётся фолбэком в attach_seek_listener.
+             */
+            set_track_src(el, url, start_at = 0) {
                 this._silent = false;
                 this._track_src = url;
                 el.loop = false;
-                el.src = url;
+                el.src = (start_at > 0 && url.startsWith('blob:'))
+                    ? `${url}#t=${start_at.toFixed(3)}`
+                    : url;
+                const gen = ++this._switch_gen;
+                this._switching = true;
+                setTimeout(() => { if (this._switch_gen === gen)
+                    this._switching = false; }, 3000);
             }
             /**
              * «Пауза» на iOS: не останавливаем элемент (иначе iOS заморозит страницу
@@ -29852,7 +29877,7 @@ var $;
                 if (this._track_src) {
                     this._await_seek = this._paused_pos;
                     this.current_time(this._paused_pos); // держим полоску до досинка seek
-                    this.set_track_src(el, this._track_src);
+                    this.set_track_src(el, this._track_src, this._paused_pos);
                     this.attach_seek_listener(el, this._paused_pos);
                     el.play().catch(() => { });
                     this.playing(true);
@@ -29869,7 +29894,7 @@ var $;
                     if (!blob)
                         return;
                     const url = URL.createObjectURL(blob);
-                    this.set_track_src(el, url);
+                    this.set_track_src(el, url, pos);
                     this.attach_seek_listener(el, pos);
                     el.play().catch(() => { });
                 }).catch(() => { });
@@ -29973,7 +29998,9 @@ var $;
                     // бьёт прямо в элемент. Просто принять её = потерять audio-сессию →
                     // iOS закроет приложение. Переводим в наш swap-на-тишину: позиция
                     // сохранена, сессия жива, UI показывает паузу.
-                    if (this.is_ios() && this.playing() && !el.ended) {
+                    // НО не во время смены трека: там 'pause' прилетает от самой
+                    // перезагрузки ресурса, и swap на тишину намертво глушил автопереход.
+                    if (this.is_ios() && this.playing() && !el.ended && !this._switching) {
                         this.ios_pause(el);
                         const key = this.current_key();
                         if (key) {
@@ -29991,9 +30018,12 @@ var $;
                     if ('mediaSession' in navigator)
                         navigator.mediaSession.playbackState = 'paused';
                 });
+                // Реально заигралo — окно смены трека закрыто.
+                el.addEventListener('playing', () => { this._switching = false; });
                 el.addEventListener('timeupdate', () => {
                     if (this._silent)
                         return;
+                    this._switching = false;
                     // После resume игнорим нулевой скачок, пока трек не домотается
                     // до сохранённой позиции (иначе полоска мигнёт в 0).
                     if (this._await_seek > 0) {
@@ -30151,10 +30181,10 @@ var $;
                         URL.revokeObjectURL(this._last_blob_url);
                     const url = URL.createObjectURL(blob);
                     this._last_blob_url = url;
-                    this.set_track_src(el, url);
+                    this.set_track_src(el, url, session.position);
                 }
                 else if (session.audio.url) {
-                    this.set_track_src(el, session.audio.url);
+                    this.set_track_src(el, session.audio.url, session.position);
                 }
                 else {
                     return;
@@ -30407,6 +30437,10 @@ var $;
                 const trim = this.trim_start_of(key);
                 const start_at = trim ?? 0;
                 this._trim_start_done = trim === null ? '' : key;
+                // Если фоновый переход всё же сорвётся в keep-alive-тишину, resume
+                // должен вернуться к НАЧАЛУ нового трека (с учётом обреза), а не к
+                // позиции предыдущего: в ios_pause el.currentTime тут ещё 0.
+                this._paused_pos = start_at;
                 try {
                     this.account().save_last_session(key, start_at);
                 }
@@ -30430,7 +30464,7 @@ var $;
                 if (this.try_play_local_sync(key, el, start_at))
                     return;
                 if (audio.url) {
-                    this.set_track_src(el, audio.url);
+                    this.set_track_src(el, audio.url, start_at);
                     this.attach_seek_listener(el, start_at);
                     el.play().catch(() => { });
                 }
@@ -30590,20 +30624,24 @@ var $;
                 const url = URL.createObjectURL(blob);
                 this._last_blob_url = url;
                 this._dispatch_token++;
-                this.set_track_src(el, url);
+                this.set_track_src(el, url, start_at);
                 this.attach_seek_listener(el, start_at);
                 el.play().catch(() => { });
                 return true;
             }
+            /** Фолбэк к медиа-фрагменту: догоняем обрез seek'ом, если #t= не сработал. */
             attach_seek_listener(el, start_at) {
                 if (start_at <= 0)
                     return;
                 const seek = () => {
+                    el.removeEventListener('loadedmetadata', seek);
+                    // Фрагмент уже поставил позицию — лишний seek на iOS роняет звук.
+                    if (Math.abs(el.currentTime - start_at) < 1)
+                        return;
                     try {
                         el.currentTime = start_at;
                     }
                     catch { }
-                    el.removeEventListener('loadedmetadata', seek);
                 };
                 el.addEventListener('loadedmetadata', seek);
             }
@@ -30676,13 +30714,13 @@ var $;
                     if (blob) {
                         const url = URL.createObjectURL(blob);
                         this._last_blob_url = url;
-                        this.set_track_src(el, url);
+                        this.set_track_src(el, url, start_at);
                         this.attach_seek_listener(el, start_at);
                         await this.safe_play(el);
                         return;
                     }
                     if (audio.url) {
-                        this.set_track_src(el, audio.url);
+                        this.set_track_src(el, audio.url, start_at);
                         this.attach_seek_listener(el, start_at);
                         await this.safe_play(el);
                         return;
@@ -30714,7 +30752,10 @@ var $;
             }
             // ---------- управление ----------
             toggle() {
-                const was_playing = this.playing();
+                // Крутится keep-alive-тишина = звука нет, чем бы ни было playing():
+                // жмём resume, иначе ios_pause молча выйдет по _silent и кнопка
+                // перестанет что-либо делать.
+                const was_playing = this.playing() && !this._silent;
                 if (this.is_extension()) {
                     if (was_playing)
                         this.send('pause');
@@ -30761,6 +30802,8 @@ var $;
                 this._track_src = '';
                 this._paused_pos = 0;
                 this._await_seek = 0;
+                this._switching = false;
+                this._switch_gen++;
                 this._trim_end_skip = '';
                 this._trim_start_done = '';
                 // ДО el.pause(): его синхронный 'pause'-event при playing()=true был бы
