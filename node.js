@@ -26222,7 +26222,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.28';
+    $.$bog_music_version = 'v1.29';
 })($ || ($ = {}));
 
 ;
@@ -29828,21 +29828,17 @@ var $;
             /**
              * Ставит src трека, запоминая его для последующего swap.
              *
-             * start_at уходит медиа-фрагментом (#t=): элемент начинает СРАЗУ с
-             * обреза, без seek'а после loadedmetadata. Тот seek и был причиной
-             * «играет без звука» на iOS: в фоне перемотка роняет буфер, iOS шлёт
-             * 'pause', обработчик принимает её за системную и свапает элемент на
-             * тишину. Фрагмент вешаем только на blob: — у сетевых HLS-ссылок он
-             * ломает загрузку. Для них (и для браузеров без поддержки #t=) seek
-             * остаётся фолбэком в attach_seek_listener.
+             * Обрез НЕ уходит медиа-фрагментом (blob:...#t=): пробовали — обрезанные
+             * треки переставали играть и проскакивались. Фрагмент на blob-url
+             * ломает загрузку ресурса. Позицию ставит только seek в
+             * attach_seek_listener, а от «пауза перехода → keep-alive-тишина»
+             * защищает флаг _switching ниже.
              */
-            set_track_src(el, url, start_at = 0) {
+            set_track_src(el, url) {
                 this._silent = false;
                 this._track_src = url;
                 el.loop = false;
-                el.src = (start_at > 0 && url.startsWith('blob:'))
-                    ? `${url}#t=${start_at.toFixed(3)}`
-                    : url;
+                el.src = url;
                 const gen = ++this._switch_gen;
                 this._switching = true;
                 setTimeout(() => { if (this._switch_gen === gen)
@@ -29877,7 +29873,7 @@ var $;
                 if (this._track_src) {
                     this._await_seek = this._paused_pos;
                     this.current_time(this._paused_pos); // держим полоску до досинка seek
-                    this.set_track_src(el, this._track_src, this._paused_pos);
+                    this.set_track_src(el, this._track_src);
                     this.attach_seek_listener(el, this._paused_pos);
                     el.play().catch(() => { });
                     this.playing(true);
@@ -29894,7 +29890,7 @@ var $;
                     if (!blob)
                         return;
                     const url = URL.createObjectURL(blob);
-                    this.set_track_src(el, url, pos);
+                    this.set_track_src(el, url);
                     this.attach_seek_listener(el, pos);
                     el.play().catch(() => { });
                 }).catch(() => { });
@@ -29991,6 +29987,15 @@ var $;
                     if (this._silent) {
                         // Системная пауза (выдернули наушники) остановила и беззвучный
                         // keep-alive → страница замёрзнет и iOS прибьёт PWA. Будим тишину.
+                        el.play().catch(() => { });
+                        return;
+                    }
+                    // Пауза посреди смены трека при неготовом ресурсе — не решение
+                    // пользователя и не системное прерывание, а последствие
+                    // перезагрузки src и seek'а на обрез: буфер просел, элемент встал.
+                    // Возвращаем его в игру. Пауза с уже загруженным треком
+                    // (readyState 4) сюда не попадает и обрабатывается как обычно.
+                    if (this._switching && !el.ended && el.readyState < el.HAVE_FUTURE_DATA) {
                         el.play().catch(() => { });
                         return;
                     }
@@ -30181,10 +30186,10 @@ var $;
                         URL.revokeObjectURL(this._last_blob_url);
                     const url = URL.createObjectURL(blob);
                     this._last_blob_url = url;
-                    this.set_track_src(el, url, session.position);
+                    this.set_track_src(el, url);
                 }
                 else if (session.audio.url) {
-                    this.set_track_src(el, session.audio.url, session.position);
+                    this.set_track_src(el, session.audio.url);
                 }
                 else {
                     return;
@@ -30464,7 +30469,7 @@ var $;
                 if (this.try_play_local_sync(key, el, start_at))
                     return;
                 if (audio.url) {
-                    this.set_track_src(el, audio.url, start_at);
+                    this.set_track_src(el, audio.url);
                     this.attach_seek_listener(el, start_at);
                     el.play().catch(() => { });
                 }
@@ -30624,24 +30629,20 @@ var $;
                 const url = URL.createObjectURL(blob);
                 this._last_blob_url = url;
                 this._dispatch_token++;
-                this.set_track_src(el, url, start_at);
+                this.set_track_src(el, url);
                 this.attach_seek_listener(el, start_at);
                 el.play().catch(() => { });
                 return true;
             }
-            /** Фолбэк к медиа-фрагменту: догоняем обрез seek'ом, если #t= не сработал. */
             attach_seek_listener(el, start_at) {
                 if (start_at <= 0)
                     return;
                 const seek = () => {
-                    el.removeEventListener('loadedmetadata', seek);
-                    // Фрагмент уже поставил позицию — лишний seek на iOS роняет звук.
-                    if (Math.abs(el.currentTime - start_at) < 1)
-                        return;
                     try {
                         el.currentTime = start_at;
                     }
                     catch { }
+                    el.removeEventListener('loadedmetadata', seek);
                 };
                 el.addEventListener('loadedmetadata', seek);
             }
@@ -30714,13 +30715,13 @@ var $;
                     if (blob) {
                         const url = URL.createObjectURL(blob);
                         this._last_blob_url = url;
-                        this.set_track_src(el, url, start_at);
+                        this.set_track_src(el, url);
                         this.attach_seek_listener(el, start_at);
                         await this.safe_play(el);
                         return;
                     }
                     if (audio.url) {
-                        this.set_track_src(el, audio.url, start_at);
+                        this.set_track_src(el, audio.url);
                         this.attach_seek_listener(el, start_at);
                         await this.safe_play(el);
                         return;
