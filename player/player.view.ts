@@ -428,6 +428,13 @@ namespace $.$$ {
 			this.current_time(session.position)
 			if (session.audio.duration) this.duration(session.audio.duration)
 
+			// До этой правки метаданные и обработчики ставились ТОЛЬКО из
+			// play_track. После восстановления сессии (открыл приложение, но ещё
+			// не нажал play) системный плеер оставался пустым: в шторке нечего
+			// показывать и нечем управлять.
+			this.apply_media_metadata(session.audio)
+			if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused'
+
 			if (this.is_extension()) {
 				this.restore_offscreen(session).catch(() => {})
 			} else {
@@ -518,6 +525,36 @@ namespace $.$$ {
 				],
 			})
 			this.setup_media_session()
+		}
+
+		/**
+		 * Позиция для системного плеера — локскрин и Пункт управления (шторка
+		 * справа сверху). Без setPositionState шторка не знает ни длительности,
+		 * ни позиции: прогресс стоит на нуле, а скраб-бар не двигается, хотя
+		 * обработчик seekto давно есть. Локскрин это переживал, шторка — нет.
+		 *
+		 * Значения обязаны быть валидными: NaN-длительность или позиция за её
+		 * пределами роняют setPositionState с TypeError.
+		 */
+		@$mol_mem
+		private apply_position_state() {
+			if (!('mediaSession' in navigator)) return 0
+			const ms = navigator.mediaSession as any
+			if (typeof ms.setPositionState !== 'function') return 0
+			const duration = this.duration()
+			const position = this.current_time()
+			if (!(duration > 0) || !isFinite(duration)) {
+				// Метаданных ещё нет — сбрасываем, иначе шторка держит прошлый трек.
+				try { ms.setPositionState() } catch {}
+				return 0
+			}
+			const at = Math.max(0, Math.min(isFinite(position) ? position : 0, duration))
+			try {
+				ms.setPositionState({ duration, position: at, playbackRate: 1 })
+			} catch (e: any) {
+				console.warn('[player] position state failed:', e?.message)
+			}
+			return at
 		}
 
 		// ---------- базовое состояние ----------
@@ -1355,6 +1392,7 @@ namespace $.$$ {
 				this.try_restore_session()
 			}
 			this.apply_volume()
+			this.apply_position_state()
 			try { this.apply_trim_start() } catch (e: any) {
 				if (e instanceof Promise) throw e
 			}
