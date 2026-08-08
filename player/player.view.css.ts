@@ -200,9 +200,13 @@ namespace $.$$ {
 				left: '0.5rem',
 				right: '0.5rem',
 			},
+			flex: {
+				direction: 'column',
+			},
 			align: {
 				items: 'center',
 			},
+			gap: $mol_gap.text,
 		},
 
 		Volume_slider: {

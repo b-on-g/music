@@ -70,6 +70,10 @@ $bog_music_player $mol_view
 					bubble_content /
 						<= Volume_panel $mol_view
 							sub /
+								<= Norm $mol_check_icon
+									hint \Выравнивать громкость треков
+									Icon <= Norm_icon $mol_icon_equalizer
+									checked? <=> normalize? true
 								<= Volume_slider $mol_view
 									event *
 										pointerdown?event <=> volume_pointer_down?event null

@@ -242,8 +242,8 @@ namespace $ {
 		}
 
 		@$mol_action
-		save_loudness(key: string, db: number): void {
-			this.track(key)?.loudness(db)
+		save_lufs(key: string, lufs: number): void {
+			this.track(key)?.lufs(lufs)
 		}
 
 		// ---------- последняя сессия (трек + позиция) ----------

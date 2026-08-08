@@ -21,9 +21,13 @@ namespace $ {
 		// Персональный обрез песни (секунды). Trim_end = null — «без обреза».
 		Trim_start: $giper_baza_atom.of( $mol_schema_float ),
 		Trim_end: $giper_baza_atom.of( $mol_schema_float ),
-		// Интегральная громкость записи (dB RMS), меряется один раз при первом
-		// проигрывании — для выравнивания треков между собой ($bog_music_gain).
+		// Старая громкость в dB RMS. Мимо восприятия, поэтому не используется —
+		// поле оставлено, чтобы не спотыкаться о данные ранних версий.
 		Loudness: $giper_baza_atom.of( $mol_schema_float ),
+		// Интегральная громкость записи (LUFS по EBU R128), меряется один раз
+		// при первом проигрывании — для выравнивания треков между собой
+		// ($bog_music_gain).
+		Lufs: $giper_baza_atom.of( $mol_schema_float ),
 	}) {
 
 		/** Метаданные в форме VK-audio. null если Vk_id не парсится. */
@@ -164,10 +168,10 @@ namespace $ {
 			}
 		}
 
-		/** Интегральная громкость (dB RMS). null — ещё не измерена. */
-		loudness(next?: number): number | null {
-			if (next !== undefined) this.Loudness('auto')!.val(next)
-			const v = this.Loudness()?.val()
+		/** Интегральная громкость (LUFS). null — ещё не измерена. */
+		lufs(next?: number): number | null {
+			if (next !== undefined) this.Lufs('auto')!.val(next)
+			const v = this.Lufs()?.val()
 			return v == null ? null : Number(v)
 		}
 

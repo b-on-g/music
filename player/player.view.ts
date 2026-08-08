@@ -137,6 +137,14 @@ namespace $.$$ {
 		private set_track_src(el: HTMLAudioElement, url: string) {
 			this._silent = false
 			this._track_src = url
+			// WebAudio отдаёт тишину, если источник с чужого домена и не прислал
+			// CORS-заголовки. Для не-blob адресов (превью с tube-сервера) просим
+			// CORS явно, иначе после подключения гейн-цепочки звук пропадёт.
+			// Проверять _gain_ready мало: Safari подключает цепочку отложенно, и
+			// источник, взятый до подключения, замолчал бы задним числом.
+			if (!this._gain_dead && this.normalize()) {
+				el.crossOrigin = url.startsWith('blob:') ? null : 'anonymous'
+			}
 			el.loop = false
 			el.src = url
 			const gen = ++this._switch_gen
@@ -193,69 +201,145 @@ namespace $.$$ {
 		}
 
 		// ---------- выравнивание громкости ----------
-		// На iOS volume у <audio> игнорируется — гейним через WebAudio.
-		// На остальных платформах гейн умножается на volume напрямую.
+		// Весь звук идёт через WebAudio: el → gain → limiter → выход.
+		// Пользовательская громкость и выравнивающий множитель лежат вместе в
+		// GainNode, потому что el.volume не годится ни для того, ни для другого:
+		// на iOS система его игнорирует, а на остальных платформах он зажат
+		// единицей — тихую запись им не поднять, только приглушить громкую.
 
 		private _gain_ctx?: AudioContext
 		private _gain_node?: GainNode
+		/** Элемент заведён в граф. Обратной дороги нет: выход теперь только там. */
+		private _gain_ready = false
+		/** WebAudio недоступен или упал — работаем напрямую элементом. */
+		private _gain_dead = false
+		private _gain_wake_set = false
 
 		/**
-		 * ЭКСПЕРИМЕНТ (баг «пустой звук при выходе на iOS»): WebAudio-гейн на iOS
-		 * отключён. Гипотеза — AudioContext засыпает в фоне и звук через него
-		 * глохнет. С флагом=false звук идёт из <audio> напрямую → фон должен
-		 * работать, но выравнивание громкости на iOS не применяется (на
-		 * десктопе/андроиде оно через el.volume и работает). Вернуть = true.
+		 * Создать и разбудить контекст. Зовётся из юзер-жеста: без жеста он
+		 * остаётся спящим, а заводить элемент в спящий граф нельзя — весь звук
+		 * ушёл бы в тишину.
 		 */
-		private static GAIN_ON_IOS = false
-
-		/** Собрать цепочку el → gain → limiter. Только iOS и только в жесте. */
 		private gain_chain_unlock() {
-			if (!this.is_ios()) return
-			if (!$bog_music_player.GAIN_ON_IOS) return
-			if (this._gain_ctx) {
-				this.gain_resume()
-				return
-			}
+			if (this._gain_dead || !this.normalize()) return
+			if (this._gain_ready) { this.gain_resume(); return }
 			try {
-				const AC = (window as any).AudioContext || (window as any).webkitAudioContext
-				const ctx: AudioContext = new AC()
-				const src = ctx.createMediaElementSource(this.audio_el())
-				const gain = ctx.createGain()
-				const limiter = ctx.createDynamicsCompressor() // страховка от клиппинга при усилении
-				src.connect(gain)
-				gain.connect(limiter)
-				limiter.connect(ctx.destination)
-				this._gain_ctx = ctx
-				this._gain_node = gain
+				if (!this._gain_ctx) {
+					const AC = (window as any).AudioContext || (window as any).webkitAudioContext
+					if (!AC) { this._gain_dead = true; return }
+					this._gain_ctx = new AC() as AudioContext
+				}
+				const ctx = this._gain_ctx
+				if (ctx.state === 'running') {
+					this.gain_wire()
+					return
+				}
+				// Safari отдаёт контекст спящим даже внутри жеста — подключаемся,
+				// когда он проснётся.
+				ctx.resume().then(() => this.gain_wire()).catch(() => {})
 			} catch (e: any) {
-				console.warn('[player] gain chain failed:', e?.message)
+				this._gain_dead = true
+				console.warn('[player] gain chain failed:', e?.message ?? e)
 			}
 		}
 
-		/** После разморозки/interruption iOS контекст надо будить, иначе тишина. */
+		/** Завести элемент в граф: el → gain → limiter → выход. */
+		private gain_wire() {
+			if (this._gain_ready || this._gain_dead) return
+			const ctx = this._gain_ctx
+			if (!ctx || ctx.state !== 'running') return
+			try {
+				const src = ctx.createMediaElementSource(this.audio_el())
+				const gain = ctx.createGain()
+				// Страховка от клиппинга: у поднятой тихой записи пики вылезают
+				// за 0 dBFS, лимитер срезает их без хруста.
+				const limiter = ctx.createDynamicsCompressor()
+				limiter.threshold.value = -1
+				limiter.knee.value = 0
+				limiter.ratio.value = 20
+				limiter.attack.value = 0.003
+				limiter.release.value = 0.25
+				src.connect(gain)
+				gain.connect(limiter)
+				limiter.connect(ctx.destination)
+				this._gain_node = gain
+				this._gain_ready = true
+				this.audio_el().volume = 1 // дальше громкостью рулит только гейн
+				this.gain_push()
+				this.setup_gain_wake()
+			} catch (e: any) {
+				this._gain_dead = true
+				console.warn('[player] gain wire failed:', e?.message ?? e)
+			}
+		}
+
+		/**
+		 * Заснувший контекст = тишина при живом <audio>: iOS усыпляет его в фоне
+		 * и после каждого прерывания (звонок, наушники). Будим отовсюду, откуда
+		 * можно узнать, что мы снова на переднем плане.
+		 */
+		private setup_gain_wake() {
+			if (this._gain_wake_set) return
+			this._gain_wake_set = true
+			const wake = () => this.gain_resume()
+			this._gain_ctx?.addEventListener('statechange', wake)
+			document.addEventListener('visibilitychange', wake)
+			window.addEventListener('pageshow', wake)
+			window.addEventListener('focus', wake)
+		}
+
 		private gain_resume() {
 			const ctx = this._gain_ctx
-			if (ctx && ctx.state !== 'running') ctx.resume().catch(() => {})
+			if (!ctx) return
+			if (ctx.state !== 'running') ctx.resume().catch(() => {})
+			if (!this._gain_ready) this.gain_wire()
+		}
+
+		/**
+		 * Выравнивать ли громкость треков. Выключенное — ещё и аварийный тумблер:
+		 * после перезагрузки страницы звук пойдёт мимо WebAudio совсем.
+		 */
+		@$mol_mem
+		normalize(next?: boolean) {
+			const v = $mol_state_local.value('bog_music_gain_norm', next) as boolean | null
+			return v ?? true
 		}
 
 		/** Множитель выравнивания текущего трека. 1 пока громкость не измерена. */
 		track_gain(): number {
-			return $bog_music_gain.factor(this.current_track()?.loudness() ?? null)
+			if (!this.normalize()) return 1
+			return $bog_music_gain.factor(this.current_track()?.lufs() ?? null)
 		}
 
-		loudness_known(key: string): boolean {
-			return this.account().track(key)?.loudness() != null
+		gain_known(key: string): boolean {
+			return this.account().track(key)?.lufs() != null
 		}
 
-		/** Ленивое измерение громкости трека — один раз, фоном. */
-		private async analyze_loudness(key: string) {
+		/** Уже брались за этот трек в этой сессии — второй раз не декодируем. */
+		private _gain_seen = new Set<string>()
+		/** Замеры идут по одному: декодированный трек занимает десятки мегабайт. */
+		private _gain_queue: Promise<unknown> = Promise.resolve()
+
+		/** Поставить трек в очередь на одноразовый замер громкости. */
+		private analyze_gain(key: string) {
+			if (!key || this._gain_seen.has(key)) return
+			this._gain_seen.add(key)
+			this._gain_queue = this._gain_queue.then(() => this.measure_gain(key)).catch(() => {})
+		}
+
+		private async measure_gain(key: string) {
 			try {
-				if (await ($mol_wire_async(this) as any).loudness_known(key)) return
+				if (await ($mol_wire_async(this) as any).gain_known(key)) return
 				const blob = await ($mol_wire_async(this) as any).blob_of(key) as Blob | null
-				if (!blob) return
-				const db = await $bog_music_gain.measure_db(await blob.arrayBuffer())
-				await ($mol_wire_async(this.account()) as any).save_loudness(key, db)
+				if (!blob) {
+					this._gain_seen.delete(key) // ещё не докачался — вернёмся позже
+					return
+				}
+				const lufs = await $bog_music_gain.measure_lufs(await blob.arrayBuffer())
+				if (lufs == null) return
+				await ($mol_wire_async(this.account()) as any).save_lufs(key, lufs)
 			} catch (e: any) {
+				this._gain_seen.delete(key)
 				console.warn('[player] loudness analyze failed:', e?.message ?? e)
 			}
 		}
@@ -312,6 +396,9 @@ namespace $.$$ {
 			// Реально заигралo — окно смены трека закрыто.
 			el.addEventListener('playing', () => { this._switching = false })
 			el.addEventListener('timeupdate', () => {
+				// Дешёвая проверка живости графа: контекст мог заснуть в фоне,
+				// и тогда элемент играет, а из динамика тишина.
+				if (this._gain_ctx && this._gain_ctx.state !== 'running') this.gain_resume()
 				if (this._silent) return
 				this._switching = false
 				// После resume игнорим нулевой скачок, пока трек не домотается
@@ -501,7 +588,7 @@ namespace $.$$ {
 		/** Возобновление с локскрина/Control Center. */
 		private resume_robust() {
 			const el = this.audio_el()
-			this.gain_resume()
+			this.gain_chain_unlock()
 			if (this.is_ios()) {
 				this.ios_resume(el)
 				return
@@ -580,20 +667,40 @@ namespace $.$$ {
 			return Math.max(0, Math.min(1, v as number))
 		}
 
+		/** Последняя посчитанная пара — дожать её после сборки цепочки. */
+		private _gain_last = { volume: 0.7, factor: 1 }
+
 		@$mol_mem
 		private apply_volume() {
-			const v = this.volume()
-			// Реактивно: когда фоновый анализ допишет Loudness, гейн подтянется.
-			const gain = this.track_gain()
+			const volume = this.volume()
+			// Реактивно: когда фоновый замер допишет громкость, гейн подтянется.
+			const factor = this.track_gain()
+			this._gain_last = { volume, factor }
+			this.gain_push()
+			return volume * factor
+		}
+
+		/** Разложить громкость по выходу: offscreen, WebAudio или сам элемент. */
+		private gain_push() {
+			const { volume, factor } = this._gain_last
 			if (this.is_extension()) {
-				this.send('volume', { value: Math.max(0, Math.min(1, v * gain)) })
-			} else if (this._gain_node) {
-				if (this._audio_el) this._audio_el.volume = v
-				this._gain_node.gain.value = gain
-			} else if (this._audio_el) {
-				this._audio_el.volume = Math.max(0, Math.min(1, v * gain))
+				this.send('volume', { value: volume, gain: factor })
+				return
 			}
-			return v * gain
+			const node = this._gain_node
+			const ctx = this._gain_ctx
+			if (node && ctx) {
+				// Плавно: мгновенный скачок гейна на стыке треков щёлкает.
+				try {
+					node.gain.setTargetAtTime(volume * factor, ctx.currentTime, 0.02)
+				} catch {
+					node.gain.value = volume * factor
+				}
+				return
+			}
+			// Цепочки нет (жеста ещё не было, WebAudio недоступен, выравнивание
+			// выключено) — элементом можно только приглушить.
+			if (this._audio_el) this._audio_el.volume = Math.max(0, Math.min(1, volume * factor))
 		}
 
 		title() {
@@ -760,7 +867,7 @@ namespace $.$$ {
 			this.apply_media_metadata(audio)
 
 			// Фоновое одноразовое измерение громкости для выравнивания.
-			;($mol_wire_async(this) as any).analyze_loudness(key)
+			this.analyze_gain(key)
 
 			if (this.is_extension()) {
 				this.dispatch_play_offscreen(key, audio, start_at)
@@ -809,8 +916,11 @@ namespace $.$$ {
 			const next_key = this.predict_next_key(key)
 			if (!next_key) return false
 			this.track_warm(next_key)
-			if (this._blob_cache.has(next_key)) return true
-			return this.cache_blob(next_key)
+			const ready = this._blob_cache.has(next_key) || this.cache_blob(next_key)
+			// Мерим громкость заранее: иначе первые секунды следующего трека
+			// играют невыровненными.
+			if (ready) this.analyze_gain(next_key)
+			return ready
 		}
 
 		/**
