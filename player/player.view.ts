@@ -733,6 +733,40 @@ namespace $.$$ {
 
 		// ---------- громкость (drag по вертикальному слайдеру) ----------
 
+		/**
+		 * Тап по иконке открывает и закрывает панель. Раньше панель была
+		 * $mol_pop_over, а он показан, пока «в фокусе ИЛИ под курсором»: на
+		 * телефоне фокус остаётся на кнопке, и повторный тап ничего не закрывал.
+		 */
+		volume_toggle() {
+			const pop = this.Volume()
+			const showed = pop.showed()
+			pop.showed(!showed)
+			if (!showed) this.setup_volume_dismiss()
+			return null
+		}
+
+		private _volume_dismiss_set = false
+
+		/**
+		 * Тап мимо панели закрывает её. Сам $mol_pop закрывается, только когда
+		 * фокус уезжает на другой фокусируемый элемент, а тап по пустому месту
+		 * фокус никуда не переносит — панель висела бы на экране.
+		 */
+		private setup_volume_dismiss() {
+			if (this._volume_dismiss_set) return
+			this._volume_dismiss_set = true
+			window.addEventListener('pointerdown', event => {
+				const pop = this.Volume()
+				if (!pop.showed()) return
+				const target = event.target as Node | null
+				if (!target) return
+				if (pop.dom_node().contains(target)) return
+				if (pop.Bubble().dom_node().contains(target)) return
+				pop.showed(false)
+			}, true)
+		}
+
 		private _vol_dragging = false
 
 		private volume_set_from_event(event: PointerEvent) {
@@ -763,7 +797,8 @@ namespace $.$$ {
 			const e = event as PointerEvent
 			try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId) } catch {}
 			this._vol_dragging = false
-			try { this.Volume().hovered(false) } catch {}
+			// Ползунок отпущен — панель своё отработала, убираем её с экрана.
+			try { this.Volume().showed(false) } catch {}
 			return null
 		}
 

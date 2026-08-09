@@ -63,9 +63,11 @@ $bog_music_player $mol_view
 								<= Repeat_all_icon $mol_icon_repeat
 								<= Repeat_one_icon $mol_icon_repeat_once
 								<= Shuffle_icon $mol_icon_shuffle
-				<= Volume $mol_pop_over
+				<= Volume $mol_pop
 					align \top_right
 					Anchor <= Volume_anchor $mol_button_minor
+						hint \Громкость
+						click? <=> volume_toggle? null
 						sub / <= Volume_icon $mol_icon_volume_high
 					bubble_content /
 						<= Volume_panel $mol_view
