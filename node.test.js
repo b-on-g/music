@@ -26213,7 +26213,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.30';
+    $.$bog_music_version = 'v1.31';
 })($ || ($ = {}));
 
 ;
@@ -27902,9 +27902,13 @@ var $;
         // Персональный обрез песни (секунды). Trim_end = null — «без обреза».
         Trim_start: $giper_baza_atom.of($mol_schema_float),
         Trim_end: $giper_baza_atom.of($mol_schema_float),
-        // Интегральная громкость записи (dB RMS), меряется один раз при первом
-        // проигрывании — для выравнивания треков между собой ($bog_music_gain).
+        // Старая громкость в dB RMS. Мимо восприятия, поэтому не используется —
+        // поле оставлено, чтобы не спотыкаться о данные ранних версий.
         Loudness: $giper_baza_atom.of($mol_schema_float),
+        // Интегральная громкость записи (LUFS по EBU R128), меряется один раз
+        // при первом проигрывании — для выравнивания треков между собой
+        // ($bog_music_gain).
+        Lufs: $giper_baza_atom.of($mol_schema_float),
     }) {
         /** Метаданные в форме VK-audio. null если Vk_id не парсится. */
         audio() {
@@ -28039,11 +28043,11 @@ var $;
                 return false; // битый pawn/CBOR — считаем что кеша нет
             }
         }
-        /** Интегральная громкость (dB RMS). null — ещё не измерена. */
-        loudness(next) {
+        /** Интегральная громкость (LUFS). null — ещё не измерена. */
+        lufs(next) {
             if (next !== undefined)
-                this.Loudness('auto').val(next);
-            const v = this.Loudness()?.val();
+                this.Lufs('auto').val(next);
+            const v = this.Lufs()?.val();
             return v == null ? null : Number(v);
         }
         /** Обрез начала (сек). 0 = без обреза. */
@@ -28586,8 +28590,8 @@ var $;
                 return;
             track.File('auto').val(null);
         }
-        save_loudness(key, db) {
-            this.track(key)?.loudness(db);
+        save_lufs(key, lufs) {
+            this.track(key)?.lufs(lufs);
         }
         // ---------- последняя сессия (трек + позиция) ----------
         last_session() {
@@ -28663,7 +28667,7 @@ var $;
     ], $bog_music_account_baza.prototype, "drop_blob", null);
     __decorate([
         $mol_action
-    ], $bog_music_account_baza.prototype, "save_loudness", null);
+    ], $bog_music_account_baza.prototype, "save_lufs", null);
     __decorate([
         $mol_action
     ], $bog_music_account_baza.prototype, "save_last_session", null);
@@ -29213,6 +29217,18 @@ var $;
 
 
 ;
+	($.$mol_icon_equalizer) = class $mol_icon_equalizer extends ($.$mol_icon) {
+		path(){
+			return "M10,20H14V4H10V20M4,20H8V12H4V20M16,9V20H20V9H16Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
 	($.$mol_pop_over) = class $mol_pop_over extends ($.$mol_pop) {
 		hovered(next){
 			if(next !== undefined) return next;
@@ -29505,6 +29521,21 @@ var $;
 			(obj.sub) = () => ([(this.Volume_icon())]);
 			return obj;
 		}
+		Norm_icon(){
+			const obj = new this.$.$mol_icon_equalizer();
+			return obj;
+		}
+		normalize(next){
+			if(next !== undefined) return next;
+			return true;
+		}
+		Norm(){
+			const obj = new this.$.$mol_check_icon();
+			(obj.hint) = () => ("Выравнивать громкость треков");
+			(obj.Icon) = () => ((this.Norm_icon()));
+			(obj.checked) = (next) => ((this.normalize(next)));
+			return obj;
+		}
 		volume_pointer_down(next){
 			if(next !== undefined) return next;
 			return null;
@@ -29538,7 +29569,7 @@ var $;
 		}
 		Volume_panel(){
 			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.Volume_slider())]);
+			(obj.sub) = () => ([(this.Norm()), (this.Volume_slider())]);
 			return obj;
 		}
 		Volume(){
@@ -29628,6 +29659,9 @@ var $;
 	($mol_mem(($.$bog_music_player.prototype), "Center"));
 	($mol_mem(($.$bog_music_player.prototype), "Volume_icon"));
 	($mol_mem(($.$bog_music_player.prototype), "Volume_anchor"));
+	($mol_mem(($.$bog_music_player.prototype), "Norm_icon"));
+	($mol_mem(($.$bog_music_player.prototype), "normalize"));
+	($mol_mem(($.$bog_music_player.prototype), "Norm"));
 	($mol_mem(($.$bog_music_player.prototype), "volume_pointer_down"));
 	($mol_mem(($.$bog_music_player.prototype), "volume_pointer_move"));
 	($mol_mem(($.$bog_music_player.prototype), "volume_pointer_up"));
@@ -29649,36 +29683,134 @@ var $;
 var $;
 (function ($) {
     /**
-     * Выравнивание громкости треков: интегральный RMS-уровень записи меряется
-     * один раз (лениво, при первом проигрывании) и хранится в baza; при
-     * воспроизведении все треки приводятся к target_db.
+     * Выравнивание громкости треков по EBU R128 (ITU-R BS.1770): интегральная
+     * громкость записи в LUFS меряется один раз, лениво, при первом
+     * проигрывании и хранится в baza; при воспроизведении все треки
+     * приводятся к target_lufs.
+     *
+     * Раньше мерили обычный RMS. Он не совпадает с восприятием: басовитая
+     * запись по RMS громче, чем звучит, и после «выравнивания» оказывалась
+     * тише соседней. R128 сначала прогоняет сигнал через K-взвешивание
+     * (подъём верха + обрез низа), потом усредняет по 400-мс блокам с
+     * отсечкой тишины — по этому же стандарту нормализуют Spotify и YouTube.
      */
     class $bog_music_gain extends $mol_object {
-        /** Целевой уровень (dB RMS относительно full scale). */
-        static target_db = -14;
-        /** Интегральный RMS-уровень записи в dBFS. */
-        static async measure_db(buf) {
-            const AC = globalThis.OfflineAudioContext || globalThis.webkitOfflineAudioContext;
-            const probe = new AC(1, 1, 44100);
-            const audio = await probe.decodeAudioData(buf);
-            let sum = 0;
-            let count = 0;
+        /** Целевая громкость (LUFS). -14 — как у Spotify/YouTube Music. */
+        static target_lufs = -14;
+        /** Потолок усиления (dB): выше вытащим шум и дыхание зала. */
+        static gain_max_db = 12;
+        /** Предел приглушения (dB). */
+        static gain_min_db = -20;
+        /** Абсолютный гейт: блоки тише этого — тишина, в среднее не идут. */
+        static gate_abs = -70;
+        /** Считаем на 48 кГц — частота, для которой BS.1770 задаёт фильтры. */
+        static rate = 48000;
+        /**
+         * Коэффициенты K-взвешивания из BS.1770 для 48 кГц.
+         * Первый каскад — шельф +4 dB от ~1.5 кГц (голова и ушная раковина
+         * подчёркивают верх), второй — обрез ниже ~40 Гц (низы весят по
+         * энергии больше, чем слышны).
+         */
+        static shelf = [1.53512485958697, -2.69169618940638, 1.19839281085285, -1.69065929318241, 0.73248077421585];
+        static cut = [1.0, -2.0, 1.0, -1.99004745483398, 0.99007225036621];
+        /**
+         * Интегральная громкость записи в LUFS. null — мерить нечего:
+         * запись короче 400 мс или сплошная тишина.
+         */
+        static async measure_lufs(buf) {
+            const audio = await this.decode(buf);
+            const hop = Math.round(audio.sampleRate / 10); // 100 мс
+            const hops = Math.floor(audio.length / hop);
+            if (hops < 4)
+                return null;
+            // Сумма квадратов по каждому 100-мс куску, взвешенная по каналам.
+            const power = new Float64Array(hops);
             for (let ch = 0; ch < audio.numberOfChannels; ch++) {
+                // Фильтруем на месте: копия целого трека на телефоне лишняя,
+                // декодированный буфер всё равно выбрасываем сразу после замера.
                 const data = audio.getChannelData(ch);
-                // каждый 4-й сэмпл: точности для выравнивания хватает, в 4 раза быстрее
-                for (let i = 0; i < data.length; i += 4)
-                    sum += data[i] * data[i];
-                count += Math.ceil(data.length / 4);
+                // Между проходами отпускаем поток: каждый — это десятки
+                // миллионов операций, и без пауз отрисовка встала бы колом.
+                this.biquad(data, this.shelf);
+                await this.breathe();
+                this.biquad(data, this.cut);
+                await this.breathe();
+                const weight = ch < 3 ? 1 : 1.41; // тыловые каналы весят больше
+                for (let h = 0; h < hops; h++) {
+                    let sum = 0;
+                    const end = (h + 1) * hop;
+                    for (let i = h * hop; i < end; i++)
+                        sum += data[i] * data[i];
+                    power[h] += weight * sum;
+                }
+                await this.breathe();
             }
-            const rms = Math.sqrt(sum / Math.max(1, count));
-            return 20 * Math.log10(Math.max(rms, 1e-6));
+            return this.integrated(power, hop);
         }
-        /** Линейный множитель приведения к target_db. 1 — уровень неизвестен. */
-        static factor(db) {
-            if (db == null || !Number.isFinite(db))
+        /**
+         * Интегральная громкость по мощности 100-мс кусков. Блок — 400 мс
+         * (4 куска) с шагом в один кусок, дальше двойной гейт: сначала
+         * выкидываем тишину, потом всё, что на 10 LU тише среднего по
+         * оставшемуся — иначе долгие тихие проигрыши тянут оценку вниз.
+         */
+        static integrated(power, hop) {
+            const size = hop * 4;
+            const blocks = [];
+            for (let h = 0; h + 4 <= power.length; h++) {
+                const mean = (power[h] + power[h + 1] + power[h + 2] + power[h + 3]) / size;
+                if (mean > 0)
+                    blocks.push(mean);
+            }
+            if (!blocks.length)
+                return null;
+            const loud = (mean) => -0.691 + 10 * Math.log10(mean);
+            const mean_of = (list) => list.reduce((sum, mean) => sum + mean, 0) / list.length;
+            const heard = blocks.filter(mean => loud(mean) > this.gate_abs);
+            if (!heard.length)
+                return null;
+            const gate_rel = loud(mean_of(heard)) - 10;
+            const rest = heard.filter(mean => loud(mean) > gate_rel);
+            if (!rest.length)
+                return null;
+            return loud(mean_of(rest));
+        }
+        /** Линейный множитель приведения записи к target_lufs. */
+        static factor(lufs) {
+            if (lufs == null || !Number.isFinite(lufs))
                 return 1;
-            const f = Math.pow(10, (this.target_db - db) / 20);
-            return Math.max(0.2, Math.min(2.5, f));
+            const db = Math.max(this.gain_min_db, Math.min(this.gain_max_db, this.target_lufs - lufs));
+            return Math.pow(10, db / 20);
+        }
+        /** Отпустить поток, чтобы браузер успел отрисовать кадр. */
+        static breathe() {
+            return new Promise(done => setTimeout(done, 0));
+        }
+        /** Каскад БИХ-фильтра (direct form I) по сэмплам, на месте. */
+        static biquad(data, c) {
+            let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+            for (let i = 0; i < data.length; i++) {
+                const x = data[i];
+                const y = c[0] * x + c[1] * x1 + c[2] * x2 - c[3] * y1 - c[4] * y2;
+                x2 = x1;
+                x1 = x;
+                y2 = y1;
+                y1 = y;
+                data[i] = y;
+            }
+        }
+        /**
+         * Декод в 48 кГц: decodeAudioData отдаёт сэмплы на частоте контекста,
+         * так что коэффициенты фильтров подходят без пересчёта. Safari отдаёт
+         * результат колбэком, остальные — промисом.
+         */
+        static decode(buf) {
+            const OAC = globalThis.OfflineAudioContext ?? globalThis.webkitOfflineAudioContext;
+            const ctx = new OAC(1, 1, this.rate);
+            return new Promise((done, fail) => {
+                const ret = ctx.decodeAudioData(buf, done, fail);
+                if (ret && typeof ret.then === 'function')
+                    ret.then(done, fail);
+            });
         }
     }
     $.$bog_music_gain = $bog_music_gain;
@@ -29828,6 +29960,14 @@ var $;
             set_track_src(el, url) {
                 this._silent = false;
                 this._track_src = url;
+                // WebAudio отдаёт тишину, если источник с чужого домена и не прислал
+                // CORS-заголовки. Для не-blob адресов (превью с tube-сервера) просим
+                // CORS явно, иначе после подключения гейн-цепочки звук пропадёт.
+                // Проверять _gain_ready мало: Safari подключает цепочку отложенно, и
+                // источник, взятый до подключения, замолчал бы задним числом.
+                if (!this._gain_dead && this.normalize()) {
+                    el.crossOrigin = url.startsWith('blob:') ? null : 'anonymous';
+                }
                 el.loop = false;
                 el.src = url;
                 const gen = ++this._switch_gen;
@@ -29887,69 +30027,153 @@ var $;
                 }).catch(() => { });
             }
             // ---------- выравнивание громкости ----------
-            // На iOS volume у <audio> игнорируется — гейним через WebAudio.
-            // На остальных платформах гейн умножается на volume напрямую.
+            // Весь звук идёт через WebAudio: el → gain → limiter → выход.
+            // Пользовательская громкость и выравнивающий множитель лежат вместе в
+            // GainNode, потому что el.volume не годится ни для того, ни для другого:
+            // на iOS система его игнорирует, а на остальных платформах он зажат
+            // единицей — тихую запись им не поднять, только приглушить громкую.
             _gain_ctx;
             _gain_node;
+            /** Элемент заведён в граф. Обратной дороги нет: выход теперь только там. */
+            _gain_ready = false;
+            /** WebAudio недоступен или упал — работаем напрямую элементом. */
+            _gain_dead = false;
+            _gain_wake_set = false;
             /**
-             * ЭКСПЕРИМЕНТ (баг «пустой звук при выходе на iOS»): WebAudio-гейн на iOS
-             * отключён. Гипотеза — AudioContext засыпает в фоне и звук через него
-             * глохнет. С флагом=false звук идёт из <audio> напрямую → фон должен
-             * работать, но выравнивание громкости на iOS не применяется (на
-             * десктопе/андроиде оно через el.volume и работает). Вернуть = true.
+             * Создать и разбудить контекст. Зовётся из юзер-жеста: без жеста он
+             * остаётся спящим, а заводить элемент в спящий граф нельзя — весь звук
+             * ушёл бы в тишину.
              */
-            static GAIN_ON_IOS = false;
-            /** Собрать цепочку el → gain → limiter. Только iOS и только в жесте. */
             gain_chain_unlock() {
-                if (!this.is_ios())
+                if (this._gain_dead || !this.normalize())
                     return;
-                if (!$bog_music_player.GAIN_ON_IOS)
-                    return;
-                if (this._gain_ctx) {
+                if (this._gain_ready) {
                     this.gain_resume();
                     return;
                 }
                 try {
-                    const AC = window.AudioContext || window.webkitAudioContext;
-                    const ctx = new AC();
+                    if (!this._gain_ctx) {
+                        const AC = window.AudioContext || window.webkitAudioContext;
+                        if (!AC) {
+                            this._gain_dead = true;
+                            return;
+                        }
+                        this._gain_ctx = new AC();
+                    }
+                    const ctx = this._gain_ctx;
+                    if (ctx.state === 'running') {
+                        this.gain_wire();
+                        return;
+                    }
+                    // Safari отдаёт контекст спящим даже внутри жеста — подключаемся,
+                    // когда он проснётся.
+                    ctx.resume().then(() => this.gain_wire()).catch(() => { });
+                }
+                catch (e) {
+                    this._gain_dead = true;
+                    console.warn('[player] gain chain failed:', e?.message ?? e);
+                }
+            }
+            /** Завести элемент в граф: el → gain → limiter → выход. */
+            gain_wire() {
+                if (this._gain_ready || this._gain_dead)
+                    return;
+                const ctx = this._gain_ctx;
+                if (!ctx || ctx.state !== 'running')
+                    return;
+                try {
                     const src = ctx.createMediaElementSource(this.audio_el());
                     const gain = ctx.createGain();
-                    const limiter = ctx.createDynamicsCompressor(); // страховка от клиппинга при усилении
+                    // Страховка от клиппинга: у поднятой тихой записи пики вылезают
+                    // за 0 dBFS, лимитер срезает их без хруста.
+                    const limiter = ctx.createDynamicsCompressor();
+                    limiter.threshold.value = -1;
+                    limiter.knee.value = 0;
+                    limiter.ratio.value = 20;
+                    limiter.attack.value = 0.003;
+                    limiter.release.value = 0.25;
                     src.connect(gain);
                     gain.connect(limiter);
                     limiter.connect(ctx.destination);
-                    this._gain_ctx = ctx;
                     this._gain_node = gain;
+                    this._gain_ready = true;
+                    this.audio_el().volume = 1; // дальше громкостью рулит только гейн
+                    this.gain_push();
+                    this.setup_gain_wake();
                 }
                 catch (e) {
-                    console.warn('[player] gain chain failed:', e?.message);
+                    this._gain_dead = true;
+                    console.warn('[player] gain wire failed:', e?.message ?? e);
                 }
             }
-            /** После разморозки/interruption iOS контекст надо будить, иначе тишина. */
+            /**
+             * Заснувший контекст = тишина при живом <audio>: iOS усыпляет его в фоне
+             * и после каждого прерывания (звонок, наушники). Будим отовсюду, откуда
+             * можно узнать, что мы снова на переднем плане.
+             */
+            setup_gain_wake() {
+                if (this._gain_wake_set)
+                    return;
+                this._gain_wake_set = true;
+                const wake = () => this.gain_resume();
+                this._gain_ctx?.addEventListener('statechange', wake);
+                document.addEventListener('visibilitychange', wake);
+                window.addEventListener('pageshow', wake);
+                window.addEventListener('focus', wake);
+            }
             gain_resume() {
                 const ctx = this._gain_ctx;
-                if (ctx && ctx.state !== 'running')
+                if (!ctx)
+                    return;
+                if (ctx.state !== 'running')
                     ctx.resume().catch(() => { });
+                if (!this._gain_ready)
+                    this.gain_wire();
+            }
+            /**
+             * Выравнивать ли громкость треков. Выключенное — ещё и аварийный тумблер:
+             * после перезагрузки страницы звук пойдёт мимо WebAudio совсем.
+             */
+            normalize(next) {
+                const v = $mol_state_local.value('bog_music_gain_norm', next);
+                return v ?? true;
             }
             /** Множитель выравнивания текущего трека. 1 пока громкость не измерена. */
             track_gain() {
-                return $bog_music_gain.factor(this.current_track()?.loudness() ?? null);
+                if (!this.normalize())
+                    return 1;
+                return $bog_music_gain.factor(this.current_track()?.lufs() ?? null);
             }
-            loudness_known(key) {
-                return this.account().track(key)?.loudness() != null;
+            gain_known(key) {
+                return this.account().track(key)?.lufs() != null;
             }
-            /** Ленивое измерение громкости трека — один раз, фоном. */
-            async analyze_loudness(key) {
+            /** Уже брались за этот трек в этой сессии — второй раз не декодируем. */
+            _gain_seen = new Set();
+            /** Замеры идут по одному: декодированный трек занимает десятки мегабайт. */
+            _gain_queue = Promise.resolve();
+            /** Поставить трек в очередь на одноразовый замер громкости. */
+            analyze_gain(key) {
+                if (!key || this._gain_seen.has(key))
+                    return;
+                this._gain_seen.add(key);
+                this._gain_queue = this._gain_queue.then(() => this.measure_gain(key)).catch(() => { });
+            }
+            async measure_gain(key) {
                 try {
-                    if (await $mol_wire_async(this).loudness_known(key))
+                    if (await $mol_wire_async(this).gain_known(key))
                         return;
                     const blob = await $mol_wire_async(this).blob_of(key);
-                    if (!blob)
+                    if (!blob) {
+                        this._gain_seen.delete(key); // ещё не докачался — вернёмся позже
                         return;
-                    const db = await $bog_music_gain.measure_db(await blob.arrayBuffer());
-                    await $mol_wire_async(this.account()).save_loudness(key, db);
+                    }
+                    const lufs = await $bog_music_gain.measure_lufs(await blob.arrayBuffer());
+                    if (lufs == null)
+                        return;
+                    await $mol_wire_async(this.account()).save_lufs(key, lufs);
                 }
                 catch (e) {
+                    this._gain_seen.delete(key);
                     console.warn('[player] loudness analyze failed:', e?.message ?? e);
                 }
             }
@@ -30017,6 +30241,10 @@ var $;
                 // Реально заигралo — окно смены трека закрыто.
                 el.addEventListener('playing', () => { this._switching = false; });
                 el.addEventListener('timeupdate', () => {
+                    // Дешёвая проверка живости графа: контекст мог заснуть в фоне,
+                    // и тогда элемент играет, а из динамика тишина.
+                    if (this._gain_ctx && this._gain_ctx.state !== 'running')
+                        this.gain_resume();
                     if (this._silent)
                         return;
                     this._switching = false;
@@ -30233,7 +30461,7 @@ var $;
             /** Возобновление с локскрина/Control Center. */
             resume_robust() {
                 const el = this.audio_el();
-                this.gain_resume();
+                this.gain_chain_unlock();
                 if (this.is_ios()) {
                     this.ios_resume(el);
                     return;
@@ -30306,22 +30534,39 @@ var $;
                 const v = $mol_state_local.value('bog_music_volume', next) ?? 0.7;
                 return Math.max(0, Math.min(1, v));
             }
+            /** Последняя посчитанная пара — дожать её после сборки цепочки. */
+            _gain_last = { volume: 0.7, factor: 1 };
             apply_volume() {
-                const v = this.volume();
-                // Реактивно: когда фоновый анализ допишет Loudness, гейн подтянется.
-                const gain = this.track_gain();
+                const volume = this.volume();
+                // Реактивно: когда фоновый замер допишет громкость, гейн подтянется.
+                const factor = this.track_gain();
+                this._gain_last = { volume, factor };
+                this.gain_push();
+                return volume * factor;
+            }
+            /** Разложить громкость по выходу: offscreen, WebAudio или сам элемент. */
+            gain_push() {
+                const { volume, factor } = this._gain_last;
                 if (this.is_extension()) {
-                    this.send('volume', { value: Math.max(0, Math.min(1, v * gain)) });
+                    this.send('volume', { value: volume, gain: factor });
+                    return;
                 }
-                else if (this._gain_node) {
-                    if (this._audio_el)
-                        this._audio_el.volume = v;
-                    this._gain_node.gain.value = gain;
+                const node = this._gain_node;
+                const ctx = this._gain_ctx;
+                if (node && ctx) {
+                    // Плавно: мгновенный скачок гейна на стыке треков щёлкает.
+                    try {
+                        node.gain.setTargetAtTime(volume * factor, ctx.currentTime, 0.02);
+                    }
+                    catch {
+                        node.gain.value = volume * factor;
+                    }
+                    return;
                 }
-                else if (this._audio_el) {
-                    this._audio_el.volume = Math.max(0, Math.min(1, v * gain));
-                }
-                return v * gain;
+                // Цепочки нет (жеста ещё не было, WebAudio недоступен, выравнивание
+                // выключено) — элементом можно только приглушить.
+                if (this._audio_el)
+                    this._audio_el.volume = Math.max(0, Math.min(1, volume * factor));
             }
             title() {
                 return this.current_audio()?.title ?? '';
@@ -30483,7 +30728,8 @@ var $;
                 }
                 catch { }
                 this.apply_media_metadata(audio);
-                $mol_wire_async(this).analyze_loudness(key);
+                // Фоновое одноразовое измерение громкости для выравнивания.
+                this.analyze_gain(key);
                 if (this.is_extension()) {
                     this.dispatch_play_offscreen(key, audio, start_at);
                     return;
@@ -30530,9 +30776,12 @@ var $;
                 if (!next_key)
                     return false;
                 this.track_warm(next_key);
-                if (this._blob_cache.has(next_key))
-                    return true;
-                return this.cache_blob(next_key);
+                const ready = this._blob_cache.has(next_key) || this.cache_blob(next_key);
+                // Мерим громкость заранее: иначе первые секунды следующего трека
+                // играют невыровненными.
+                if (ready)
+                    this.analyze_gain(next_key);
+                return ready;
             }
             /**
              * Прогрев холодных baza-атомов трека. Обрез и метаданные для НЕтекущего
@@ -31184,6 +31433,9 @@ var $;
         }
         __decorate([
             $mol_mem
+        ], $bog_music_player.prototype, "normalize", null);
+        __decorate([
+            $mol_mem
         ], $bog_music_player.prototype, "offscreen_link", null);
         __decorate([
             $mol_mem
@@ -31402,9 +31654,13 @@ var $;
                     left: '0.5rem',
                     right: '0.5rem',
                 },
+                flex: {
+                    direction: 'column',
+                },
                 align: {
                     items: 'center',
                 },
+                gap: $mol_gap.text,
             },
             Volume_slider: {
                 width: '6px',
@@ -38405,6 +38661,50 @@ var $;
             $mol_assert_equal($.$bog_recsys.rewards().pop > 0, true);
             $.$bog_recsys.reset();
             $mol_assert_equal(Object.keys($.$bog_recsys.rewards()).length, 0);
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /** Мощность 100-мс кусков постоянного сигнала с заданным средним квадратом. */
+    function power_of(hops, mean_square, hop) {
+        const power = new Float64Array(hops);
+        power.fill(mean_square * hop);
+        return power;
+    }
+    $mol_test({
+        'Множитель приводит запись к целевой громкости'() {
+            $mol_assert_equal($bog_music_gain.factor(null), 1);
+            $mol_assert_equal(Math.round($bog_music_gain.factor(-14) * 1000), 1000);
+            // Тише цели на 6 dB — усиление вдвое.
+            $mol_assert_equal(Math.round($bog_music_gain.factor(-20) * 100), 200);
+            // Громче цели на 6 dB — вдвое тише.
+            $mol_assert_equal(Math.round($bog_music_gain.factor(-8) * 100), 50);
+        },
+        'Множитель зажат пределами'() {
+            $mol_assert_equal($bog_music_gain.factor(-100), Math.pow(10, 12 / 20));
+            $mol_assert_equal($bog_music_gain.factor(20), Math.pow(10, -20 / 20));
+        },
+        'Громкость ровного сигнала'() {
+            const hop = 4800;
+            const lufs = $bog_music_gain.integrated(power_of(20, 0.01, hop), hop);
+            // -0.691 + 10 * log10( 0.01 )
+            $mol_assert_ok(Math.abs(lufs + 20.691) < 0.01);
+        },
+        'Тишина в конце записи не занижает громкость'() {
+            const hop = 4800;
+            const power = new Float64Array(40);
+            power.set(power_of(20, 0.01, hop), 0);
+            power.fill(1e-9 * hop, 20);
+            const lufs = $bog_music_gain.integrated(power, hop);
+            $mol_assert_ok(Math.abs(lufs + 20.691) < 0.5);
+        },
+        'Сплошная тишина не измеряется'() {
+            $mol_assert_equal($bog_music_gain.integrated(new Float64Array(20), 4800), null);
+            $mol_assert_equal($bog_music_gain.integrated(new Float64Array(2), 4800), null);
         },
     });
 })($ || ($ = {}));
