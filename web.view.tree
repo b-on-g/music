@@ -2633,16 +2633,6 @@ $mol_icon_volume_high $mol_icon path \M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,
 
 $mol_icon_equalizer $mol_icon path \M10,20H14V4H10V20M4,20H8V12H4V20M16,9V20H20V9H16Z
 
-$mol_pop_over $mol_pop
-	showed <= hovered? false
-	attr *
-		^
-		tabindex 0
-	event *
-		^
-		mouseenter? <=> event_show? null
-		mouseleave? <=> event_hide? null
-
 $bog_music_player $mol_view
 	current_key? \
 	queue_keys /
@@ -2708,9 +2698,11 @@ $bog_music_player $mol_view
 								<= Repeat_all_icon $mol_icon_repeat
 								<= Repeat_one_icon $mol_icon_repeat_once
 								<= Shuffle_icon $mol_icon_shuffle
-				<= Volume $mol_pop_over
+				<= Volume $mol_pop
 					align \top_right
 					Anchor <= Volume_anchor $mol_button_minor
+						hint \Громкость
+						click? <=> volume_toggle? null
 						sub / <= Volume_icon $mol_icon_volume_high
 					bubble_content /
 						<= Volume_panel $mol_view
@@ -2733,3 +2725,13 @@ $bog_music_player $mol_view
 					hint \Закрыть плеер
 					click? <=> close? null
 					sub / <= Close_icon $mol_icon_close
+
+$mol_pop_over $mol_pop
+	showed <= hovered? false
+	attr *
+		^
+		tabindex 0
+	event *
+		^
+		mouseenter? <=> event_show? null
+		mouseleave? <=> event_hide? null

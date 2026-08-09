@@ -58507,40 +58507,6 @@ declare namespace $ {
 
 //# sourceMappingURL=equalizer.view.tree.d.ts.map
 declare namespace $ {
-
-	export class $mol_pop_over extends $mol_pop {
-		hovered( next?: boolean ): boolean
-		event_show( next?: any ): any
-		event_hide( next?: any ): any
-		showed( ): ReturnType< $mol_pop_over['hovered'] >
-		attr( ): ({ 
-			'tabindex': number,
-		})  & ReturnType< $mol_pop['attr'] >
-		event( ): ({ 
-			mouseenter( next?: ReturnType< $mol_pop_over['event_show'] > ): ReturnType< $mol_pop_over['event_show'] >,
-			mouseleave( next?: ReturnType< $mol_pop_over['event_hide'] > ): ReturnType< $mol_pop_over['event_hide'] >,
-		})  & ReturnType< $mol_pop['event'] >
-	}
-	
-}
-
-//# sourceMappingURL=over.view.tree.d.ts.map
-declare namespace $.$$ {
-    /**
-     * Bubble that can be shown anchored to Anchor element.
-     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_pop_over_demo
-     */
-    class $mol_pop_over extends $.$mol_pop_over {
-        event_show(event?: MouseEvent): void;
-        event_hide(event?: MouseEvent): void;
-        showed(): boolean;
-    }
-}
-
-declare namespace $ {
-}
-
-declare namespace $ {
     /**
      * Выравнивание громкости треков по EBU R128 (ITU-R BS.1770): интегральная
      * громкость записи в LUFS меряется один раз, лениво, при первом
@@ -58597,6 +58563,40 @@ declare namespace $ {
          */
         static decode(buf: ArrayBuffer): Promise<AudioBuffer>;
     }
+}
+
+declare namespace $ {
+
+	export class $mol_pop_over extends $mol_pop {
+		hovered( next?: boolean ): boolean
+		event_show( next?: any ): any
+		event_hide( next?: any ): any
+		showed( ): ReturnType< $mol_pop_over['hovered'] >
+		attr( ): ({ 
+			'tabindex': number,
+		})  & ReturnType< $mol_pop['attr'] >
+		event( ): ({ 
+			mouseenter( next?: ReturnType< $mol_pop_over['event_show'] > ): ReturnType< $mol_pop_over['event_show'] >,
+			mouseleave( next?: ReturnType< $mol_pop_over['event_hide'] > ): ReturnType< $mol_pop_over['event_hide'] >,
+		})  & ReturnType< $mol_pop['event'] >
+	}
+	
+}
+
+//# sourceMappingURL=over.view.tree.d.ts.map
+declare namespace $.$$ {
+    /**
+     * Bubble that can be shown anchored to Anchor element.
+     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_pop_over_demo
+     */
+    class $mol_pop_over extends $.$mol_pop_over {
+        event_show(event?: MouseEvent): void;
+        event_hide(event?: MouseEvent): void;
+        showed(): boolean;
+    }
+}
+
+declare namespace $ {
 }
 
 declare namespace $ {
@@ -58742,34 +58742,44 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_button_minor__sub_bog_music_player_26 = $mol_type_enforce<
+	type $mol_button_minor__hint_bog_music_player_26 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['hint'] >
+	>
+	type $mol_button_minor__click_bog_music_player_27 = $mol_type_enforce<
+		ReturnType< $bog_music_player['volume_toggle'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub_bog_music_player_28 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_check_icon__hint_bog_music_player_27 = $mol_type_enforce<
+	type $mol_check_icon__hint_bog_music_player_29 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_check_icon['hint'] >
 	>
-	type $mol_check_icon__Icon_bog_music_player_28 = $mol_type_enforce<
+	type $mol_check_icon__Icon_bog_music_player_30 = $mol_type_enforce<
 		ReturnType< $bog_music_player['Norm_icon'] >
 		,
 		ReturnType< $mol_check_icon['Icon'] >
 	>
-	type $mol_check_icon__checked_bog_music_player_29 = $mol_type_enforce<
+	type $mol_check_icon__checked_bog_music_player_31 = $mol_type_enforce<
 		ReturnType< $bog_music_player['normalize'] >
 		,
 		ReturnType< $mol_check_icon['checked'] >
 	>
-	type $mol_view__style_bog_music_player_30 = $mol_type_enforce<
+	type $mol_view__style_bog_music_player_32 = $mol_type_enforce<
 		({ 
 			'height': ReturnType< $bog_music_player['volume_fill_height'] >,
 		}) 
 		,
 		ReturnType< $mol_view['style'] >
 	>
-	type $mol_view__event_bog_music_player_31 = $mol_type_enforce<
+	type $mol_view__event_bog_music_player_33 = $mol_type_enforce<
 		({ 
 			pointerdown( next?: ReturnType< $bog_music_player['volume_pointer_down'] > ): ReturnType< $bog_music_player['volume_pointer_down'] >,
 			pointermove( next?: ReturnType< $bog_music_player['volume_pointer_move'] > ): ReturnType< $bog_music_player['volume_pointer_move'] >,
@@ -58779,47 +58789,47 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['event'] >
 	>
-	type $mol_view__sub_bog_music_player_32 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_34 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_player_33 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_35 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_pop_over__align_bog_music_player_34 = $mol_type_enforce<
+	type $mol_pop__align_bog_music_player_36 = $mol_type_enforce<
 		string
 		,
-		ReturnType< $mol_pop_over['align'] >
+		ReturnType< $mol_pop['align'] >
 	>
-	type $mol_pop_over__Anchor_bog_music_player_35 = $mol_type_enforce<
+	type $mol_pop__Anchor_bog_music_player_37 = $mol_type_enforce<
 		ReturnType< $bog_music_player['Volume_anchor'] >
 		,
-		ReturnType< $mol_pop_over['Anchor'] >
+		ReturnType< $mol_pop['Anchor'] >
 	>
-	type $mol_pop_over__bubble_content_bog_music_player_36 = $mol_type_enforce<
+	type $mol_pop__bubble_content_bog_music_player_38 = $mol_type_enforce<
 		readonly(any)[]
 		,
-		ReturnType< $mol_pop_over['bubble_content'] >
+		ReturnType< $mol_pop['bubble_content'] >
 	>
-	type $mol_button_minor__hint_bog_music_player_37 = $mol_type_enforce<
+	type $mol_button_minor__hint_bog_music_player_39 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__click_bog_music_player_38 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_player_40 = $mol_type_enforce<
 		ReturnType< $bog_music_player['close'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_music_player_39 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_music_player_41 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_view__sub_bog_music_player_40 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_42 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
@@ -58867,6 +58877,7 @@ declare namespace $ {
 		Shuffle_icon( ): $mol_icon_shuffle
 		Repeat( ): $mol_button_minor
 		Center( ): $mol_view
+		volume_toggle( next?: any ): any
 		Volume_icon( ): $mol_icon_volume_high
 		Volume_anchor( ): $mol_button_minor
 		Norm_icon( ): $mol_icon_equalizer
@@ -58879,7 +58890,7 @@ declare namespace $ {
 		Volume_fill( ): $mol_view
 		Volume_slider( ): $mol_view
 		Volume_panel( ): $mol_view
-		Volume( ): $mol_pop_over
+		Volume( ): $mol_pop
 		close( next?: any ): any
 		Close_icon( ): $mol_icon_close
 		Close( ): $mol_button_minor
@@ -59043,6 +59054,19 @@ declare namespace $.$$ {
         time_total_text(): string;
         format_time(seconds: number): string;
         progress_width(): string;
+        /**
+         * Тап по иконке открывает и закрывает панель. Раньше панель была
+         * $mol_pop_over, а он показан, пока «в фокусе ИЛИ под курсором»: на
+         * телефоне фокус остаётся на кнопке, и повторный тап ничего не закрывал.
+         */
+        volume_toggle(): null;
+        private _volume_dismiss_set;
+        /**
+         * Тап мимо панели закрывает её. Сам $mol_pop закрывается, только когда
+         * фокус уезжает на другой фокусируемый элемент, а тап по пустому месту
+         * фокус никуда не переносит — панель висела бы на экране.
+         */
+        private setup_volume_dismiss;
         private _vol_dragging;
         private volume_set_from_event;
         volume_pointer_down(event?: Event): null;

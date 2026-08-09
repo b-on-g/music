@@ -26222,7 +26222,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.31';
+    $.$bog_music_version = 'v1.32';
 })($ || ($ = {}));
 
 ;
@@ -29238,75 +29238,6 @@ var $;
 
 
 ;
-	($.$mol_pop_over) = class $mol_pop_over extends ($.$mol_pop) {
-		hovered(next){
-			if(next !== undefined) return next;
-			return false;
-		}
-		event_show(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		event_hide(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		showed(){
-			return (this.hovered());
-		}
-		attr(){
-			return {...(super.attr()), "tabindex": 0};
-		}
-		event(){
-			return {
-				...(super.event()), 
-				"mouseenter": (next) => (this.event_show(next)), 
-				"mouseleave": (next) => (this.event_hide(next))
-			};
-		}
-	};
-	($mol_mem(($.$mol_pop_over.prototype), "hovered"));
-	($mol_mem(($.$mol_pop_over.prototype), "event_show"));
-	($mol_mem(($.$mol_pop_over.prototype), "event_hide"));
-
-
-;
-"use strict";
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        /**
-         * Bubble that can be shown anchored to Anchor element.
-         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_pop_over_demo
-         */
-        class $mol_pop_over extends $.$mol_pop_over {
-            event_show(event) {
-                this.hovered(true);
-            }
-            event_hide(event) {
-                this.hovered(false);
-            }
-            showed() {
-                return this.focused() || this.hovered();
-            }
-        }
-        $$.$mol_pop_over = $mol_pop_over;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_attach("mol/pop/over/over.view.css", "[mol_pop_over]:focus {\r\n\toutline: none;\r\n}");
-})($ || ($ = {}));
-
-;
 	($.$bog_music_player) = class $bog_music_player extends ($.$mol_view) {
 		time_current_text(){
 			return "";
@@ -29521,12 +29452,18 @@ var $;
 			]);
 			return obj;
 		}
+		volume_toggle(next){
+			if(next !== undefined) return next;
+			return null;
+		}
 		Volume_icon(){
 			const obj = new this.$.$mol_icon_volume_high();
 			return obj;
 		}
 		Volume_anchor(){
 			const obj = new this.$.$mol_button_minor();
+			(obj.hint) = () => ("Громкость");
+			(obj.click) = (next) => ((this.volume_toggle(next)));
 			(obj.sub) = () => ([(this.Volume_icon())]);
 			return obj;
 		}
@@ -29582,7 +29519,7 @@ var $;
 			return obj;
 		}
 		Volume(){
-			const obj = new this.$.$mol_pop_over();
+			const obj = new this.$.$mol_pop();
 			(obj.align) = () => ("top_right");
 			(obj.Anchor) = () => ((this.Volume_anchor()));
 			(obj.bubble_content) = () => ([(this.Volume_panel())]);
@@ -29666,6 +29603,7 @@ var $;
 	($mol_mem(($.$bog_music_player.prototype), "Shuffle_icon"));
 	($mol_mem(($.$bog_music_player.prototype), "Repeat"));
 	($mol_mem(($.$bog_music_player.prototype), "Center"));
+	($mol_mem(($.$bog_music_player.prototype), "volume_toggle"));
 	($mol_mem(($.$bog_music_player.prototype), "Volume_icon"));
 	($mol_mem(($.$bog_music_player.prototype), "Volume_anchor"));
 	($mol_mem(($.$bog_music_player.prototype), "Norm_icon"));
@@ -29823,6 +29761,75 @@ var $;
         }
     }
     $.$bog_music_gain = $bog_music_gain;
+})($ || ($ = {}));
+
+;
+	($.$mol_pop_over) = class $mol_pop_over extends ($.$mol_pop) {
+		hovered(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		event_show(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		event_hide(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		showed(){
+			return (this.hovered());
+		}
+		attr(){
+			return {...(super.attr()), "tabindex": 0};
+		}
+		event(){
+			return {
+				...(super.event()), 
+				"mouseenter": (next) => (this.event_show(next)), 
+				"mouseleave": (next) => (this.event_hide(next))
+			};
+		}
+	};
+	($mol_mem(($.$mol_pop_over.prototype), "hovered"));
+	($mol_mem(($.$mol_pop_over.prototype), "event_show"));
+	($mol_mem(($.$mol_pop_over.prototype), "event_hide"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        /**
+         * Bubble that can be shown anchored to Anchor element.
+         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_pop_over_demo
+         */
+        class $mol_pop_over extends $.$mol_pop_over {
+            event_show(event) {
+                this.hovered(true);
+            }
+            event_hide(event) {
+                this.hovered(false);
+            }
+            showed() {
+                return this.focused() || this.hovered();
+            }
+        }
+        $$.$mol_pop_over = $mol_pop_over;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/pop/over/over.view.css", "[mol_pop_over]:focus {\r\n\toutline: none;\r\n}");
 })($ || ($ = {}));
 
 ;
@@ -30601,6 +30608,43 @@ var $;
                 return `${(this.current_time() / dur) * 100}%`;
             }
             // ---------- громкость (drag по вертикальному слайдеру) ----------
+            /**
+             * Тап по иконке открывает и закрывает панель. Раньше панель была
+             * $mol_pop_over, а он показан, пока «в фокусе ИЛИ под курсором»: на
+             * телефоне фокус остаётся на кнопке, и повторный тап ничего не закрывал.
+             */
+            volume_toggle() {
+                const pop = this.Volume();
+                const showed = pop.showed();
+                pop.showed(!showed);
+                if (!showed)
+                    this.setup_volume_dismiss();
+                return null;
+            }
+            _volume_dismiss_set = false;
+            /**
+             * Тап мимо панели закрывает её. Сам $mol_pop закрывается, только когда
+             * фокус уезжает на другой фокусируемый элемент, а тап по пустому месту
+             * фокус никуда не переносит — панель висела бы на экране.
+             */
+            setup_volume_dismiss() {
+                if (this._volume_dismiss_set)
+                    return;
+                this._volume_dismiss_set = true;
+                window.addEventListener('pointerdown', event => {
+                    const pop = this.Volume();
+                    if (!pop.showed())
+                        return;
+                    const target = event.target;
+                    if (!target)
+                        return;
+                    if (pop.dom_node().contains(target))
+                        return;
+                    if (pop.Bubble().dom_node().contains(target))
+                        return;
+                    pop.showed(false);
+                }, true);
+            }
             _vol_dragging = false;
             volume_set_from_event(event) {
                 const target = event.currentTarget;
@@ -30636,8 +30680,9 @@ var $;
                 }
                 catch { }
                 this._vol_dragging = false;
+                // Ползунок отпущен — панель своё отработала, убираем её с экрана.
                 try {
-                    this.Volume().hovered(false);
+                    this.Volume().showed(false);
                 }
                 catch { }
                 return null;
