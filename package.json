@@ -209,6 +209,7 @@
     "$mol_icon_sync_off",
     "$mol_icon_sync",
     "$mol_link",
+    "$mol_dom_safe",
     "$giper_baza_glob",
     "$mol_wire_set",
     "$giper_baza_yard",
