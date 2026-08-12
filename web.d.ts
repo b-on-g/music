@@ -3827,11 +3827,6 @@ declare namespace $ {
 }
 
 declare namespace $ {
-    /** @deprecated Use $mol_crypto2_hash */
-    let $mol_crypto_hash: typeof $mol_crypto2_hash;
-}
-
-declare namespace $ {
     class $mol_memo_key extends $mol_wrapper {
         static wrap<This extends object, Key, Value>(task: (this: This, key: Key, next?: Value) => Value): (this: This, key: Key, next?: Value) => Value | undefined;
     }
@@ -4717,7 +4712,7 @@ declare namespace $ {
         clone(): $giper_baza_face;
         get moment(): $mol_time_moment;
         get time_tick(): number;
-        sync_time(time: number, tick: number): void;
+        sync_time(time: number, tick: number): boolean;
         sync_summ(summ: number): void;
         toJSON(): string;
         [$mol_dev_format_head](): any[];
@@ -4726,6 +4721,7 @@ declare namespace $ {
     class $giper_baza_face_map extends Map<string, $giper_baza_face> {
         /** Cumulative face for all peers. */
         stat: $giper_baza_face;
+        _peer_last: string;
         constructor(entries?: $giper_baza_face_data);
         clone(): $giper_baza_face_map;
         /** Synchronize this clock with another. */
@@ -4736,7 +4732,7 @@ declare namespace $ {
         peer_summ(peer: string, summ: number): void;
         peer_summ_shift(peer: string, diff: number): void;
         /** Generates new time for peer that greater then other seen. */
-        tick(): $giper_baza_face;
+        tick(peer: $giper_baza_link): $giper_baza_face;
         toJSON(): {
             [k: string]: $giper_baza_face;
         };
@@ -5074,6 +5070,7 @@ declare namespace $ {
         /** Auth Private key generated with Proof of Work  */
         auth(): $giper_baza_auth;
         faces: $giper_baza_face_map;
+        tick(): $giper_baza_face;
         _pass: $mol_wire_dict<string, $giper_baza_auth_pass>;
         _seal_item: $mol_wire_dict<string, $giper_baza_unit_seal>;
         _seal_shot: $mol_wire_dict<string, $giper_baza_unit_seal>;
@@ -37271,7 +37268,7 @@ declare namespace $.$$ {
     class $mol_book2_catalog extends $.$mol_book2_catalog {
         spread_current(): any;
         pages(): any[];
-        auto(): void;
+        auto(): never[];
         spread_ids(): readonly string[];
         menu_body(): ($.$mol_list | $.$mol_search)[];
         menu_filter_enabled(): boolean;
@@ -44799,6 +44796,7 @@ declare namespace $ {
 }
 
 declare namespace $ {
+    export function $giper_baza_file_mime_safe(type: string): string;
     export const $giper_baza_file_query: ((val: {
         '+'?: boolean | undefined;
         '='?: readonly (readonly number[])[] | undefined;
