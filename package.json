@@ -414,8 +414,6 @@
     "$mol_check_list",
     "$bog_music_tube_row",
     "$bog_music_tube",
-    "$bog_music_tube_api",
-    "$mol_server",
     "$mol_fetch",
     "$mol_error_enriched",
     "$mol_error_fence",
@@ -432,6 +430,8 @@
     "$mol_icon_volume",
     "$mol_icon_equalizer",
     "$bog_music_gain",
+    "$bog_music_scrobble",
+    "$bog_music_code",
     "$mol_pop_over",
     "$bog_music_nav",
     "$bog_music_nav_item",
@@ -441,16 +441,11 @@
     "$mol_icon_chat",
     "$bog_recsys",
     "$bog_music_zip",
+    "$bog_music_tg",
     "$bog_music_pending"
   ],
   "dependencies": {
     "autoinstall": "*",
-    "jsdom": "*",
-    "express": "*",
-    "ws": "*",
-    "compression": "*",
-    "cors": "*",
-    "body-parser": "*",
-    "serve-index": "*"
+    "jsdom": "*"
   }
 }

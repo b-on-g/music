@@ -36729,7 +36729,7 @@ declare namespace $.$$ {
 }
 
 declare namespace $ {
-    /** Результат поиска на сервере tube (bog/music/tube/api). */
+    /** Результат поиска на сервере tube (bog/music/srv/tube). */
     interface $bog_music_tube_item {
         id: string;
         title: string;
@@ -36738,7 +36738,7 @@ declare namespace $ {
     }
     /**
      * Клиент поиска и скачивания музыки из YouTube. Сервер — наш
-     * $bog_music_tube_api в докере (yt-dlp + ffmpeg), см. tube/deploy/.
+     * сервер bog/music/srv/tube в докере (yt-dlp + ffmpeg).
      */
     class $bog_music_tube extends $mol_object {
         static base: string;
@@ -50552,6 +50552,108 @@ declare namespace $ {
 }
 
 declare namespace $ {
+    /**
+     * Секрет устройства для нашего маленького backend'а (телеграм-инбокс,
+     * скробблинг). Живёт в localStorage, в baza не едет: на каждом устройстве
+     * связка своя, и потеря кода не роняет ни аккаунт, ни треки.
+     *
+     * Не путать с ключом аккаунта Гипер Базы — тот открывает всю музыку, этот
+     * только очередь пересланного и сессию last.fm.
+     */
+    class $bog_music_code extends $mol_object {
+        /** Текущий код, '' — ещё не заводили. */
+        static value(name: string, next?: string): string;
+        /** Код, заводя его при первом обращении. Только из @$mol_action. */
+        static ensure(name: string): string;
+        /** 96 бит hex: перебором не угадать, в URL и диплинк лезет как есть. */
+        static random(): string;
+        /** Формат, который принимает сервер. */
+        static valid(code: string): boolean;
+    }
+}
+
+declare namespace $ {
+    /** Трек в очереди бота (то, что отдаёт /tg/inbox). */
+    interface $bog_music_tg_row {
+        id: string;
+        uid: string;
+        title: string;
+        performer: string;
+        file_name: string;
+        duration: number;
+        size: number;
+        mime: string;
+    }
+    interface $bog_music_tg_status {
+        bot: string;
+        linked: boolean;
+        name: string;
+        pending: number;
+    }
+    /**
+     * Клиент телеграм-инбокса: юзер пересылает музыку боту, приложение забирает
+     * её и кладёт в baza. Сервер — bog/music/srv/tg, живёт в том же процессе,
+     * что и tube (см. tube/api/api.node.ts).
+     *
+     * Методы плоско-асинхронные, без @$mol_mem: очередь меняется на стороне
+     * Телеграма, и мемоизировать её нечем — опросом рулит view приложения.
+     */
+    class $bog_music_tg extends $mol_object {
+        static base: string;
+        /** Юзернейм бота. Уточняется из /tg/status, чтобы не хардкодить дважды. */
+        static bot: string;
+        /** Секрет устройства: им линкуется чат и читается очередь. */
+        static code(): string;
+        /** Завести код при первом подключении. Только из @$mol_action. */
+        static code_ensure(): string;
+        static link_url(code: string): string;
+        static status(code: string): Promise<$bog_music_tg_status>;
+        static inbox(code: string): Promise<$bog_music_tg_row[]>;
+        static file(code: string, id: string): Promise<Uint8Array>;
+        static ack(code: string, id: string): Promise<void>;
+    }
+}
+
+declare namespace $ {
+    /**
+     * Скробблинг в last.fm. Ключ приложения и session key юзера лежат на нашем
+     * сервере (bog/music/srv/fm): подпись запроса требует api-секрет, а
+     * ему в клиентском бандле не место. Отсюда уходят только «что играет» и
+     * «что доиграло».
+     */
+    class $bog_music_scrobble extends $mol_object {
+        static base: string;
+        static code(): string;
+        /** Завести код при первом подключении. Только из @$mol_action. */
+        static code_ensure(): string;
+        /**
+         * Имя на last.fm — оно же признак «подключено». Держим локально, чтобы
+         * плеер на каждом тике проверял скробблинг синхронно и без запроса.
+         */
+        static user(next?: string): string;
+        static enabled(): boolean;
+        /**
+         * Страница подтверждения last.fm. Возврат — на наш сервер, он меняет
+         * токен на сессию и отправляет юзера обратно в приложение. В расширении
+         * возвращаться некуда (chrome-extension:// last.fm не примет), поэтому
+         * сервер просто показывает «готово».
+         */
+        static login_url(code: string): string;
+        /** Подтягивает имя юзера с сервера и кеширует его локально. */
+        static status(): Promise<string>;
+        static logout(): Promise<void>;
+        /**
+         * Пуляем и забываем: скробблинг не должен ни задерживать плеер, ни
+         * ронять его своими ошибками. keepalive — потому что отправка часто
+         * совпадает с уходом со страницы (последний трек, закрытие вкладки).
+         */
+        protected static send(method: string, params: Record<string, string | number>): void;
+        static now_playing(artist: string, track: string, duration: number): void;
+        static scrobble(artist: string, track: string, duration: number, started: number): void;
+    }
+}
+
+declare namespace $ {
     interface $bog_music_pending_entry {
         key: string;
         audio: $bog_music_api_audio;
@@ -50643,142 +50745,182 @@ declare namespace $ {
 		,
 		ReturnType< $bog_music_account['download_playlist_status'] >
 	>
-	type $bog_feedback2_form__feedback_id_bog_music_app_14 = $mol_type_enforce<
+	type $bog_music_account__tg_hint_bog_music_app_14 = $mol_type_enforce<
+		ReturnType< $bog_music_app['tg_hint'] >
+		,
+		ReturnType< $bog_music_account['tg_hint'] >
+	>
+	type $bog_music_account__tg_button_bog_music_app_15 = $mol_type_enforce<
+		ReturnType< $bog_music_app['tg_button'] >
+		,
+		ReturnType< $bog_music_account['tg_button'] >
+	>
+	type $bog_music_account__tg_status_bog_music_app_16 = $mol_type_enforce<
+		ReturnType< $bog_music_app['tg_status'] >
+		,
+		ReturnType< $bog_music_account['tg_status'] >
+	>
+	type $bog_music_account__tg_link_bog_music_app_17 = $mol_type_enforce<
+		ReturnType< $bog_music_app['tg_link'] >
+		,
+		ReturnType< $bog_music_account['tg_link'] >
+	>
+	type $bog_music_account__fm_hint_bog_music_app_18 = $mol_type_enforce<
+		ReturnType< $bog_music_app['fm_hint'] >
+		,
+		ReturnType< $bog_music_account['fm_hint'] >
+	>
+	type $bog_music_account__fm_button_bog_music_app_19 = $mol_type_enforce<
+		ReturnType< $bog_music_app['fm_button'] >
+		,
+		ReturnType< $bog_music_account['fm_button'] >
+	>
+	type $bog_music_account__fm_status_bog_music_app_20 = $mol_type_enforce<
+		ReturnType< $bog_music_app['fm_status'] >
+		,
+		ReturnType< $bog_music_account['fm_status'] >
+	>
+	type $bog_music_account__fm_link_bog_music_app_21 = $mol_type_enforce<
+		ReturnType< $bog_music_app['fm_link'] >
+		,
+		ReturnType< $bog_music_account['fm_link'] >
+	>
+	type $bog_feedback2_form__feedback_id_bog_music_app_22 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $bog_feedback2_form['feedback_id'] >
 	>
-	type $mol_view__sub_bog_music_app_15 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_app_23 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_switch__value_bog_music_app_16 = $mol_type_enforce<
+	type $mol_switch__value_bog_music_app_24 = $mol_type_enforce<
 		ReturnType< $bog_music_app['page'] >
 		,
 		ReturnType< $mol_switch['value'] >
 	>
-	type $mol_switch__options_bog_music_app_17 = $mol_type_enforce<
+	type $mol_switch__options_bog_music_app_25 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tab_options'] >
 		,
 		ReturnType< $mol_switch['options'] >
 	>
-	type $bog_music_tracks__track_keys_bog_music_app_18 = $mol_type_enforce<
+	type $bog_music_tracks__track_keys_bog_music_app_26 = $mol_type_enforce<
 		ReturnType< $bog_music_app['visible_keys'] >
 		,
 		ReturnType< $bog_music_tracks['track_keys'] >
 	>
-	type $bog_music_tracks__current_key_bog_music_app_19 = $mol_type_enforce<
+	type $bog_music_tracks__current_key_bog_music_app_27 = $mol_type_enforce<
 		ReturnType< $bog_music_app['current_key'] >
 		,
 		ReturnType< $bog_music_tracks['current_key'] >
 	>
-	type $bog_music_tracks__play_key_bog_music_app_20 = $mol_type_enforce<
+	type $bog_music_tracks__play_key_bog_music_app_28 = $mol_type_enforce<
 		ReturnType< $bog_music_app['play_key'] >
 		,
 		ReturnType< $bog_music_tracks['play_key'] >
 	>
-	type $bog_music_tracks__archive_mode_bog_music_app_21 = $mol_type_enforce<
+	type $bog_music_tracks__archive_mode_bog_music_app_29 = $mol_type_enforce<
 		ReturnType< $bog_music_app['archive_mode'] >
 		,
 		ReturnType< $bog_music_tracks['archive_mode'] >
 	>
-	type $bog_music_tracks__reorder_to_bog_music_app_22 = $mol_type_enforce<
+	type $bog_music_tracks__reorder_to_bog_music_app_30 = $mol_type_enforce<
 		ReturnType< $bog_music_app['reorder_to'] >
 		,
 		ReturnType< $bog_music_tracks['reorder_to'] >
 	>
-	type $bog_music_tracks__archive_key_bog_music_app_23 = $mol_type_enforce<
+	type $bog_music_tracks__archive_key_bog_music_app_31 = $mol_type_enforce<
 		ReturnType< $bog_music_app['archive_key'] >
 		,
 		ReturnType< $bog_music_tracks['archive_key'] >
 	>
-	type $bog_music_tracks__restore_key_bog_music_app_24 = $mol_type_enforce<
+	type $bog_music_tracks__restore_key_bog_music_app_32 = $mol_type_enforce<
 		ReturnType< $bog_music_app['restore_key'] >
 		,
 		ReturnType< $bog_music_tracks['restore_key'] >
 	>
-	type $bog_music_tracks__delete_key_bog_music_app_25 = $mol_type_enforce<
+	type $bog_music_tracks__delete_key_bog_music_app_33 = $mol_type_enforce<
 		ReturnType< $bog_music_app['delete_key'] >
 		,
 		ReturnType< $bog_music_tracks['delete_key'] >
 	>
-	type $mol_string__hint_bog_music_app_26 = $mol_type_enforce<
+	type $mol_string__hint_bog_music_app_34 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_string['hint'] >
 	>
-	type $mol_string__value_bog_music_app_27 = $mol_type_enforce<
+	type $mol_string__value_bog_music_app_35 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_query'] >
 		,
 		ReturnType< $mol_string['value'] >
 	>
-	type $mol_button_major__title_bog_music_app_28 = $mol_type_enforce<
+	type $mol_button_major__title_bog_music_app_36 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_major['title'] >
 	>
-	type $mol_button_major__click_bog_music_app_29 = $mol_type_enforce<
+	type $mol_button_major__click_bog_music_app_37 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_find'] >
 		,
 		ReturnType< $mol_button_major['click'] >
 	>
-	type $mol_view__sub_bog_music_app_30 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_app_38 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_list__rows_bog_music_app_31 = $mol_type_enforce<
+	type $mol_list__rows_bog_music_app_39 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_rows'] >
 		,
 		ReturnType< $mol_list['rows'] >
 	>
-	type $bog_music_tube_row__title_bog_music_app_32 = $mol_type_enforce<
+	type $bog_music_tube_row__title_bog_music_app_40 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_title'] >
 		,
 		ReturnType< $bog_music_tube_row['title'] >
 	>
-	type $bog_music_tube_row__subtitle_bog_music_app_33 = $mol_type_enforce<
+	type $bog_music_tube_row__subtitle_bog_music_app_41 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_meta'] >
 		,
 		ReturnType< $bog_music_tube_row['subtitle'] >
 	>
-	type $bog_music_tube_row__status_bog_music_app_34 = $mol_type_enforce<
+	type $bog_music_tube_row__status_bog_music_app_42 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_status_text'] >
 		,
 		ReturnType< $bog_music_tube_row['status'] >
 	>
-	type $bog_music_tube_row__cover_bog_music_app_35 = $mol_type_enforce<
+	type $bog_music_tube_row__cover_bog_music_app_43 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_cover'] >
 		,
 		ReturnType< $bog_music_tube_row['cover'] >
 	>
-	type $bog_music_tube_row__busy_bog_music_app_36 = $mol_type_enforce<
+	type $bog_music_tube_row__busy_bog_music_app_44 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_busy'] >
 		,
 		ReturnType< $bog_music_tube_row['busy'] >
 	>
-	type $bog_music_tube_row__play_bog_music_app_37 = $mol_type_enforce<
+	type $bog_music_tube_row__play_bog_music_app_45 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_play'] >
 		,
 		ReturnType< $bog_music_tube_row['play'] >
 	>
-	type $bog_music_tube_row__get_bog_music_app_38 = $mol_type_enforce<
+	type $bog_music_tube_row__get_bog_music_app_46 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_get'] >
 		,
 		ReturnType< $bog_music_tube_row['get'] >
 	>
-	type $bog_music_player__queue_keys_bog_music_app_39 = $mol_type_enforce<
+	type $bog_music_player__queue_keys_bog_music_app_47 = $mol_type_enforce<
 		ReturnType< $bog_music_app['visible_keys'] >
 		,
 		ReturnType< $bog_music_player['queue_keys'] >
 	>
-	type $bog_music_player__current_key_bog_music_app_40 = $mol_type_enforce<
+	type $bog_music_player__current_key_bog_music_app_48 = $mol_type_enforce<
 		ReturnType< $bog_music_app['current_key'] >
 		,
 		ReturnType< $bog_music_player['current_key'] >
 	>
-	type $bog_music_nav__section_bog_music_app_41 = $mol_type_enforce<
+	type $bog_music_nav__section_bog_music_app_49 = $mol_type_enforce<
 		ReturnType< $bog_music_app['section'] >
 		,
 		ReturnType< $bog_music_nav['section'] >
@@ -50802,6 +50944,14 @@ declare namespace $ {
 		scroll( next?: number ): number
 		download_playlist( next?: any ): any
 		download_playlist_status( ): string
+		tg_hint( ): string
+		tg_button( ): string
+		tg_status( ): string
+		tg_link( next?: any ): any
+		fm_hint( ): string
+		fm_button( ): string
+		fm_status( ): string
+		fm_link( next?: any ): any
 		Account( ): $bog_music_account
 		Feedback( ): $bog_feedback2_form
 		share_toast_text( ): string
@@ -50937,6 +51087,48 @@ declare namespace $.$$ {
         tube_busy(index: number): boolean;
         tube_get(index: number): void;
         tube_download(index: number, item: $bog_music_tube_item): Promise<void>;
+        tg_state(next?: {
+            linked: boolean;
+            name: string;
+            pending: number;
+            done: number;
+            error: string;
+        }): {
+            linked: boolean;
+            name: string;
+            pending: number;
+            done: number;
+            error: string;
+        };
+        tg_hint(): "Пересылай боту треки из любого чата — они приедут в Мою музыку сами." | "Подключи бота и пересылай ему музыку из любого чата. Файлы больше 20 МБ Телеграм ботам не отдаёт.";
+        tg_button(): "Открыть бота" | "Подключить Телеграм";
+        tg_status(): string;
+        /** Код связки создаётся при первом клике и уходит в диплинк бота. */
+        tg_link(): void;
+        /**
+         * Метаданные трека из Телеграма. Тегов там часто нет — тогда разбираем
+         * имя файла тем же парсером, что и локальную загрузку. `uid` стабилен
+         * для файла в любом чате: пересланный дважды трек перезапишет сам себя.
+         */
+        tg_audio(row: $bog_music_tg_row): $bog_music_api_audio;
+        private _tg_busy;
+        /**
+         * Забирает пересланное боту и складывает в baza. Каждый трек — своя
+         * фибра на import_audio (blob-land с PoW), как в drain_pending.
+         */
+        tg_drain(): Promise<void>;
+        private _tg_timer;
+        /** Опрос очереди, пока приложение открыто. Таймер живёт в ячейке. */
+        private tg_poller;
+        /** Имя на last.fm, '' — не подключено. Пишется после ответа сервера. */
+        fm_user(): string;
+        fm_hint(): string;
+        fm_button(): "Отключить" | "Подключить last.fm";
+        fm_error(next?: string): string;
+        fm_status(): string;
+        fm_link(): void;
+        /** Кто подключён — знает только сервер: спрашиваем на старте. */
+        fm_refresh(): Promise<void>;
         nickname_label(): string;
         share_toast_text(): string;
         Share_toast(): any;
@@ -60474,48 +60666,48 @@ declare namespace $ {
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_button_minor__title_bog_music_account_15 = $mol_type_enforce<
-		string
+	type $mol_paragraph__title_bog_music_account_15 = $mol_type_enforce<
+		ReturnType< $bog_music_account['tg_hint'] >
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_button_minor__title_bog_music_account_16 = $mol_type_enforce<
+		ReturnType< $bog_music_account['tg_button'] >
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__click_bog_music_account_16 = $mol_type_enforce<
-		ReturnType< $bog_music_account['copy'] >
+	type $mol_button_minor__click_bog_music_account_17 = $mol_type_enforce<
+		ReturnType< $bog_music_account['tg_link'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
-	>
-	type $mol_view__sub_bog_music_account_17 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_view['sub'] >
 	>
 	type $mol_view__sub_bog_music_account_18 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_paragraph__title_bog_music_account_19 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_account_19 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_paragraph__title_bog_music_account_20 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_string__hint_bog_music_account_20 = $mol_type_enforce<
-		string
+	type $mol_paragraph__title_bog_music_account_21 = $mol_type_enforce<
+		ReturnType< $bog_music_account['fm_hint'] >
 		,
-		ReturnType< $mol_string['hint'] >
-	>
-	type $mol_string__value_bog_music_account_21 = $mol_type_enforce<
-		ReturnType< $bog_music_account['import_link'] >
-		,
-		ReturnType< $mol_string['value'] >
+		ReturnType< $mol_paragraph['title'] >
 	>
 	type $mol_button_minor__title_bog_music_account_22 = $mol_type_enforce<
-		string
+		ReturnType< $bog_music_account['fm_button'] >
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
 	type $mol_button_minor__click_bog_music_account_23 = $mol_type_enforce<
-		ReturnType< $bog_music_account['apply_import'] >
+		ReturnType< $bog_music_account['fm_link'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
@@ -60540,7 +60732,7 @@ declare namespace $ {
 		ReturnType< $mol_button_minor['title'] >
 	>
 	type $mol_button_minor__click_bog_music_account_28 = $mol_type_enforce<
-		ReturnType< $bog_music_account['reset_account'] >
+		ReturnType< $bog_music_account['copy'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
@@ -60550,6 +60742,66 @@ declare namespace $ {
 		ReturnType< $mol_view['sub'] >
 	>
 	type $mol_view__sub_bog_music_account_30 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_paragraph__title_bog_music_account_31 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_string__hint_bog_music_account_32 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_string['hint'] >
+	>
+	type $mol_string__value_bog_music_account_33 = $mol_type_enforce<
+		ReturnType< $bog_music_account['import_link'] >
+		,
+		ReturnType< $mol_string['value'] >
+	>
+	type $mol_button_minor__title_bog_music_account_34 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['title'] >
+	>
+	type $mol_button_minor__click_bog_music_account_35 = $mol_type_enforce<
+		ReturnType< $bog_music_account['apply_import'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_view__sub_bog_music_account_36 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_music_account_37 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_paragraph__title_bog_music_account_38 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_button_minor__title_bog_music_account_39 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['title'] >
+	>
+	type $mol_button_minor__click_bog_music_account_40 = $mol_type_enforce<
+		ReturnType< $bog_music_account['reset_account'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_view__sub_bog_music_account_41 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_music_account_42 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
@@ -60571,6 +60823,24 @@ declare namespace $ {
 		Lord_text( ): $mol_view
 		Lord( ): $mol_view
 		Profile( ): $mol_view
+		Tg_title( ): $mol_paragraph
+		tg_hint( ): string
+		Tg_hint( ): $mol_paragraph
+		tg_button( ): string
+		tg_link( next?: any ): any
+		Tg_connect( ): $mol_button_minor
+		tg_status( ): string
+		Tg_status( ): $mol_view
+		Telegram( ): $mol_view
+		Fm_title( ): $mol_paragraph
+		fm_hint( ): string
+		Fm_hint( ): $mol_paragraph
+		fm_button( ): string
+		fm_link( next?: any ): any
+		Fm_connect( ): $mol_button_minor
+		fm_status( ): string
+		Fm_status( ): $mol_view
+		Lastfm( ): $mol_view
 		Warning( ): $mol_paragraph
 		copy( next?: any ): any
 		Copy( ): $mol_button_minor
@@ -63179,6 +63449,14 @@ declare namespace $.$$ {
         private _audio_el?;
         private _last_blob_url;
         audio_el(): HTMLAudioElement;
+        private _fm;
+        /**
+         * Часы скробблинга. Зовутся из тика воспроизведения (timeupdate в PWA,
+         * state-сообщение из offscreen в расширении) — специально не из
+         * play_track: там синхронный iOS-путь, и лишний код в нём рвёт звук в
+         * фоне. Смену трека ловим по метаданным, а не по событию.
+         */
+        private scrobble_watch;
         private on_ended;
         private _msg_listener_set;
         private offscreen_link;

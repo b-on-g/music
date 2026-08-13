@@ -1179,6 +1179,14 @@ $bog_music_app $mol_page
 		<= Account $bog_music_account
 			download_playlist? <=> download_playlist? null
 			download_playlist_status <= download_playlist_status \
+			tg_hint <= tg_hint \
+			tg_button <= tg_button \
+			tg_status <= tg_status \
+			tg_link? <=> tg_link? null
+			fm_hint <= fm_hint \
+			fm_button <= fm_button \
+			fm_status <= fm_status \
+			fm_link? <=> fm_link? null
 		<= Feedback $bog_feedback2_form
 			feedback_id \bog_vk
 		<= Share_toast $mol_view
@@ -1293,6 +1301,26 @@ $bog_music_account $mol_view
 							sub /
 								\ЛК:
 								<= Lord_text $mol_view sub / <= lord_short \
+				<= Telegram $mol_view
+					sub /
+						<= Tg_title $mol_paragraph
+							title \Музыка из Телеграма
+						<= Tg_hint $mol_paragraph
+							title <= tg_hint \
+						<= Tg_connect $mol_button_minor
+							title <= tg_button \
+							click? <=> tg_link? null
+						<= Tg_status $mol_view sub / <= tg_status \
+				<= Lastfm $mol_view
+					sub /
+						<= Fm_title $mol_paragraph
+							title \Last.fm
+						<= Fm_hint $mol_paragraph
+							title <= fm_hint \
+						<= Fm_connect $mol_button_minor
+							title <= fm_button \
+							click? <=> fm_link? null
+						<= Fm_status $mol_view sub / <= fm_status \
 				<= Export $mol_view
 					sub /
 						<= Warning $mol_paragraph

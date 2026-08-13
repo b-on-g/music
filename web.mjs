@@ -22467,7 +22467,7 @@ var $;
 (function ($) {
     /**
      * Клиент поиска и скачивания музыки из YouTube. Сервер — наш
-     * $bog_music_tube_api в докере (yt-dlp + ffmpeg), см. tube/deploy/.
+     * сервер bog/music/srv/tube в докере (yt-dlp + ffmpeg).
      */
     class $bog_music_tube extends $mol_object {
         static base = 'https://tube.87.120.36.150.ip.giper.dev';
@@ -31446,10 +31446,44 @@ var $;
 		download_playlist_status(){
 			return "";
 		}
+		tg_hint(){
+			return "";
+		}
+		tg_button(){
+			return "";
+		}
+		tg_status(){
+			return "";
+		}
+		tg_link(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		fm_hint(){
+			return "";
+		}
+		fm_button(){
+			return "";
+		}
+		fm_status(){
+			return "";
+		}
+		fm_link(next){
+			if(next !== undefined) return next;
+			return null;
+		}
 		Account(){
 			const obj = new this.$.$bog_music_account();
 			(obj.download_playlist) = (next) => ((this.download_playlist(next)));
 			(obj.download_playlist_status) = () => ((this.download_playlist_status()));
+			(obj.tg_hint) = () => ((this.tg_hint()));
+			(obj.tg_button) = () => ((this.tg_button()));
+			(obj.tg_status) = () => ((this.tg_status()));
+			(obj.tg_link) = (next) => ((this.tg_link(next)));
+			(obj.fm_hint) = () => ((this.fm_hint()));
+			(obj.fm_button) = () => ((this.fm_button()));
+			(obj.fm_status) = () => ((this.fm_status()));
+			(obj.fm_link) = (next) => ((this.fm_link(next)));
 			return obj;
 		}
 		Feedback(){
@@ -31659,6 +31693,8 @@ var $;
 	($mol_mem(($.$bog_music_app.prototype), "Theme_btn"));
 	($mol_mem(($.$bog_music_app.prototype), "scroll"));
 	($mol_mem(($.$bog_music_app.prototype), "download_playlist"));
+	($mol_mem(($.$bog_music_app.prototype), "tg_link"));
+	($mol_mem(($.$bog_music_app.prototype), "fm_link"));
 	($mol_mem(($.$bog_music_app.prototype), "Account"));
 	($mol_mem(($.$bog_music_app.prototype), "Feedback"));
 	($mol_mem(($.$bog_music_app.prototype), "Share_toast"));
@@ -33287,6 +33323,192 @@ var $;
 var $;
 (function ($) {
     /**
+     * Секрет устройства для нашего маленького backend'а (телеграм-инбокс,
+     * скробблинг). Живёт в localStorage, в baza не едет: на каждом устройстве
+     * связка своя, и потеря кода не роняет ни аккаунт, ни треки.
+     *
+     * Не путать с ключом аккаунта Гипер Базы — тот открывает всю музыку, этот
+     * только очередь пересланного и сессию last.fm.
+     */
+    class $bog_music_code extends $mol_object {
+        /** Текущий код, '' — ещё не заводили. */
+        static value(name, next) {
+            return $mol_state_local.value(name, next) ?? '';
+        }
+        /** Код, заводя его при первом обращении. Только из @$mol_action. */
+        static ensure(name) {
+            return this.value(name) || this.value(name, this.random());
+        }
+        /** 96 бит hex: перебором не угадать, в URL и диплинк лезет как есть. */
+        static random() {
+            const bytes = new Uint8Array(12);
+            crypto.getRandomValues(bytes);
+            return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+        /** Формат, который принимает сервер. */
+        static valid(code) {
+            return /^[A-Za-z0-9_-]{8,64}$/.test(code);
+        }
+    }
+    $.$bog_music_code = $bog_music_code;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /**
+     * Клиент телеграм-инбокса: юзер пересылает музыку боту, приложение забирает
+     * её и кладёт в baza. Сервер — bog/music/srv/tg, живёт в том же процессе,
+     * что и tube (см. tube/api/api.node.ts).
+     *
+     * Методы плоско-асинхронные, без @$mol_mem: очередь меняется на стороне
+     * Телеграма, и мемоизировать её нечем — опросом рулит view приложения.
+     */
+    class $bog_music_tg extends $mol_object {
+        static base = 'https://tube.87.120.36.150.ip.giper.dev';
+        /** Юзернейм бота. Уточняется из /tg/status, чтобы не хардкодить дважды. */
+        static bot = 'bog_music_bot';
+        /** Секрет устройства: им линкуется чат и читается очередь. */
+        static code() {
+            return $bog_music_code.value('bog_music_tg_code');
+        }
+        /** Завести код при первом подключении. Только из @$mol_action. */
+        static code_ensure() {
+            return $bog_music_code.ensure('bog_music_tg_code');
+        }
+        static link_url(code) {
+            return `https://t.me/${this.bot}?start=${encodeURIComponent(code)}`;
+        }
+        static async status(code) {
+            const resp = await fetch(`${this.base}/tg/status?code=${encodeURIComponent(code)}`);
+            if (!resp.ok)
+                throw new Error(`tg status ${resp.status}`);
+            const data = await resp.json();
+            if (data.bot)
+                this.bot = data.bot;
+            return data;
+        }
+        static async inbox(code) {
+            const resp = await fetch(`${this.base}/tg/inbox?code=${encodeURIComponent(code)}`);
+            if (!resp.ok)
+                throw new Error(`tg inbox ${resp.status}`);
+            return await resp.json();
+        }
+        static async file(code, id) {
+            const resp = await fetch(`${this.base}/tg/file?code=${encodeURIComponent(code)}&id=${encodeURIComponent(id)}`);
+            if (!resp.ok)
+                throw new Error(`tg file ${resp.status}`);
+            const buffer = new Uint8Array(await resp.arrayBuffer());
+            if (!buffer.byteLength)
+                throw new Error('tg file: пустой ответ');
+            return buffer;
+        }
+        static async ack(code, id) {
+            await fetch(`${this.base}/tg/ack?code=${encodeURIComponent(code)}&id=${encodeURIComponent(id)}`);
+        }
+    }
+    $.$bog_music_tg = $bog_music_tg;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /**
+     * Скробблинг в last.fm. Ключ приложения и session key юзера лежат на нашем
+     * сервере (bog/music/srv/fm): подпись запроса требует api-секрет, а
+     * ему в клиентском бандле не место. Отсюда уходят только «что играет» и
+     * «что доиграло».
+     */
+    class $bog_music_scrobble extends $mol_object {
+        static base = 'https://tube.87.120.36.150.ip.giper.dev';
+        static code() {
+            return $bog_music_code.value('bog_music_fm_code');
+        }
+        /** Завести код при первом подключении. Только из @$mol_action. */
+        static code_ensure() {
+            return $bog_music_code.ensure('bog_music_fm_code');
+        }
+        /**
+         * Имя на last.fm — оно же признак «подключено». Держим локально, чтобы
+         * плеер на каждом тике проверял скробблинг синхронно и без запроса.
+         */
+        static user(next) {
+            return $mol_state_local.value('bog_music_fm_user', next) ?? '';
+        }
+        static enabled() {
+            return !!this.code() && !!this.user();
+        }
+        /**
+         * Страница подтверждения last.fm. Возврат — на наш сервер, он меняет
+         * токен на сессию и отправляет юзера обратно в приложение. В расширении
+         * возвращаться некуда (chrome-extension:// last.fm не примет), поэтому
+         * сервер просто показывает «готово».
+         */
+        static login_url(code) {
+            const web = location.protocol === 'https:' || location.protocol === 'http:';
+            const back = web ? location.origin + location.pathname + location.search : '';
+            return `${this.base}/fm/login?code=${encodeURIComponent(code)}&back=${encodeURIComponent(back)}`;
+        }
+        /** Подтягивает имя юзера с сервера и кеширует его локально. */
+        static async status() {
+            const code = this.code();
+            if (!code)
+                return '';
+            const resp = await fetch(`${this.base}/fm/status?code=${encodeURIComponent(code)}`);
+            if (!resp.ok)
+                throw new Error(`fm status ${resp.status}`);
+            const data = await resp.json();
+            const user = String(data?.user ?? '');
+            if (this.user() !== user)
+                this.user(user);
+            return user;
+        }
+        static async logout() {
+            const code = this.code();
+            this.user('');
+            if (!code)
+                return;
+            await fetch(`${this.base}/fm/logout?code=${encodeURIComponent(code)}`);
+        }
+        /**
+         * Пуляем и забываем: скробблинг не должен ни задерживать плеер, ни
+         * ронять его своими ошибками. keepalive — потому что отправка часто
+         * совпадает с уходом со страницы (последний трек, закрытие вкладки).
+         */
+        static send(method, params) {
+            const code = this.code();
+            if (!code)
+                return;
+            const query = new URLSearchParams({ code, ...params });
+            fetch(`${this.base}/fm/${method}?${query}`, { keepalive: true })
+                .catch(e => console.warn('[fm] ' + method + ':', e?.message ?? e));
+        }
+        static now_playing(artist, track, duration) {
+            if (!this.enabled() || !track)
+                return;
+            this.send('now', { artist, track, duration: Math.round(duration) || 0 });
+        }
+        static scrobble(artist, track, duration, started) {
+            if (!this.enabled() || !track)
+                return;
+            this.send('scrobble', {
+                artist,
+                track,
+                duration: Math.round(duration) || 0,
+                ts: Math.round(started),
+            });
+        }
+    }
+    $.$bog_music_scrobble = $bog_music_scrobble;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /**
      * Очередь треков, сохранённых кнопкой на vk.com: content.js → background.js
      * (скачивает HLS) → IDB `bog_music_pending`. Приложение при старте и по
      * сообщению `pending_added` разбирает очередь в Giper Baza.
@@ -33345,7 +33567,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.32';
+    $.$bog_music_version = 'v1.33';
 })($ || ($ = {}));
 
 ;
@@ -33761,6 +33983,169 @@ var $;
                     setTimeout(() => this.tube_status_text(index, ''), 4000);
                 }
             }
+            // =====================================================================
+            // Телеграм: треки, пересланные боту (сервер bog/music/tg)
+            // =====================================================================
+            tg_state(next) {
+                return next ?? { linked: false, name: '', pending: 0, done: 0, error: '' };
+            }
+            tg_hint() {
+                return this.tg_state().linked
+                    ? 'Пересылай боту треки из любого чата — они приедут в Мою музыку сами.'
+                    : 'Подключи бота и пересылай ему музыку из любого чата. Файлы больше 20 МБ Телеграм ботам не отдаёт.';
+            }
+            tg_button() {
+                return this.tg_state().linked ? 'Открыть бота' : 'Подключить Телеграм';
+            }
+            tg_status() {
+                const state = this.tg_state();
+                if (state.error)
+                    return state.error;
+                if (!$bog_music_tg.code())
+                    return '';
+                const parts = [state.linked
+                        ? (state.name ? `Подключено: ${state.name}` : 'Подключено')
+                        : 'Ждём /start в боте'
+                ];
+                if (state.pending)
+                    parts.push(`в очереди ${state.pending}`);
+                if (state.done)
+                    parts.push(`забрано ${state.done}`);
+                return parts.join(' · ');
+            }
+            /** Код связки создаётся при первом клике и уходит в диплинк бота. */
+            tg_link() {
+                const code = $bog_music_tg.code_ensure();
+                window.open($bog_music_tg.link_url(code), '_blank');
+                $mol_wire_async(this).tg_drain();
+            }
+            /**
+             * Метаданные трека из Телеграма. Тегов там часто нет — тогда разбираем
+             * имя файла тем же парсером, что и локальную загрузку. `uid` стабилен
+             * для файла в любом чате: пересланный дважды трек перезапишет сам себя.
+             */
+            tg_audio(row) {
+                let artist = row.performer;
+                let title = row.title;
+                if (!title) {
+                    const parsed = $bog_music_account_baza.parse_filename(row.file_name || 'Трек');
+                    title = parsed.title;
+                    if (!artist)
+                        artist = parsed.artist;
+                }
+                return {
+                    id: $bog_music_account_baza.hash_str('tg:' + (row.uid || row.id)),
+                    owner_id: 0,
+                    artist,
+                    title,
+                    duration: row.duration,
+                    url: '',
+                };
+            }
+            _tg_busy = false;
+            /**
+             * Забирает пересланное боту и складывает в baza. Каждый трек — своя
+             * фибра на import_audio (blob-land с PoW), как в drain_pending.
+             */
+            async tg_drain() {
+                const code = $bog_music_tg.code();
+                if (!code || this._tg_busy)
+                    return;
+                this._tg_busy = true;
+                try {
+                    const status = await $bog_music_tg.status(code);
+                    this.tg_state({
+                        ...this.tg_state(),
+                        linked: status.linked,
+                        name: status.name,
+                        pending: status.pending,
+                        error: '',
+                    });
+                    if (!status.linked || !status.pending)
+                        return;
+                    for (const row of await $bog_music_tg.inbox(code)) {
+                        try {
+                            const bytes = await $bog_music_tg.file(code, row.id);
+                            await $mol_wire_async(this.account())
+                                .import_audio(this.tg_audio(row), bytes, row.mime || 'audio/mpeg');
+                            await $bog_music_tg.ack(code, row.id);
+                        }
+                        catch (e) {
+                            if (e instanceof Promise)
+                                throw e;
+                            console.warn('[tg] import failed:', row.id, e?.message ?? e);
+                            continue;
+                        }
+                        const state = this.tg_state();
+                        this.tg_state({ ...state, done: state.done + 1, pending: Math.max(0, state.pending - 1) });
+                    }
+                }
+                catch (e) {
+                    if (e instanceof Promise)
+                        throw e;
+                    console.warn('[tg] drain failed:', e?.message ?? e);
+                    this.tg_state({ ...this.tg_state(), error: 'Телеграм-бот недоступен' });
+                }
+                finally {
+                    this._tg_busy = false;
+                }
+            }
+            _tg_timer = 0;
+            /** Опрос очереди, пока приложение открыто. Таймер живёт в ячейке. */
+            tg_poller() {
+                if (this._tg_timer) {
+                    clearInterval(this._tg_timer);
+                    this._tg_timer = 0;
+                }
+                if (!$bog_music_tg.code())
+                    return null;
+                this._tg_timer = setInterval(() => { $mol_wire_async(this).tg_drain(); }, 30000);
+                return null;
+            }
+            // =====================================================================
+            // Last.fm: скробблинг прослушанного
+            // =====================================================================
+            /** Имя на last.fm, '' — не подключено. Пишется после ответа сервера. */
+            fm_user() {
+                return $bog_music_scrobble.user();
+            }
+            fm_hint() {
+                return 'Прослушанное уходит в твою статистику на last.fm. Скробблится всё, что играет в плеере.';
+            }
+            fm_button() {
+                return this.fm_user() ? 'Отключить' : 'Подключить last.fm';
+            }
+            fm_error(next) {
+                return next ?? '';
+            }
+            fm_status() {
+                if (this.fm_error())
+                    return this.fm_error();
+                const user = this.fm_user();
+                return user ? `Подключено: ${user}` : '';
+            }
+            fm_link() {
+                if (this.fm_user()) {
+                    $mol_wire_async($bog_music_scrobble).logout();
+                    return;
+                }
+                window.open($bog_music_scrobble.login_url($bog_music_scrobble.code_ensure()), '_blank');
+            }
+            /** Кто подключён — знает только сервер: спрашиваем на старте. */
+            async fm_refresh() {
+                if (!$bog_music_scrobble.code())
+                    return;
+                try {
+                    await $bog_music_scrobble.status();
+                    this.fm_error('');
+                }
+                catch (e) {
+                    if (e instanceof Promise)
+                        throw e;
+                    console.warn('[fm] status failed:', e?.message ?? e);
+                    this.fm_error('Сервер скробблинга недоступен');
+                }
+            }
             nickname_label() {
                 return this.account().nickname();
             }
@@ -33829,7 +34214,10 @@ var $;
             auto() {
                 this.pending_listener();
                 this.prefetch(); // фоновая докачка blob'ов по одной песне
+                this.tg_poller();
                 $mol_wire_async(this).drain_pending();
+                $mol_wire_async(this).tg_drain();
+                $mol_wire_async(this).fm_refresh();
                 const token = $bog_music_boot.share_token;
                 if (token) {
                     $bog_music_boot.share_token = '';
@@ -33910,6 +34298,21 @@ var $;
         __decorate([
             $mol_action
         ], $bog_music_app.prototype, "tube_get", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "tg_state", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "tg_link", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "tg_poller", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "fm_error", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "fm_link", null);
         __decorate([
             $mol_mem
         ], $bog_music_app.prototype, "pending_listener", null);
@@ -34301,6 +34704,94 @@ var $;
 			(obj.sub) = () => ([(this.Nickname_field()), (this.Lord())]);
 			return obj;
 		}
+		Tg_title(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ("Музыка из Телеграма");
+			return obj;
+		}
+		tg_hint(){
+			return "";
+		}
+		Tg_hint(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.tg_hint()));
+			return obj;
+		}
+		tg_button(){
+			return "";
+		}
+		tg_link(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Tg_connect(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ((this.tg_button()));
+			(obj.click) = (next) => ((this.tg_link(next)));
+			return obj;
+		}
+		tg_status(){
+			return "";
+		}
+		Tg_status(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.tg_status())]);
+			return obj;
+		}
+		Telegram(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([
+				(this.Tg_title()), 
+				(this.Tg_hint()), 
+				(this.Tg_connect()), 
+				(this.Tg_status())
+			]);
+			return obj;
+		}
+		Fm_title(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ("Last.fm");
+			return obj;
+		}
+		fm_hint(){
+			return "";
+		}
+		Fm_hint(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.fm_hint()));
+			return obj;
+		}
+		fm_button(){
+			return "";
+		}
+		fm_link(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Fm_connect(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ((this.fm_button()));
+			(obj.click) = (next) => ((this.fm_link(next)));
+			return obj;
+		}
+		fm_status(){
+			return "";
+		}
+		Fm_status(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.fm_status())]);
+			return obj;
+		}
+		Lastfm(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([
+				(this.Fm_title()), 
+				(this.Fm_hint()), 
+				(this.Fm_connect()), 
+				(this.Fm_status())
+			]);
+			return obj;
+		}
 		Warning(){
 			const obj = new this.$.$mol_paragraph();
 			(obj.title) = () => ("Ссылка ниже — СЕКРЕТ. Не делись ей публично.");
@@ -34400,6 +34891,8 @@ var $;
 			const obj = new this.$.$mol_view();
 			(obj.sub) = () => ([
 				(this.Profile()), 
+				(this.Telegram()), 
+				(this.Lastfm()), 
 				(this.Export()), 
 				(this.Import()), 
 				(this.Reset())
@@ -34434,6 +34927,18 @@ var $;
 	($mol_mem(($.$bog_music_account.prototype), "Lord_text"));
 	($mol_mem(($.$bog_music_account.prototype), "Lord"));
 	($mol_mem(($.$bog_music_account.prototype), "Profile"));
+	($mol_mem(($.$bog_music_account.prototype), "Tg_title"));
+	($mol_mem(($.$bog_music_account.prototype), "Tg_hint"));
+	($mol_mem(($.$bog_music_account.prototype), "tg_link"));
+	($mol_mem(($.$bog_music_account.prototype), "Tg_connect"));
+	($mol_mem(($.$bog_music_account.prototype), "Tg_status"));
+	($mol_mem(($.$bog_music_account.prototype), "Telegram"));
+	($mol_mem(($.$bog_music_account.prototype), "Fm_title"));
+	($mol_mem(($.$bog_music_account.prototype), "Fm_hint"));
+	($mol_mem(($.$bog_music_account.prototype), "fm_link"));
+	($mol_mem(($.$bog_music_account.prototype), "Fm_connect"));
+	($mol_mem(($.$bog_music_account.prototype), "Fm_status"));
+	($mol_mem(($.$bog_music_account.prototype), "Lastfm"));
 	($mol_mem(($.$bog_music_account.prototype), "Warning"));
 	($mol_mem(($.$bog_music_account.prototype), "copy"));
 	($mol_mem(($.$bog_music_account.prototype), "Copy"));
@@ -35734,6 +36239,54 @@ var $;
                 alignItems: 'baseline',
                 padding: { top: '0.25rem', bottom: '0.25rem' },
                 gap: '0.5rem',
+            },
+            Telegram: {
+                flex: { direction: 'column' },
+                background: { color: $mol_theme.card },
+                border: { radius: $mol_gap.round },
+                padding: {
+                    top: '0.75rem',
+                    bottom: '0.75rem',
+                    left: '0.75rem',
+                    right: '0.75rem',
+                },
+                gap: '0.5rem',
+            },
+            Tg_title: {
+                font: { weight: 'bold' },
+            },
+            Tg_hint: {
+                font: { size: '0.8125rem' },
+                color: $mol_theme.shade,
+            },
+            Tg_status: {
+                font: { size: '0.8125rem' },
+                color: $mol_theme.shade,
+                minHeight: '1rem',
+            },
+            Lastfm: {
+                flex: { direction: 'column' },
+                background: { color: $mol_theme.card },
+                border: { radius: $mol_gap.round },
+                padding: {
+                    top: '0.75rem',
+                    bottom: '0.75rem',
+                    left: '0.75rem',
+                    right: '0.75rem',
+                },
+                gap: '0.5rem',
+            },
+            Fm_title: {
+                font: { weight: 'bold' },
+            },
+            Fm_hint: {
+                font: { size: '0.8125rem' },
+                color: $mol_theme.shade,
+            },
+            Fm_status: {
+                font: { size: '0.8125rem' },
+                color: $mol_theme.shade,
+                minHeight: '1rem',
             },
             Export: {
                 flex: { direction: 'column' },
@@ -37263,6 +37816,7 @@ var $;
                             return;
                     }
                     this.current_time(el.currentTime);
+                    this.scrobble_watch(el.currentTime);
                 });
                 el.addEventListener('loadedmetadata', () => {
                     if (this._silent)
@@ -37277,6 +37831,59 @@ var $;
                 });
                 this._audio_el = el;
                 return el;
+            }
+            // ---------- скробблинг в last.fm ----------
+            _fm = null;
+            /**
+             * Часы скробблинга. Зовутся из тика воспроизведения (timeupdate в PWA,
+             * state-сообщение из offscreen в расширении) — специально не из
+             * play_track: там синхронный iOS-путь, и лишний код в нём рвёт звук в
+             * фоне. Смену трека ловим по метаданным, а не по событию.
+             */
+            scrobble_watch(time) {
+                if (!$bog_music_scrobble.enabled())
+                    return;
+                let audio = null;
+                try {
+                    audio = this.current_audio();
+                }
+                catch {
+                    return; // метаданные ещё синкаются — тик пропускаем
+                }
+                const artist = audio?.artist ?? '';
+                const title = audio?.title ?? '';
+                if (!title) {
+                    this._fm = null;
+                    return;
+                }
+                const current = this._fm;
+                // Новый трек, либо тот же самый запустили заново с начала.
+                if (!current || current.artist !== artist || current.title !== title || (current.done && time < 3)) {
+                    let duration = 0;
+                    try {
+                        duration = this.duration() || audio?.duration || 0;
+                    }
+                    catch { }
+                    this._fm = { artist, title, duration, started: Math.floor(Date.now() / 1000), done: false };
+                    $bog_music_scrobble.now_playing(artist, title, duration);
+                    return;
+                }
+                if (current.done)
+                    return;
+                if (!current.duration) {
+                    try {
+                        current.duration = this.duration() || 0;
+                    }
+                    catch { }
+                }
+                // Правило last.fm: трек длиннее 30 с, прослушано больше половины
+                // или больше 4 минут.
+                if (current.duration < 30)
+                    return;
+                if (time < Math.min(current.duration / 2, 240))
+                    return;
+                current.done = true;
+                $bog_music_scrobble.scrobble(current.artist, current.title, current.duration, current.started);
             }
             on_ended() {
                 let finished = null;
@@ -37333,6 +37940,9 @@ var $;
                         if (msg.current_audio) {
                             this.current_key($bog_music_account_baza.key_of(msg.current_audio));
                         }
+                        // Ключ уже обновлён — метаданные для скроббла свежие.
+                        if (typeof msg.current_time === 'number')
+                            this.scrobble_watch(msg.current_time);
                     }
                     if (msg.type === 'ended')
                         this.on_ended();
