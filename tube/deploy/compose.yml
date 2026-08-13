@@ -11,3 +11,22 @@ services:
     cpus: 0.75
     mem_limit: 512m
     pids_limit: 96
+    environment:
+      # Токен от @BotFather. Без него маршруты /tg/* отвечают 503, а поиск
+      # по YouTube продолжает работать как раньше.
+      BOG_MUSIC_TG_TOKEN: "${BOG_MUSIC_TG_TOKEN:-}"
+      # Связки чат↔код и очередь метаданных. Байты треков тут не лежат:
+      # файлы тянутся из Телеграма по file_id в момент запроса клиента.
+      BOG_MUSIC_TG_STATE: /data/tg.json
+      # last.fm: ключ приложения (last.fm/api/account/create) и session key
+      # юзера держим здесь — подпись запроса требует секрет.
+      BOG_MUSIC_FM_KEY: "${BOG_MUSIC_FM_KEY:-}"
+      BOG_MUSIC_FM_SECRET: "${BOG_MUSIC_FM_SECRET:-}"
+      BOG_MUSIC_FM_STATE: /data/fm.json
+      # Публичный origin — сюда last.fm вернёт юзера после подтверждения.
+      BOG_MUSIC_FM_BASE: "${BOG_MUSIC_FM_BASE:-https://tube.87.120.36.150.ip.giper.dev}"
+    volumes:
+      - state:/data
+
+volumes:
+  state:

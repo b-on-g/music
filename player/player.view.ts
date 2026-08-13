@@ -408,6 +408,7 @@ namespace $.$$ {
 					else return
 				}
 				this.current_time(el.currentTime)
+				this.scrobble_watch(el.currentTime)
 			})
 			el.addEventListener('loadedmetadata', () => {
 				if (this._silent) return
@@ -420,6 +421,51 @@ namespace $.$$ {
 			})
 			this._audio_el = el
 			return el
+		}
+
+		// ---------- скробблинг в last.fm ----------
+
+		private _fm: { artist: string, title: string, duration: number, started: number, done: boolean } | null = null
+
+		/**
+		 * Часы скробблинга. Зовутся из тика воспроизведения (timeupdate в PWA,
+		 * state-сообщение из offscreen в расширении) — специально не из
+		 * play_track: там синхронный iOS-путь, и лишний код в нём рвёт звук в
+		 * фоне. Смену трека ловим по метаданным, а не по событию.
+		 */
+		private scrobble_watch(time: number) {
+			if (!$bog_music_scrobble.enabled()) return
+			let audio: $bog_music_api_audio | null = null
+			try {
+				audio = this.current_audio()
+			} catch {
+				return // метаданные ещё синкаются — тик пропускаем
+			}
+			const artist = audio?.artist ?? ''
+			const title = audio?.title ?? ''
+			if (!title) {
+				this._fm = null
+				return
+			}
+			const current = this._fm
+			// Новый трек, либо тот же самый запустили заново с начала.
+			if (!current || current.artist !== artist || current.title !== title || (current.done && time < 3)) {
+				let duration = 0
+				try { duration = this.duration() || audio?.duration || 0 } catch {}
+				this._fm = { artist, title, duration, started: Math.floor(Date.now() / 1000), done: false }
+				$bog_music_scrobble.now_playing(artist, title, duration)
+				return
+			}
+			if (current.done) return
+			if (!current.duration) {
+				try { current.duration = this.duration() || 0 } catch {}
+			}
+			// Правило last.fm: трек длиннее 30 с, прослушано больше половины
+			// или больше 4 минут.
+			if (current.duration < 30) return
+			if (time < Math.min(current.duration / 2, 240)) return
+			current.done = true
+			$bog_music_scrobble.scrobble(current.artist, current.title, current.duration, current.started)
 		}
 
 		private on_ended() {
@@ -468,6 +514,8 @@ namespace $.$$ {
 					if (msg.current_audio) {
 						this.current_key($bog_music_account_baza.key_of(msg.current_audio))
 					}
+					// Ключ уже обновлён — метаданные для скроббла свежие.
+					if (typeof msg.current_time === 'number') this.scrobble_watch(msg.current_time)
 				}
 				if (msg.type === 'ended') this.on_ended()
 				if (msg.type === 'error') {

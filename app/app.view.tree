@@ -28,6 +28,14 @@ $bog_music_app $mol_page
 		<= Account $bog_music_account
 			download_playlist? <=> download_playlist? null
 			download_playlist_status <= download_playlist_status \
+			tg_hint <= tg_hint \
+			tg_button <= tg_button \
+			tg_status <= tg_status \
+			tg_link? <=> tg_link? null
+			fm_hint <= fm_hint \
+			fm_button <= fm_button \
+			fm_status <= fm_status \
+			fm_link? <=> fm_link? null
 		<= Feedback $bog_feedback2_form
 			feedback_id \bog_vk
 		<= Share_toast $mol_view

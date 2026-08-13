@@ -450,6 +450,154 @@ namespace $.$$ {
 			}
 		}
 
+		// =====================================================================
+		// Телеграм: треки, пересланные боту (сервер bog/music/tg)
+		// =====================================================================
+
+		@$mol_mem
+		tg_state(next?: { linked: boolean, name: string, pending: number, done: number, error: string }) {
+			return next ?? { linked: false, name: '', pending: 0, done: 0, error: '' }
+		}
+
+		tg_hint() {
+			return this.tg_state().linked
+				? 'Пересылай боту треки из любого чата — они приедут в Мою музыку сами.'
+				: 'Подключи бота и пересылай ему музыку из любого чата. Файлы больше 20 МБ Телеграм ботам не отдаёт.'
+		}
+
+		tg_button() {
+			return this.tg_state().linked ? 'Открыть бота' : 'Подключить Телеграм'
+		}
+
+		tg_status() {
+			const state = this.tg_state()
+			if (state.error) return state.error
+			if (!$bog_music_tg.code()) return ''
+			const parts = [ state.linked
+				? (state.name ? `Подключено: ${state.name}` : 'Подключено')
+				: 'Ждём /start в боте'
+			]
+			if (state.pending) parts.push(`в очереди ${state.pending}`)
+			if (state.done) parts.push(`забрано ${state.done}`)
+			return parts.join(' · ')
+		}
+
+		/** Код связки создаётся при первом клике и уходит в диплинк бота. */
+		@$mol_action
+		tg_link() {
+			const code = $bog_music_tg.code_ensure()
+			window.open($bog_music_tg.link_url(code), '_blank')
+			$mol_wire_async(this).tg_drain()
+		}
+
+		private _tg_busy = false
+
+		/**
+		 * Забирает пересланное боту и складывает в baza. Каждый трек — своя
+		 * фибра на import_audio (blob-land с PoW), как в drain_pending.
+		 */
+		async tg_drain() {
+			const code = $bog_music_tg.code()
+			if (!code || this._tg_busy) return
+			this._tg_busy = true
+			try {
+				const status = await $bog_music_tg.status(code)
+				this.tg_state({
+					...this.tg_state(),
+					linked: status.linked,
+					name: status.name,
+					pending: status.pending,
+					error: '',
+				})
+				if (!status.linked || !status.pending) return
+
+				for (const row of await $bog_music_tg.inbox(code)) {
+					try {
+						const bytes = await $bog_music_tg.file(code, row.id)
+						await ($mol_wire_async(this.account()) as any)
+							.import_audio($bog_music_tg.audio_of(row), bytes, row.mime || 'audio/mpeg')
+						await $bog_music_tg.ack(code, row.id)
+					} catch (e: any) {
+						if (e instanceof Promise) throw e
+						console.warn('[tg] import failed:', row.id, e?.message ?? e)
+						continue
+					}
+					const state = this.tg_state()
+					this.tg_state({ ...state, done: state.done + 1, pending: Math.max(0, state.pending - 1) })
+				}
+			} catch (e: any) {
+				if (e instanceof Promise) throw e
+				console.warn('[tg] drain failed:', e?.message ?? e)
+				this.tg_state({ ...this.tg_state(), error: 'Телеграм-бот недоступен' })
+			} finally {
+				this._tg_busy = false
+			}
+		}
+
+		private _tg_timer: any = 0
+
+		/** Опрос очереди, пока приложение открыто. Таймер живёт в ячейке. */
+		@$mol_mem
+		private tg_poller() {
+			if (this._tg_timer) {
+				clearInterval(this._tg_timer)
+				this._tg_timer = 0
+			}
+			if (!$bog_music_tg.code()) return null
+			this._tg_timer = setInterval(() => { $mol_wire_async(this).tg_drain() }, 30000)
+			return null
+		}
+
+		// =====================================================================
+		// Last.fm: скробблинг прослушанного
+		// =====================================================================
+
+		/** Имя на last.fm, '' — не подключено. Пишется после ответа сервера. */
+		fm_user() {
+			return $bog_music_scrobble.user()
+		}
+
+		fm_hint() {
+			return 'Прослушанное уходит в твою статистику на last.fm. Скробблится всё, что играет в плеере.'
+		}
+
+		fm_button() {
+			return this.fm_user() ? 'Отключить' : 'Подключить last.fm'
+		}
+
+		@$mol_mem
+		fm_error(next?: string) {
+			return next ?? ''
+		}
+
+		fm_status() {
+			if (this.fm_error()) return this.fm_error()
+			const user = this.fm_user()
+			return user ? `Подключено: ${user}` : ''
+		}
+
+		@$mol_action
+		fm_link() {
+			if (this.fm_user()) {
+				$mol_wire_async($bog_music_scrobble).logout()
+				return
+			}
+			window.open($bog_music_scrobble.login_url($bog_music_scrobble.code_ensure()), '_blank')
+		}
+
+		/** Кто подключён — знает только сервер: спрашиваем на старте. */
+		async fm_refresh() {
+			if (!$bog_music_scrobble.code()) return
+			try {
+				await $bog_music_scrobble.status()
+				this.fm_error('')
+			} catch (e: any) {
+				if (e instanceof Promise) throw e
+				console.warn('[fm] status failed:', e?.message ?? e)
+				this.fm_error('Сервер скробблинга недоступен')
+			}
+		}
+
 		nickname_label() {
 			return this.account().nickname()
 		}
@@ -519,7 +667,10 @@ namespace $.$$ {
 		auto() {
 			this.pending_listener()
 			this.prefetch() // фоновая докачка blob'ов по одной песне
+			this.tg_poller()
 			$mol_wire_async(this).drain_pending()
+			$mol_wire_async(this).tg_drain()
+			$mol_wire_async(this).fm_refresh()
 			const token = $bog_music_boot.share_token
 			if (token) {
 				$bog_music_boot.share_token = ''

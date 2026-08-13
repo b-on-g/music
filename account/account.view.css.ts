@@ -63,6 +63,62 @@ namespace $.$$ {
 			gap: '0.5rem',
 		},
 
+		Telegram: {
+			flex: { direction: 'column' },
+			background: { color: $mol_theme.card },
+			border: { radius: $mol_gap.round },
+			padding: {
+				top: '0.75rem',
+				bottom: '0.75rem',
+				left: '0.75rem',
+				right: '0.75rem',
+			},
+			gap: '0.5rem',
+		},
+
+		Tg_title: {
+			font: { weight: 'bold' },
+		},
+
+		Tg_hint: {
+			font: { size: '0.8125rem' },
+			color: $mol_theme.shade,
+		},
+
+		Tg_status: {
+			font: { size: '0.8125rem' },
+			color: $mol_theme.shade,
+			minHeight: '1rem',
+		},
+
+		Lastfm: {
+			flex: { direction: 'column' },
+			background: { color: $mol_theme.card },
+			border: { radius: $mol_gap.round },
+			padding: {
+				top: '0.75rem',
+				bottom: '0.75rem',
+				left: '0.75rem',
+				right: '0.75rem',
+			},
+			gap: '0.5rem',
+		},
+
+		Fm_title: {
+			font: { weight: 'bold' },
+		},
+
+		Fm_hint: {
+			font: { size: '0.8125rem' },
+			color: $mol_theme.shade,
+		},
+
+		Fm_status: {
+			font: { size: '0.8125rem' },
+			color: $mol_theme.shade,
+			minHeight: '1rem',
+		},
+
 		Export: {
 			flex: { direction: 'column' },
 			background: { color: $mol_theme.card },
