@@ -21,11 +21,11 @@ namespace $ {
 
 	/**
 	 * Клиент телеграм-инбокса: юзер пересылает музыку боту, приложение забирает
-	 * её и кладёт в baza. Сервер — $bog_music_tg_api, живёт в том же процессе,
+	 * её и кладёт в baza. Сервер — bog/music/srv/tg, живёт в том же процессе,
 	 * что и tube (см. tube/api/api.node.ts).
 	 *
 	 * Методы плоско-асинхронные, без @$mol_mem: очередь меняется на стороне
-	 * Телеграма, и мемоизировать её нечем — опросом рулит $bog_music_app.
+	 * Телеграма, и мемоизировать её нечем — опросом рулит view приложения.
 	 */
 	export class $bog_music_tg extends $mol_object {
 
@@ -74,29 +74,10 @@ namespace $ {
 			await fetch(`${this.base}/tg/ack?code=${encodeURIComponent(code)}&id=${encodeURIComponent(id)}`)
 		}
 
-		/**
-		 * Метаданные трека для baza. Телеграм часто шлёт mp3 без тегов — тогда
-		 * разбираем имя файла тем же парсером, что и локальную загрузку.
-		 */
-		static audio_of(row: $bog_music_tg_row): $bog_music_api_audio {
-			let artist = row.performer
-			let title = row.title
-			if (!title) {
-				const parsed = $bog_music_account_baza.parse_filename(row.file_name || 'Трек')
-				title = parsed.title
-				if (!artist) artist = parsed.artist
-			}
-			return {
-				// uid Телеграма стабилен для файла в любом чате: один и тот же
-				// трек, пересланный дважды, перезапишет сам себя, а не задвоится.
-				id: $bog_music_account_baza.hash_str('tg:' + (row.uid || row.id)),
-				owner_id: 0,
-				artist,
-				title,
-				duration: row.duration,
-				url: '',
-			}
-		}
+		// Сборка метаданных для baza живёт во view приложения (tg_audio):
+		// mam подключает родительский модуль к каждому вложенному, так что
+		// ссылка отсюда на доменную модель утащила бы весь baza-слой в бандл
+		// серверной части (tg/api) — на боксе это лишние мегабайты в RSS.
 
 	}
 

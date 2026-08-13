@@ -1,6 +1,6 @@
 namespace $ {
 
-	/** Результат поиска на сервере tube (bog/music/tube/api). */
+	/** Результат поиска на сервере tube (bog/music/srv/tube). */
 	export interface $bog_music_tube_item {
 		id: string
 		title: string
@@ -10,7 +10,7 @@ namespace $ {
 
 	/**
 	 * Клиент поиска и скачивания музыки из YouTube. Сервер — наш
-	 * $bog_music_tube_api в докере (yt-dlp + ffmpeg), см. tube/deploy/.
+	 * сервер bog/music/srv/tube в докере (yt-dlp + ffmpeg).
 	 */
 	export class $bog_music_tube extends $mol_object {
 

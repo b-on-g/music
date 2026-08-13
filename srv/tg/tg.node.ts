@@ -1,7 +1,7 @@
 namespace $ {
 
 	/** Трек, пересланный боту и ожидающий переезда в baza. */
-	export interface $bog_music_tg_item {
+	export interface $bog_music_srv_tg_item {
 		/** `${chat_id}_${message_id}` — идентификатор в очереди. */
 		id: string
 		/** file_unique_id Телеграма: один и тот же файл в любом чате даёт один uid. */
@@ -24,19 +24,19 @@ namespace $ {
 	 * файл тянется из Телеграма в момент, когда клиент за ним пришёл. Диск не
 	 * растёт, чистить нечего.
 	 *
-	 * Маршруты (монтируются в bog/music/tube/api — один процесс на весь бокс;
+	 * Маршруты (монтируются в bog/music/srv/tube — один процесс на весь бокс;
 	 * упоминать там класс токеном нельзя, mam ловит его и в комментарии, а
 	 * встречная ссылка замкнула бы граф модулей):
 	 * - GET /tg/status?code= → { bot, linked, name, pending }
-	 * - GET /tg/inbox?code=  → $bog_music_tg_item[]
+	 * - GET /tg/inbox?code=  → $bog_music_srv_tg_item[]
 	 * - GET /tg/file?code=&id= → байты трека
 	 * - GET /tg/ack?code=&id=  → выкинуть из очереди (клиент записал в baza)
 	 *
-	 * `code` — секрет устройства (см. $bog_music_tg на клиенте): им и линкуется
+	 * `code` — секрет устройства (клиент — bog/music/tg): им и линкуется
 	 * чат, и читается очередь. Без токена бота (BOG_MUSIC_TG_TOKEN) модуль
 	 * молчит и отвечает 503, не мешая остальному серверу.
 	 */
-	export class $bog_music_tg_api extends $mol_object {
+	export class $bog_music_srv_tg extends $mol_object {
 
 		/** Bot API отдаёт боту файлы только до 20 МБ. */
 		static MAX_FILE = 20 * 1024 * 1024
@@ -47,11 +47,11 @@ namespace $ {
 		/** Протухание неразобранной очереди. */
 		static TTL = 30 * 24 * 3600e3
 
-		protected static _instance: $bog_music_tg_api | null = null
+		protected static _instance: $bog_music_srv_tg | null = null
 
-		static instance(): $bog_music_tg_api {
+		static instance(): $bog_music_srv_tg {
 			if (!this._instance) {
-				this._instance = new $bog_music_tg_api
+				this._instance = new $bog_music_srv_tg
 				this._instance.start()
 			}
 			return this._instance
@@ -69,7 +69,7 @@ namespace $ {
 		/** chat_id → code */
 		protected chats = new Map<number, string>()
 		/** code → очередь треков */
-		protected queues = new Map<string, $bog_music_tg_item[]>()
+		protected queues = new Map<string, $bog_music_srv_tg_item[]>()
 		/** code → имя из Телеграма (для «подключено к Кириллу») */
 		protected names = new Map<string, string>()
 
@@ -163,12 +163,12 @@ namespace $ {
 				return
 			}
 
-			if (Number(audio.file_size ?? 0) > $bog_music_tg_api.MAX_FILE) {
+			if (Number(audio.file_size ?? 0) > $bog_music_srv_tg.MAX_FILE) {
 				this.say(chat_id, `«${audio.title ?? audio.file_name ?? 'Трек'}» больше 20 МБ — Телеграм не отдаёт ботам такие файлы.`)
 				return
 			}
 
-			const item: $bog_music_tg_item = {
+			const item: $bog_music_srv_tg_item = {
 				id: `${chat_id}_${msg.message_id}`,
 				uid: String(audio.file_unique_id ?? ''),
 				file_id: String(audio.file_id ?? ''),
@@ -223,13 +223,13 @@ namespace $ {
 
 		// ---------- очередь ----------
 
-		queue(code: string): $bog_music_tg_item[] {
+		queue(code: string): $bog_music_srv_tg_item[] {
 			let queue = this.queues.get(code)
 			if (!queue) {
 				queue = []
 				this.queues.set(code, queue)
 			}
-			const dead = Date.now() - $bog_music_tg_api.TTL
+			const dead = Date.now() - $bog_music_srv_tg.TTL
 			if (queue.some(item => item.added < dead)) {
 				queue = queue.filter(item => item.added >= dead)
 				this.queues.set(code, queue)
@@ -331,7 +331,7 @@ namespace $ {
 				this.fail(res, 404, 'no such track')
 				return
 			}
-			if (this.jobs >= $bog_music_tg_api.MAX_JOBS) {
+			if (this.jobs >= $bog_music_srv_tg.MAX_JOBS) {
 				res.statusCode = 503
 				res.setHeader('Retry-After', '3')
 				try { res.end('{"error":"busy"}') } catch {}

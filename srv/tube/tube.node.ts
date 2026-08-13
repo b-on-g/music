@@ -12,9 +12,9 @@ namespace $ {
 	 * GET /tube/search?q=  → [{ id, title, channel, duration }]
 	 * GET /tube/audio?id=  → байты m4a (audio/mp4)
 	 *
-	 * Запуск: node bog/music/tube/api/-/node.js (в докере, см. tube/deploy/).
+	 * Запуск: node bog/music/srv/tube/-/node.js (в докере, см. srv/deploy/).
 	 */
-	export class $bog_music_tube_api extends $mol_server {
+	export class $bog_music_srv_tube extends $mol_server {
 
 		override port() {
 			return Number(process.env.BOG_MUSIC_TUBE_PORT ?? 9092)
@@ -30,7 +30,7 @@ namespace $ {
 
 		/** Разрешить новый yt-dlp job? Если да — резервирует слот. */
 		private take_slot(): boolean {
-			if (this.active_jobs >= $bog_music_tube_api.MAX_JOBS) return false
+			if (this.active_jobs >= $bog_music_srv_tube.MAX_JOBS) return false
 			this.active_jobs++
 			return true
 		}
@@ -46,7 +46,7 @@ namespace $ {
 		}
 
 		override expressHandlers(): readonly $mol_server_middleware[] {
-			// Телеграм-бот ($bog_music_tg_api) поднимается здесь же: на боксе
+			// Телеграм-бот ($bog_music_srv_tg) поднимается здесь же: на боксе
 			// 1 CPU / ~960МБ, где рядом baza, отдельный node стоил бы ещё ~70МБ
 			// RSS и свой TLS-серверблок. Логика бота — в своём модуле, тут
 			// только монтирование их маршрутов.
@@ -54,8 +54,8 @@ namespace $ {
 			// блок-комментарии раньше строчных, и такой «/» со звездой съедает
 			// весь код до ближайшего конца doc-комментария — модули молча
 			// выпадают из бандла.
-			const tg = $bog_music_tg_api.instance()
-			const fm = $bog_music_scrobble_api.instance()
+			const tg = $bog_music_srv_tg.instance()
+			const fm = $bog_music_srv_fm.instance()
 			return [
 				this.expressCors(),
 				(req: any, res: any, next: any) => {

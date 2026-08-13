@@ -5,7 +5,7 @@ namespace $ {
 	 * подписывает запросы к last.fm. Клиенту (bog/music/scrobble) остаётся
 	 * сказать «играет вот это» — ни ключей, ни подписи он не видит.
 	 *
-	 * Маршруты (монтируются в bog/music/tube/api — один процесс на бокс;
+	 * Маршруты (монтируются в bog/music/srv/tube — один процесс на бокс;
 	 * токеном класс тут не зовём: mam читает и комментарии, а встречная
 	 * ссылка замкнула бы граф модулей):
 	 * - GET /fm/login?code=&back=  → редирект на подтверждение last.fm
@@ -17,15 +17,15 @@ namespace $ {
 	 *
 	 * Без BOG_MUSIC_FM_KEY/SECRET маршруты отвечают 503 и ничего не ломают.
 	 */
-	export class $bog_music_scrobble_api extends $mol_object {
+	export class $bog_music_srv_fm extends $mol_object {
 
 		static ROOT = 'https://ws.audioscrobbler.com/2.0/'
 
-		protected static _instance: $bog_music_scrobble_api | null = null
+		protected static _instance: $bog_music_srv_fm | null = null
 
-		static instance(): $bog_music_scrobble_api {
+		static instance(): $bog_music_srv_fm {
 			if (!this._instance) {
-				this._instance = new $bog_music_scrobble_api
+				this._instance = new $bog_music_srv_fm
 				this._instance.load()
 			}
 			return this._instance
@@ -67,8 +67,8 @@ namespace $ {
 			const signed = { ...params, api_key: this.key() }
 			const query = new URLSearchParams({ ...signed, api_sig: this.sign(signed), format: 'json' })
 			const resp = method === 'GET'
-				? await fetch(`${$bog_music_scrobble_api.ROOT}?${query}`)
-				: await fetch($bog_music_scrobble_api.ROOT, {
+				? await fetch(`${$bog_music_srv_fm.ROOT}?${query}`)
+				: await fetch($bog_music_srv_fm.ROOT, {
 					method: 'POST',
 					headers: { 'content-type': 'application/x-www-form-urlencoded' },
 					body: String(query),

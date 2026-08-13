@@ -490,6 +490,29 @@ namespace $.$$ {
 			$mol_wire_async(this).tg_drain()
 		}
 
+		/**
+		 * Метаданные трека из Телеграма. Тегов там часто нет — тогда разбираем
+		 * имя файла тем же парсером, что и локальную загрузку. `uid` стабилен
+		 * для файла в любом чате: пересланный дважды трек перезапишет сам себя.
+		 */
+		tg_audio(row: $bog_music_tg_row): $bog_music_api_audio {
+			let artist = row.performer
+			let title = row.title
+			if (!title) {
+				const parsed = $bog_music_account_baza.parse_filename(row.file_name || 'Трек')
+				title = parsed.title
+				if (!artist) artist = parsed.artist
+			}
+			return {
+				id: $bog_music_account_baza.hash_str('tg:' + (row.uid || row.id)),
+				owner_id: 0,
+				artist,
+				title,
+				duration: row.duration,
+				url: '',
+			}
+		}
+
 		private _tg_busy = false
 
 		/**
@@ -515,7 +538,7 @@ namespace $.$$ {
 					try {
 						const bytes = await $bog_music_tg.file(code, row.id)
 						await ($mol_wire_async(this.account()) as any)
-							.import_audio($bog_music_tg.audio_of(row), bytes, row.mime || 'audio/mpeg')
+							.import_audio(this.tg_audio(row), bytes, row.mime || 'audio/mpeg')
 						await $bog_music_tg.ack(code, row.id)
 					} catch (e: any) {
 						if (e instanceof Promise) throw e
