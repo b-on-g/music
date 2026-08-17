@@ -37272,7 +37272,7 @@ declare namespace $.$$ {
          * публичный идентификатор личности, а не ключ: ключ в коде держать
          * нельзя, он даёт полный доступ к аккаунту.
          */
-        static owner_lord: string;
+        static owner_lords: string[];
         Tab_logs(): any;
         logs_click(e?: Event): null;
         /** Отзывы пока скрыты: форма не работает. Вернуть — удалить override. */

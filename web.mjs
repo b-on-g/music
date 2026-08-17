@@ -23327,11 +23327,14 @@ var $;
              * публичный идентификатор личности, а не ключ: ключ в коде держать
              * нельзя, он даёт полный доступ к аккаунту.
              */
-            static owner_lord = 'rkya36Pg_4GhW4PYB';
+            static owner_lords = [
+                'rkya36Pg_4GhW4PYB',
+                'xSwlxBfW_flwwJqOO',
+            ];
             Tab_logs() {
                 try {
                     const self = this.$.$giper_baza_auth.current().pass().lord().str;
-                    if (self !== $bog_music_nav.owner_lord)
+                    if (!$bog_music_nav.owner_lords.includes(self))
                         return null;
                 }
                 catch (error) {
@@ -33872,7 +33875,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.38';
+    $.$bog_music_version = 'v1.39';
 })($ || ($ = {}));
 
 ;
