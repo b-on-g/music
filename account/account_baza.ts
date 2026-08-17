@@ -192,13 +192,15 @@ namespace $ {
 
 		/** Загрузка локального файла с устройства. */
 		@$mol_action
-		save_local_track(file: File, buffer: Uint8Array): $bog_music_api_audio | null {
-			const { artist, title } = $bog_music_account_baza.parse_filename(file.name)
+		save_local_track(file: File, buffer: Uint8Array, order?: number): $bog_music_api_audio | null {
+			const { artist, title, order: parsed_order } = $bog_music_account_baza.parse_filename(file.name)
 			const id = $bog_music_account_baza.hash_str(`${file.name}|${file.size}|${file.lastModified}`)
 			const audio: $bog_music_api_audio = { id, owner_id: 0, artist, title, duration: 0, url: '' }
 			this.save_track(audio)
 			const track = this.tracks().key($bog_music_account_baza.key_of(audio), 'auto')
 			if (!track) return null
+			const want_order = parsed_order ?? order
+			if (want_order != null) track.order_set(want_order)
 			if (track.Playlist()?.val() == null) track.Playlist('auto')!.val('')
 			const store = track.File('auto')!.ensure([])
 			if (store) {
@@ -281,11 +283,17 @@ namespace $ {
 
 		// ---------- утилиты ----------
 
-		static parse_filename(name: string): { artist: string, title: string } {
-			const base = name.replace(/\.[^.]+$/, '').trim()
+		static parse_filename(name: string): { artist: string, title: string, order: number | null } {
+			let base = name.replace(/\.[^.]+$/, '').trim()
+			let order: number | null = null
+			const numbered = base.match(/^(\d{1,4})\s*[-–—]\s*(.+)$/)
+			if (numbered) {
+				order = Number(numbered[1])
+				base = numbered[2].trim()
+			}
 			const m = base.match(/^(.+?)\s*[-–—]\s*(.+)$/)
-			if (m) return { artist: m[1].trim(), title: m[2].trim() }
-			return { artist: '', title: base }
+			if (m) return { artist: m[1].trim(), title: m[2].trim(), order }
+			return { artist: '', title: base, order }
 		}
 
 		/** Детерминированный hash (FNV-1a 32 bit) — id локальных файлов. */

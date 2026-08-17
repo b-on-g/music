@@ -177,10 +177,11 @@ namespace $.$$ {
 		upload_files(next?: File[]) {
 			if (next?.length) {
 				$bog_music_log.act(`загрузка с устройства: ${next.length} файл(ов)`)
-				for (const file of next) {
+				const files = [...next].sort((a, b) => a.name.localeCompare(b.name, 'ru', { numeric: true }))
+				files.forEach((file, index) => {
 					const buffer = new Uint8Array(($mol_wire_sync(file) as any).arrayBuffer())
-					this.account().save_local_track(file, buffer)
-				}
+					this.account().save_local_track(file, buffer, index + 1)
+				})
 			}
 			return next ?? []
 		}
