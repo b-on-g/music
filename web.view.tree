@@ -517,6 +517,29 @@ $bog_theme_toggle $mol_pop
 			theme_auto <= theme_auto
 			close? <=> picker_close? null
 
+$bog_music_log_view $mol_list
+	rows <= log_rows /
+	Head $mol_view
+		sub /
+			<= Count $mol_view
+				sub / <= count_label \
+			<= Copy $mol_button_minor
+				title \Скопировать
+				click? <=> copy? null
+			<= Clear $mol_button_minor
+				title \Очистить
+				click? <=> clear? null
+	Row* $mol_view
+		attr *
+			mol_theme <= row_theme* \
+		sub /
+			<= Time* $mol_view
+				sub / <= time* \
+			<= Text* $mol_view
+				sub / <= text* \
+	Empty $mol_view
+		sub / \Пока пусто. Понажимай в приложении — записи появятся здесь.
+
 $mol_stack $mol_view
 
 $mol_text_code_token $mol_dimmer
@@ -1123,6 +1146,12 @@ $mol_icon_account $mol_icon path \M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1
 
 $mol_icon_account_circle $mol_icon path \M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z
 
+$mol_icon_text $mol_icon path \M21,6V8H3V6H21M3,18H12V16H3V18M3,13H21V11H3V13Z
+
+$mol_icon_text_box $mol_icon path \M14,17H7V15H14M17,13H7V11H17M17,9H7V7H17M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3Z
+
+$mol_icon_text_box_outline $mol_icon path \M5,3C3.89,3 3,3.89 3,5V19C3,20.11 3.89,21 5,21H19C20.11,21 21,20.11 21,19V5C21,3.89 20.11,3 19,3H5M5,5H19V19H5V5M7,7V9H17V7H7M7,11V13H17V11H7M7,15V17H14V15H7Z
+
 $mol_icon_chat $mol_icon path \M12,3C17.5,3 22,6.58 22,11C22,15.42 17.5,19 12,19C10.76,19 9.57,18.82 8.47,18.5C5.55,21 2,21 2,21C4.33,18.67 4.7,17.1 4.75,16.5C3.05,15.07 2,13.13 2,11C2,6.58 6.5,3 12,3Z
 
 $bog_music_nav $mol_view
@@ -1143,6 +1172,11 @@ $bog_music_nav $mol_view
 			active <= account_active \off
 			Icon <= Account_icon $mol_icon_account_circle
 			click? <=> account_click? null
+		<= Tab_logs $bog_music_nav_item
+			label \Логи
+			active <= logs_active \off
+			Icon <= Logs_icon $mol_icon_text_box_outline
+			click? <=> logs_click? null
 		<= Tab_feedback $bog_music_nav_item
 			label \Отзывы
 			active <= feedback_active \off
@@ -2433,6 +2467,7 @@ $bog_music_app $mol_page
 			fm_button <= fm_button \
 			fm_status <= fm_status \
 			fm_link? <=> fm_link? null
+		<= Logs $bog_music_log_view
 		<= Feedback $bog_feedback2_form
 			feedback_id \bog_vk
 		<= Share_toast $mol_view

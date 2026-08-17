@@ -34497,6 +34497,139 @@ declare namespace $.$$ {
 }
 
 declare namespace $ {
+    type $bog_music_log_record = {
+        readonly time: number;
+        readonly kind: 'act' | 'err';
+        readonly text: string;
+    };
+    /**
+     * Журнал действий и ошибок для разбора багов с телефона, где консоли нет.
+     *
+     * Записи держатся в обычном массиве, а не в реактивной ячейке: писать в
+     * журнал приходится из любых мест, включая тела реактивных вычислений, а
+     * запись в ячейку оттуда роняет пересчёт. Страница вместо подписки на
+     * данные перечитывает их по таймеру.
+     */
+    class $bog_music_log extends $mol_object {
+        /** Сколько записей держим. Дальше вытесняются старые. */
+        static limit: number;
+        static records: $bog_music_log_record[];
+        static add(kind: $bog_music_log_record['kind'], text: string): void;
+        /** Действие пользователя или приложения. */
+        static act(text: string): void;
+        /** Ошибка. Пишется и руками, и автоматически из общего обработчика. */
+        static err(text: string): void;
+        /** Перехват необработанных ошибок. Вызывается один раз при старте. */
+        static init(): {
+            destructor: () => boolean;
+        };
+        static clear(): void;
+        /** Журнал текстом — чтобы переслать себе или приложить к багу. */
+        static dump(): string;
+    }
+}
+
+declare namespace $ {
+
+	type $mol_view__sub_bog_music_log_view_1 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_button_minor__title_bog_music_log_view_2 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['title'] >
+	>
+	type $mol_button_minor__click_bog_music_log_view_3 = $mol_type_enforce<
+		ReturnType< $bog_music_log_view['copy'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__title_bog_music_log_view_4 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['title'] >
+	>
+	type $mol_button_minor__click_bog_music_log_view_5 = $mol_type_enforce<
+		ReturnType< $bog_music_log_view['clear'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_view__sub_bog_music_log_view_6 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_music_log_view_7 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_music_log_view_8 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__attr_bog_music_log_view_9 = $mol_type_enforce<
+		({ 
+			'mol_theme': ReturnType< $bog_music_log_view['row_theme'] >,
+		}) 
+		,
+		ReturnType< $mol_view['attr'] >
+	>
+	type $mol_view__sub_bog_music_log_view_10 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_music_log_view_11 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	export class $bog_music_log_view extends $mol_list {
+		log_rows( ): readonly(any)[]
+		count_label( ): string
+		Count( ): $mol_view
+		copy( next?: any ): any
+		Copy( ): $mol_button_minor
+		clear( next?: any ): any
+		Clear( ): $mol_button_minor
+		row_theme( id: any): string
+		time( id: any): string
+		Time( id: any): $mol_view
+		text( id: any): string
+		Text( id: any): $mol_view
+		rows( ): ReturnType< $bog_music_log_view['log_rows'] >
+		Head( ): $mol_view
+		Row( id: any): $mol_view
+		Empty( ): $mol_view
+	}
+	
+}
+
+//# sourceMappingURL=view.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $bog_music_log_view extends $.$bog_music_log_view {
+        /**
+         * Свежие записи сверху. Данные лежат в обычном массиве, поэтому
+         * подписаться на них нельзя — перечитываем раз в секунду по таймеру.
+         */
+        records(): $bog_music_log_record[];
+        log_rows(): $mol_view[];
+        count_label(): string;
+        record(index: number): $bog_music_log_record;
+        time(index: number): string;
+        text(index: number): string;
+        /** Ошибки подсвечиваем темой, чтобы находить их взглядом. */
+        row_theme(index: number): "$mol_theme_special" | "$mol_theme_base";
+        copy(): null;
+        clear(): null;
+    }
+}
+
+declare namespace $ {
     /**
      * Рабочий baza-master экосистемы bog. Bundled seed (giper/baza peer.baza)
      * может указывать на недоступный хост — добавляем актуальный явно,
@@ -36960,6 +37093,33 @@ declare namespace $ {
 //# sourceMappingURL=circle.view.tree.d.ts.map
 declare namespace $ {
 
+	export class $mol_icon_text extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=text.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_text_box extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=box.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_text_box_outline extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=outline.view.tree.d.ts.map
+declare namespace $ {
+
 	export class $mol_icon_chat extends $mol_icon {
 		path( ): string
 	}
@@ -37035,16 +37195,36 @@ declare namespace $ {
 		ReturnType< $bog_music_nav_item['label'] >
 	>
 	type $bog_music_nav_item__active_bog_music_nav_14 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['feedback_active'] >
+		ReturnType< $bog_music_nav['logs_active'] >
 		,
 		ReturnType< $bog_music_nav_item['active'] >
 	>
 	type $bog_music_nav_item__Icon_bog_music_nav_15 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['Feedback_icon'] >
+		ReturnType< $bog_music_nav['Logs_icon'] >
 		,
 		ReturnType< $bog_music_nav_item['Icon'] >
 	>
 	type $bog_music_nav_item__click_bog_music_nav_16 = $mol_type_enforce<
+		ReturnType< $bog_music_nav['logs_click'] >
+		,
+		ReturnType< $bog_music_nav_item['click'] >
+	>
+	type $bog_music_nav_item__label_bog_music_nav_17 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $bog_music_nav_item['label'] >
+	>
+	type $bog_music_nav_item__active_bog_music_nav_18 = $mol_type_enforce<
+		ReturnType< $bog_music_nav['feedback_active'] >
+		,
+		ReturnType< $bog_music_nav_item['active'] >
+	>
+	type $bog_music_nav_item__Icon_bog_music_nav_19 = $mol_type_enforce<
+		ReturnType< $bog_music_nav['Feedback_icon'] >
+		,
+		ReturnType< $bog_music_nav_item['Icon'] >
+	>
+	type $bog_music_nav_item__click_bog_music_nav_20 = $mol_type_enforce<
 		ReturnType< $bog_music_nav['feedback_click'] >
 		,
 		ReturnType< $bog_music_nav_item['click'] >
@@ -37062,6 +37242,10 @@ declare namespace $ {
 		Account_icon( ): $mol_icon_account_circle
 		account_click( next?: any ): any
 		Tab_account( ): $bog_music_nav_item
+		logs_active( ): string
+		Logs_icon( ): $mol_icon_text_box_outline
+		logs_click( next?: any ): any
+		Tab_logs( ): $bog_music_nav_item
 		feedback_active( ): string
 		Feedback_icon( ): $mol_icon_chat
 		feedback_click( next?: any ): any
@@ -37082,6 +37266,15 @@ declare namespace $.$$ {
         music_click(e?: Event): null;
         search_click(e?: Event): null;
         account_click(e?: Event): null;
+        logs_active(): "on" | "off";
+        /**
+         * Вкладка журнала — только для владельца приложения. Сравнивается
+         * публичный идентификатор личности, а не ключ: ключ в коде держать
+         * нельзя, он даёт полный доступ к аккаунту.
+         */
+        static owner_lord: string;
+        Tab_logs(): any;
+        logs_click(e?: Event): null;
         /** Отзывы пока скрыты: форма не работает. Вернуть — удалить override. */
         Tab_feedback(): any;
         feedback_click(e?: Event): null;
@@ -50958,6 +51151,7 @@ declare namespace $ {
 		fm_status( ): string
 		fm_link( next?: any ): any
 		Account( ): $bog_music_account
+		Logs( ): $bog_music_log_view
 		Feedback( ): $bog_feedback2_form
 		share_toast_text( ): string
 		Share_toast( ): $mol_view

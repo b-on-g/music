@@ -19930,6 +19930,216 @@ var $;
 var $;
 (function ($) {
     /**
+     * Журнал действий и ошибок для разбора багов с телефона, где консоли нет.
+     *
+     * Записи держатся в обычном массиве, а не в реактивной ячейке: писать в
+     * журнал приходится из любых мест, включая тела реактивных вычислений, а
+     * запись в ячейку оттуда роняет пересчёт. Страница вместо подписки на
+     * данные перечитывает их по таймеру.
+     */
+    class $bog_music_log extends $mol_object {
+        /** Сколько записей держим. Дальше вытесняются старые. */
+        static limit = 500;
+        static records = [];
+        static add(kind, text) {
+            this.records.push({ time: Date.now(), kind, text: String(text).slice(0, 500) });
+            if (this.records.length > this.limit)
+                this.records.splice(0, this.records.length - this.limit);
+        }
+        /** Действие пользователя или приложения. */
+        static act(text) {
+            this.add('act', text);
+        }
+        /** Ошибка. Пишется и руками, и автоматически из общего обработчика. */
+        static err(text) {
+            this.add('err', text);
+        }
+        /** Перехват необработанных ошибок. Вызывается один раз при старте. */
+        static init() {
+            const handler = (report) => {
+                const text = report?.message ?? report?.error?.message ?? String(report);
+                const place = report?.place ? ` @ ${report.place}` : '';
+                this.add('err', text + place);
+            };
+            $mol_report_handler_all.add(handler);
+            return { destructor: () => $mol_report_handler_all.delete(handler) };
+        }
+        static clear() {
+            this.records = [];
+        }
+        /** Журнал текстом — чтобы переслать себе или приложить к багу. */
+        static dump() {
+            return this.records.map(rec => {
+                const time = new Date(rec.time).toISOString().slice(11, 23);
+                return `${time} ${rec.kind === 'err' ? 'ОШИБКА' : 'действие'} ${rec.text}`;
+            }).join('\n');
+        }
+    }
+    __decorate([
+        $mol_mem
+    ], $bog_music_log, "init", null);
+    $.$bog_music_log = $bog_music_log;
+})($ || ($ = {}));
+
+;
+	($.$bog_music_log_view) = class $bog_music_log_view extends ($.$mol_list) {
+		log_rows(){
+			return [];
+		}
+		count_label(){
+			return "";
+		}
+		Count(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.count_label())]);
+			return obj;
+		}
+		copy(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Copy(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ("Скопировать");
+			(obj.click) = (next) => ((this.copy(next)));
+			return obj;
+		}
+		clear(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Clear(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ("Очистить");
+			(obj.click) = (next) => ((this.clear(next)));
+			return obj;
+		}
+		row_theme(id){
+			return "";
+		}
+		time(id){
+			return "";
+		}
+		Time(id){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.time(id))]);
+			return obj;
+		}
+		text(id){
+			return "";
+		}
+		Text(id){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.text(id))]);
+			return obj;
+		}
+		rows(){
+			return (this.log_rows());
+		}
+		Head(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([
+				(this.Count()), 
+				(this.Copy()), 
+				(this.Clear())
+			]);
+			return obj;
+		}
+		Row(id){
+			const obj = new this.$.$mol_view();
+			(obj.attr) = () => ({"mol_theme": (this.row_theme(id))});
+			(obj.sub) = () => ([(this.Time(id)), (this.Text(id))]);
+			return obj;
+		}
+		Empty(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => (["Пока пусто. Понажимай в приложении — записи появятся здесь."]);
+			return obj;
+		}
+	};
+	($mol_mem(($.$bog_music_log_view.prototype), "Count"));
+	($mol_mem(($.$bog_music_log_view.prototype), "copy"));
+	($mol_mem(($.$bog_music_log_view.prototype), "Copy"));
+	($mol_mem(($.$bog_music_log_view.prototype), "clear"));
+	($mol_mem(($.$bog_music_log_view.prototype), "Clear"));
+	($mol_mem_key(($.$bog_music_log_view.prototype), "Time"));
+	($mol_mem_key(($.$bog_music_log_view.prototype), "Text"));
+	($mol_mem(($.$bog_music_log_view.prototype), "Head"));
+	($mol_mem_key(($.$bog_music_log_view.prototype), "Row"));
+	($mol_mem(($.$bog_music_log_view.prototype), "Empty"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $bog_music_log_view extends $.$bog_music_log_view {
+            /**
+             * Свежие записи сверху. Данные лежат в обычном массиве, поэтому
+             * подписаться на них нельзя — перечитываем раз в секунду по таймеру.
+             */
+            records() {
+                this.$.$mol_state_time.now(1000);
+                return [...$bog_music_log.records].reverse();
+            }
+            log_rows() {
+                const records = this.records();
+                if (!records.length)
+                    return [this.Head(), this.Empty()];
+                return [this.Head(), ...records.map((_, index) => this.Row(index))];
+            }
+            count_label() {
+                const records = this.records();
+                const errors = records.filter(rec => rec.kind === 'err').length;
+                return errors
+                    ? `${records.length} записей, из них ошибок ${errors}`
+                    : `${records.length} записей`;
+            }
+            record(index) {
+                return this.records()[index];
+            }
+            time(index) {
+                const rec = this.record(index);
+                return rec ? new Date(rec.time).toISOString().slice(11, 19) : '';
+            }
+            text(index) {
+                return this.record(index)?.text ?? '';
+            }
+            /** Ошибки подсвечиваем темой, чтобы находить их взглядом. */
+            row_theme(index) {
+                return this.record(index)?.kind === 'err' ? '$mol_theme_special' : '$mol_theme_base';
+            }
+            copy() {
+                this.$.$mol_dom_context.navigator.clipboard.writeText($bog_music_log.dump());
+                $bog_music_log.act('журнал скопирован');
+                return null;
+            }
+            clear() {
+                $bog_music_log.clear();
+                return null;
+            }
+        }
+        __decorate([
+            $mol_action
+        ], $bog_music_log_view.prototype, "copy", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_log_view.prototype, "clear", null);
+        $$.$bog_music_log_view = $bog_music_log_view;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /**
      * Рабочий baza-master экосистемы bog. Bundled seed (giper/baza peer.baza)
      * может указывать на недоступный хост — добавляем актуальный явно,
      * чтобы виджет фидбека работал в любом приложении без своего boot-кода.
@@ -24371,6 +24581,42 @@ var $;
 
 
 ;
+	($.$mol_icon_text) = class $mol_icon_text extends ($.$mol_icon) {
+		path(){
+			return "M21,6V8H3V6H21M3,18H12V16H3V18M3,13H21V11H3V13Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_text_box) = class $mol_icon_text_box extends ($.$mol_icon) {
+		path(){
+			return "M14,17H7V15H14M17,13H7V11H17M17,9H7V7H17M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_text_box_outline) = class $mol_icon_text_box_outline extends ($.$mol_icon) {
+		path(){
+			return "M5,3C3.89,3 3,3.89 3,5V19C3,20.11 3.89,21 5,21H19C20.11,21 21,20.11 21,19V5C21,3.89 20.11,3 19,3H5M5,5H19V19H5V5M7,7V9H17V7H7M7,11V13H17V11H7M7,15V17H14V15H7Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
 	($.$mol_icon_chat) = class $mol_icon_chat extends ($.$mol_icon) {
 		path(){
 			return "M12,3C17.5,3 22,6.58 22,11C22,15.42 17.5,19 12,19C10.76,19 9.57,18.82 8.47,18.5C5.55,21 2,21 2,21C4.33,18.67 4.7,17.1 4.75,16.5C3.05,15.07 2,13.13 2,11C2,6.58 6.5,3 12,3Z";
@@ -24441,6 +24687,25 @@ var $;
 			(obj.click) = (next) => ((this.account_click(next)));
 			return obj;
 		}
+		logs_active(){
+			return "off";
+		}
+		Logs_icon(){
+			const obj = new this.$.$mol_icon_text_box_outline();
+			return obj;
+		}
+		logs_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Tab_logs(){
+			const obj = new this.$.$bog_music_nav_item();
+			(obj.label) = () => ("Логи");
+			(obj.active) = () => ((this.logs_active()));
+			(obj.Icon) = () => ((this.Logs_icon()));
+			(obj.click) = (next) => ((this.logs_click(next)));
+			return obj;
+		}
 		feedback_active(){
 			return "off";
 		}
@@ -24469,6 +24734,7 @@ var $;
 				(this.Tab_music()), 
 				(this.Tab_search()), 
 				(this.Tab_account()), 
+				(this.Tab_logs()), 
 				(this.Tab_feedback())
 			];
 		}
@@ -24482,6 +24748,9 @@ var $;
 	($mol_mem(($.$bog_music_nav.prototype), "Account_icon"));
 	($mol_mem(($.$bog_music_nav.prototype), "account_click"));
 	($mol_mem(($.$bog_music_nav.prototype), "Tab_account"));
+	($mol_mem(($.$bog_music_nav.prototype), "Logs_icon"));
+	($mol_mem(($.$bog_music_nav.prototype), "logs_click"));
+	($mol_mem(($.$bog_music_nav.prototype), "Tab_logs"));
 	($mol_mem(($.$bog_music_nav.prototype), "Feedback_icon"));
 	($mol_mem(($.$bog_music_nav.prototype), "feedback_click"));
 	($mol_mem(($.$bog_music_nav.prototype), "Tab_feedback"));
@@ -24521,6 +24790,30 @@ var $;
                 this.section('account');
                 return null;
             }
+            logs_active() { return this.section() === 'logs' ? 'on' : 'off'; }
+            /**
+             * Вкладка журнала — только для владельца приложения. Сравнивается
+             * публичный идентификатор личности, а не ключ: ключ в коде держать
+             * нельзя, он даёт полный доступ к аккаунту.
+             */
+            static owner_lord = 'rkya36Pg_4GhW4PYB';
+            Tab_logs() {
+                try {
+                    const self = this.$.$giper_baza_auth.current().pass().lord().str;
+                    if (self !== $bog_music_nav.owner_lord)
+                        return null;
+                }
+                catch (error) {
+                    return null;
+                }
+                return super.Tab_logs();
+            }
+            logs_click(e) {
+                if (e)
+                    e.preventDefault();
+                this.section('logs');
+                return null;
+            }
             /** Отзывы пока скрыты: форма не работает. Вернуть — удалить override. */
             Tab_feedback() {
                 return null;
@@ -24541,6 +24834,9 @@ var $;
         __decorate([
             $mol_action
         ], $bog_music_nav.prototype, "account_click", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_nav.prototype, "logs_click", null);
         __decorate([
             $mol_action
         ], $bog_music_nav.prototype, "feedback_click", null);
@@ -24686,6 +24982,10 @@ var $;
 			(obj.fm_button) = () => ((this.fm_button()));
 			(obj.fm_status) = () => ((this.fm_status()));
 			(obj.fm_link) = (next) => ((this.fm_link(next)));
+			return obj;
+		}
+		Logs(){
+			const obj = new this.$.$bog_music_log_view();
 			return obj;
 		}
 		Feedback(){
@@ -24867,6 +25167,7 @@ var $;
 		body(){
 			return [
 				(this.Account()), 
+				(this.Logs()), 
 				(this.Feedback()), 
 				(this.Share_toast()), 
 				(this.Tabs()), 
@@ -24898,6 +25199,7 @@ var $;
 	($mol_mem(($.$bog_music_app.prototype), "tg_link"));
 	($mol_mem(($.$bog_music_app.prototype), "fm_link"));
 	($mol_mem(($.$bog_music_app.prototype), "Account"));
+	($mol_mem(($.$bog_music_app.prototype), "Logs"));
 	($mol_mem(($.$bog_music_app.prototype), "Feedback"));
 	($mol_mem(($.$bog_music_app.prototype), "Share_toast"));
 	($mol_mem(($.$bog_music_app.prototype), "page"));
@@ -24938,6 +25240,8 @@ var $;
         static init() {
             if (typeof location === 'undefined')
                 return;
+            $bog_music_log.init();
+            $bog_music_log.act('запуск приложения');
             this.bridge_vk_token();
             this.import_account_hash();
             this.parse_share_hash();
@@ -26153,7 +26457,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.36';
+    $.$bog_music_version = 'v1.38';
 })($ || ($ = {}));
 
 ;
@@ -26246,6 +26550,7 @@ var $;
             play_key(key) {
                 if (!key)
                     return;
+                $bog_music_log.act(`воспроизведение ${key}`);
                 const keys = this.visible_keys();
                 const idx = keys.indexOf(key);
                 this.Player().queue_index(idx >= 0 ? idx : 0);
@@ -26323,6 +26628,7 @@ var $;
             // =====================================================================
             upload_files(next) {
                 if (next?.length) {
+                    $bog_music_log.act(`загрузка с устройства: ${next.length} файл(ов)`);
                     for (const file of next) {
                         const buffer = new Uint8Array($mol_wire_sync(file).arrayBuffer());
                         this.account().save_local_track(file, buffer);
@@ -26348,6 +26654,7 @@ var $;
             }
             /** Кнопка в аккаунте: extension качает с VK в baza, PWA отдаёт zip. */
             download_playlist() {
+                $bog_music_log.act('скачивание плейлиста');
                 $mol_wire_async(this).download_playlist_async();
             }
             async download_playlist_async() {
@@ -26465,6 +26772,7 @@ var $;
             }
             body() {
                 switch (this.section()) {
+                    case 'logs': return [this.Logs()];
                     case 'account': return [this.Account()];
                     case 'feedback': return [this.Feedback()];
                     case 'search': return [this.Tube_bar(), this.Tube_list()];
@@ -26542,6 +26850,7 @@ var $;
                 const item = this.tube_item(index);
                 if (!item)
                     return;
+                $bog_music_log.act(`скачивание с YouTube: ${item.title ?? index}`);
                 $mol_wire_async(this).tube_download(index, item);
             }
             async tube_download(index, item) {
