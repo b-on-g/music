@@ -21,7 +21,7 @@ $bog_music_account $mol_view
 						<= Lord $mol_view
 							sub /
 								\ЛК:
-								<= Lord_text $mol_view sub / <= lord_short \
+								<= Lord_text $mol_view sub / <= lord_text \
 				<= Telegram $mol_view
 					sub /
 						<= Tg_title $mol_paragraph

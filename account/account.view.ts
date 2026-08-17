@@ -11,10 +11,10 @@ namespace $.$$ {
 		}
 
 		@$mol_mem
-		lord_short() {
+		lord_text() {
 			const auth = this.$.$giper_baza_auth.current()
 			if (!auth) return '—'
-			return auth.pass().lord().str.slice(0, 8) + '…'
+			return auth.pass().lord().str
 		}
 
 		// download_playlist? и download_playlist_status прибиндены в app.view.tree

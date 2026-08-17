@@ -63,6 +63,14 @@ namespace $.$$ {
 			gap: '0.5rem',
 		},
 
+		// Идентификатор печатается целиком, поэтому строке нужно разрешить
+		// перенос: без minWidth флекс-элемент не сжимается и вылезает за край.
+		Lord_text: {
+			minWidth: 0,
+			overflowWrap: 'anywhere',
+			userSelect: 'text',
+		},
+
 		Telegram: {
 			flex: { direction: 'column' },
 			background: { color: $mol_theme.card },
