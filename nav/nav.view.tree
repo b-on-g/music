@@ -16,6 +16,11 @@ $bog_music_nav $mol_view
 			active <= account_active \off
 			Icon <= Account_icon $mol_icon_account_circle
 			click? <=> account_click? null
+		<= Tab_logs $bog_music_nav_item
+			label \Логи
+			active <= logs_active \off
+			Icon <= Logs_icon $mol_icon_text_box_outline
+			click? <=> logs_click? null
 		<= Tab_feedback $bog_music_nav_item
 			label \Отзывы
 			active <= feedback_active \off

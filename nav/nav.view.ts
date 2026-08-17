@@ -28,6 +28,32 @@ namespace $.$$ {
 			return null
 		}
 
+		logs_active() { return this.section() === 'logs' ? 'on' : 'off' }
+
+		/**
+		 * Вкладка журнала — только для владельца приложения. Сравнивается
+		 * публичный идентификатор личности, а не ключ: ключ в коде держать
+		 * нельзя, он даёт полный доступ к аккаунту.
+		 */
+		static owner_lord = 'rkya36Pg_4GhW4PYB'
+
+		Tab_logs() {
+			try {
+				const self = this.$.$giper_baza_auth.current().pass().lord().str
+				if( self !== $bog_music_nav.owner_lord ) return null as any
+			} catch( error ) {
+				return null as any
+			}
+			return super.Tab_logs()
+		}
+
+		@$mol_action
+		logs_click(e?: Event) {
+			if (e) e.preventDefault()
+			this.section('logs')
+			return null
+		}
+
 		/** Отзывы пока скрыты: форма не работает. Вернуть — удалить override. */
 		Tab_feedback() {
 			return null as any

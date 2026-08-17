@@ -94,6 +94,7 @@ namespace $.$$ {
 		@$mol_action
 		play_key(key?: string | null) {
 			if (!key) return
+			$bog_music_log.act(`воспроизведение ${key}`)
 			const keys = this.visible_keys()
 			const idx = keys.indexOf(key)
 			this.Player().queue_index(idx >= 0 ? idx : 0)
@@ -175,6 +176,7 @@ namespace $.$$ {
 		@$mol_mem
 		upload_files(next?: File[]) {
 			if (next?.length) {
+				$bog_music_log.act(`загрузка с устройства: ${next.length} файл(ов)`)
 				for (const file of next) {
 					const buffer = new Uint8Array(($mol_wire_sync(file) as any).arrayBuffer())
 					this.account().save_local_track(file, buffer)
@@ -207,6 +209,7 @@ namespace $.$$ {
 		/** Кнопка в аккаунте: extension качает с VK в baza, PWA отдаёт zip. */
 		@$mol_action
 		download_playlist() {
+			$bog_music_log.act('скачивание плейлиста')
 			$mol_wire_async(this).download_playlist_async()
 		}
 
@@ -326,6 +329,7 @@ namespace $.$$ {
 
 		body() {
 			switch (this.section()) {
+				case 'logs': return [this.Logs()]
 				case 'account': return [this.Account()]
 				case 'feedback': return [this.Feedback()]
 				case 'search': return [this.Tube_bar(), this.Tube_list()]
@@ -424,6 +428,7 @@ namespace $.$$ {
 		tube_get(index: number) {
 			const item = this.tube_item(index)
 			if (!item) return
+			$bog_music_log.act(`скачивание с YouTube: ${item.title ?? index}`)
 			;($mol_wire_async(this) as any).tube_download(index, item)
 		}
 

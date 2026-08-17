@@ -12,6 +12,8 @@ namespace $ {
 
 		static init() {
 			if (typeof location === 'undefined') return
+			$bog_music_log.init()
+			$bog_music_log.act('запуск приложения')
 			this.bridge_vk_token()
 			this.import_account_hash()
 			this.parse_share_hash()
