@@ -61055,7 +61055,7 @@ declare namespace $ {
 		nickname( next?: string ): string
 		Nickname_input( ): $mol_string
 		Nickname_field( ): $mol_form_field
-		lord_short( ): string
+		lord_text( ): string
 		Lord_text( ): $mol_view
 		Lord( ): $mol_view
 		Profile( ): $mol_view
@@ -61110,7 +61110,7 @@ declare namespace $.$$ {
     class $bog_music_account extends $.$bog_music_account {
         account(): $bog_music_account_baza;
         nickname(next?: string): string;
-        lord_short(): string;
+        lord_text(): string;
         download_playlist_label(): string;
         download_playlist_hint(): string;
         account_key(): string;

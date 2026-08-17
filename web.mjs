@@ -33875,7 +33875,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.39';
+    $.$bog_music_version = 'v1.40';
 })($ || ($ = {}));
 
 ;
@@ -35069,12 +35069,12 @@ var $;
 			(obj.Content) = () => ((this.Nickname_input()));
 			return obj;
 		}
-		lord_short(){
+		lord_text(){
 			return "";
 		}
 		Lord_text(){
 			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.lord_short())]);
+			(obj.sub) = () => ([(this.lord_text())]);
 			return obj;
 		}
 		Lord(){
@@ -36113,11 +36113,11 @@ var $;
             nickname(next) {
                 return this.account().nickname(next);
             }
-            lord_short() {
+            lord_text() {
                 const auth = this.$.$giper_baza_auth.current();
                 if (!auth)
                     return '—';
-                return auth.pass().lord().str.slice(0, 8) + '…';
+                return auth.pass().lord().str;
             }
             // download_playlist? и download_playlist_status прибиндены в app.view.tree
             // — логика скачивания живёт в $bog_music_app.
@@ -36208,7 +36208,7 @@ var $;
         }
         __decorate([
             $mol_mem
-        ], $bog_music_account.prototype, "lord_short", null);
+        ], $bog_music_account.prototype, "lord_text", null);
         __decorate([
             $mol_mem
         ], $bog_music_account.prototype, "copy_status", null);
@@ -36622,6 +36622,13 @@ var $;
                 alignItems: 'baseline',
                 padding: { top: '0.25rem', bottom: '0.25rem' },
                 gap: '0.5rem',
+            },
+            // Идентификатор печатается целиком, поэтому строке нужно разрешить
+            // перенос: без minWidth флекс-элемент не сжимается и вылезает за край.
+            Lord_text: {
+                minWidth: 0,
+                overflowWrap: 'anywhere',
+                userSelect: 'text',
             },
             Telegram: {
                 flex: { direction: 'column' },
