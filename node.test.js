@@ -26460,7 +26460,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.40';
+    $.$bog_music_version = 'v1.41';
 })($ || ($ = {}));
 
 ;
@@ -26632,10 +26632,11 @@ var $;
             upload_files(next) {
                 if (next?.length) {
                     $bog_music_log.act(`загрузка с устройства: ${next.length} файл(ов)`);
-                    for (const file of next) {
+                    const files = [...next].sort((a, b) => a.name.localeCompare(b.name, 'ru', { numeric: true }));
+                    files.forEach((file, index) => {
                         const buffer = new Uint8Array($mol_wire_sync(file).arrayBuffer());
-                        this.account().save_local_track(file, buffer);
-                    }
+                        this.account().save_local_track(file, buffer, index + 1);
+                    });
                 }
                 return next ?? [];
             }
@@ -29079,14 +29080,17 @@ var $;
             this.save_blob(audio, buffer, mime);
         }
         /** Загрузка локального файла с устройства. */
-        save_local_track(file, buffer) {
-            const { artist, title } = $bog_music_account_baza.parse_filename(file.name);
+        save_local_track(file, buffer, order) {
+            const { artist, title, order: parsed_order } = $bog_music_account_baza.parse_filename(file.name);
             const id = $bog_music_account_baza.hash_str(`${file.name}|${file.size}|${file.lastModified}`);
             const audio = { id, owner_id: 0, artist, title, duration: 0, url: '' };
             this.save_track(audio);
             const track = this.tracks().key($bog_music_account_baza.key_of(audio), 'auto');
             if (!track)
                 return null;
+            const want_order = parsed_order ?? order;
+            if (want_order != null)
+                track.order_set(want_order);
             if (track.Playlist()?.val() == null)
                 track.Playlist('auto').val('');
             const store = track.File('auto').ensure([]);
@@ -29160,11 +29164,17 @@ var $;
         }
         // ---------- утилиты ----------
         static parse_filename(name) {
-            const base = name.replace(/\.[^.]+$/, '').trim();
+            let base = name.replace(/\.[^.]+$/, '').trim();
+            let order = null;
+            const numbered = base.match(/^(\d{1,4})\s*[-–—]\s*(.+)$/);
+            if (numbered) {
+                order = Number(numbered[1]);
+                base = numbered[2].trim();
+            }
             const m = base.match(/^(.+?)\s*[-–—]\s*(.+)$/);
             if (m)
-                return { artist: m[1].trim(), title: m[2].trim() };
-            return { artist: '', title: base };
+                return { artist: m[1].trim(), title: m[2].trim(), order };
+            return { artist: '', title: base, order };
         }
         /** Детерминированный hash (FNV-1a 32 bit) — id локальных файлов. */
         static hash_str(s) {

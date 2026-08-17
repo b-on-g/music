@@ -58789,7 +58789,7 @@ declare namespace $ {
         /** Метаданные + blob + плейлист одним действием (одна фибра снаружи). */
         import_audio(audio: $bog_music_api_audio, buffer: Uint8Array, mime: string, playlist?: string): void;
         /** Загрузка локального файла с устройства. */
-        save_local_track(file: File, buffer: Uint8Array): $bog_music_api_audio | null;
+        save_local_track(file: File, buffer: Uint8Array, order?: number): $bog_music_api_audio | null;
         swap_order(key_a: string, key_b: string): void;
         move_to_playlist(key: string, playlist: string): void;
         delete_track(key: string): void;
@@ -58807,6 +58807,7 @@ declare namespace $ {
         static parse_filename(name: string): {
             artist: string;
             title: string;
+            order: number | null;
         };
         /** Детерминированный hash (FNV-1a 32 bit) — id локальных файлов. */
         static hash_str(s: string): number;
