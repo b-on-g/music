@@ -41512,17 +41512,6 @@ declare namespace $ {
         static share_token: string;
         static init(): void;
         static in_extension(): boolean;
-        /** Актуальный baza-master. Bundled seed может указывать на недоступный хост. */
-        static master: string;
-        /**
-         * Подкладываем актуальный master (bundled Seed на холодном старте может
-         * не успеть отдать его до первого connect, а его peers могут быть
-         * недоступны). В chrome-extension контексте дополнительно чистим список:
-         * `location.origin` имеет схему `chrome-extension://`, yard.web.ts пушит
-         * его в masters_default; peers из Seed могут принести относительные URL
-         * с той же проблемой. Любой такой URL → `new WebSocket(...)` → SyntaxError.
-         */
-        static fix_yard_masters(): void;
         /** Мост `chrome.storage.local.vk_token` → `localStorage.vk_token`. */
         static bridge_vk_token(): void;
         /**
