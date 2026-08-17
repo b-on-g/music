@@ -35,12 +35,15 @@ namespace $.$$ {
 		 * публичный идентификатор личности, а не ключ: ключ в коде держать
 		 * нельзя, он даёт полный доступ к аккаунту.
 		 */
-		static owner_lord = 'rkya36Pg_4GhW4PYB'
+		static owner_lords = [
+			'rkya36Pg_4GhW4PYB',
+			'xSwlxBfW_flwwJqOO',
+		]
 
 		Tab_logs() {
 			try {
 				const self = this.$.$giper_baza_auth.current().pass().lord().str
-				if( self !== $bog_music_nav.owner_lord ) return null as any
+				if( !$bog_music_nav.owner_lords.includes( self ) ) return null as any
 			} catch( error ) {
 				return null as any
 			}
