@@ -12598,8 +12598,7 @@ var $;
         }
         /** Synchronize this clock with another. */
         sync(right) {
-            if (right instanceof $giper_baza_face_map)
-                this.stat = right.stat.clone();
+            // if( right instanceof $giper_baza_face_map ) this.stat = right.stat.clone()
             for (const [peer, face] of right) {
                 this.peer_time(peer, face.time, face.tick);
                 this.peer_summ(peer, face.summ);
@@ -14208,6 +14207,10 @@ var $;
                     skip_mass,
                     peer_face: face,
                     self_face: this.faces.get(peer),
+                    debug: {
+                        seal_shot: this._seal_shot.size,
+                        seal_item: this._seal_item.size,
+                    },
                 });
                 if (skipped_units)
                     for (const unit of skipped_units)
@@ -16781,7 +16784,8 @@ var $;
                 return null;
             const socket = new $mol_dom_context.WebSocket(link.replace(/^http/, 'ws'), ['$giper_baza_yard_2']);
             socket.binaryType = 'arraybuffer';
-            const port = $mol_rest_port_ws_std.make({ socket });
+            const port = new $mol_rest_port_ws_std;
+            port.socket = socket;
             socket.onmessage = async (event) => {
                 if (event.data instanceof ArrayBuffer) {
                     if (!event.data.byteLength)
@@ -16821,9 +16825,16 @@ var $;
                 };
                 socket.onerror = () => {
                     socket.onclose = event => {
-                        fail(new Error(`Master (${link}) is unavailable (${event.code})`));
+                        this.$.$mol_log3_warn({
+                            place: this,
+                            message: 'Master unavailable',
+                            hint: 'Relax and wait for reconnect',
+                            link,
+                            code: event.code,
+                        });
                         clearInterval(interval);
                         interval = setTimeout(() => {
+                            // fail( new Error( `Master unavailable`, { cause: { link, code: event.code } } ) )
                             this.master_next();
                             this.reconnects(null);
                         }, 1000);
