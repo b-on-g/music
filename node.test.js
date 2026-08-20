@@ -2338,7 +2338,7 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    $.$mol_dom_context = new $node.jsdom.JSDOM('', { url: 'https://localhost/' }).window;
+    $.$mol_dom_context = new $node.jsdom.JSDOM('', { url: `http://${process.env.DOMAIN || 'localhost'}/` }).window;
 })($ || ($ = {}));
 
 ;
@@ -11421,6 +11421,16 @@ var $;
 "use strict";
 var $;
 (function ($) {
+    function $giper_baza_log() {
+        return this.$mol_state_arg.value('giper_baza_log') !== null;
+    }
+    $.$giper_baza_log = $giper_baza_log;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
     let $giper_baza_slot_kind;
     (function ($giper_baza_slot_kind) {
         /** Free Unit Slot */
@@ -12617,10 +12627,12 @@ var $;
         }
         /** Update Summ for Peer. */
         peer_summ(peer, summ) {
-            this.stat.sync_summ(summ);
-            let prev = this.get(peer);
+            const prev = this.get(peer);
+            this.stat.summ = (this.stat.summ ?? 0) + summ - (prev?.summ ?? 0);
+            if (this.stat.summ < 0)
+                $mol_fail(new Error('Negative summ'));
             if (prev)
-                prev.sync_summ(summ);
+                prev.summ = summ;
             else
                 this.set(peer, new $giper_baza_face(0, 0, summ));
         }
@@ -13836,16 +13848,6 @@ var $;
         }
     }
     $.$mol_bus = $mol_bus;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    function $giper_baza_log() {
-        return this.$mol_state_arg.value('giper_baza_log') !== null;
-    }
-    $.$giper_baza_log = $giper_baza_log;
 })($ || ($ = {}));
 
 ;
@@ -16825,13 +16827,14 @@ var $;
                 };
                 socket.onerror = () => {
                     socket.onclose = event => {
-                        this.$.$mol_log3_warn({
-                            place: this,
-                            message: 'Master unavailable',
-                            hint: 'Relax and wait for reconnect',
-                            link,
-                            code: event.code,
-                        });
+                        if (this.$.$giper_baza_log())
+                            this.$.$mol_log3_warn({
+                                place: this,
+                                message: 'Master unavailable',
+                                hint: 'Relax and wait for reconnect',
+                                link,
+                                code: event.code,
+                            });
                         clearInterval(interval);
                         interval = setTimeout(() => {
                             // fail( new Error( `Master unavailable`, { cause: { link, code: event.code } } ) )

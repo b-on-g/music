@@ -4298,6 +4298,10 @@ declare namespace $ {
 }
 
 declare namespace $ {
+    function $giper_baza_log(this: $): boolean;
+}
+
+declare namespace $ {
     enum $giper_baza_slot_kind {
         /** Free Unit Slot */
         free = 0,
@@ -5058,10 +5062,6 @@ declare namespace $ {
         destructor(): void;
         send(data: Data): void;
     }
-}
-
-declare namespace $ {
-    function $giper_baza_log(this: $): boolean;
 }
 
 declare namespace $ {
