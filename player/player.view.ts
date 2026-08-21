@@ -221,7 +221,16 @@ namespace $.$$ {
 		 * ушёл бы в тишину.
 		 */
 		private gain_chain_unlock() {
-			if (this._gain_dead || !this.normalize()) return
+			if (this._gain_dead) return
+			// Эквалайзер живёт в том же графе, что и выравнивание: включён любой
+			// из двух — цепочка нужна.
+			//
+			// Смотрим на _eq_on, а не на eq_on(): тот читает baza и может
+			// подвиснуть на несинхронизированном ленде. Сюда заходят из клика,
+			// а клик — единственный момент, когда WebAudio разрешено будить;
+			// подвиснуть здесь значит доехать до resume уже вне жеста, и на iOS
+			// это тишина до конца сессии.
+			if (!this.normalize() && !this._eq_on) return
 			if (this._gain_ready) { this.gain_resume(); return }
 			try {
 				if (!this._gain_ctx) {
@@ -259,13 +268,34 @@ namespace $.$$ {
 				limiter.ratio.value = 20
 				limiter.attack.value = 0.003
 				limiter.release.value = 0.25
-				src.connect(gain)
+				// Полосы эквалайзера — ДО гейна, чтобы лимитер остался последним:
+				// поднятый на +12 dB бас вылезает за 0 dBFS ровно так же, как
+				// поднятая тихая запись, и срезает их один и тот же лимитер.
+				// Узлы стоят в графе всегда; выключенный эквалайзер — это все
+				// полосы в нуле, а не выдернутые узлы: createMediaElementSource
+				// необратим, разбирать цепочку обратно всё равно нечем.
+				const eq = $bog_music_eq.bands.map(band => {
+					const node = ctx.createBiquadFilter()
+					node.type = band.type
+					node.frequency.value = band.freq
+					node.Q.value = $bog_music_eq.q
+					node.gain.value = 0
+					return node
+				})
+				let tail: AudioNode = src
+				for (const node of eq) {
+					tail.connect(node)
+					tail = node
+				}
+				tail.connect(gain)
 				gain.connect(limiter)
 				limiter.connect(ctx.destination)
+				this._eq_nodes = eq
 				this._gain_node = gain
 				this._gain_ready = true
 				this.audio_el().volume = 1 // дальше громкостью рулит только гейн
 				this.gain_push()
+				this.eq_push()
 				this.setup_gain_wake()
 			} catch (e: any) {
 				this._gain_dead = true
@@ -790,22 +820,21 @@ namespace $.$$ {
 			const pop = this.Volume()
 			const showed = pop.showed()
 			pop.showed(!showed)
-			if (!showed) this.setup_volume_dismiss()
+			if (!showed) this.setup_pop_dismiss(pop)
 			return null
 		}
 
-		private _volume_dismiss_set = false
+		private _dismiss_pops = new Set<$.$mol_pop>()
 
 		/**
 		 * Тап мимо панели закрывает её. Сам $mol_pop закрывается, только когда
 		 * фокус уезжает на другой фокусируемый элемент, а тап по пустому месту
 		 * фокус никуда не переносит — панель висела бы на экране.
 		 */
-		private setup_volume_dismiss() {
-			if (this._volume_dismiss_set) return
-			this._volume_dismiss_set = true
+		private setup_pop_dismiss(pop: $.$mol_pop) {
+			if (this._dismiss_pops.has(pop)) return
+			this._dismiss_pops.add(pop)
 			window.addEventListener('pointerdown', event => {
-				const pop = this.Volume()
 				if (!pop.showed()) return
 				const target = event.target as Node | null
 				if (!target) return
@@ -852,6 +881,193 @@ namespace $.$$ {
 
 		volume_fill_height() {
 			return `${Math.round(this.volume() * 100)}%`
+		}
+
+		// ---------- эквалайзер ----------
+		// Полосы стоят в общем тракте, между источником и гейном (см. gain_wire).
+		// Настройки лежат в аккаунте, а не в localStorage: кривую выставляют один
+		// раз и ждут её же на другом устройстве.
+		//
+		// Ни eq_on, ни eq_gains не мемоизируем. Запись в @$mol_mem замораживает
+		// его зависимости — настройка, приехавшая синком с телефона, до открытого
+		// ноутбука бы уже не дошла. Реактивность даёт сам baza-атом: его читает
+		// тот атом, который вызвал эти методы.
+
+		private _eq_nodes: BiquadFilterNode[] = []
+		private _eq_last: number[] = $bog_music_eq.flat()
+		/** Последнее известное «включён» — снимок для путей, где нельзя виснуть. */
+		private _eq_on = false
+
+		eq_on(next?: boolean): boolean {
+			if (next === undefined) {
+				const on = this.account().eq_on()
+				this._eq_on = on
+				return on
+			}
+			this._eq_on = next
+			this.account().save_eq_on(next)
+			// Клик по тумблеру — юзер-жест, единственный момент, когда WebAudio
+			// разрешено будить. Поднимаем цепочку прямо здесь: при выключенной
+			// автогромкости её до сих пор могло не быть вовсе.
+			if (next) this.gain_chain_unlock()
+			return next
+		}
+
+		/**
+		 * Полосы, пока ползунок в руке. В baza пишем один раз на перетаскивание,
+		 * а не на каждый pointermove: иначе каждое движение пальца улетало бы в
+		 * ленд отдельной правкой.
+		 */
+		@$mol_mem
+		private eq_draft(next?: number[] | null) {
+			return next ?? null
+		}
+
+		/** Черновик перетаскивания либо сохранённое в аккаунте. */
+		eq_gains(): number[] {
+			return this.eq_draft() ?? this.account().eq_gains()
+		}
+
+		/** Панель эквалайзера — только для своего <audio>; в offscreen её нет. */
+		Eq() {
+			if (this.is_extension()) return null as any
+			return super.Eq()
+		}
+
+		eq_pop_toggle() {
+			const pop = this.Eq()
+			const showed = pop.showed()
+			pop.showed(!showed)
+			if (!showed) this.setup_pop_dismiss(pop)
+			return null
+		}
+
+		eq_band_list() {
+			return $bog_music_eq.bands.map((_, index) => this.Eq_band(index))
+		}
+
+		eq_freq_text(index: number) {
+			return $bog_music_eq.bands[index].title
+		}
+
+		eq_db_text(index: number) {
+			const db = this.eq_gains()[index]
+			return db > 0 ? `+${db}` : `${db}`
+		}
+
+		// Заливка растёт от середины дорожки: середина — это 0 dB, а не тишина,
+		// как у громкости.
+
+		eq_fill_top(index: number) {
+			const db = this.eq_gains()[index]
+			return `${50 - Math.max(0, db) / $bog_music_eq.range_db * 50}%`
+		}
+
+		eq_fill_height(index: number) {
+			const db = this.eq_gains()[index]
+			return `${Math.abs(db) / $bog_music_eq.range_db * 50}%`
+		}
+
+		eq_preset_options() {
+			const options = {} as Record<string, string>
+			for (const preset of $bog_music_eq.presets) options[preset.id] = preset.title
+			return options
+		}
+
+		eq_preset(next?: string): string {
+			if (next === undefined) return $bog_music_eq.preset_of(this.eq_gains())
+			const gains = $bog_music_eq.preset(next)
+			// Повторный клик по выбранному пресету $mol_switch отдаёт как '':
+			// снимать выбор нечем, полосы остаются как были.
+			if (!gains) return $bog_music_eq.preset_of(this.eq_gains())
+			this.eq_apply(gains)
+			return next
+		}
+
+		eq_reset() {
+			this.eq_apply($bog_music_eq.flat())
+			return null
+		}
+
+		/** Выставить полосы: в аккаунт, черновик прочь. */
+		@$mol_action
+		private eq_apply(gains: number[]) {
+			this.account().save_eq_gains(gains)
+			this.eq_draft(null)
+			// Тронули полосы при выключенном эквалайзере — включаем: иначе
+			// ползунок ездит, а звук не меняется, и это читается как поломка.
+			if (!this.eq_on() && $bog_music_eq.preset_of(gains) !== 'flat') this.eq_on(true)
+		}
+
+		// ---------- полосы (drag по вертикальным слайдерам) ----------
+
+		private _eq_dragging = -1
+
+		private eq_db_from_event(event: PointerEvent): number {
+			const target = event.currentTarget as HTMLElement
+			const rect = target.getBoundingClientRect()
+			const part = 1 - (event.clientY - rect.top) / rect.height // 0 — низ, 1 — верх
+			const range = $bog_music_eq.range_db
+			return Math.round(Math.max(-range, Math.min(range, (part * 2 - 1) * range)))
+		}
+
+		private eq_drag_to(index: number, event: PointerEvent) {
+			const gains = this.eq_gains().slice()
+			gains[index] = this.eq_db_from_event(event)
+			this.eq_draft(gains)
+		}
+
+		eq_pointer_down(index: number, event?: Event) {
+			if (!event) return null
+			const e = event as PointerEvent
+			try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId) } catch {}
+			this._eq_dragging = index
+			this.eq_drag_to(index, e)
+			e.preventDefault()
+			return null
+		}
+
+		eq_pointer_move(index: number, event?: Event) {
+			if (!event || this._eq_dragging !== index) return null
+			this.eq_drag_to(index, event as PointerEvent)
+			return null
+		}
+
+		eq_pointer_up(index: number, event?: Event) {
+			if (!event) return null
+			const e = event as PointerEvent
+			try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId) } catch {}
+			if (this._eq_dragging !== index) return null
+			this._eq_dragging = -1
+			const gains = this.eq_draft()
+			if (gains) this.eq_apply(gains)
+			// Панель не закрываем, в отличие от громкости: полос пять, их крутят
+			// подряд, и захлопнуться после первой же было бы издевательством.
+			return null
+		}
+
+		/** Разложить полосы по узлам. Реактивно: сработает и на синк с другого устройства. */
+		@$mol_mem
+		private apply_eq() {
+			// Заодно обновляет _eq_on — снимок для gain_chain_unlock.
+			this._eq_last = this.eq_on() ? $bog_music_eq.clamp(this.eq_gains()) : $bog_music_eq.flat()
+			this.eq_push()
+			return this._eq_last
+		}
+
+		private eq_push() {
+			const ctx = this._gain_ctx
+			if (!ctx || !this._eq_nodes.length) return
+			this._eq_last.forEach((db, index) => {
+				const node = this._eq_nodes[index]
+				if (!node) return
+				// Плавно: мгновенный скачок фильтра щёлкает так же, как скачок гейна.
+				try {
+					node.gain.setTargetAtTime(db, ctx.currentTime, 0.02)
+				} catch {
+					node.gain.value = db
+				}
+			})
 		}
 
 		// ---------- режим повтора ----------
@@ -1585,6 +1801,7 @@ namespace $.$$ {
 				this.try_restore_session()
 			}
 			this.apply_volume()
+			this.apply_eq()
 			this.apply_position_state()
 			try { this.apply_trim_start() } catch (e: any) {
 				if (e instanceof Promise) throw e

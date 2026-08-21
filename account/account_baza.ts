@@ -15,6 +15,8 @@ namespace $ {
 		Nickname: $giper_baza_atom.of( $mol_schema_string ),
 		Last_track_key: $giper_baza_atom.of( $mol_schema_string ),
 		Last_position: $giper_baza_atom.of( $mol_schema_float ),
+		Eq_on: $giper_baza_atom.of( $mol_schema_boolean ),
+		Eq_gains: $giper_baza_atom.of( $mol_schema_string ),
 		Tracks: $bog_music_tracks_dict,
 	}) {
 
@@ -262,6 +264,36 @@ namespace $ {
 		save_last_session(key: string, position: number): void {
 			this.Last_track_key('auto')!.val(key)
 			this.Last_position('auto')!.val(Math.max(0, position || 0))
+		}
+
+		// ---------- эквалайзер ----------
+
+		/**
+		 * Настройки эквалайзера едут в аккаунте, а не в localStorage: ползунки
+		 * крутят один раз и хотят их же на другом устройстве.
+		 *
+		 * Полосы лежат одной строкой, а не пятью атомами. Их правят набором —
+		 * пресетом или подгонкой кривой — и слияние двух устройств по отдельным
+		 * полосам собрало бы кривую, которой никто не выставлял; на всю строку
+		 * побеждает последняя запись, и это ровно та кривая, что человек видел.
+		 */
+		eq_gains(): number[] {
+			return $bog_music_eq.parse( this.Eq_gains()?.val() ?? '' )
+		}
+
+		/** Выключенный эквалайзер — состояние по умолчанию: звук как записан. */
+		eq_on(): boolean {
+			return this.Eq_on()?.val() ?? false
+		}
+
+		@$mol_action
+		save_eq_on( on: boolean ): void {
+			this.Eq_on( 'auto' )!.val( on )
+		}
+
+		@$mol_action
+		save_eq_gains( gains: readonly number[] ): void {
+			this.Eq_gains( 'auto' )!.val( $bog_music_eq.stringify( gains ) )
 		}
 
 		// ---------- докачка с VK ----------

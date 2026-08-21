@@ -31,6 +31,35 @@ $bog_music_player $mol_view
 								left <= trim_end_left \
 				<= Time_total $mol_paragraph
 					title <= time_total_text \
+				<= Eq $mol_pop
+					Anchor <= Eq_anchor $mol_button_minor
+						hint \Эквалайзер
+						click? <=> eq_pop_toggle? null
+						sub / <= Eq_icon $mol_icon_tune_vertical
+					bubble_content /
+						<= Eq_panel $mol_view
+							sub /
+								<= Eq_power $mol_check_icon
+									title \Эквалайзер
+									hint \Включить эквалайзер
+									Icon <= Eq_power_icon $mol_icon_tune_vertical
+									checked? <=> eq_on? false
+								<= Eq_presets $mol_switch
+									options <= eq_preset_options *
+									value? <=> eq_preset? \
+								<= Eq_bands $mol_view
+									sub <= eq_band_list /
+										<= Eq_band*0 $bog_music_eq_band
+											db_text <= eq_db_text* \
+											freq_text <= eq_freq_text* \
+											fill_top <= eq_fill_top* \
+											fill_height <= eq_fill_height* \
+											pointer_down?event <=> eq_pointer_down*?event null
+											pointer_move?event <=> eq_pointer_move*?event null
+											pointer_up?event <=> eq_pointer_up*?event null
+								<= Eq_reset $mol_button_minor
+									title \Сбросить полосы
+									click? <=> eq_reset? null
 		<= Controls $mol_view
 			sub /
 				<= Left $mol_view

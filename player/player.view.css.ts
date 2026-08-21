@@ -230,5 +230,44 @@ namespace $.$$ {
 			borderRadius: '3px',
 		},
 
+		Eq_panel: {
+			padding: {
+				top: '0.75rem',
+				bottom: '0.5rem',
+				left: '0.75rem',
+				right: '0.75rem',
+			},
+			flex: {
+				direction: 'column',
+			},
+			align: {
+				items: 'stretch',
+			},
+			gap: $mol_gap.text,
+		},
+
+		Eq_presets: {
+			flex: {
+				direction: 'row',
+				wrap: 'wrap',
+			},
+			justify: {
+				content: 'center',
+			},
+			gap: '0.25rem',
+			maxWidth: '13.5rem',
+		},
+
+		Eq_bands: {
+			flex: {
+				direction: 'row',
+				shrink: 0,
+			},
+			justify: {
+				content: 'center',
+			},
+			gap: '0.25rem',
+		},
+
 	})
 }
