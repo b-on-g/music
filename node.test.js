@@ -7681,8 +7681,18 @@ var $;
         static lang(next) {
             return this.$.$mol_state_local.value('locale', next) || $mol_dom_context.navigator.language.replace(/-.*/, '') || this.lang_default();
         }
+        static langs_rtl() {
+            return ['ar', 'he', 'fa', 'ur', 'yi', 'ps', 'ug', 'sd'];
+        }
         static direction() {
-            return new Intl.Locale(this.lang()).getTextInfo().direction ?? 'ltr';
+            const lang = this.lang();
+            try {
+                return new Intl.Locale(lang).getTextInfo().direction ?? 'ltr';
+            }
+            catch (e) {
+                $mol_fail_log(e);
+                return this.langs_rtl().includes(lang) ? 'rtl' : 'ltr';
+            }
         }
         static source(lang) {
             return JSON.parse(this.$.$mol_file.relative(`web.locale=${lang}.json`).text().toString());
@@ -26515,7 +26525,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.42';
+    $.$bog_music_version = 'v1.43';
 })($ || ($ = {}));
 
 ;
@@ -28027,6 +28037,87 @@ var $;
 
 
 ;
+"use strict";
+var $;
+(function ($) {
+    /**
+     * Пятиполосный эквалайзер. Раскладка частот — как у системного эквалайзера
+     * Android и Я.Музыки: 60 / 230 / 910 / 3600 / 14000 Гц.
+     *
+     * Крайние полосы — шельфы, а не колокола. «Добавить глубины» означает
+     * поднять весь низ до 60 Гц; колокол на 60 Гц поднял бы узкую горку и
+     * оставил самое дно нетронутым. Средние три — колокола с Q=1: примерно
+     * полторы октавы на полосу, соседние сходятся без провалов между ними.
+     */
+    class $bog_music_eq extends $mol_object {
+        static bands = [
+            { freq: 60, type: 'lowshelf', title: '60' },
+            { freq: 230, type: 'peaking', title: '230' },
+            { freq: 910, type: 'peaking', title: '910' },
+            { freq: 3600, type: 'peaking', title: '3.6K' },
+            { freq: 14000, type: 'highshelf', title: '14K' },
+        ];
+        /** Добротность колоколов. */
+        static q = 1;
+        /**
+         * Потолок полосы (dB). Тот же, что gain_max_db у автогромкости: выше
+         * лимитер на плотных миксах начинает дышать слышимо.
+         */
+        static range_db = 12;
+        /**
+         * Пресеты. Формы взяты у классических эквалайзеров и сведены с десяти
+         * полос к нашим пяти. `flat` первым — это же и состояние «выключено».
+         */
+        static presets = [
+            { id: 'flat', title: 'Плоский', gains: [0, 0, 0, 0, 0] },
+            { id: 'bass', title: 'Глубокий бас', gains: [8, 4, 0, 0, 1] },
+            { id: 'pop', title: 'Поп', gains: [-1, 4, 2, -1, -1] },
+            { id: 'rock', title: 'Рок', gains: [5, 3, -1, 2, 4] },
+            { id: 'jazz', title: 'Джаз', gains: [4, 2, -2, 0, 4] },
+            { id: 'classic', title: 'Классика', gains: [3, 0, 0, -3, -6] },
+            { id: 'vocal', title: 'Голос', gains: [-2, -1, 3, 4, 1] },
+        ];
+        /** Все полосы в нуле — сигнал проходит нетронутым. */
+        static flat() {
+            return this.bands.map(() => 0);
+        }
+        static preset(id) {
+            const found = this.presets.find(preset => preset.id === id);
+            return found ? found.gains.slice() : null;
+        }
+        /** Пресет, совпадающий с набором, или '' — значит «Свой». */
+        static preset_of(gains) {
+            const norm = this.clamp(gains);
+            const found = this.presets.find(preset => preset.gains.every((db, i) => db === norm[i]));
+            return found ? found.id : '';
+        }
+        /**
+         * Привести чужой набор к нашему: длина по числу полос, целые dB в
+         * пределах диапазона. Набор приезжает из baza и мог быть записан
+         * версией с другим числом полос — недостающие в ноль, лишние прочь.
+         */
+        static clamp(gains) {
+            return this.bands.map((_, i) => {
+                const db = Number(gains?.[i]);
+                if (!Number.isFinite(db))
+                    return 0;
+                return Math.round(Math.max(-this.range_db, Math.min(this.range_db, db)));
+            });
+        }
+        /** Набор одной строкой — так он и лежит в baza. */
+        static stringify(gains) {
+            return this.clamp(gains).join(',');
+        }
+        static parse(text) {
+            if (!text)
+                return this.flat();
+            return this.clamp(text.split(',').map(Number));
+        }
+    }
+    $.$bog_music_eq = $bog_music_eq;
+})($ || ($ = {}));
+
+;
 	($.$mol_icon_share) = class $mol_icon_share extends ($.$mol_icon) {
 		path(){
 			return "M21,12L14,5V9C7,10 4,15 3,20C5.5,16.5 9,14.9 14,14.9V19L21,12Z";
@@ -28959,6 +29050,8 @@ var $;
         Nickname: $giper_baza_atom.of($mol_schema_string),
         Last_track_key: $giper_baza_atom.of($mol_schema_string),
         Last_position: $giper_baza_atom.of($mol_schema_float),
+        Eq_on: $giper_baza_atom.of($mol_schema_boolean),
+        Eq_gains: $giper_baza_atom.of($mol_schema_string),
         Tracks: $bog_music_tracks_dict,
     }) {
         /** Модель текущего пользователя (home land). */
@@ -29206,6 +29299,29 @@ var $;
             this.Last_track_key('auto').val(key);
             this.Last_position('auto').val(Math.max(0, position || 0));
         }
+        // ---------- эквалайзер ----------
+        /**
+         * Настройки эквалайзера едут в аккаунте, а не в localStorage: ползунки
+         * крутят один раз и хотят их же на другом устройстве.
+         *
+         * Полосы лежат одной строкой, а не пятью атомами. Их правят набором —
+         * пресетом или подгонкой кривой — и слияние двух устройств по отдельным
+         * полосам собрало бы кривую, которой никто не выставлял; на всю строку
+         * побеждает последняя запись, и это ровно та кривая, что человек видел.
+         */
+        eq_gains() {
+            return $bog_music_eq.parse(this.Eq_gains()?.val() ?? '');
+        }
+        /** Выключенный эквалайзер — состояние по умолчанию: звук как записан. */
+        eq_on() {
+            return this.Eq_on()?.val() ?? false;
+        }
+        save_eq_on(on) {
+            this.Eq_on('auto').val(on);
+        }
+        save_eq_gains(gains) {
+            this.Eq_gains('auto').val($bog_music_eq.stringify(gains));
+        }
         // ---------- докачка с VK ----------
         track_cached(key) {
             return this.track(key)?.cached() ?? false;
@@ -29276,6 +29392,12 @@ var $;
     __decorate([
         $mol_action
     ], $bog_music_account_baza.prototype, "save_last_session", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "save_eq_on", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "save_eq_gains", null);
     $.$bog_music_account_baza = $bog_music_account_baza;
 })($ || ($ = {}));
 
@@ -29793,6 +29915,169 @@ var $;
 })($ || ($ = {}));
 
 ;
+	($.$mol_icon_tune) = class $mol_icon_tune extends ($.$mol_icon) {
+		path(){
+			return "M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_tune_vertical) = class $mol_icon_tune_vertical extends ($.$mol_icon) {
+		path(){
+			return "M7 3H5V9H7V3M19 3H17V13H19V3M3 13H5V21H7V13H9V11H3V13M15 7H13V3H11V7H9V9H15V7M11 21H13V11H11V21M15 15V17H17V21H19V17H21V15H15Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$bog_music_eq_band) = class $bog_music_eq_band extends ($.$mol_view) {
+		Db(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.db_text()));
+			return obj;
+		}
+		Zero(){
+			const obj = new this.$.$mol_view();
+			return obj;
+		}
+		Fill(){
+			const obj = new this.$.$mol_view();
+			(obj.style) = () => ({"top": (this.fill_top()), "height": (this.fill_height())});
+			return obj;
+		}
+		Slider(){
+			const obj = new this.$.$mol_view();
+			(obj.event) = () => ({
+				"pointerdown": (next) => (this.pointer_down(next)), 
+				"pointermove": (next) => (this.pointer_move(next)), 
+				"pointerup": (next) => (this.pointer_up(next)), 
+				"pointercancel": (next) => (this.pointer_up(next))
+			});
+			(obj.sub) = () => ([(this.Zero()), (this.Fill())]);
+			return obj;
+		}
+		Freq(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.freq_text()));
+			return obj;
+		}
+		db_text(){
+			return "";
+		}
+		freq_text(){
+			return "";
+		}
+		fill_top(){
+			return "";
+		}
+		fill_height(){
+			return "";
+		}
+		pointer_down(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		pointer_move(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		pointer_up(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		sub(){
+			return [
+				(this.Db()), 
+				(this.Slider()), 
+				(this.Freq())
+			];
+		}
+	};
+	($mol_mem(($.$bog_music_eq_band.prototype), "Db"));
+	($mol_mem(($.$bog_music_eq_band.prototype), "Zero"));
+	($mol_mem(($.$bog_music_eq_band.prototype), "Fill"));
+	($mol_mem(($.$bog_music_eq_band.prototype), "Slider"));
+	($mol_mem(($.$bog_music_eq_band.prototype), "Freq"));
+	($mol_mem(($.$bog_music_eq_band.prototype), "pointer_down"));
+	($mol_mem(($.$bog_music_eq_band.prototype), "pointer_move"));
+	($mol_mem(($.$bog_music_eq_band.prototype), "pointer_up"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $mol_style_define($bog_music_eq_band, {
+            flex: {
+                direction: 'column',
+                shrink: 0,
+            },
+            align: {
+                items: 'center',
+            },
+            gap: '0.25rem',
+            width: '2.5rem',
+            Db: {
+                font: { size: '0.6875rem' },
+                color: $mol_theme.shade,
+                fontVariantNumeric: 'tabular-nums',
+                flex: { shrink: 0 },
+            },
+            Freq: {
+                font: { size: '0.6875rem' },
+                color: $mol_theme.shade,
+                flex: { shrink: 0 },
+            },
+            Slider: {
+                width: '6px',
+                height: '8rem',
+                background: { color: $mol_theme.line },
+                borderRadius: '3px',
+                cursor: 'pointer',
+                position: 'relative',
+                overflow: { x: 'hidden', y: 'hidden' },
+                touchAction: 'none',
+                userSelect: 'none',
+                flex: { shrink: 0 },
+            },
+            /** Риска нуля: по одной заливке не видно, куда полоса уехала. */
+            Zero: {
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                top: '50%',
+                height: '1px',
+                background: { color: $mol_theme.shade },
+                pointerEvents: 'none',
+            },
+            Fill: {
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                background: { color: $mol_theme.focus },
+                borderRadius: '3px',
+                pointerEvents: 'none',
+            },
+        });
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
 	($.$mol_icon_skip_previous) = class $mol_icon_skip_previous extends ($.$mol_icon) {
 		path(){
 			return "M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z";
@@ -29971,12 +30256,126 @@ var $;
 			(obj.title) = () => ((this.time_total_text()));
 			return obj;
 		}
+		eq_pop_toggle(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Eq_icon(){
+			const obj = new this.$.$mol_icon_tune_vertical();
+			return obj;
+		}
+		Eq_anchor(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.hint) = () => ("Эквалайзер");
+			(obj.click) = (next) => ((this.eq_pop_toggle(next)));
+			(obj.sub) = () => ([(this.Eq_icon())]);
+			return obj;
+		}
+		Eq_power_icon(){
+			const obj = new this.$.$mol_icon_tune_vertical();
+			return obj;
+		}
+		eq_on(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		Eq_power(){
+			const obj = new this.$.$mol_check_icon();
+			(obj.title) = () => ("Эквалайзер");
+			(obj.hint) = () => ("Включить эквалайзер");
+			(obj.Icon) = () => ((this.Eq_power_icon()));
+			(obj.checked) = (next) => ((this.eq_on(next)));
+			return obj;
+		}
+		eq_preset_options(){
+			return {};
+		}
+		eq_preset(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		Eq_presets(){
+			const obj = new this.$.$mol_switch();
+			(obj.options) = () => ((this.eq_preset_options()));
+			(obj.value) = (next) => ((this.eq_preset(next)));
+			return obj;
+		}
+		eq_db_text(id){
+			return "";
+		}
+		eq_freq_text(id){
+			return "";
+		}
+		eq_fill_top(id){
+			return "";
+		}
+		eq_fill_height(id){
+			return "";
+		}
+		eq_pointer_down(id, next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		eq_pointer_move(id, next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		eq_pointer_up(id, next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Eq_band(id){
+			const obj = new this.$.$bog_music_eq_band();
+			(obj.db_text) = () => ((this.eq_db_text(id)));
+			(obj.freq_text) = () => ((this.eq_freq_text(id)));
+			(obj.fill_top) = () => ((this.eq_fill_top(id)));
+			(obj.fill_height) = () => ((this.eq_fill_height(id)));
+			(obj.pointer_down) = (next) => ((this.eq_pointer_down(id, next)));
+			(obj.pointer_move) = (next) => ((this.eq_pointer_move(id, next)));
+			(obj.pointer_up) = (next) => ((this.eq_pointer_up(id, next)));
+			return obj;
+		}
+		eq_band_list(){
+			return [(this.Eq_band("0"))];
+		}
+		Eq_bands(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ((this.eq_band_list()));
+			return obj;
+		}
+		eq_reset(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Eq_reset(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ("Сбросить полосы");
+			(obj.click) = (next) => ((this.eq_reset(next)));
+			return obj;
+		}
+		Eq_panel(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([
+				(this.Eq_power()), 
+				(this.Eq_presets()), 
+				(this.Eq_bands()), 
+				(this.Eq_reset())
+			]);
+			return obj;
+		}
+		Eq(){
+			const obj = new this.$.$mol_pop();
+			(obj.Anchor) = () => ((this.Eq_anchor()));
+			(obj.bubble_content) = () => ([(this.Eq_panel())]);
+			return obj;
+		}
 		Progress_row(){
 			const obj = new this.$.$mol_view();
 			(obj.sub) = () => ([
 				(this.Time_current()), 
 				(this.Progress()), 
-				(this.Time_total())
+				(this.Time_total()), 
+				(this.Eq())
 			]);
 			return obj;
 		}
@@ -30231,6 +30630,23 @@ var $;
 	($mol_mem(($.$bog_music_player.prototype), "Trim_end_handle"));
 	($mol_mem(($.$bog_music_player.prototype), "Progress"));
 	($mol_mem(($.$bog_music_player.prototype), "Time_total"));
+	($mol_mem(($.$bog_music_player.prototype), "eq_pop_toggle"));
+	($mol_mem(($.$bog_music_player.prototype), "Eq_icon"));
+	($mol_mem(($.$bog_music_player.prototype), "Eq_anchor"));
+	($mol_mem(($.$bog_music_player.prototype), "Eq_power_icon"));
+	($mol_mem(($.$bog_music_player.prototype), "eq_on"));
+	($mol_mem(($.$bog_music_player.prototype), "Eq_power"));
+	($mol_mem(($.$bog_music_player.prototype), "eq_preset"));
+	($mol_mem(($.$bog_music_player.prototype), "Eq_presets"));
+	($mol_mem_key(($.$bog_music_player.prototype), "eq_pointer_down"));
+	($mol_mem_key(($.$bog_music_player.prototype), "eq_pointer_move"));
+	($mol_mem_key(($.$bog_music_player.prototype), "eq_pointer_up"));
+	($mol_mem_key(($.$bog_music_player.prototype), "Eq_band"));
+	($mol_mem(($.$bog_music_player.prototype), "Eq_bands"));
+	($mol_mem(($.$bog_music_player.prototype), "eq_reset"));
+	($mol_mem(($.$bog_music_player.prototype), "Eq_reset"));
+	($mol_mem(($.$bog_music_player.prototype), "Eq_panel"));
+	($mol_mem(($.$bog_music_player.prototype), "Eq"));
 	($mol_mem(($.$bog_music_player.prototype), "Progress_row"));
 	($mol_mem(($.$bog_music_player.prototype), "Cover_placeholder"));
 	($mol_mem(($.$bog_music_player.prototype), "Title"));
@@ -30712,7 +31128,17 @@ var $;
              * ушёл бы в тишину.
              */
             gain_chain_unlock() {
-                if (this._gain_dead || !this.normalize())
+                if (this._gain_dead)
+                    return;
+                // Эквалайзер живёт в том же графе, что и выравнивание: включён любой
+                // из двух — цепочка нужна.
+                //
+                // Смотрим на _eq_on, а не на eq_on(): тот читает baza и может
+                // подвиснуть на несинхронизированном ленде. Сюда заходят из клика,
+                // а клик — единственный момент, когда WebAudio разрешено будить;
+                // подвиснуть здесь значит доехать до resume уже вне жеста, и на iOS
+                // это тишина до конца сессии.
+                if (!this.normalize() && !this._eq_on)
                     return;
                 if (this._gain_ready) {
                     this.gain_resume();
@@ -30759,13 +31185,34 @@ var $;
                     limiter.ratio.value = 20;
                     limiter.attack.value = 0.003;
                     limiter.release.value = 0.25;
-                    src.connect(gain);
+                    // Полосы эквалайзера — ДО гейна, чтобы лимитер остался последним:
+                    // поднятый на +12 dB бас вылезает за 0 dBFS ровно так же, как
+                    // поднятая тихая запись, и срезает их один и тот же лимитер.
+                    // Узлы стоят в графе всегда; выключенный эквалайзер — это все
+                    // полосы в нуле, а не выдернутые узлы: createMediaElementSource
+                    // необратим, разбирать цепочку обратно всё равно нечем.
+                    const eq = $bog_music_eq.bands.map(band => {
+                        const node = ctx.createBiquadFilter();
+                        node.type = band.type;
+                        node.frequency.value = band.freq;
+                        node.Q.value = $bog_music_eq.q;
+                        node.gain.value = 0;
+                        return node;
+                    });
+                    let tail = src;
+                    for (const node of eq) {
+                        tail.connect(node);
+                        tail = node;
+                    }
+                    tail.connect(gain);
                     gain.connect(limiter);
                     limiter.connect(ctx.destination);
+                    this._eq_nodes = eq;
                     this._gain_node = gain;
                     this._gain_ready = true;
                     this.audio_el().volume = 1; // дальше громкостью рулит только гейн
                     this.gain_push();
+                    this.eq_push();
                     this.setup_gain_wake();
                 }
                 catch (e) {
@@ -31326,21 +31773,20 @@ var $;
                 const showed = pop.showed();
                 pop.showed(!showed);
                 if (!showed)
-                    this.setup_volume_dismiss();
+                    this.setup_pop_dismiss(pop);
                 return null;
             }
-            _volume_dismiss_set = false;
+            _dismiss_pops = new Set();
             /**
              * Тап мимо панели закрывает её. Сам $mol_pop закрывается, только когда
              * фокус уезжает на другой фокусируемый элемент, а тап по пустому месту
              * фокус никуда не переносит — панель висела бы на экране.
              */
-            setup_volume_dismiss() {
-                if (this._volume_dismiss_set)
+            setup_pop_dismiss(pop) {
+                if (this._dismiss_pops.has(pop))
                     return;
-                this._volume_dismiss_set = true;
+                this._dismiss_pops.add(pop);
                 window.addEventListener('pointerdown', event => {
-                    const pop = this.Volume();
                     if (!pop.showed())
                         return;
                     const target = event.target;
@@ -31397,6 +31843,185 @@ var $;
             }
             volume_fill_height() {
                 return `${Math.round(this.volume() * 100)}%`;
+            }
+            // ---------- эквалайзер ----------
+            // Полосы стоят в общем тракте, между источником и гейном (см. gain_wire).
+            // Настройки лежат в аккаунте, а не в localStorage: кривую выставляют один
+            // раз и ждут её же на другом устройстве.
+            //
+            // Ни eq_on, ни eq_gains не мемоизируем. Запись в @$mol_mem замораживает
+            // его зависимости — настройка, приехавшая синком с телефона, до открытого
+            // ноутбука бы уже не дошла. Реактивность даёт сам baza-атом: его читает
+            // тот атом, который вызвал эти методы.
+            _eq_nodes = [];
+            _eq_last = $bog_music_eq.flat();
+            /** Последнее известное «включён» — снимок для путей, где нельзя виснуть. */
+            _eq_on = false;
+            eq_on(next) {
+                if (next === undefined) {
+                    const on = this.account().eq_on();
+                    this._eq_on = on;
+                    return on;
+                }
+                this._eq_on = next;
+                this.account().save_eq_on(next);
+                // Клик по тумблеру — юзер-жест, единственный момент, когда WebAudio
+                // разрешено будить. Поднимаем цепочку прямо здесь: при выключенной
+                // автогромкости её до сих пор могло не быть вовсе.
+                if (next)
+                    this.gain_chain_unlock();
+                return next;
+            }
+            /**
+             * Полосы, пока ползунок в руке. В baza пишем один раз на перетаскивание,
+             * а не на каждый pointermove: иначе каждое движение пальца улетало бы в
+             * ленд отдельной правкой.
+             */
+            eq_draft(next) {
+                return next ?? null;
+            }
+            /** Черновик перетаскивания либо сохранённое в аккаунте. */
+            eq_gains() {
+                return this.eq_draft() ?? this.account().eq_gains();
+            }
+            /** Панель эквалайзера — только для своего <audio>; в offscreen её нет. */
+            Eq() {
+                if (this.is_extension())
+                    return null;
+                return super.Eq();
+            }
+            eq_pop_toggle() {
+                const pop = this.Eq();
+                const showed = pop.showed();
+                pop.showed(!showed);
+                if (!showed)
+                    this.setup_pop_dismiss(pop);
+                return null;
+            }
+            eq_band_list() {
+                return $bog_music_eq.bands.map((_, index) => this.Eq_band(index));
+            }
+            eq_freq_text(index) {
+                return $bog_music_eq.bands[index].title;
+            }
+            eq_db_text(index) {
+                const db = this.eq_gains()[index];
+                return db > 0 ? `+${db}` : `${db}`;
+            }
+            // Заливка растёт от середины дорожки: середина — это 0 dB, а не тишина,
+            // как у громкости.
+            eq_fill_top(index) {
+                const db = this.eq_gains()[index];
+                return `${50 - Math.max(0, db) / $bog_music_eq.range_db * 50}%`;
+            }
+            eq_fill_height(index) {
+                const db = this.eq_gains()[index];
+                return `${Math.abs(db) / $bog_music_eq.range_db * 50}%`;
+            }
+            eq_preset_options() {
+                const options = {};
+                for (const preset of $bog_music_eq.presets)
+                    options[preset.id] = preset.title;
+                return options;
+            }
+            eq_preset(next) {
+                if (next === undefined)
+                    return $bog_music_eq.preset_of(this.eq_gains());
+                const gains = $bog_music_eq.preset(next);
+                // Повторный клик по выбранному пресету $mol_switch отдаёт как '':
+                // снимать выбор нечем, полосы остаются как были.
+                if (!gains)
+                    return $bog_music_eq.preset_of(this.eq_gains());
+                this.eq_apply(gains);
+                return next;
+            }
+            eq_reset() {
+                this.eq_apply($bog_music_eq.flat());
+                return null;
+            }
+            /** Выставить полосы: в аккаунт, черновик прочь. */
+            eq_apply(gains) {
+                this.account().save_eq_gains(gains);
+                this.eq_draft(null);
+                // Тронули полосы при выключенном эквалайзере — включаем: иначе
+                // ползунок ездит, а звук не меняется, и это читается как поломка.
+                if (!this.eq_on() && $bog_music_eq.preset_of(gains) !== 'flat')
+                    this.eq_on(true);
+            }
+            // ---------- полосы (drag по вертикальным слайдерам) ----------
+            _eq_dragging = -1;
+            eq_db_from_event(event) {
+                const target = event.currentTarget;
+                const rect = target.getBoundingClientRect();
+                const part = 1 - (event.clientY - rect.top) / rect.height; // 0 — низ, 1 — верх
+                const range = $bog_music_eq.range_db;
+                return Math.round(Math.max(-range, Math.min(range, (part * 2 - 1) * range)));
+            }
+            eq_drag_to(index, event) {
+                const gains = this.eq_gains().slice();
+                gains[index] = this.eq_db_from_event(event);
+                this.eq_draft(gains);
+            }
+            eq_pointer_down(index, event) {
+                if (!event)
+                    return null;
+                const e = event;
+                try {
+                    e.currentTarget.setPointerCapture(e.pointerId);
+                }
+                catch { }
+                this._eq_dragging = index;
+                this.eq_drag_to(index, e);
+                e.preventDefault();
+                return null;
+            }
+            eq_pointer_move(index, event) {
+                if (!event || this._eq_dragging !== index)
+                    return null;
+                this.eq_drag_to(index, event);
+                return null;
+            }
+            eq_pointer_up(index, event) {
+                if (!event)
+                    return null;
+                const e = event;
+                try {
+                    e.currentTarget.releasePointerCapture(e.pointerId);
+                }
+                catch { }
+                if (this._eq_dragging !== index)
+                    return null;
+                this._eq_dragging = -1;
+                const gains = this.eq_draft();
+                if (gains)
+                    this.eq_apply(gains);
+                // Панель не закрываем, в отличие от громкости: полос пять, их крутят
+                // подряд, и захлопнуться после первой же было бы издевательством.
+                return null;
+            }
+            /** Разложить полосы по узлам. Реактивно: сработает и на синк с другого устройства. */
+            apply_eq() {
+                // Заодно обновляет _eq_on — снимок для gain_chain_unlock.
+                this._eq_last = this.eq_on() ? $bog_music_eq.clamp(this.eq_gains()) : $bog_music_eq.flat();
+                this.eq_push();
+                return this._eq_last;
+            }
+            eq_push() {
+                const ctx = this._gain_ctx;
+                if (!ctx || !this._eq_nodes.length)
+                    return;
+                this._eq_last.forEach((db, index) => {
+                    const node = this._eq_nodes[index];
+                    if (!node)
+                        return;
+                    // Плавно: мгновенный скачок фильтра щёлкает так же, как скачок гейна.
+                    try {
+                        node.gain.setTargetAtTime(db, ctx.currentTime, 0.02);
+                    }
+                    catch {
+                        node.gain.value = db;
+                    }
+                });
             }
             // ---------- режим повтора ----------
             repeat_mode(next) {
@@ -32176,6 +32801,7 @@ var $;
                     this.try_restore_session();
                 }
                 this.apply_volume();
+                this.apply_eq();
                 this.apply_position_state();
                 try {
                     this.apply_trim_start();
@@ -32217,6 +32843,15 @@ var $;
         __decorate([
             $mol_mem
         ], $bog_music_player.prototype, "apply_volume", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_player.prototype, "eq_draft", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_player.prototype, "eq_apply", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_player.prototype, "apply_eq", null);
         __decorate([
             $mol_mem
         ], $bog_music_player.prototype, "repeat_mode", null);
@@ -32442,6 +33077,42 @@ var $;
                 bottom: 0,
                 background: { color: $mol_theme.focus },
                 borderRadius: '3px',
+            },
+            Eq_panel: {
+                padding: {
+                    top: '0.75rem',
+                    bottom: '0.5rem',
+                    left: '0.75rem',
+                    right: '0.75rem',
+                },
+                flex: {
+                    direction: 'column',
+                },
+                align: {
+                    items: 'stretch',
+                },
+                gap: $mol_gap.text,
+            },
+            Eq_presets: {
+                flex: {
+                    direction: 'row',
+                    wrap: 'wrap',
+                },
+                justify: {
+                    content: 'center',
+                },
+                gap: '0.25rem',
+                maxWidth: '13.5rem',
+            },
+            Eq_bands: {
+                flex: {
+                    direction: 'row',
+                    shrink: 0,
+                },
+                justify: {
+                    content: 'center',
+                },
+                gap: '0.25rem',
             },
         });
     })($$ = $.$$ || ($.$$ = {}));
@@ -39470,6 +40141,50 @@ var $;
             $mol_assert_equal($.$bog_recsys.rewards().pop > 0, true);
             $.$bog_recsys.reset();
             $mol_assert_equal(Object.keys($.$bog_recsys.rewards()).length, 0);
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_test({
+        'Пресеты покрывают все полосы и лежат в диапазоне'() {
+            for (const preset of $bog_music_eq.presets) {
+                $mol_assert_equal(preset.gains.length, $bog_music_eq.bands.length);
+                for (const db of preset.gains) {
+                    $mol_assert_ok(Math.abs(db) <= $bog_music_eq.range_db);
+                }
+            }
+        },
+        'Пресет узнаётся по своему же набору'() {
+            for (const preset of $bog_music_eq.presets) {
+                $mol_assert_equal($bog_music_eq.preset_of(preset.gains), preset.id);
+            }
+        },
+        'Набор мимо пресетов — «Свой»'() {
+            $mol_assert_equal($bog_music_eq.preset_of([1, 2, 3, 4, 5]), '');
+        },
+        'Плоский набор — это пресет flat, а не «Свой»'() {
+            $mol_assert_equal($bog_music_eq.preset_of($bog_music_eq.flat()), 'flat');
+        },
+        'Чужой набор приводится к нашим полосам'() {
+            // Короче — недостающие полосы в ноль, длиннее — лишние прочь.
+            $mol_assert_equal($bog_music_eq.clamp([3]).join(), '3,0,0,0,0');
+            $mol_assert_equal($bog_music_eq.clamp([1, 1, 1, 1, 1, 1, 1]).join(), '1,1,1,1,1');
+            // За пределом — в потолок, дробное — к целым dB.
+            $mol_assert_equal($bog_music_eq.clamp([99, -99, 2.4, 2.6, NaN]).join(), '12,-12,2,3,0');
+        },
+        'Набор переживает запись строкой и чтение обратно'() {
+            const gains = $bog_music_eq.preset('bass');
+            $mol_assert_equal($bog_music_eq.parse($bog_music_eq.stringify(gains)).join(), gains.join());
+            // Пусто в baza (настройки ещё не сохраняли) — плоский набор.
+            $mol_assert_equal($bog_music_eq.parse('').join(), $bog_music_eq.flat().join());
+            $mol_assert_equal($bog_music_eq.parse(null).join(), $bog_music_eq.flat().join());
+        },
+        'Неизвестный пресет не выдумывается'() {
+            $mol_assert_equal($bog_music_eq.preset('nope'), null);
         },
     });
 })($ || ($ = {}));

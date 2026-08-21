@@ -1463,6 +1463,36 @@ $bog_music_track $mol_view
 			sub /
 				<= Delete_forever_icon $mol_icon_delete_forever
 
+$mol_icon_tune $mol_icon path \M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z
+
+$mol_icon_tune_vertical $mol_icon path \M7 3H5V9H7V3M19 3H17V13H19V3M3 13H5V21H7V13H9V11H3V13M15 7H13V3H11V7H9V9H15V7M11 21H13V11H11V21M15 15V17H17V21H19V17H21V15H15Z
+
+$bog_music_eq_band $mol_view
+	db_text \
+	freq_text \
+	fill_top \
+	fill_height \
+	pointer_down?event null
+	pointer_move?event null
+	pointer_up?event null
+	sub /
+		<= Db $mol_paragraph
+			title <= db_text
+		<= Slider $mol_view
+			event *
+				pointerdown?event <=> pointer_down?event
+				pointermove?event <=> pointer_move?event
+				pointerup?event <=> pointer_up?event
+				pointercancel?event <=> pointer_up?event
+			sub /
+				<= Zero $mol_view
+				<= Fill $mol_view
+					style *
+						top <= fill_top
+						height <= fill_height
+		<= Freq $mol_paragraph
+			title <= freq_text
+
 $mol_icon_skip_previous $mol_icon path \M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z
 
 $mol_icon_pause $mol_icon path \M14,19H18V5H14M6,19H10V5H6V19Z
@@ -1512,6 +1542,35 @@ $bog_music_player $mol_view
 								left <= trim_end_left \
 				<= Time_total $mol_paragraph
 					title <= time_total_text \
+				<= Eq $mol_pop
+					Anchor <= Eq_anchor $mol_button_minor
+						hint \Эквалайзер
+						click? <=> eq_pop_toggle? null
+						sub / <= Eq_icon $mol_icon_tune_vertical
+					bubble_content /
+						<= Eq_panel $mol_view
+							sub /
+								<= Eq_power $mol_check_icon
+									title \Эквалайзер
+									hint \Включить эквалайзер
+									Icon <= Eq_power_icon $mol_icon_tune_vertical
+									checked? <=> eq_on? false
+								<= Eq_presets $mol_switch
+									options <= eq_preset_options *
+									value? <=> eq_preset? \
+								<= Eq_bands $mol_view
+									sub <= eq_band_list /
+										<= Eq_band*0 $bog_music_eq_band
+											db_text <= eq_db_text* \
+											freq_text <= eq_freq_text* \
+											fill_top <= eq_fill_top* \
+											fill_height <= eq_fill_height* \
+											pointer_down?event <=> eq_pointer_down*?event null
+											pointer_move?event <=> eq_pointer_move*?event null
+											pointer_up?event <=> eq_pointer_up*?event null
+								<= Eq_reset $mol_button_minor
+									title \Сбросить полосы
+									click? <=> eq_reset? null
 		<= Controls $mol_view
 			sub /
 				<= Left $mol_view
