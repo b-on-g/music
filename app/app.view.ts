@@ -170,6 +170,46 @@ namespace $.$$ {
 			if (key) this.account().move_to_playlist(key, '')
 		}
 
+		/**
+		 * Трек уезжает в самый низ списка — «надоело, но выбрасывать жалко».
+		 *
+		 * Очередь при этом не должна дёрнуться. queue_index у плеера — это
+		 * позиция ТЕКУЩЕГО трека, следующий берётся как +1, а список после
+		 * переезда весь сдвигается, и без правки индекса песня бы перескочила.
+		 * Поэтому запоминаем, что должно заиграть следом, и после переезда
+		 * ставим индекс так, чтобы +1 указал ровно на него.
+		 *
+		 * Отдельный случай — скинуть тот трек, который сейчас играет. Он и сам
+		 * уедет в конец, но доиграть обязан здесь и сейчас, а дальше пойти на
+		 * своего прежнего соседа: слушаю 1 2 3, скинул 2 — дальше 3, а не 4.
+		 */
+		@$mol_action
+		demote_key(key?: string | null) {
+			if (!key) return
+			const keys = this.visible_keys()
+			const from = keys.indexOf(key)
+			if (from < 0 || from === keys.length - 1) return // уже внизу
+
+			const current = this.current_key()
+			const at = current ? keys.indexOf(current) : -1
+			// Первый за текущим, минуя уезжающий. Если уезжает сам текущий —
+			// это просто следующий за ним.
+			const follow = at < 0 ? '' : keys.slice(at + 1).find(k => k !== key) ?? ''
+
+			this.account().move_to_bottom(key)
+			if (at < 0) return // играет что-то не из этого списка — очередь не наша
+
+			const fresh = this.visible_keys()
+			const follow_at = follow ? fresh.indexOf(follow) : -1
+			// Крутим по кругу, а не уходим в -1: prev() смотрит на idx > 0, и
+			// отрицательный индекс сломал бы ему шаг назад.
+			this.Player().queue_index(
+				follow_at >= 0
+					? ( follow_at - 1 + fresh.length ) % fresh.length
+					: Math.max( 0, fresh.indexOf( current ) )
+			)
+		}
+
 		@$mol_action
 		delete_key(key?: string | null) {
 			if (key) this.account().delete_track(key)

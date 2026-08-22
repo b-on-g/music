@@ -55,6 +55,7 @@ $bog_music_app $mol_page
 			archive_key? <=> archive_key? null
 			restore_key? <=> restore_key? null
 			delete_key? <=> delete_key? null
+			demote_key? <=> demote_key? null
 		<= Tube_bar $mol_view
 			sub /
 				<= Tube_query $mol_string

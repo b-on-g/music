@@ -9,6 +9,7 @@ $bog_music_track $mol_view
 	archive? null
 	restore? null
 	delete_forever? null
+	demote? null
 	share_selected false
 	attr *
 		bog_music_track_current <= current
@@ -33,6 +34,11 @@ $bog_music_track $mol_view
 					title <= title \
 				<= Artist $mol_paragraph
 					title <= artist \
+		<= Demote $mol_button_minor
+			hint \В конец списка
+			click? <=> demote? null
+			sub /
+				<= Demote_icon $mol_icon_format_vertical_align_bottom
 		<= Share $mol_view
 			attr *
 				bog_music_track_share_button true

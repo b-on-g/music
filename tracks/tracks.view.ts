@@ -52,6 +52,12 @@ namespace $.$$ {
 		}
 
 		@$mol_action
+		track_demote(index: number) {
+			const key = this.track_key(index)
+			if (key) this.demote_key(key)
+		}
+
+		@$mol_action
 		track_delete(index: number) {
 			const key = this.track_key(index)
 			if (key) this.delete_key(key)

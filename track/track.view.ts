@@ -48,6 +48,12 @@ namespace $.$$ {
 			return super.Delete_forever()
 		}
 
+		/** В архиве порядок не важен и перетаскивание там тоже выключено. */
+		Demote() {
+			if (this.archive_mode()) return null as any
+			return super.Demote()
+		}
+
 		Delete() {
 			if (this.archive_mode()) return null as any
 			if (this.is_local()) return null as any

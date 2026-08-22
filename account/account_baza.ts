@@ -149,6 +149,30 @@ namespace $ {
 			return Number.isFinite(min) ? min : 1
 		}
 
+		/** Максимальный эффективный order внутри плейлиста. */
+		max_order(playlist: string): number {
+			let max = -Infinity
+			const dict = this.tracks()
+			for (const key of (dict.keys() ?? []) as string[]) {
+				const track = dict.key(key)
+				if (!track) continue
+				if (track.playlist() !== playlist) continue
+				max = Math.max(max, track.order())
+			}
+			return Number.isFinite(max) ? max : 0
+		}
+
+		/**
+		 * Отправить трек в самый низ своего плейлиста. Соседей не трогаем: order
+		 * у них произвольный, и хватает одного числа больше нынешнего максимума.
+		 */
+		@$mol_action
+		move_to_bottom(key: string): void {
+			const track = this.track(key)
+			if (!track) return
+			track.order_set(this.max_order(track.playlist()) + 1)
+		}
+
 		/** Создаёт/обновляет метаданные трека. Blob — отдельно (save_blob). */
 		@$mol_action
 		save_track(audio: $bog_music_api_audio): void {
