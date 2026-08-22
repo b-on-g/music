@@ -22608,6 +22608,10 @@ var $;
 			if(next !== undefined) return next;
 			return null;
 		}
+		track_demote(id, next){
+			if(next !== undefined) return next;
+			return null;
+		}
 		Track(id){
 			const obj = new this.$.$bog_music_track();
 			(obj.key) = () => ((this.track_key(id)));
@@ -22620,6 +22624,7 @@ var $;
 			(obj.archive) = (next) => ((this.track_archive(id, next)));
 			(obj.restore) = (next) => ((this.track_restore(id, next)));
 			(obj.delete_forever) = (next) => ((this.track_delete(id, next)));
+			(obj.demote) = (next) => ((this.track_demote(id, next)));
 			return obj;
 		}
 		track_rows(){
@@ -22654,6 +22659,10 @@ var $;
 			if(next !== undefined) return next;
 			return null;
 		}
+		demote_key(next){
+			if(next !== undefined) return next;
+			return null;
+		}
 		rows(){
 			return (this.track_rows());
 		}
@@ -22664,12 +22673,14 @@ var $;
 	($mol_mem_key(($.$bog_music_tracks.prototype), "track_archive"));
 	($mol_mem_key(($.$bog_music_tracks.prototype), "track_restore"));
 	($mol_mem_key(($.$bog_music_tracks.prototype), "track_delete"));
+	($mol_mem_key(($.$bog_music_tracks.prototype), "track_demote"));
 	($mol_mem_key(($.$bog_music_tracks.prototype), "Track"));
 	($mol_mem(($.$bog_music_tracks.prototype), "play_key"));
 	($mol_mem(($.$bog_music_tracks.prototype), "reorder_to"));
 	($mol_mem(($.$bog_music_tracks.prototype), "archive_key"));
 	($mol_mem(($.$bog_music_tracks.prototype), "restore_key"));
 	($mol_mem(($.$bog_music_tracks.prototype), "delete_key"));
+	($mol_mem(($.$bog_music_tracks.prototype), "demote_key"));
 
 
 ;
@@ -22722,6 +22733,11 @@ var $;
                 if (key)
                     this.restore_key(key);
             }
+            track_demote(index) {
+                const key = this.track_key(index);
+                if (key)
+                    this.demote_key(key);
+            }
             track_delete(index) {
                 const key = this.track_key(index);
                 if (key)
@@ -22743,6 +22759,9 @@ var $;
         __decorate([
             $mol_action
         ], $bog_music_tracks.prototype, "track_restore", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_tracks.prototype, "track_demote", null);
         __decorate([
             $mol_action
         ], $bog_music_tracks.prototype, "track_delete", null);
@@ -31948,6 +31967,10 @@ var $;
 			if(next !== undefined) return next;
 			return null;
 		}
+		demote_key(next){
+			if(next !== undefined) return next;
+			return null;
+		}
 		Tracks(){
 			const obj = new this.$.$bog_music_tracks();
 			(obj.track_keys) = () => ((this.visible_keys()));
@@ -31958,6 +31981,7 @@ var $;
 			(obj.archive_key) = (next) => ((this.archive_key(next)));
 			(obj.restore_key) = (next) => ((this.restore_key(next)));
 			(obj.delete_key) = (next) => ((this.delete_key(next)));
+			(obj.demote_key) = (next) => ((this.demote_key(next)));
 			return obj;
 		}
 		tube_query(next){
@@ -32114,6 +32138,7 @@ var $;
 	($mol_mem(($.$bog_music_app.prototype), "archive_key"));
 	($mol_mem(($.$bog_music_app.prototype), "restore_key"));
 	($mol_mem(($.$bog_music_app.prototype), "delete_key"));
+	($mol_mem(($.$bog_music_app.prototype), "demote_key"));
 	($mol_mem(($.$bog_music_app.prototype), "Tracks"));
 	($mol_mem(($.$bog_music_app.prototype), "tube_query"));
 	($mol_mem(($.$bog_music_app.prototype), "Tube_query"));
@@ -33937,7 +33962,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.45';
+    $.$bog_music_version = 'v1.46';
 })($ || ($ = {}));
 
 ;
@@ -34103,6 +34128,42 @@ var $;
             restore_key(key) {
                 if (key)
                     this.account().move_to_playlist(key, '');
+            }
+            /**
+             * Трек уезжает в самый низ списка — «надоело, но выбрасывать жалко».
+             *
+             * Очередь при этом не должна дёрнуться. queue_index у плеера — это
+             * позиция ТЕКУЩЕГО трека, следующий берётся как +1, а список после
+             * переезда весь сдвигается, и без правки индекса песня бы перескочила.
+             * Поэтому запоминаем, что должно заиграть следом, и после переезда
+             * ставим индекс так, чтобы +1 указал ровно на него.
+             *
+             * Отдельный случай — скинуть тот трек, который сейчас играет. Он и сам
+             * уедет в конец, но доиграть обязан здесь и сейчас, а дальше пойти на
+             * своего прежнего соседа: слушаю 1 2 3, скинул 2 — дальше 3, а не 4.
+             */
+            demote_key(key) {
+                if (!key)
+                    return;
+                const keys = this.visible_keys();
+                const from = keys.indexOf(key);
+                if (from < 0 || from === keys.length - 1)
+                    return; // уже внизу
+                const current = this.current_key();
+                const at = current ? keys.indexOf(current) : -1;
+                // Первый за текущим, минуя уезжающий. Если уезжает сам текущий —
+                // это просто следующий за ним.
+                const follow = at < 0 ? '' : keys.slice(at + 1).find(k => k !== key) ?? '';
+                this.account().move_to_bottom(key);
+                if (at < 0)
+                    return; // играет что-то не из этого списка — очередь не наша
+                const fresh = this.visible_keys();
+                const follow_at = follow ? fresh.indexOf(follow) : -1;
+                // Крутим по кругу, а не уходим в -1: prev() смотрит на idx > 0, и
+                // отрицательный индекс сломал бы ему шаг назад.
+                this.Player().queue_index(follow_at >= 0
+                    ? (follow_at - 1 + fresh.length) % fresh.length
+                    : Math.max(0, fresh.indexOf(current)));
             }
             delete_key(key) {
                 if (key)
@@ -34634,6 +34695,9 @@ var $;
         __decorate([
             $mol_action
         ], $bog_music_app.prototype, "restore_key", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "demote_key", null);
         __decorate([
             $mol_action
         ], $bog_music_app.prototype, "delete_key", null);
@@ -35519,6 +35583,18 @@ var $;
 })($ || ($ = {}));
 
 ;
+	($.$mol_icon_format_vertical_align_bottom) = class $mol_icon_format_vertical_align_bottom extends ($.$mol_icon) {
+		path(){
+			return "M16,13H13V3H11V13H8L12,17L16,13M4,19V21H20V19H4Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
 	($.$mol_icon_share) = class $mol_icon_share extends ($.$mol_icon) {
 		path(){
 			return "M21,12L14,5V9C7,10 4,15 3,20C5.5,16.5 9,14.9 14,14.9V19L21,12Z";
@@ -35605,6 +35681,21 @@ var $;
 			const obj = new this.$.$mol_view();
 			(obj.event) = () => ({"click": (next) => (this.on_play_click(next))});
 			(obj.sub) = () => ([(this.Title()), (this.Artist())]);
+			return obj;
+		}
+		demote(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Demote_icon(){
+			const obj = new this.$.$mol_icon_format_vertical_align_bottom();
+			return obj;
+		}
+		Demote(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.hint) = () => ("В конец списка");
+			(obj.click) = (next) => ((this.demote(next)));
+			(obj.sub) = () => ([(this.Demote_icon())]);
 			return obj;
 		}
 		share_pointer_down(next){
@@ -35744,6 +35835,7 @@ var $;
 			return [
 				(this.Cover_box()), 
 				(this.Info()), 
+				(this.Demote()), 
 				(this.Share()), 
 				(this.Delete()), 
 				(this.Archive()), 
@@ -35761,6 +35853,9 @@ var $;
 	($mol_mem(($.$bog_music_track.prototype), "Title"));
 	($mol_mem(($.$bog_music_track.prototype), "Artist"));
 	($mol_mem(($.$bog_music_track.prototype), "Info"));
+	($mol_mem(($.$bog_music_track.prototype), "demote"));
+	($mol_mem(($.$bog_music_track.prototype), "Demote_icon"));
+	($mol_mem(($.$bog_music_track.prototype), "Demote"));
 	($mol_mem(($.$bog_music_track.prototype), "share_pointer_down"));
 	($mol_mem(($.$bog_music_track.prototype), "share_pointer_up"));
 	($mol_mem(($.$bog_music_track.prototype), "share_pointer_cancel"));
@@ -35834,6 +35929,12 @@ var $;
                 if (!this.archive_mode())
                     return null;
                 return super.Delete_forever();
+            }
+            /** В архиве порядок не важен и перетаскивание там тоже выключено. */
+            Demote() {
+                if (this.archive_mode())
+                    return null;
+                return super.Demote();
             }
             Delete() {
                 if (this.archive_mode())
@@ -36561,6 +36662,30 @@ var $;
             }
             return Number.isFinite(min) ? min : 1;
         }
+        /** Максимальный эффективный order внутри плейлиста. */
+        max_order(playlist) {
+            let max = -Infinity;
+            const dict = this.tracks();
+            for (const key of (dict.keys() ?? [])) {
+                const track = dict.key(key);
+                if (!track)
+                    continue;
+                if (track.playlist() !== playlist)
+                    continue;
+                max = Math.max(max, track.order());
+            }
+            return Number.isFinite(max) ? max : 0;
+        }
+        /**
+         * Отправить трек в самый низ своего плейлиста. Соседей не трогаем: order
+         * у них произвольный, и хватает одного числа больше нынешнего максимума.
+         */
+        move_to_bottom(key) {
+            const track = this.track(key);
+            if (!track)
+                return;
+            track.order_set(this.max_order(track.playlist()) + 1);
+        }
         /** Создаёт/обновляет метаданные трека. Blob — отдельно (save_blob). */
         save_track(audio) {
             const key = $bog_music_account_baza.key_of(audio);
@@ -36739,6 +36864,9 @@ var $;
             return h >>> 0;
         }
     }
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "move_to_bottom", null);
     __decorate([
         $mol_action
     ], $bog_music_account_baza.prototype, "save_track", null);

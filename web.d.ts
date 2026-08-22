@@ -37512,6 +37512,11 @@ declare namespace $ {
 		,
 		ReturnType< $bog_music_track['delete_forever'] >
 	>
+	type $bog_music_track__demote_bog_music_tracks_11 = $mol_type_enforce<
+		ReturnType< $bog_music_tracks['track_demote'] >
+		,
+		ReturnType< $bog_music_track['demote'] >
+	>
 	export class $bog_music_tracks extends $mol_list {
 		track_key( id: any): string
 		track_current( id: any): boolean
@@ -37522,6 +37527,7 @@ declare namespace $ {
 		track_archive( id: any, next?: any ): any
 		track_restore( id: any, next?: any ): any
 		track_delete( id: any, next?: any ): any
+		track_demote( id: any, next?: any ): any
 		Track( id: any): $bog_music_track
 		track_rows( ): readonly(any)[]
 		track_keys( ): readonly(any)[]
@@ -37532,6 +37538,7 @@ declare namespace $ {
 		archive_key( next?: any ): any
 		restore_key( next?: any ): any
 		delete_key( next?: any ): any
+		demote_key( next?: any ): any
 		rows( ): ReturnType< $bog_music_tracks['track_rows'] >
 	}
 	
@@ -37550,6 +37557,7 @@ declare namespace $.$$ {
         track_drop_here(index: number): void;
         track_archive(index: number): void;
         track_restore(index: number): void;
+        track_demote(index: number): void;
         track_delete(index: number): void;
     }
 }
@@ -51728,82 +51736,87 @@ declare namespace $ {
 		,
 		ReturnType< $bog_music_tracks['delete_key'] >
 	>
-	type $mol_string__hint_bog_music_app_34 = $mol_type_enforce<
+	type $bog_music_tracks__demote_key_bog_music_app_34 = $mol_type_enforce<
+		ReturnType< $bog_music_app['demote_key'] >
+		,
+		ReturnType< $bog_music_tracks['demote_key'] >
+	>
+	type $mol_string__hint_bog_music_app_35 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_string['hint'] >
 	>
-	type $mol_string__value_bog_music_app_35 = $mol_type_enforce<
+	type $mol_string__value_bog_music_app_36 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_query'] >
 		,
 		ReturnType< $mol_string['value'] >
 	>
-	type $mol_button_major__title_bog_music_app_36 = $mol_type_enforce<
+	type $mol_button_major__title_bog_music_app_37 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_major['title'] >
 	>
-	type $mol_button_major__click_bog_music_app_37 = $mol_type_enforce<
+	type $mol_button_major__click_bog_music_app_38 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_find'] >
 		,
 		ReturnType< $mol_button_major['click'] >
 	>
-	type $mol_view__sub_bog_music_app_38 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_app_39 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_list__rows_bog_music_app_39 = $mol_type_enforce<
+	type $mol_list__rows_bog_music_app_40 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_rows'] >
 		,
 		ReturnType< $mol_list['rows'] >
 	>
-	type $bog_music_tube_row__title_bog_music_app_40 = $mol_type_enforce<
+	type $bog_music_tube_row__title_bog_music_app_41 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_title'] >
 		,
 		ReturnType< $bog_music_tube_row['title'] >
 	>
-	type $bog_music_tube_row__subtitle_bog_music_app_41 = $mol_type_enforce<
+	type $bog_music_tube_row__subtitle_bog_music_app_42 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_meta'] >
 		,
 		ReturnType< $bog_music_tube_row['subtitle'] >
 	>
-	type $bog_music_tube_row__status_bog_music_app_42 = $mol_type_enforce<
+	type $bog_music_tube_row__status_bog_music_app_43 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_status_text'] >
 		,
 		ReturnType< $bog_music_tube_row['status'] >
 	>
-	type $bog_music_tube_row__cover_bog_music_app_43 = $mol_type_enforce<
+	type $bog_music_tube_row__cover_bog_music_app_44 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_cover'] >
 		,
 		ReturnType< $bog_music_tube_row['cover'] >
 	>
-	type $bog_music_tube_row__busy_bog_music_app_44 = $mol_type_enforce<
+	type $bog_music_tube_row__busy_bog_music_app_45 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_busy'] >
 		,
 		ReturnType< $bog_music_tube_row['busy'] >
 	>
-	type $bog_music_tube_row__play_bog_music_app_45 = $mol_type_enforce<
+	type $bog_music_tube_row__play_bog_music_app_46 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_play'] >
 		,
 		ReturnType< $bog_music_tube_row['play'] >
 	>
-	type $bog_music_tube_row__get_bog_music_app_46 = $mol_type_enforce<
+	type $bog_music_tube_row__get_bog_music_app_47 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_get'] >
 		,
 		ReturnType< $bog_music_tube_row['get'] >
 	>
-	type $bog_music_player__queue_keys_bog_music_app_47 = $mol_type_enforce<
+	type $bog_music_player__queue_keys_bog_music_app_48 = $mol_type_enforce<
 		ReturnType< $bog_music_app['visible_keys'] >
 		,
 		ReturnType< $bog_music_player['queue_keys'] >
 	>
-	type $bog_music_player__current_key_bog_music_app_48 = $mol_type_enforce<
+	type $bog_music_player__current_key_bog_music_app_49 = $mol_type_enforce<
 		ReturnType< $bog_music_app['current_key'] >
 		,
 		ReturnType< $bog_music_player['current_key'] >
 	>
-	type $bog_music_nav__section_bog_music_app_49 = $mol_type_enforce<
+	type $bog_music_nav__section_bog_music_app_50 = $mol_type_enforce<
 		ReturnType< $bog_music_app['section'] >
 		,
 		ReturnType< $bog_music_nav['section'] >
@@ -51854,6 +51867,7 @@ declare namespace $ {
 		archive_key( next?: any ): any
 		restore_key( next?: any ): any
 		delete_key( next?: any ): any
+		demote_key( next?: any ): any
 		Tracks( ): $bog_music_tracks
 		tube_query( next?: string ): string
 		Tube_query( ): $mol_string
@@ -51920,6 +51934,20 @@ declare namespace $.$$ {
         } | null): void;
         archive_key(key?: string | null): void;
         restore_key(key?: string | null): void;
+        /**
+         * Трек уезжает в самый низ списка — «надоело, но выбрасывать жалко».
+         *
+         * Очередь при этом не должна дёрнуться. queue_index у плеера — это
+         * позиция ТЕКУЩЕГО трека, следующий берётся как +1, а список после
+         * переезда весь сдвигается, и без правки индекса песня бы перескочила.
+         * Поэтому запоминаем, что должно заиграть следом, и после переезда
+         * ставим индекс так, чтобы +1 указал ровно на него.
+         *
+         * Отдельный случай — скинуть тот трек, который сейчас играет. Он и сам
+         * уедет в конец, но доиграть обязан здесь и сейчас, а дальше пойти на
+         * своего прежнего соседа: слушаю 1 2 3, скинул 2 — дальше 3, а не 4.
+         */
+        demote_key(key?: string | null): void;
         delete_key(key?: string | null): void;
         upload_files(next?: File[]): File[];
         vk_audios(): $bog_music_api_audio[];
@@ -52241,6 +52269,15 @@ declare namespace $ {
 
 declare namespace $ {
 
+	export class $mol_icon_format_vertical_align_bottom extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=bottom.view.tree.d.ts.map
+declare namespace $ {
+
 	export class $mol_icon_share extends $mol_icon {
 		path( ): string
 	}
@@ -52302,7 +52339,22 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__attr_bog_music_track_7 = $mol_type_enforce<
+	type $mol_button_minor__hint_bog_music_track_7 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['hint'] >
+	>
+	type $mol_button_minor__click_bog_music_track_8 = $mol_type_enforce<
+		ReturnType< $bog_music_track['demote'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub_bog_music_track_9 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_view__attr_bog_music_track_10 = $mol_type_enforce<
 		({ 
 			'bog_music_track_share_button': boolean,
 			'bog_music_track_share_selected': ReturnType< $bog_music_track['share_selected'] >,
@@ -52310,7 +52362,7 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['attr'] >
 	>
-	type $mol_view__event_bog_music_track_8 = $mol_type_enforce<
+	type $mol_view__event_bog_music_track_11 = $mol_type_enforce<
 		({ 
 			pointerdown( next?: ReturnType< $bog_music_track['share_pointer_down'] > ): ReturnType< $bog_music_track['share_pointer_down'] >,
 			pointerup( next?: ReturnType< $bog_music_track['share_pointer_up'] > ): ReturnType< $bog_music_track['share_pointer_up'] >,
@@ -52320,28 +52372,13 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['event'] >
 	>
-	type $mol_view__sub_bog_music_track_9 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_track_12 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_button_minor__click_bog_music_track_10 = $mol_type_enforce<
-		ReturnType< $bog_music_track['delete_cached'] >
-		,
-		ReturnType< $mol_button_minor['click'] >
-	>
-	type $mol_button_minor__sub_bog_music_track_11 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_button_minor['sub'] >
-	>
-	type $mol_button_minor__hint_bog_music_track_12 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_button_minor['hint'] >
-	>
 	type $mol_button_minor__click_bog_music_track_13 = $mol_type_enforce<
-		ReturnType< $bog_music_track['archive'] >
+		ReturnType< $bog_music_track['delete_cached'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
@@ -52356,7 +52393,7 @@ declare namespace $ {
 		ReturnType< $mol_button_minor['hint'] >
 	>
 	type $mol_button_minor__click_bog_music_track_16 = $mol_type_enforce<
-		ReturnType< $bog_music_track['restore'] >
+		ReturnType< $bog_music_track['archive'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
@@ -52371,11 +52408,26 @@ declare namespace $ {
 		ReturnType< $mol_button_minor['hint'] >
 	>
 	type $mol_button_minor__click_bog_music_track_19 = $mol_type_enforce<
-		ReturnType< $bog_music_track['delete_forever'] >
+		ReturnType< $bog_music_track['restore'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
 	type $mol_button_minor__sub_bog_music_track_20 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_button_minor__hint_bog_music_track_21 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['hint'] >
+	>
+	type $mol_button_minor__click_bog_music_track_22 = $mol_type_enforce<
+		ReturnType< $bog_music_track['delete_forever'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub_bog_music_track_23 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
@@ -52393,6 +52445,9 @@ declare namespace $ {
 		artist( ): string
 		Artist( ): $mol_paragraph
 		Info( ): $mol_view
+		demote( next?: any ): any
+		Demote_icon( ): $mol_icon_format_vertical_align_bottom
+		Demote( ): $mol_button_minor
 		share_pointer_down( next?: any ): any
 		share_pointer_up( next?: any ): any
 		share_pointer_cancel( next?: any ): any
@@ -52450,6 +52505,8 @@ declare namespace $.$$ {
         Archive(): any;
         Restore(): any;
         Delete_forever(): any;
+        /** В архиве порядок не важен и перетаскивание там тоже выключено. */
+        Demote(): any;
         Delete(): any;
         on_play_click(): void;
         event_drag_start(event: DragEvent): void;
@@ -65023,6 +65080,13 @@ declare namespace $ {
         /** Минимальный эффективный order среди существующих треков (свежесозданный
          * трек без Order даёт added-timestamp — на минимум не влияет). */
         min_order(): number;
+        /** Максимальный эффективный order внутри плейлиста. */
+        max_order(playlist: string): number;
+        /**
+         * Отправить трек в самый низ своего плейлиста. Соседей не трогаем: order
+         * у них произвольный, и хватает одного числа больше нынешнего максимума.
+         */
+        move_to_bottom(key: string): void;
         /** Создаёт/обновляет метаданные трека. Blob — отдельно (save_blob). */
         save_track(audio: $bog_music_api_audio): void;
         /**
