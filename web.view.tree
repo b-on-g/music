@@ -2699,31 +2699,88 @@ $mol_icon_tune $mol_icon path \M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15
 
 $mol_icon_tune_vertical $mol_icon path \M7 3H5V9H7V3M19 3H17V13H19V3M3 13H5V21H7V13H9V11H3V13M15 7H13V3H11V7H9V9H15V7M11 21H13V11H11V21M15 15V17H17V21H19V17H21V15H15Z
 
-$bog_music_eq_band $mol_view
-	db_text \
-	freq_text \
-	fill_top \
-	fill_height \
+$mol_svg_line $mol_svg
+	dom_name \line
+	pos /
+		<= from /
+		<= to /
+	attr *
+		^
+		x1 <= from_x \
+		y1 <= from_y \
+		x2 <= to_x \
+		y2 <= to_y \
+
+$mol_svg_circle $mol_svg
+	dom_name \circle
+	pos /
+	attr *
+		^
+		r <= radius \.5%
+		cx <= pos_x \
+		cy <= pos_y \
+
+$bog_music_eq_curve $mol_view
+	gains /number
 	pointer_down?event null
 	pointer_move?event null
 	pointer_up?event null
 	sub /
-		<= Db $mol_paragraph
-			title <= db_text
-		<= Slider $mol_view
+		<= Db_row $mol_view
+			sub <= db_list /
+				<= Db*0 $mol_paragraph
+					title <= db_text* \
+					style *
+						color <= db_color* \
+		<= Plot $mol_svg_root
+			view_box <= view_box \
+			aspect \xMidYMid meet
 			event *
 				pointerdown?event <=> pointer_down?event
 				pointermove?event <=> pointer_move?event
 				pointerup?event <=> pointer_up?event
 				pointercancel?event <=> pointer_up?event
 			sub /
-				<= Zero $mol_view
-				<= Fill $mol_view
-					style *
-						top <= fill_top
-						height <= fill_height
-		<= Freq $mol_paragraph
-			title <= freq_text
+				<= Defs $mol_svg
+					dom_name \defs
+					sub /
+						<= Gradient $mol_svg
+							dom_name \linearGradient
+							attr *
+								id <= gradient_id \
+								x1 \0%
+								x2 \100%
+								y1 \0%
+								y2 \0%
+							sub <= stop_list /
+								<= Stop*0 $mol_svg
+									dom_name \stop
+									attr *
+										offset <= stop_offset* \
+										stop-color <= stop_color* \
+				<= Zero $mol_svg_line
+					from_x <= zero_x1 \
+					from_y <= zero_y \
+					to_x <= zero_x2 \
+					to_y <= zero_y \
+				<= Curve $mol_svg_path
+					geometry <= curve_geometry \
+					attr *
+						^
+						stroke <= curve_stroke \
+				<= Dots $mol_svg_group
+					sub <= dot_list /
+						<= Dot*0 $mol_svg_circle
+							radius \4
+							pos_x <= dot_x* \
+							pos_y <= dot_y* \
+							attr *
+								^
+								stroke <= dot_color* \
+		<= Freq_row $mol_view
+			sub <= freq_list /
+				<= Freq*0 $mol_paragraph
+					title <= freq_text* \
 
 $mol_icon_skip_previous $mol_icon path \M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z
 
@@ -2782,27 +2839,21 @@ $bog_music_player $mol_view
 					bubble_content /
 						<= Eq_panel $mol_view
 							sub /
+								<= Eq_curve $bog_music_eq_curve
+									gains <= eq_gains /number
+									pointer_down?event <=> eq_pointer_down?event null
+									pointer_move?event <=> eq_pointer_move?event null
+									pointer_up?event <=> eq_pointer_up?event null
 								<= Eq_power $mol_check_icon
 									title \Эквалайзер
 									hint \Включить эквалайзер
 									Icon <= Eq_power_icon $mol_icon_tune_vertical
 									checked? <=> eq_on? false
-								<= Eq_presets $mol_switch
-									options <= eq_preset_options *
-									value? <=> eq_preset? \
-								<= Eq_bands $mol_view
-									sub <= eq_band_list /
-										<= Eq_band*0 $bog_music_eq_band
-											db_text <= eq_db_text* \
-											freq_text <= eq_freq_text* \
-											fill_top <= eq_fill_top* \
-											fill_height <= eq_fill_height* \
-											pointer_down?event <=> eq_pointer_down*?event null
-											pointer_move?event <=> eq_pointer_move*?event null
-											pointer_up?event <=> eq_pointer_up*?event null
-								<= Eq_reset $mol_button_minor
-									title \Сбросить полосы
-									click? <=> eq_reset? null
+								<= Eq_presets $mol_view
+									sub <= eq_preset_rows /
+										<= Eq_preset_row*0 $mol_check
+											title <= eq_preset_title* \
+											checked? <=> eq_preset_checked*? false
 		<= Controls $mol_view
 			sub /
 				<= Left $mol_view

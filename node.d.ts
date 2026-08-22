@@ -5182,6 +5182,7 @@ declare namespace $ {
         _seal_shot: $mol_wire_dict<string, $giper_baza_unit_seal>;
         _gift: $mol_wire_dict<string, $giper_baza_unit_gift>;
         _sand: $mol_wire_dict<string, $mol_wire_dict<string, $mol_wire_dict<string, $giper_baza_unit_sand>>>;
+        _unit_hash: Map<string, $giper_baza_unit_base>;
         pass_add(pass: $giper_baza_auth_pass): void;
         seal_add(seal: $giper_baza_unit_seal): void;
         gift_add(gift: $giper_baza_unit_gift): void;
@@ -5330,6 +5331,7 @@ declare namespace $ {
         tier_min(): $giper_baza_rank_tier;
         encoded(): boolean;
         _land: null | $giper_baza_land;
+        _alive: boolean;
         dump(): {};
         inspect(): string;
         toJSON(): string;
@@ -47898,24 +47900,31 @@ declare namespace $.$$ {
 
 declare namespace $ {
     /**
-     * Пятиполосный эквалайзер. Раскладка частот — как у системного эквалайзера
-     * Android и Я.Музыки: 60 / 230 / 910 / 3600 / 14000 Гц.
+     * Шестиполосный эквалайзер. Раскладка и названия пресетов — как в Я.Музыке
+     * на Android: 60 / 150 / 400 / 1.0k / 2.4k / 15k Гц.
      *
-     * Крайние полосы — шельфы, а не колокола: низ и верх двигают целиком, а
-     * колокол цепляет только свою метку и спадает по обе стороны от неё.
-     * Средние три — колокола с Q=1, примерно полторы октавы на полосу;
-     * соседние сходятся без провалов между ними.
+     * Крайние полосы — шельфы: низ и верх двигают целиком, а колокол цепляет
+     * только свою метку и спадает по обе стороны от неё. Средние четыре —
+     * колокола с Q=1.4, около октавы на полосу: полосы стоят в 1.3 октавы друг
+     * от друга, и при более широком колоколе они бы заметно складывались.
      *
      * У шельфа `frequency` — середина перехода, где набрана ПОЛОВИНА усиления,
-     * а не начало полки. Поэтому угол стоит вдвое выше метки: шельф на 120 Гц
-     * отдаёт на 60 Гц 7.5 dB из просимых 8, а поставленный на саму метку отдал
-     * бы там 4 и увёл остальное под 40 Гц, куда ни телефон, ни ноутбук, ни
-     * затычки всё равно не играют. Наверху так же: угол 8 кГц, метка 14K.
+     * а не начало полки, поэтому углы стоят выше своих меток. Замерено
+     * (getFrequencyResponse, +12 на одну полосу, остальные в нуле):
+     *
+     *   полоса 60    → +9.7 на 60 Гц,  +1.7 на 150 Гц
+     *   полоса 150   → +12  на 150 Гц, +1.5 на 60 и +1.3 на 400
+     *   полоса 15000 → +11  на 15 кГц, 0 на 2.4 кГц
+     *
+     * То есть каждый ползунок делает то, что написано на его метке, а соседу
+     * достаётся полтора децибела — нарисованная кривая совпадает со слышимым.
      */
     class $bog_music_eq extends $mol_object {
         static bands: readonly {
+            /** Частота фильтра. У шельфов выше метки: там половина усиления. */
             freq: number;
             type: 'lowshelf' | 'peaking' | 'highshelf';
+            /** Что написано под точкой на графике. */
             title: string;
         }[];
         /** Добротность колоколов. */
@@ -47926,14 +47935,17 @@ declare namespace $ {
          */
         static range_db: number;
         /**
-         * Пресеты. Формы взяты у классических эквалайзеров и сведены с десяти
-         * полос к нашим пяти. `flat` первым — это же и состояние «выключено».
+         * Пресеты. Названия и порядок — как в Я.Музыке; формы подобраны под нашу
+         * сетку полос по смыслу названия, а не скопированы из чужих таблиц.
+         * `default` первым: ровная кривая, она же состояние «ничего не трогали».
          */
         static presets: readonly {
             id: string;
             title: string;
             gains: readonly number[];
         }[];
+        /** Подпись состояния, которое ни одному пресету не соответствует. */
+        static custom_title: string;
         /** Все полосы в нуле — сигнал проходит нетронутым. */
         static flat(): number[];
         static preset(id: string): number[] | null;
@@ -47945,6 +47957,13 @@ declare namespace $ {
          * версией с другим числом полос — недостающие в ноль, лишние прочь.
          */
         static clamp(gains: readonly number[] | null | undefined): number[];
+        /**
+         * Цвет точки по её усилению, как на графике в Я.Музыке: красный наверху,
+         * жёлтый в нуле, зелёный внизу.
+         */
+        static color(db: number): string;
+        /** Подпись усиления над точкой. */
+        static db_text(db: number): string;
         /** Набор одной строкой — так он и лежит в baza. */
         static stringify(gains: readonly number[]): string;
         static parse(text: string | null | undefined): number[];
@@ -60861,49 +60880,261 @@ declare namespace $ {
 //# sourceMappingURL=vertical.view.tree.d.ts.map
 declare namespace $ {
 
-	type $mol_paragraph__title_bog_music_eq_band_1 = $mol_type_enforce<
-		ReturnType< $bog_music_eq_band['db_text'] >
+	export class $mol_svg_line extends $mol_svg {
+		from( ): readonly(any)[]
+		to( ): readonly(any)[]
+		from_x( ): string
+		from_y( ): string
+		to_x( ): string
+		to_y( ): string
+		dom_name( ): string
+		pos( ): readonly(any)[]
+		attr( ): ({ 
+			'x1': ReturnType< $mol_svg_line['from_x'] >,
+			'y1': ReturnType< $mol_svg_line['from_y'] >,
+			'x2': ReturnType< $mol_svg_line['to_x'] >,
+			'y2': ReturnType< $mol_svg_line['to_y'] >,
+		})  & ReturnType< $mol_svg['attr'] >
+	}
+	
+}
+
+//# sourceMappingURL=line.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_svg_line extends $.$mol_svg_line {
+        from(): any;
+        from_x(): any;
+        from_y(): any;
+        to(): any;
+        to_x(): any;
+        to_y(): any;
+    }
+}
+
+declare namespace $ {
+
+	export class $mol_svg_circle extends $mol_svg {
+		radius( ): string
+		pos_x( ): string
+		pos_y( ): string
+		dom_name( ): string
+		pos( ): readonly(any)[]
+		attr( ): ({ 
+			'r': ReturnType< $mol_svg_circle['radius'] >,
+			'cx': ReturnType< $mol_svg_circle['pos_x'] >,
+			'cy': ReturnType< $mol_svg_circle['pos_y'] >,
+		})  & ReturnType< $mol_svg['attr'] >
+	}
+	
+}
+
+//# sourceMappingURL=circle.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_svg_circle extends $.$mol_svg_circle {
+        pos_x(): any;
+        pos_y(): any;
+    }
+}
+
+declare namespace $ {
+
+	export class $mol_svg_group extends $mol_svg {
+		dom_name( ): string
+	}
+	
+}
+
+//# sourceMappingURL=group.view.tree.d.ts.map
+declare namespace $ {
+
+	type $mol_paragraph__title_bog_music_eq_curve_1 = $mol_type_enforce<
+		ReturnType< $bog_music_eq_curve['db_text'] >
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_view__style_bog_music_eq_band_2 = $mol_type_enforce<
+	type $mol_paragraph__style_bog_music_eq_curve_2 = $mol_type_enforce<
 		({ 
-			'top': ReturnType< $bog_music_eq_band['fill_top'] >,
-			'height': ReturnType< $bog_music_eq_band['fill_height'] >,
+			'color': ReturnType< $bog_music_eq_curve['db_color'] >,
 		}) 
 		,
-		ReturnType< $mol_view['style'] >
+		ReturnType< $mol_paragraph['style'] >
 	>
-	type $mol_view__event_bog_music_eq_band_3 = $mol_type_enforce<
-		({ 
-			pointerdown( next?: ReturnType< $bog_music_eq_band['pointer_down'] > ): ReturnType< $bog_music_eq_band['pointer_down'] >,
-			pointermove( next?: ReturnType< $bog_music_eq_band['pointer_move'] > ): ReturnType< $bog_music_eq_band['pointer_move'] >,
-			pointerup( next?: ReturnType< $bog_music_eq_band['pointer_up'] > ): ReturnType< $bog_music_eq_band['pointer_up'] >,
-			pointercancel( next?: ReturnType< $bog_music_eq_band['pointer_up'] > ): ReturnType< $bog_music_eq_band['pointer_up'] >,
-		}) 
-		,
-		ReturnType< $mol_view['event'] >
-	>
-	type $mol_view__sub_bog_music_eq_band_4 = $mol_type_enforce<
-		readonly(any)[]
+	type $mol_view__sub_bog_music_eq_curve_3 = $mol_type_enforce<
+		ReturnType< $bog_music_eq_curve['db_list'] >
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_paragraph__title_bog_music_eq_band_5 = $mol_type_enforce<
-		ReturnType< $bog_music_eq_band['freq_text'] >
+	type $mol_svg__dom_name_bog_music_eq_curve_4 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_svg['dom_name'] >
+	>
+	type $mol_svg__attr_bog_music_eq_curve_5 = $mol_type_enforce<
+		({ 
+			'offset': ReturnType< $bog_music_eq_curve['stop_offset'] >,
+			'stop-color': ReturnType< $bog_music_eq_curve['stop_color'] >,
+		}) 
+		,
+		ReturnType< $mol_svg['attr'] >
+	>
+	type $mol_svg__dom_name_bog_music_eq_curve_6 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_svg['dom_name'] >
+	>
+	type $mol_svg__attr_bog_music_eq_curve_7 = $mol_type_enforce<
+		({ 
+			'id': ReturnType< $bog_music_eq_curve['gradient_id'] >,
+			'x1': string,
+			'x2': string,
+			'y1': string,
+			'y2': string,
+		}) 
+		,
+		ReturnType< $mol_svg['attr'] >
+	>
+	type $mol_svg__sub_bog_music_eq_curve_8 = $mol_type_enforce<
+		ReturnType< $bog_music_eq_curve['stop_list'] >
+		,
+		ReturnType< $mol_svg['sub'] >
+	>
+	type $mol_svg__dom_name_bog_music_eq_curve_9 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_svg['dom_name'] >
+	>
+	type $mol_svg__sub_bog_music_eq_curve_10 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_svg['sub'] >
+	>
+	type $mol_svg_line__from_x_bog_music_eq_curve_11 = $mol_type_enforce<
+		ReturnType< $bog_music_eq_curve['zero_x1'] >
+		,
+		ReturnType< $mol_svg_line['from_x'] >
+	>
+	type $mol_svg_line__from_y_bog_music_eq_curve_12 = $mol_type_enforce<
+		ReturnType< $bog_music_eq_curve['zero_y'] >
+		,
+		ReturnType< $mol_svg_line['from_y'] >
+	>
+	type $mol_svg_line__to_x_bog_music_eq_curve_13 = $mol_type_enforce<
+		ReturnType< $bog_music_eq_curve['zero_x2'] >
+		,
+		ReturnType< $mol_svg_line['to_x'] >
+	>
+	type $mol_svg_line__to_y_bog_music_eq_curve_14 = $mol_type_enforce<
+		ReturnType< $bog_music_eq_curve['zero_y'] >
+		,
+		ReturnType< $mol_svg_line['to_y'] >
+	>
+	type $mol_svg_path__geometry_bog_music_eq_curve_15 = $mol_type_enforce<
+		ReturnType< $bog_music_eq_curve['curve_geometry'] >
+		,
+		ReturnType< $mol_svg_path['geometry'] >
+	>
+	type $mol_svg_path__attr_bog_music_eq_curve_16 = $mol_type_enforce<
+		({ 
+			'stroke': ReturnType< $bog_music_eq_curve['curve_stroke'] >,
+		})  & ReturnType< $mol_svg_path['attr'] >
+		,
+		ReturnType< $mol_svg_path['attr'] >
+	>
+	type $mol_svg_circle__radius_bog_music_eq_curve_17 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_svg_circle['radius'] >
+	>
+	type $mol_svg_circle__pos_x_bog_music_eq_curve_18 = $mol_type_enforce<
+		ReturnType< $bog_music_eq_curve['dot_x'] >
+		,
+		ReturnType< $mol_svg_circle['pos_x'] >
+	>
+	type $mol_svg_circle__pos_y_bog_music_eq_curve_19 = $mol_type_enforce<
+		ReturnType< $bog_music_eq_curve['dot_y'] >
+		,
+		ReturnType< $mol_svg_circle['pos_y'] >
+	>
+	type $mol_svg_circle__attr_bog_music_eq_curve_20 = $mol_type_enforce<
+		({ 
+			'stroke': ReturnType< $bog_music_eq_curve['dot_color'] >,
+		})  & ReturnType< $mol_svg_circle['attr'] >
+		,
+		ReturnType< $mol_svg_circle['attr'] >
+	>
+	type $mol_svg_group__sub_bog_music_eq_curve_21 = $mol_type_enforce<
+		ReturnType< $bog_music_eq_curve['dot_list'] >
+		,
+		ReturnType< $mol_svg_group['sub'] >
+	>
+	type $mol_svg_root__view_box_bog_music_eq_curve_22 = $mol_type_enforce<
+		ReturnType< $bog_music_eq_curve['view_box'] >
+		,
+		ReturnType< $mol_svg_root['view_box'] >
+	>
+	type $mol_svg_root__aspect_bog_music_eq_curve_23 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_svg_root['aspect'] >
+	>
+	type $mol_svg_root__event_bog_music_eq_curve_24 = $mol_type_enforce<
+		({ 
+			pointerdown( next?: ReturnType< $bog_music_eq_curve['pointer_down'] > ): ReturnType< $bog_music_eq_curve['pointer_down'] >,
+			pointermove( next?: ReturnType< $bog_music_eq_curve['pointer_move'] > ): ReturnType< $bog_music_eq_curve['pointer_move'] >,
+			pointerup( next?: ReturnType< $bog_music_eq_curve['pointer_up'] > ): ReturnType< $bog_music_eq_curve['pointer_up'] >,
+			pointercancel( next?: ReturnType< $bog_music_eq_curve['pointer_up'] > ): ReturnType< $bog_music_eq_curve['pointer_up'] >,
+		}) 
+		,
+		ReturnType< $mol_svg_root['event'] >
+	>
+	type $mol_svg_root__sub_bog_music_eq_curve_25 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_svg_root['sub'] >
+	>
+	type $mol_paragraph__title_bog_music_eq_curve_26 = $mol_type_enforce<
+		ReturnType< $bog_music_eq_curve['freq_text'] >
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	export class $bog_music_eq_band extends $mol_view {
-		Db( ): $mol_paragraph
-		Zero( ): $mol_view
-		Fill( ): $mol_view
-		Slider( ): $mol_view
-		Freq( ): $mol_paragraph
-		db_text( ): string
-		freq_text( ): string
-		fill_top( ): string
-		fill_height( ): string
+	type $mol_view__sub_bog_music_eq_curve_27 = $mol_type_enforce<
+		ReturnType< $bog_music_eq_curve['freq_list'] >
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	export class $bog_music_eq_curve extends $mol_view {
+		db_text( id: any): string
+		db_color( id: any): string
+		Db( id: any): $mol_paragraph
+		db_list( ): readonly(any)[]
+		Db_row( ): $mol_view
+		view_box( ): string
+		gradient_id( ): string
+		stop_offset( id: any): string
+		stop_color( id: any): string
+		Stop( id: any): $mol_svg
+		stop_list( ): readonly(any)[]
+		Gradient( ): $mol_svg
+		Defs( ): $mol_svg
+		zero_x1( ): string
+		zero_y( ): string
+		zero_x2( ): string
+		Zero( ): $mol_svg_line
+		curve_geometry( ): string
+		curve_stroke( ): string
+		Curve( ): $mol_svg_path
+		dot_x( id: any): string
+		dot_y( id: any): string
+		dot_color( id: any): string
+		Dot( id: any): $mol_svg_circle
+		dot_list( ): readonly(any)[]
+		Dots( ): $mol_svg_group
+		Plot( ): $mol_svg_root
+		freq_text( id: any): string
+		Freq( id: any): $mol_paragraph
+		freq_list( ): readonly(any)[]
+		Freq_row( ): $mol_view
+		gains( ): readonly(number)[]
 		pointer_down( next?: any ): any
 		pointer_move( next?: any ): any
 		pointer_up( next?: any ): any
@@ -60912,7 +61143,61 @@ declare namespace $ {
 	
 }
 
-//# sourceMappingURL=band.view.tree.d.ts.map
+//# sourceMappingURL=curve.view.tree.d.ts.map
+declare namespace $.$$ {
+    /**
+     * График эквалайзера: точки на общей кривой, как в Я.Музыке. Компонент
+     * только рисует и отдаёт события указателя наружу — какая полоса поехала и
+     * куда, считает владелец (плеер): он же держит настройки.
+     *
+     * Кривая проходит ЧЕРЕЗ точки, а не повторяет расчётную АЧХ. Так у Яндекса,
+     * и так честнее для управления: полосы разведены достаточно (соседу от
+     * поднятой полосы достаётся полтора децибела), чтобы кривая совпадала со
+     * слышимым, а рисовать настоящую АЧХ значило бы уводить линию мимо точки,
+     * за которую человек тянет.
+     */
+    class $bog_music_eq_curve extends $.$bog_music_eq_curve {
+        /** Система координат графика. Совпадает с aspectRatio в стилях. */
+        static width: number;
+        static height: number;
+        /** Полувысота поля от нуля: остаток — поля под радиус точки. */
+        static amplitude: number;
+        view_box(): string;
+        gains(): readonly number[];
+        /** Колонки стоят по центрам шести равных долей ширины — как подписи. */
+        static column(index: number): number;
+        static row(db: number): number;
+        /** Усиление по вертикальной доле касания. Края поля — потолок диапазона. */
+        static db_at(part: number): number;
+        /** Полоса, к колонке которой ближе всего точка касания. */
+        static band_at(x: number): number;
+        zero_x1(): string;
+        zero_x2(): string;
+        zero_y(): string;
+        db_list(): $.$mol_paragraph[];
+        db_text(index: number): string;
+        db_color(index: number): string;
+        freq_list(): $.$mol_paragraph[];
+        freq_text(index: number): string;
+        dot_list(): $.$mol_svg_circle[];
+        dot_x(index: number): string;
+        dot_y(index: number): string;
+        dot_color(index: number): string;
+        gradient_id(): string;
+        curve_stroke(): string;
+        stop_list(): $.$mol_svg[];
+        stop_offset(index: number): string;
+        stop_color(index: number): string;
+        /**
+         * Гладкая кривая через точки (Catmull-Rom, переведённый в кубические
+         * Безье). По краям добавлены точки у самых границ на высоте крайних
+         * полос: без них линия обрывалась бы на первой точке, а у Яндекса она
+         * доходит до края поля.
+         */
+        curve_geometry(): string;
+    }
+}
+
 declare namespace $.$$ {
 }
 
@@ -61154,148 +61439,148 @@ declare namespace $ {
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_check_icon__title_bog_music_player_12 = $mol_type_enforce<
+	type $bog_music_eq_curve__gains_bog_music_player_12 = $mol_type_enforce<
+		ReturnType< $bog_music_player['eq_gains'] >
+		,
+		ReturnType< $bog_music_eq_curve['gains'] >
+	>
+	type $bog_music_eq_curve__pointer_down_bog_music_player_13 = $mol_type_enforce<
+		ReturnType< $bog_music_player['eq_pointer_down'] >
+		,
+		ReturnType< $bog_music_eq_curve['pointer_down'] >
+	>
+	type $bog_music_eq_curve__pointer_move_bog_music_player_14 = $mol_type_enforce<
+		ReturnType< $bog_music_player['eq_pointer_move'] >
+		,
+		ReturnType< $bog_music_eq_curve['pointer_move'] >
+	>
+	type $bog_music_eq_curve__pointer_up_bog_music_player_15 = $mol_type_enforce<
+		ReturnType< $bog_music_player['eq_pointer_up'] >
+		,
+		ReturnType< $bog_music_eq_curve['pointer_up'] >
+	>
+	type $mol_check_icon__title_bog_music_player_16 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_check_icon['title'] >
 	>
-	type $mol_check_icon__hint_bog_music_player_13 = $mol_type_enforce<
+	type $mol_check_icon__hint_bog_music_player_17 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_check_icon['hint'] >
 	>
-	type $mol_check_icon__Icon_bog_music_player_14 = $mol_type_enforce<
+	type $mol_check_icon__Icon_bog_music_player_18 = $mol_type_enforce<
 		ReturnType< $bog_music_player['Eq_power_icon'] >
 		,
 		ReturnType< $mol_check_icon['Icon'] >
 	>
-	type $mol_check_icon__checked_bog_music_player_15 = $mol_type_enforce<
+	type $mol_check_icon__checked_bog_music_player_19 = $mol_type_enforce<
 		ReturnType< $bog_music_player['eq_on'] >
 		,
 		ReturnType< $mol_check_icon['checked'] >
 	>
-	type $mol_switch__options_bog_music_player_16 = $mol_type_enforce<
-		ReturnType< $bog_music_player['eq_preset_options'] >
+	type $mol_check__title_bog_music_player_20 = $mol_type_enforce<
+		ReturnType< $bog_music_player['eq_preset_title'] >
 		,
-		ReturnType< $mol_switch['options'] >
+		ReturnType< $mol_check['title'] >
 	>
-	type $mol_switch__value_bog_music_player_17 = $mol_type_enforce<
-		ReturnType< $bog_music_player['eq_preset'] >
+	type $mol_check__checked_bog_music_player_21 = $mol_type_enforce<
+		ReturnType< $bog_music_player['eq_preset_checked'] >
 		,
-		ReturnType< $mol_switch['value'] >
+		ReturnType< $mol_check['checked'] >
 	>
-	type $bog_music_eq_band__db_text_bog_music_player_18 = $mol_type_enforce<
-		ReturnType< $bog_music_player['eq_db_text'] >
-		,
-		ReturnType< $bog_music_eq_band['db_text'] >
-	>
-	type $bog_music_eq_band__freq_text_bog_music_player_19 = $mol_type_enforce<
-		ReturnType< $bog_music_player['eq_freq_text'] >
-		,
-		ReturnType< $bog_music_eq_band['freq_text'] >
-	>
-	type $bog_music_eq_band__fill_top_bog_music_player_20 = $mol_type_enforce<
-		ReturnType< $bog_music_player['eq_fill_top'] >
-		,
-		ReturnType< $bog_music_eq_band['fill_top'] >
-	>
-	type $bog_music_eq_band__fill_height_bog_music_player_21 = $mol_type_enforce<
-		ReturnType< $bog_music_player['eq_fill_height'] >
-		,
-		ReturnType< $bog_music_eq_band['fill_height'] >
-	>
-	type $bog_music_eq_band__pointer_down_bog_music_player_22 = $mol_type_enforce<
-		ReturnType< $bog_music_player['eq_pointer_down'] >
-		,
-		ReturnType< $bog_music_eq_band['pointer_down'] >
-	>
-	type $bog_music_eq_band__pointer_move_bog_music_player_23 = $mol_type_enforce<
-		ReturnType< $bog_music_player['eq_pointer_move'] >
-		,
-		ReturnType< $bog_music_eq_band['pointer_move'] >
-	>
-	type $bog_music_eq_band__pointer_up_bog_music_player_24 = $mol_type_enforce<
-		ReturnType< $bog_music_player['eq_pointer_up'] >
-		,
-		ReturnType< $bog_music_eq_band['pointer_up'] >
-	>
-	type $mol_view__sub_bog_music_player_25 = $mol_type_enforce<
-		ReturnType< $bog_music_player['eq_band_list'] >
+	type $mol_view__sub_bog_music_player_22 = $mol_type_enforce<
+		ReturnType< $bog_music_player['eq_preset_rows'] >
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_button_minor__title_bog_music_player_26 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_button_minor['title'] >
-	>
-	type $mol_button_minor__click_bog_music_player_27 = $mol_type_enforce<
-		ReturnType< $bog_music_player['eq_reset'] >
-		,
-		ReturnType< $mol_button_minor['click'] >
-	>
-	type $mol_view__sub_bog_music_player_28 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_23 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_pop__Anchor_bog_music_player_29 = $mol_type_enforce<
+	type $mol_pop__Anchor_bog_music_player_24 = $mol_type_enforce<
 		ReturnType< $bog_music_player['Eq_anchor'] >
 		,
 		ReturnType< $mol_pop['Anchor'] >
 	>
-	type $mol_pop__bubble_content_bog_music_player_30 = $mol_type_enforce<
+	type $mol_pop__bubble_content_bog_music_player_25 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_pop['bubble_content'] >
 	>
-	type $mol_view__sub_bog_music_player_31 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_26 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_paragraph__title_bog_music_player_32 = $mol_type_enforce<
+	type $mol_paragraph__title_bog_music_player_27 = $mol_type_enforce<
 		ReturnType< $bog_music_player['title'] >
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_paragraph__title_bog_music_player_33 = $mol_type_enforce<
+	type $mol_paragraph__title_bog_music_player_28 = $mol_type_enforce<
 		ReturnType< $bog_music_player['artist'] >
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_view__sub_bog_music_player_34 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_29 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_player_35 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_30 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_button_minor__click_bog_music_player_36 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_player_31 = $mol_type_enforce<
 		ReturnType< $bog_music_player['prev'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_music_player_37 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_music_player_32 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_button_minor__click_bog_music_player_38 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_player_33 = $mol_type_enforce<
 		ReturnType< $bog_music_player['toggle'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_music_player_39 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_music_player_34 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_button_minor__click_bog_music_player_40 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_player_35 = $mol_type_enforce<
 		ReturnType< $bog_music_player['toggle'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub_bog_music_player_36 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_button_minor__click_bog_music_player_37 = $mol_type_enforce<
+		ReturnType< $bog_music_player['next'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub_bog_music_player_38 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_button_minor__hint_bog_music_player_39 = $mol_type_enforce<
+		ReturnType< $bog_music_player['repeat_hint'] >
+		,
+		ReturnType< $mol_button_minor['hint'] >
+	>
+	type $mol_button_minor__click_bog_music_player_40 = $mol_type_enforce<
+		ReturnType< $bog_music_player['repeat_cycle'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
@@ -61304,74 +61589,49 @@ declare namespace $ {
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_button_minor__click_bog_music_player_42 = $mol_type_enforce<
-		ReturnType< $bog_music_player['next'] >
-		,
-		ReturnType< $mol_button_minor['click'] >
-	>
-	type $mol_button_minor__sub_bog_music_player_43 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_button_minor['sub'] >
-	>
-	type $mol_button_minor__hint_bog_music_player_44 = $mol_type_enforce<
-		ReturnType< $bog_music_player['repeat_hint'] >
-		,
-		ReturnType< $mol_button_minor['hint'] >
-	>
-	type $mol_button_minor__click_bog_music_player_45 = $mol_type_enforce<
-		ReturnType< $bog_music_player['repeat_cycle'] >
-		,
-		ReturnType< $mol_button_minor['click'] >
-	>
-	type $mol_button_minor__sub_bog_music_player_46 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_button_minor['sub'] >
-	>
-	type $mol_view__sub_bog_music_player_47 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_42 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_button_minor__hint_bog_music_player_48 = $mol_type_enforce<
+	type $mol_button_minor__hint_bog_music_player_43 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__click_bog_music_player_49 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_player_44 = $mol_type_enforce<
 		ReturnType< $bog_music_player['volume_toggle'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_music_player_50 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_music_player_45 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_check_icon__hint_bog_music_player_51 = $mol_type_enforce<
+	type $mol_check_icon__hint_bog_music_player_46 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_check_icon['hint'] >
 	>
-	type $mol_check_icon__Icon_bog_music_player_52 = $mol_type_enforce<
+	type $mol_check_icon__Icon_bog_music_player_47 = $mol_type_enforce<
 		ReturnType< $bog_music_player['Norm_icon'] >
 		,
 		ReturnType< $mol_check_icon['Icon'] >
 	>
-	type $mol_check_icon__checked_bog_music_player_53 = $mol_type_enforce<
+	type $mol_check_icon__checked_bog_music_player_48 = $mol_type_enforce<
 		ReturnType< $bog_music_player['normalize'] >
 		,
 		ReturnType< $mol_check_icon['checked'] >
 	>
-	type $mol_view__style_bog_music_player_54 = $mol_type_enforce<
+	type $mol_view__style_bog_music_player_49 = $mol_type_enforce<
 		({ 
 			'height': ReturnType< $bog_music_player['volume_fill_height'] >,
 		}) 
 		,
 		ReturnType< $mol_view['style'] >
 	>
-	type $mol_view__event_bog_music_player_55 = $mol_type_enforce<
+	type $mol_view__event_bog_music_player_50 = $mol_type_enforce<
 		({ 
 			pointerdown( next?: ReturnType< $bog_music_player['volume_pointer_down'] > ): ReturnType< $bog_music_player['volume_pointer_down'] >,
 			pointermove( next?: ReturnType< $bog_music_player['volume_pointer_move'] > ): ReturnType< $bog_music_player['volume_pointer_move'] >,
@@ -61381,47 +61641,47 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['event'] >
 	>
-	type $mol_view__sub_bog_music_player_56 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_51 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_player_57 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_52 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_pop__align_bog_music_player_58 = $mol_type_enforce<
+	type $mol_pop__align_bog_music_player_53 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_pop['align'] >
 	>
-	type $mol_pop__Anchor_bog_music_player_59 = $mol_type_enforce<
+	type $mol_pop__Anchor_bog_music_player_54 = $mol_type_enforce<
 		ReturnType< $bog_music_player['Volume_anchor'] >
 		,
 		ReturnType< $mol_pop['Anchor'] >
 	>
-	type $mol_pop__bubble_content_bog_music_player_60 = $mol_type_enforce<
+	type $mol_pop__bubble_content_bog_music_player_55 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_pop['bubble_content'] >
 	>
-	type $mol_button_minor__hint_bog_music_player_61 = $mol_type_enforce<
+	type $mol_button_minor__hint_bog_music_player_56 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__click_bog_music_player_62 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_player_57 = $mol_type_enforce<
 		ReturnType< $bog_music_player['close'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_music_player_63 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_music_player_58 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_view__sub_bog_music_player_64 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_59 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
@@ -61446,24 +61706,19 @@ declare namespace $ {
 		eq_pop_toggle( next?: any ): any
 		Eq_icon( ): $mol_icon_tune_vertical
 		Eq_anchor( ): $mol_button_minor
+		eq_gains( ): readonly(number)[]
+		eq_pointer_down( next?: any ): any
+		eq_pointer_move( next?: any ): any
+		eq_pointer_up( next?: any ): any
+		Eq_curve( ): $bog_music_eq_curve
 		Eq_power_icon( ): $mol_icon_tune_vertical
 		eq_on( next?: boolean ): boolean
 		Eq_power( ): $mol_check_icon
-		eq_preset_options( ): Record<string, any>
-		eq_preset( next?: string ): string
-		Eq_presets( ): $mol_switch
-		eq_db_text( id: any): string
-		eq_freq_text( id: any): string
-		eq_fill_top( id: any): string
-		eq_fill_height( id: any): string
-		eq_pointer_down( id: any, next?: any ): any
-		eq_pointer_move( id: any, next?: any ): any
-		eq_pointer_up( id: any, next?: any ): any
-		Eq_band( id: any): $bog_music_eq_band
-		eq_band_list( ): readonly(any)[]
-		Eq_bands( ): $mol_view
-		eq_reset( next?: any ): any
-		Eq_reset( ): $mol_button_minor
+		eq_preset_title( id: any): string
+		eq_preset_checked( id: any, next?: boolean ): boolean
+		Eq_preset_row( id: any): $mol_check
+		eq_preset_rows( ): readonly(any)[]
+		Eq_presets( ): $mol_view
 		Eq_panel( ): $mol_view
 		Eq( ): $mol_pop
 		Progress_row( ): $mol_view
@@ -61712,22 +61967,19 @@ declare namespace $.$$ {
         /** Панель эквалайзера — только для своего <audio>; в offscreen её нет. */
         Eq(): any;
         eq_pop_toggle(): null;
-        eq_band_list(): $bog_music_eq_band[];
-        eq_freq_text(index: number): string;
-        eq_db_text(index: number): string;
-        eq_fill_top(index: number): string;
-        eq_fill_height(index: number): string;
-        eq_preset_options(): Record<string, string>;
-        eq_preset(next?: string): string;
-        eq_reset(): null;
         /** Выставить полосы: в аккаунт, черновик прочь. */
         private eq_apply;
+        eq_preset_rows(): $.$mol_check[];
+        eq_preset_title(id: string): string;
+        eq_preset_checked(id: string, next?: boolean): boolean;
+        /** Полоса — по колонке графика, в которую попал палец. */
+        private eq_band_at;
+        private eq_db_at;
         private _eq_dragging;
-        private eq_db_from_event;
         private eq_drag_to;
-        eq_pointer_down(index: number, event?: Event): null;
-        eq_pointer_move(index: number, event?: Event): null;
-        eq_pointer_up(index: number, event?: Event): null;
+        eq_pointer_down(event?: Event): null;
+        eq_pointer_move(event?: Event): null;
+        eq_pointer_up(event?: Event): null;
         /** Разложить полосы по узлам. Реактивно: сработает и на синк с другого устройства. */
         private apply_eq;
         private eq_push;

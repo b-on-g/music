@@ -13900,6 +13900,7 @@ var $;
         _seal_shot = new $mol_wire_dict();
         _gift = new $mol_wire_dict();
         _sand = new $mol_wire_dict();
+        _unit_hash = new Map();
         pass_add(pass) {
             if (this._pass.has(pass.lord().str))
                 return;
@@ -13914,17 +13915,15 @@ var $;
                 if ($giper_baza_unit_seal.compare(prev, seal) <= 0)
                     continue;
                 if (prev?.alive_items.has(hash.str)) {
-                    seal.alive_items.add(hash.str);
                     prev.alive_items.delete(hash.str);
                     if (!prev.alive_items.size)
                         this.seal_del(prev);
+                    seal.alive_items.add(hash.str);
                 }
                 this._seal_item.set(hash.str, seal);
             }
             const peer = seal.lord().peer();
-            this.faces.peer_time(peer.str, seal.time(), seal.tick());
             this._seal_shot.set(seal.shot().str, seal);
-            this.faces.peer_summ_shift(peer.str, +1);
         }
         gift_add(gift) {
             const mate = gift.mate();
@@ -13957,8 +13956,7 @@ var $;
             this.faces.peer_summ_shift(peer.str, +1);
             sands.set(sand.self().str, sand);
             this.faces.peer_time(peer.str, sand.time(), sand.tick());
-            if (sand.encoded())
-                this.unit_seal_inc(sand);
+            this.unit_seal_inc(sand);
         }
         units_reaping = new Set();
         unit_reap(unit) {
@@ -13967,12 +13965,20 @@ var $;
             this.units_reaping.add(unit);
         }
         unit_seal_inc(unit) {
+            unit._alive = true;
+            if (!unit.encoded())
+                return;
+            this._unit_hash.set(unit.hash().str, unit);
             const seal = this.unit_seal(unit);
             if (!seal)
                 return;
             seal.alive_items.add(unit.hash().str);
         }
         unit_seal_dec(unit) {
+            unit._alive = false;
+            if (!unit.encoded())
+                return;
+            this._unit_hash.delete(unit.hash().str);
             const seal = this.unit_seal(unit);
             if (!seal)
                 return;
@@ -13985,7 +13991,6 @@ var $;
             if (!this._seal_shot.has(shot.str))
                 return;
             this._seal_shot.delete(shot.str);
-            this.faces.peer_summ_shift(seal.lord().peer().str, -1);
             for (const hash of seal.hash_list()) {
                 if (this._seal_item.get(hash.str) === seal) {
                     this._seal_item.delete(hash.str);
@@ -14015,8 +14020,7 @@ var $;
             sands.delete(sand.self().str);
             this.faces.peer_summ_shift(sand.lord().peer().str, -1);
             this.unit_reap(sand);
-            if (sand.encoded())
-                this.unit_seal_dec(sand);
+            this.unit_seal_dec(sand);
         }
         lord_pass(lord) {
             return this._pass.get(lord.str) ?? null;
@@ -14171,6 +14175,7 @@ var $;
             const skipped = new Map();
             const delta = new Set();
             const passes = new Set();
+            const seals = new Set();
             function collect(unit) {
                 const peer = unit.lord().peer().str;
                 const face_limit = skip_faces.get(peer)?.time_tick ?? 0;
@@ -14181,11 +14186,6 @@ var $;
                     skipped_units.add(unit);
                 else
                     skipped.set(peer, new Set([unit]));
-            }
-            for (const seal of this._seal_item.values()) {
-                if (!seal.alive_items.size)
-                    continue;
-                collect(seal);
             }
             for (const gift of this._gift.values()) {
                 collect(gift);
@@ -14224,9 +14224,15 @@ var $;
                         seal_item: this._seal_item.size,
                     },
                 });
-                if (skipped_units)
-                    for (const unit of skipped_units)
-                        delta.add(unit);
+                for (const unit of skipped_units)
+                    delta.add(unit);
+            }
+            for (const unit of delta) {
+                const seal = this._seal_item.get(unit.hash().str);
+                if (seal)
+                    seals.add(seal);
+                else
+                    delta.delete(unit);
             }
             for (const unit of delta) {
                 if (skip_faces.has(unit.lord().peer().str))
@@ -14236,7 +14242,7 @@ var $;
                     return $mol_fail(new Error('No pass for lord'));
                 passes.add(pass);
             }
-            return [...passes, ...delta];
+            return [...passes, ...seals, ...delta];
         }
         /** Picks units between Face and current state and make Part. */
         // @ $mol_action
@@ -14773,9 +14779,13 @@ var $;
             });
             const seals = await Promise.all(threads);
             for (const seal of seals) {
-                for (const hash of seal.hash_list())
-                    seal.alive_items.add(hash.str);
-                this.seal_add(seal);
+                for (const hash of seal.hash_list()) {
+                    if (this._unit_hash.has(hash.str)) {
+                        seal.alive_items.add(hash.str);
+                    }
+                }
+                if (seal.alive_items.size)
+                    this.seal_add(seal);
             }
             return seals;
         }
@@ -14790,6 +14800,8 @@ var $;
                     bin = await secret.encrypt(bin, sand.salt());
             }
             sand.ball(bin);
+            if (sand._alive)
+                this._unit_hash.set(sand.hash().str, sand);
             return sand;
         }
         sand_load(sand) {
@@ -15261,6 +15273,7 @@ var $;
             return true;
         }
         _land = null;
+        _alive = false;
         dump() {
             return {};
         }
@@ -26525,7 +26538,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.44';
+    $.$bog_music_version = 'v1.45';
 })($ || ($ = {}));
 
 ;
@@ -28041,48 +28054,57 @@ var $;
 var $;
 (function ($) {
     /**
-     * Пятиполосный эквалайзер. Раскладка частот — как у системного эквалайзера
-     * Android и Я.Музыки: 60 / 230 / 910 / 3600 / 14000 Гц.
+     * Шестиполосный эквалайзер. Раскладка и названия пресетов — как в Я.Музыке
+     * на Android: 60 / 150 / 400 / 1.0k / 2.4k / 15k Гц.
      *
-     * Крайние полосы — шельфы, а не колокола: низ и верх двигают целиком, а
-     * колокол цепляет только свою метку и спадает по обе стороны от неё.
-     * Средние три — колокола с Q=1, примерно полторы октавы на полосу;
-     * соседние сходятся без провалов между ними.
+     * Крайние полосы — шельфы: низ и верх двигают целиком, а колокол цепляет
+     * только свою метку и спадает по обе стороны от неё. Средние четыре —
+     * колокола с Q=1.4, около октавы на полосу: полосы стоят в 1.3 октавы друг
+     * от друга, и при более широком колоколе они бы заметно складывались.
      *
      * У шельфа `frequency` — середина перехода, где набрана ПОЛОВИНА усиления,
-     * а не начало полки. Поэтому угол стоит вдвое выше метки: шельф на 120 Гц
-     * отдаёт на 60 Гц 7.5 dB из просимых 8, а поставленный на саму метку отдал
-     * бы там 4 и увёл остальное под 40 Гц, куда ни телефон, ни ноутбук, ни
-     * затычки всё равно не играют. Наверху так же: угол 8 кГц, метка 14K.
+     * а не начало полки, поэтому углы стоят выше своих меток. Замерено
+     * (getFrequencyResponse, +12 на одну полосу, остальные в нуле):
+     *
+     *   полоса 60    → +9.7 на 60 Гц,  +1.7 на 150 Гц
+     *   полоса 150   → +12  на 150 Гц, +1.5 на 60 и +1.3 на 400
+     *   полоса 15000 → +11  на 15 кГц, 0 на 2.4 кГц
+     *
+     * То есть каждый ползунок делает то, что написано на его метке, а соседу
+     * достаётся полтора децибела — нарисованная кривая совпадает со слышимым.
      */
     class $bog_music_eq extends $mol_object {
         static bands = [
-            { freq: 120, type: 'lowshelf', title: '60' },
-            { freq: 230, type: 'peaking', title: '230' },
-            { freq: 910, type: 'peaking', title: '910' },
-            { freq: 3600, type: 'peaking', title: '3.6K' },
-            { freq: 8000, type: 'highshelf', title: '14K' },
+            { freq: 90, type: 'lowshelf', title: '60 Hz' },
+            { freq: 150, type: 'peaking', title: '150 Hz' },
+            { freq: 400, type: 'peaking', title: '400 Hz' },
+            { freq: 1000, type: 'peaking', title: '1.0 kHz' },
+            { freq: 2400, type: 'peaking', title: '2.4 kHz' },
+            { freq: 10000, type: 'highshelf', title: '15 kHz' },
         ];
         /** Добротность колоколов. */
-        static q = 1;
+        static q = 1.4;
         /**
          * Потолок полосы (dB). Тот же, что gain_max_db у автогромкости: выше
          * лимитер на плотных миксах начинает дышать слышимо.
          */
         static range_db = 12;
         /**
-         * Пресеты. Формы взяты у классических эквалайзеров и сведены с десяти
-         * полос к нашим пяти. `flat` первым — это же и состояние «выключено».
+         * Пресеты. Названия и порядок — как в Я.Музыке; формы подобраны под нашу
+         * сетку полос по смыслу названия, а не скопированы из чужих таблиц.
+         * `default` первым: ровная кривая, она же состояние «ничего не трогали».
          */
         static presets = [
-            { id: 'flat', title: 'Плоский', gains: [0, 0, 0, 0, 0] },
-            { id: 'bass', title: 'Глубокий бас', gains: [8, 4, 0, 0, 1] },
-            { id: 'pop', title: 'Поп', gains: [-1, 4, 2, -1, -1] },
-            { id: 'rock', title: 'Рок', gains: [5, 3, -1, 2, 4] },
-            { id: 'jazz', title: 'Джаз', gains: [4, 2, -2, 0, 4] },
-            { id: 'classic', title: 'Классика', gains: [3, 0, 0, -3, -6] },
-            { id: 'vocal', title: 'Голос', gains: [-2, -1, 3, 4, 1] },
+            { id: 'default', title: 'По умолчанию', gains: [0, 0, 0, 0, 0, 0] },
+            { id: 'classic', title: 'Классическая музыка', gains: [4, 2, 0, -1, -3, 4] },
+            { id: 'club', title: 'Клубная музыка', gains: [0, 2, 5, 5, 3, 0] },
+            { id: 'dance', title: 'Танцевальная музыка', gains: [7, 5, 0, -2, 2, 5] },
+            { id: 'bass', title: 'Усиление НЧ', gains: [10, 7, 3, 0, 0, 0] },
+            { id: 'bass_treble', title: 'Усиление НЧ и ВЧ', gains: [9, 6, 1, -2, 3, 8] },
+            { id: 'treble', title: 'Усиление ВЧ', gains: [0, 0, 0, 2, 5, 10] },
         ];
+        /** Подпись состояния, которое ни одному пресету не соответствует. */
+        static custom_title = 'Своя настройка';
         /** Все полосы в нуле — сигнал проходит нетронутым. */
         static flat() {
             return this.bands.map(() => 0);
@@ -28109,6 +28131,19 @@ var $;
                     return 0;
                 return Math.round(Math.max(-this.range_db, Math.min(this.range_db, db)));
             });
+        }
+        /**
+         * Цвет точки по её усилению, как на графике в Я.Музыке: красный наверху,
+         * жёлтый в нуле, зелёный внизу.
+         */
+        static color(db) {
+            const part = Math.max(-1, Math.min(1, db / this.range_db));
+            const hue = part >= 0 ? 50 - part * 50 : 50 - part * 70;
+            return `hsl( ${hue.toFixed(0)} 80% 55% )`;
+        }
+        /** Подпись усиления над точкой. */
+        static db_text(db) {
+            return `${db} dB`;
         }
         /** Набор одной строкой — так он и лежит в baza. */
         static stringify(gains) {
@@ -29945,48 +29980,291 @@ var $;
 
 
 ;
-	($.$bog_music_eq_band) = class $bog_music_eq_band extends ($.$mol_view) {
-		Db(){
+	($.$mol_svg_line) = class $mol_svg_line extends ($.$mol_svg) {
+		from(){
+			return [];
+		}
+		to(){
+			return [];
+		}
+		from_x(){
+			return "";
+		}
+		from_y(){
+			return "";
+		}
+		to_x(){
+			return "";
+		}
+		to_y(){
+			return "";
+		}
+		dom_name(){
+			return "line";
+		}
+		pos(){
+			return [(this.from()), (this.to())];
+		}
+		attr(){
+			return {
+				...(super.attr()), 
+				"x1": (this.from_x()), 
+				"y1": (this.from_y()), 
+				"x2": (this.to_x()), 
+				"y2": (this.to_y())
+			};
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $mol_svg_line extends $.$mol_svg_line {
+            from() {
+                return this.pos()[0];
+            }
+            from_x() {
+                return this.from()[0];
+            }
+            from_y() {
+                return this.from()[1];
+            }
+            to() {
+                return this.pos()[1];
+            }
+            to_x() {
+                return this.to()[0];
+            }
+            to_y() {
+                return this.to()[1];
+            }
+        }
+        $$.$mol_svg_line = $mol_svg_line;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$mol_svg_circle) = class $mol_svg_circle extends ($.$mol_svg) {
+		radius(){
+			return ".5%";
+		}
+		pos_x(){
+			return "";
+		}
+		pos_y(){
+			return "";
+		}
+		dom_name(){
+			return "circle";
+		}
+		pos(){
+			return [];
+		}
+		attr(){
+			return {
+				...(super.attr()), 
+				"r": (this.radius()), 
+				"cx": (this.pos_x()), 
+				"cy": (this.pos_y())
+			};
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $mol_svg_circle extends $.$mol_svg_circle {
+            pos_x() {
+                return this.pos()[0];
+            }
+            pos_y() {
+                return this.pos()[1];
+            }
+        }
+        $$.$mol_svg_circle = $mol_svg_circle;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$mol_svg_group) = class $mol_svg_group extends ($.$mol_svg) {
+		dom_name(){
+			return "g";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$bog_music_eq_curve) = class $bog_music_eq_curve extends ($.$mol_view) {
+		db_text(id){
+			return "";
+		}
+		db_color(id){
+			return "";
+		}
+		Db(id){
 			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ((this.db_text()));
+			(obj.title) = () => ((this.db_text(id)));
+			(obj.style) = () => ({"color": (this.db_color(id))});
 			return obj;
+		}
+		db_list(){
+			return [(this.Db("0"))];
+		}
+		Db_row(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ((this.db_list()));
+			return obj;
+		}
+		view_box(){
+			return "";
+		}
+		gradient_id(){
+			return "";
+		}
+		stop_offset(id){
+			return "";
+		}
+		stop_color(id){
+			return "";
+		}
+		Stop(id){
+			const obj = new this.$.$mol_svg();
+			(obj.dom_name) = () => ("stop");
+			(obj.attr) = () => ({"offset": (this.stop_offset(id)), "stop-color": (this.stop_color(id))});
+			return obj;
+		}
+		stop_list(){
+			return [(this.Stop("0"))];
+		}
+		Gradient(){
+			const obj = new this.$.$mol_svg();
+			(obj.dom_name) = () => ("linearGradient");
+			(obj.attr) = () => ({
+				"id": (this.gradient_id()), 
+				"x1": "0%", 
+				"x2": "100%", 
+				"y1": "0%", 
+				"y2": "0%"
+			});
+			(obj.sub) = () => ((this.stop_list()));
+			return obj;
+		}
+		Defs(){
+			const obj = new this.$.$mol_svg();
+			(obj.dom_name) = () => ("defs");
+			(obj.sub) = () => ([(this.Gradient())]);
+			return obj;
+		}
+		zero_x1(){
+			return "";
+		}
+		zero_y(){
+			return "";
+		}
+		zero_x2(){
+			return "";
 		}
 		Zero(){
-			const obj = new this.$.$mol_view();
+			const obj = new this.$.$mol_svg_line();
+			(obj.from_x) = () => ((this.zero_x1()));
+			(obj.from_y) = () => ((this.zero_y()));
+			(obj.to_x) = () => ((this.zero_x2()));
+			(obj.to_y) = () => ((this.zero_y()));
 			return obj;
 		}
-		Fill(){
-			const obj = new this.$.$mol_view();
-			(obj.style) = () => ({"top": (this.fill_top()), "height": (this.fill_height())});
+		curve_geometry(){
+			return "";
+		}
+		curve_stroke(){
+			return "";
+		}
+		Curve(){
+			const obj = new this.$.$mol_svg_path();
+			(obj.geometry) = () => ((this.curve_geometry()));
+			(obj.attr) = () => ({...(this.$.$mol_svg_path.prototype.attr.call(obj)), "stroke": (this.curve_stroke())});
 			return obj;
 		}
-		Slider(){
-			const obj = new this.$.$mol_view();
+		dot_x(id){
+			return "";
+		}
+		dot_y(id){
+			return "";
+		}
+		dot_color(id){
+			return "";
+		}
+		Dot(id){
+			const obj = new this.$.$mol_svg_circle();
+			(obj.radius) = () => ("4");
+			(obj.pos_x) = () => ((this.dot_x(id)));
+			(obj.pos_y) = () => ((this.dot_y(id)));
+			(obj.attr) = () => ({...(this.$.$mol_svg_circle.prototype.attr.call(obj)), "stroke": (this.dot_color(id))});
+			return obj;
+		}
+		dot_list(){
+			return [(this.Dot("0"))];
+		}
+		Dots(){
+			const obj = new this.$.$mol_svg_group();
+			(obj.sub) = () => ((this.dot_list()));
+			return obj;
+		}
+		Plot(){
+			const obj = new this.$.$mol_svg_root();
+			(obj.view_box) = () => ((this.view_box()));
+			(obj.aspect) = () => ("xMidYMid meet");
 			(obj.event) = () => ({
 				"pointerdown": (next) => (this.pointer_down(next)), 
 				"pointermove": (next) => (this.pointer_move(next)), 
 				"pointerup": (next) => (this.pointer_up(next)), 
 				"pointercancel": (next) => (this.pointer_up(next))
 			});
-			(obj.sub) = () => ([(this.Zero()), (this.Fill())]);
+			(obj.sub) = () => ([
+				(this.Defs()), 
+				(this.Zero()), 
+				(this.Curve()), 
+				(this.Dots())
+			]);
 			return obj;
 		}
-		Freq(){
+		freq_text(id){
+			return "";
+		}
+		Freq(id){
 			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ((this.freq_text()));
+			(obj.title) = () => ((this.freq_text(id)));
 			return obj;
 		}
-		db_text(){
-			return "";
+		freq_list(){
+			return [(this.Freq("0"))];
 		}
-		freq_text(){
-			return "";
+		Freq_row(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ((this.freq_list()));
+			return obj;
 		}
-		fill_top(){
-			return "";
-		}
-		fill_height(){
-			return "";
+		gains(){
+			return [];
 		}
 		pointer_down(next){
 			if(next !== undefined) return next;
@@ -30002,20 +30280,27 @@ var $;
 		}
 		sub(){
 			return [
-				(this.Db()), 
-				(this.Slider()), 
-				(this.Freq())
+				(this.Db_row()), 
+				(this.Plot()), 
+				(this.Freq_row())
 			];
 		}
 	};
-	($mol_mem(($.$bog_music_eq_band.prototype), "Db"));
-	($mol_mem(($.$bog_music_eq_band.prototype), "Zero"));
-	($mol_mem(($.$bog_music_eq_band.prototype), "Fill"));
-	($mol_mem(($.$bog_music_eq_band.prototype), "Slider"));
-	($mol_mem(($.$bog_music_eq_band.prototype), "Freq"));
-	($mol_mem(($.$bog_music_eq_band.prototype), "pointer_down"));
-	($mol_mem(($.$bog_music_eq_band.prototype), "pointer_move"));
-	($mol_mem(($.$bog_music_eq_band.prototype), "pointer_up"));
+	($mol_mem_key(($.$bog_music_eq_curve.prototype), "Db"));
+	($mol_mem(($.$bog_music_eq_curve.prototype), "Db_row"));
+	($mol_mem_key(($.$bog_music_eq_curve.prototype), "Stop"));
+	($mol_mem(($.$bog_music_eq_curve.prototype), "Gradient"));
+	($mol_mem(($.$bog_music_eq_curve.prototype), "Defs"));
+	($mol_mem(($.$bog_music_eq_curve.prototype), "Zero"));
+	($mol_mem(($.$bog_music_eq_curve.prototype), "Curve"));
+	($mol_mem_key(($.$bog_music_eq_curve.prototype), "Dot"));
+	($mol_mem(($.$bog_music_eq_curve.prototype), "Dots"));
+	($mol_mem(($.$bog_music_eq_curve.prototype), "Plot"));
+	($mol_mem_key(($.$bog_music_eq_curve.prototype), "Freq"));
+	($mol_mem(($.$bog_music_eq_curve.prototype), "Freq_row"));
+	($mol_mem(($.$bog_music_eq_curve.prototype), "pointer_down"));
+	($mol_mem(($.$bog_music_eq_curve.prototype), "pointer_move"));
+	($mol_mem(($.$bog_music_eq_curve.prototype), "pointer_up"));
 
 
 ;
@@ -30028,55 +30313,218 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        $mol_style_define($bog_music_eq_band, {
+        /**
+         * График эквалайзера: точки на общей кривой, как в Я.Музыке. Компонент
+         * только рисует и отдаёт события указателя наружу — какая полоса поехала и
+         * куда, считает владелец (плеер): он же держит настройки.
+         *
+         * Кривая проходит ЧЕРЕЗ точки, а не повторяет расчётную АЧХ. Так у Яндекса,
+         * и так честнее для управления: полосы разведены достаточно (соседу от
+         * поднятой полосы достаётся полтора децибела), чтобы кривая совпадала со
+         * слышимым, а рисовать настоящую АЧХ значило бы уводить линию мимо точки,
+         * за которую человек тянет.
+         */
+        class $bog_music_eq_curve extends $.$bog_music_eq_curve {
+            /** Система координат графика. Совпадает с aspectRatio в стилях. */
+            static width = 240;
+            static height = 110;
+            /** Полувысота поля от нуля: остаток — поля под радиус точки. */
+            static amplitude = 45;
+            view_box() {
+                return `0 0 ${$bog_music_eq_curve.width} ${$bog_music_eq_curve.height}`;
+            }
+            gains() {
+                return $bog_music_eq.clamp(super.gains());
+            }
+            /** Колонки стоят по центрам шести равных долей ширины — как подписи. */
+            static column(index) {
+                return this.width * (index + 0.5) / $bog_music_eq.bands.length;
+            }
+            static row(db) {
+                return this.height / 2 - db / $bog_music_eq.range_db * this.amplitude;
+            }
+            /** Усиление по вертикальной доле касания. Края поля — потолок диапазона. */
+            static db_at(part) {
+                const db = (this.height / 2 - part * this.height) / this.amplitude * $bog_music_eq.range_db;
+                const range = $bog_music_eq.range_db;
+                return Math.round(Math.max(-range, Math.min(range, db)));
+            }
+            /** Полоса, к колонке которой ближе всего точка касания. */
+            static band_at(x) {
+                const step = this.width / $bog_music_eq.bands.length;
+                const index = Math.floor(x / step);
+                return Math.max(0, Math.min($bog_music_eq.bands.length - 1, index));
+            }
+            zero_x1() { return '0'; }
+            zero_x2() { return String($bog_music_eq_curve.width); }
+            zero_y() { return String($bog_music_eq_curve.height / 2); }
+            // ---------- подписи ----------
+            db_list() {
+                return this.gains().map((_, index) => this.Db(index));
+            }
+            db_text(index) {
+                return $bog_music_eq.db_text(this.gains()[index]);
+            }
+            db_color(index) {
+                return $bog_music_eq.color(this.gains()[index]);
+            }
+            freq_list() {
+                return $bog_music_eq.bands.map((_, index) => this.Freq(index));
+            }
+            freq_text(index) {
+                return $bog_music_eq.bands[index].title;
+            }
+            // ---------- точки ----------
+            dot_list() {
+                return this.gains().map((_, index) => this.Dot(index));
+            }
+            dot_x(index) {
+                return String($bog_music_eq_curve.column(index));
+            }
+            dot_y(index) {
+                return String($bog_music_eq_curve.row(this.gains()[index]));
+            }
+            dot_color(index) {
+                return $bog_music_eq.color(this.gains()[index]);
+            }
+            // ---------- заливка линии ----------
+            // Градиент по всей ширине: цвет линии в каждой колонке равен цвету своей
+            // точки, между колонками браузер разводит сам.
+            gradient_id() {
+                return `${this}_gradient`;
+            }
+            curve_stroke() {
+                return `url(#${this.gradient_id()})`;
+            }
+            stop_list() {
+                return this.gains().map((_, index) => this.Stop(index));
+            }
+            stop_offset(index) {
+                return `${($bog_music_eq_curve.column(index) / $bog_music_eq_curve.width * 100).toFixed(2)}%`;
+            }
+            stop_color(index) {
+                return $bog_music_eq.color(this.gains()[index]);
+            }
+            // ---------- сама линия ----------
+            /**
+             * Гладкая кривая через точки (Catmull-Rom, переведённый в кубические
+             * Безье). По краям добавлены точки у самых границ на высоте крайних
+             * полос: без них линия обрывалась бы на первой точке, а у Яндекса она
+             * доходит до края поля.
+             */
+            curve_geometry() {
+                const gains = this.gains();
+                const { width } = $bog_music_eq_curve;
+                const points = gains.map((db, index) => [
+                    $bog_music_eq_curve.column(index),
+                    $bog_music_eq_curve.row(db),
+                ]);
+                const all = [
+                    [0, points[0][1]],
+                    ...points,
+                    [width, points[points.length - 1][1]],
+                ];
+                let path = `M ${all[0][0]} ${all[0][1].toFixed(2)}`;
+                for (let i = 0; i < all.length - 1; i++) {
+                    const prev = all[Math.max(0, i - 1)];
+                    const from = all[i];
+                    const to = all[i + 1];
+                    const next = all[Math.min(all.length - 1, i + 2)];
+                    const c1x = from[0] + (to[0] - prev[0]) / 6;
+                    const c1y = from[1] + (to[1] - prev[1]) / 6;
+                    const c2x = to[0] - (next[0] - from[0]) / 6;
+                    const c2y = to[1] - (next[1] - from[1]) / 6;
+                    path += ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)}`
+                        + `, ${c2x.toFixed(2)} ${c2y.toFixed(2)}`
+                        + `, ${to[0].toFixed(2)} ${to[1].toFixed(2)}`;
+                }
+                return path;
+            }
+        }
+        $$.$bog_music_eq_curve = $bog_music_eq_curve;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $mol_style_define($bog_music_eq_curve, {
             flex: {
                 direction: 'column',
                 shrink: 0,
             },
-            align: {
-                items: 'center',
-            },
             gap: '0.25rem',
-            width: '2.5rem',
+            Db_row: {
+                flex: {
+                    direction: 'row',
+                    shrink: 0,
+                },
+            },
+            Freq_row: {
+                flex: {
+                    direction: 'row',
+                    shrink: 0,
+                },
+            },
+            /**
+             * Доли равны и совпадают с колонками графика: подпись стоит ровно над
+             * своей точкой и под ней.
+             */
             Db: {
-                font: { size: '0.6875rem' },
-                color: $mol_theme.shade,
+                flex: {
+                    grow: 1,
+                    basis: 0,
+                },
+                textAlign: 'center',
+                font: {
+                    size: '0.625rem',
+                    weight: 'bold',
+                },
                 fontVariantNumeric: 'tabular-nums',
-                flex: { shrink: 0 },
+                whiteSpace: 'nowrap',
             },
             Freq: {
-                font: { size: '0.6875rem' },
+                flex: {
+                    grow: 1,
+                    basis: 0,
+                },
+                textAlign: 'center',
+                font: { size: '0.625rem' },
                 color: $mol_theme.shade,
-                flex: { shrink: 0 },
+                whiteSpace: 'nowrap',
             },
-            Slider: {
-                width: '6px',
-                height: '8rem',
-                background: { color: $mol_theme.line },
-                borderRadius: '3px',
-                cursor: 'pointer',
-                position: 'relative',
-                overflow: { x: 'hidden', y: 'hidden' },
+            /**
+             * Пропорция та же, что у view_box, — иначе SVG отрисуется с полями и
+             * колонки разъедутся с подписями.
+             */
+            Plot: {
+                width: '100%',
+                aspectRatio: '240 / 110',
+                flex: { shrink: 0 },
                 touchAction: 'none',
                 userSelect: 'none',
-                flex: { shrink: 0 },
+                cursor: 'pointer',
+                overflow: { x: 'visible', y: 'visible' },
             },
-            /** Риска нуля: по одной заливке не видно, куда полоса уехала. */
             Zero: {
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                top: '50%',
-                height: '1px',
-                background: { color: $mol_theme.shade },
+                stroke: `${$mol_theme.line}`,
+                strokeWidth: '1',
+            },
+            Curve: {
+                fill: 'none',
+                strokeWidth: '2.5',
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round',
                 pointerEvents: 'none',
             },
-            Fill: {
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                background: { color: $mol_theme.focus },
-                borderRadius: '3px',
+            Dot: {
+                // Гайд типизирует SVG-свойства строками, а токен темы — это объект
+                // CSS-функции; шаблонная строка отдаёт из него var(--mol_theme_card).
+                fill: `${$mol_theme.card}`,
+                strokeWidth: '2.5',
                 pointerEvents: 'none',
             },
         });
@@ -30277,6 +30725,29 @@ var $;
 			(obj.sub) = () => ([(this.Eq_icon())]);
 			return obj;
 		}
+		eq_gains(){
+			return [];
+		}
+		eq_pointer_down(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		eq_pointer_move(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		eq_pointer_up(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Eq_curve(){
+			const obj = new this.$.$bog_music_eq_curve();
+			(obj.gains) = () => ((this.eq_gains()));
+			(obj.pointer_down) = (next) => ((this.eq_pointer_down(next)));
+			(obj.pointer_move) = (next) => ((this.eq_pointer_move(next)));
+			(obj.pointer_up) = (next) => ((this.eq_pointer_up(next)));
+			return obj;
+		}
 		Eq_power_icon(){
 			const obj = new this.$.$mol_icon_tune_vertical();
 			return obj;
@@ -30293,79 +30764,33 @@ var $;
 			(obj.checked) = (next) => ((this.eq_on(next)));
 			return obj;
 		}
-		eq_preset_options(){
-			return {};
-		}
-		eq_preset(next){
-			if(next !== undefined) return next;
+		eq_preset_title(id){
 			return "";
+		}
+		eq_preset_checked(id, next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		Eq_preset_row(id){
+			const obj = new this.$.$mol_check();
+			(obj.title) = () => ((this.eq_preset_title(id)));
+			(obj.checked) = (next) => ((this.eq_preset_checked(id, next)));
+			return obj;
+		}
+		eq_preset_rows(){
+			return [(this.Eq_preset_row("0"))];
 		}
 		Eq_presets(){
-			const obj = new this.$.$mol_switch();
-			(obj.options) = () => ((this.eq_preset_options()));
-			(obj.value) = (next) => ((this.eq_preset(next)));
-			return obj;
-		}
-		eq_db_text(id){
-			return "";
-		}
-		eq_freq_text(id){
-			return "";
-		}
-		eq_fill_top(id){
-			return "";
-		}
-		eq_fill_height(id){
-			return "";
-		}
-		eq_pointer_down(id, next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		eq_pointer_move(id, next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		eq_pointer_up(id, next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Eq_band(id){
-			const obj = new this.$.$bog_music_eq_band();
-			(obj.db_text) = () => ((this.eq_db_text(id)));
-			(obj.freq_text) = () => ((this.eq_freq_text(id)));
-			(obj.fill_top) = () => ((this.eq_fill_top(id)));
-			(obj.fill_height) = () => ((this.eq_fill_height(id)));
-			(obj.pointer_down) = (next) => ((this.eq_pointer_down(id, next)));
-			(obj.pointer_move) = (next) => ((this.eq_pointer_move(id, next)));
-			(obj.pointer_up) = (next) => ((this.eq_pointer_up(id, next)));
-			return obj;
-		}
-		eq_band_list(){
-			return [(this.Eq_band("0"))];
-		}
-		Eq_bands(){
 			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ((this.eq_band_list()));
-			return obj;
-		}
-		eq_reset(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Eq_reset(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.title) = () => ("Сбросить полосы");
-			(obj.click) = (next) => ((this.eq_reset(next)));
+			(obj.sub) = () => ((this.eq_preset_rows()));
 			return obj;
 		}
 		Eq_panel(){
 			const obj = new this.$.$mol_view();
 			(obj.sub) = () => ([
+				(this.Eq_curve()), 
 				(this.Eq_power()), 
-				(this.Eq_presets()), 
-				(this.Eq_bands()), 
-				(this.Eq_reset())
+				(this.Eq_presets())
 			]);
 			return obj;
 		}
@@ -30639,18 +31064,16 @@ var $;
 	($mol_mem(($.$bog_music_player.prototype), "eq_pop_toggle"));
 	($mol_mem(($.$bog_music_player.prototype), "Eq_icon"));
 	($mol_mem(($.$bog_music_player.prototype), "Eq_anchor"));
+	($mol_mem(($.$bog_music_player.prototype), "eq_pointer_down"));
+	($mol_mem(($.$bog_music_player.prototype), "eq_pointer_move"));
+	($mol_mem(($.$bog_music_player.prototype), "eq_pointer_up"));
+	($mol_mem(($.$bog_music_player.prototype), "Eq_curve"));
 	($mol_mem(($.$bog_music_player.prototype), "Eq_power_icon"));
 	($mol_mem(($.$bog_music_player.prototype), "eq_on"));
 	($mol_mem(($.$bog_music_player.prototype), "Eq_power"));
-	($mol_mem(($.$bog_music_player.prototype), "eq_preset"));
+	($mol_mem_key(($.$bog_music_player.prototype), "eq_preset_checked"));
+	($mol_mem_key(($.$bog_music_player.prototype), "Eq_preset_row"));
 	($mol_mem(($.$bog_music_player.prototype), "Eq_presets"));
-	($mol_mem_key(($.$bog_music_player.prototype), "eq_pointer_down"));
-	($mol_mem_key(($.$bog_music_player.prototype), "eq_pointer_move"));
-	($mol_mem_key(($.$bog_music_player.prototype), "eq_pointer_up"));
-	($mol_mem_key(($.$bog_music_player.prototype), "Eq_band"));
-	($mol_mem(($.$bog_music_player.prototype), "Eq_bands"));
-	($mol_mem(($.$bog_music_player.prototype), "eq_reset"));
-	($mol_mem(($.$bog_music_player.prototype), "Eq_reset"));
 	($mol_mem(($.$bog_music_player.prototype), "Eq_panel"));
 	($mol_mem(($.$bog_music_player.prototype), "Eq"));
 	($mol_mem(($.$bog_music_player.prototype), "Progress_row"));
@@ -31904,71 +32327,59 @@ var $;
                     this.setup_pop_dismiss(pop);
                 return null;
             }
-            eq_band_list() {
-                return $bog_music_eq.bands.map((_, index) => this.Eq_band(index));
-            }
-            eq_freq_text(index) {
-                return $bog_music_eq.bands[index].title;
-            }
-            eq_db_text(index) {
-                const db = this.eq_gains()[index];
-                return db > 0 ? `+${db}` : `${db}`;
-            }
-            // Заливка растёт от середины дорожки: середина — это 0 dB, а не тишина,
-            // как у громкости.
-            eq_fill_top(index) {
-                const db = this.eq_gains()[index];
-                return `${50 - Math.max(0, db) / $bog_music_eq.range_db * 50}%`;
-            }
-            eq_fill_height(index) {
-                const db = this.eq_gains()[index];
-                return `${Math.abs(db) / $bog_music_eq.range_db * 50}%`;
-            }
-            eq_preset_options() {
-                const options = {};
-                for (const preset of $bog_music_eq.presets)
-                    options[preset.id] = preset.title;
-                return options;
-            }
-            eq_preset(next) {
-                if (next === undefined)
-                    return $bog_music_eq.preset_of(this.eq_gains());
-                const gains = $bog_music_eq.preset(next);
-                // Повторный клик по выбранному пресету $mol_switch отдаёт как '':
-                // снимать выбор нечем, полосы остаются как были.
-                if (!gains)
-                    return $bog_music_eq.preset_of(this.eq_gains());
-                this.eq_apply(gains);
-                return next;
-            }
-            eq_reset() {
-                this.eq_apply($bog_music_eq.flat());
-                return null;
-            }
             /** Выставить полосы: в аккаунт, черновик прочь. */
             eq_apply(gains) {
                 this.account().save_eq_gains(gains);
                 this.eq_draft(null);
-                // Тронули полосы при выключенном эквалайзере — включаем: иначе
-                // ползунок ездит, а звук не меняется, и это читается как поломка.
-                if (!this.eq_on() && $bog_music_eq.preset_of(gains) !== 'flat')
+                // Тронули кривую при выключенном эквалайзере — включаем: иначе точка
+                // ездит, а звук не меняется, и это читается как поломка.
+                if (!this.eq_on() && $bog_music_eq.preset_of(gains) !== 'default')
                     this.eq_on(true);
             }
-            // ---------- полосы (drag по вертикальным слайдерам) ----------
-            _eq_dragging = -1;
-            eq_db_from_event(event) {
-                const target = event.currentTarget;
-                const rect = target.getBoundingClientRect();
-                const part = 1 - (event.clientY - rect.top) / rect.height; // 0 — низ, 1 — верх
-                const range = $bog_music_eq.range_db;
-                return Math.round(Math.max(-range, Math.min(range, (part * 2 - 1) * range)));
+            // ---------- пресеты ----------
+            // Список как в Я.Музыке: «Своя настройка» сверху, дальше пресеты по
+            // порядку. «Своя настройка» висит всегда и лишь показывает, что кривая
+            // ничьей заготовке не соответствует; нажатие на неё ничего не даёт —
+            // сделать из неё кривую неоткуда.
+            eq_preset_rows() {
+                return ['', ...$bog_music_eq.presets.map(preset => preset.id)]
+                    .map(id => this.Eq_preset_row(id));
             }
-            eq_drag_to(index, event) {
+            eq_preset_title(id) {
+                if (!id)
+                    return $bog_music_eq.custom_title;
+                return $bog_music_eq.presets.find(preset => preset.id === id)?.title ?? id;
+            }
+            eq_preset_checked(id, next) {
+                if (next === undefined)
+                    return $bog_music_eq.preset_of(this.eq_gains()) === id;
+                const gains = $bog_music_eq.preset(id);
+                if (!gains)
+                    return this.eq_preset_checked(id);
+                this.eq_apply(gains);
+                return true;
+            }
+            // ---------- перетаскивание точек ----------
+            /** Полоса — по колонке графика, в которую попал палец. */
+            eq_band_at(event) {
+                const rect = event.currentTarget.getBoundingClientRect();
+                const part = rect.width ? (event.clientX - rect.left) / rect.width : 0;
+                return $bog_music_eq_curve.band_at(part * $bog_music_eq_curve.width);
+            }
+            eq_db_at(event) {
+                const rect = event.currentTarget.getBoundingClientRect();
+                const part = rect.height ? (event.clientY - rect.top) / rect.height : 0.5;
+                return $bog_music_eq_curve.db_at(part);
+            }
+            _eq_dragging = -1;
+            eq_drag_to(event) {
+                if (this._eq_dragging < 0)
+                    return;
                 const gains = this.eq_gains().slice();
-                gains[index] = this.eq_db_from_event(event);
+                gains[this._eq_dragging] = this.eq_db_at(event);
                 this.eq_draft(gains);
             }
-            eq_pointer_down(index, event) {
+            eq_pointer_down(event) {
                 if (!event)
                     return null;
                 const e = event;
@@ -31976,18 +32387,20 @@ var $;
                     e.currentTarget.setPointerCapture(e.pointerId);
                 }
                 catch { }
-                this._eq_dragging = index;
-                this.eq_drag_to(index, e);
+                // Полосу выбираем один раз, на нажатии: иначе палец, уехавший вверх по
+                // диагонали, посреди жеста перескакивал бы на соседнюю точку.
+                this._eq_dragging = this.eq_band_at(e);
+                this.eq_drag_to(e);
                 e.preventDefault();
                 return null;
             }
-            eq_pointer_move(index, event) {
-                if (!event || this._eq_dragging !== index)
+            eq_pointer_move(event) {
+                if (!event || this._eq_dragging < 0)
                     return null;
-                this.eq_drag_to(index, event);
+                this.eq_drag_to(event);
                 return null;
             }
-            eq_pointer_up(index, event) {
+            eq_pointer_up(event) {
                 if (!event)
                     return null;
                 const e = event;
@@ -31995,14 +32408,14 @@ var $;
                     e.currentTarget.releasePointerCapture(e.pointerId);
                 }
                 catch { }
-                if (this._eq_dragging !== index)
+                if (this._eq_dragging < 0)
                     return null;
                 this._eq_dragging = -1;
                 const gains = this.eq_draft();
                 if (gains)
                     this.eq_apply(gains);
-                // Панель не закрываем, в отличие от громкости: полос пять, их крутят
-                // подряд, и захлопнуться после первой же было бы издевательством.
+                // Панель не закрываем, в отличие от громкости: точек шесть, их
+                // таскают подряд.
                 return null;
             }
             /** Разложить полосы по узлам. Реактивно: сработает и на синк с другого устройства. */
@@ -33098,27 +33511,37 @@ var $;
                     items: 'stretch',
                 },
                 gap: $mol_gap.text,
+                width: '17rem',
             },
             Eq_presets: {
                 flex: {
-                    direction: 'row',
-                    wrap: 'wrap',
+                    direction: 'column',
                 },
-                justify: {
-                    content: 'center',
+                align: {
+                    items: 'stretch',
                 },
-                gap: '0.25rem',
-                maxWidth: '13.5rem',
             },
-            Eq_bands: {
-                flex: {
-                    direction: 'row',
-                    shrink: 0,
-                },
+            /** Строка списка пресетов: подпись слева, галочка выбранного справа. */
+            Eq_preset_row: {
                 justify: {
-                    content: 'center',
+                    content: 'space-between',
                 },
-                gap: '0.25rem',
+                textAlign: 'left',
+                '::after': {
+                    content: '"✓"',
+                    color: $mol_theme.focus,
+                    opacity: 0,
+                },
+                '@': {
+                    mol_check_checked: {
+                        'true': {
+                            color: $mol_theme.focus,
+                            '::after': {
+                                opacity: 1,
+                            },
+                        },
+                    },
+                },
             },
         });
     })($$ = $.$$ || ($.$$ = {}));
@@ -40172,15 +40595,27 @@ var $;
         'Набор мимо пресетов — «Свой»'() {
             $mol_assert_equal($bog_music_eq.preset_of([1, 2, 3, 4, 5]), '');
         },
-        'Плоский набор — это пресет flat, а не «Свой»'() {
-            $mol_assert_equal($bog_music_eq.preset_of($bog_music_eq.flat()), 'flat');
+        'Ровный набор — это пресет «По умолчанию», а не «Свой»'() {
+            $mol_assert_equal($bog_music_eq.preset_of($bog_music_eq.flat()), 'default');
         },
         'Чужой набор приводится к нашим полосам'() {
             // Короче — недостающие полосы в ноль, длиннее — лишние прочь.
-            $mol_assert_equal($bog_music_eq.clamp([3]).join(), '3,0,0,0,0');
-            $mol_assert_equal($bog_music_eq.clamp([1, 1, 1, 1, 1, 1, 1]).join(), '1,1,1,1,1');
+            $mol_assert_equal($bog_music_eq.clamp([3]).join(), '3,0,0,0,0,0');
+            $mol_assert_equal($bog_music_eq.clamp([1, 1, 1, 1, 1, 1, 1, 1]).join(), '1,1,1,1,1,1');
             // За пределом — в потолок, дробное — к целым dB.
-            $mol_assert_equal($bog_music_eq.clamp([99, -99, 2.4, 2.6, NaN]).join(), '12,-12,2,3,0');
+            $mol_assert_equal($bog_music_eq.clamp([99, -99, 2.4, 2.6, NaN, 5]).join(), '12,-12,2,3,0,5');
+        },
+        'Настройка от пятиполосной версии не роняет полосы'() {
+            // В baza могла остаться строка на пять значений: шестая полоса в ноль,
+            // первые пять сохраняются как были.
+            $mol_assert_equal($bog_music_eq.parse('8,4,0,0,1').join(), '8,4,0,0,1,0');
+        },
+        'Цвет едет от зелёного через жёлтый к красному'() {
+            $mol_assert_equal($bog_music_eq.color(-12), 'hsl( 120 80% 55% )');
+            $mol_assert_equal($bog_music_eq.color(0), 'hsl( 50 80% 55% )');
+            $mol_assert_equal($bog_music_eq.color(12), 'hsl( 0 80% 55% )');
+            // За пределом диапазона цвет не уезжает дальше края.
+            $mol_assert_equal($bog_music_eq.color(99), $bog_music_eq.color(12));
         },
         'Набор переживает запись строкой и чтение обратно'() {
             const gains = $bog_music_eq.preset('bass');
