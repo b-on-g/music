@@ -193,7 +193,12 @@ namespace $.$$ {
 			const pos = this._paused_pos
 			;($mol_wire_async(this) as any).blob_of(key).then((blob: Blob | null) => {
 				if (!blob) return
+				// URL держим в _last_blob_url: раньше он создавался «мимо» поля, и
+				// каждый resume после потери src оставлял в браузере ещё одну
+				// неотзываемую ссылку на целый трек.
+				if (this._last_blob_url) URL.revokeObjectURL(this._last_blob_url)
 				const url = URL.createObjectURL(blob)
+				this._last_blob_url = url
 				this.set_track_src(el, url)
 				this.attach_seek_listener(el, pos)
 				el.play().catch(() => {})
@@ -1126,6 +1131,12 @@ namespace $.$$ {
 
 			this._ext = null // возвращаемся к baza-треку, гасим tube-превью
 
+			$bog_music_mem.play_started()
+			// Предыдущий трек больше не нужен: отпускаем и его Blob, и object URL.
+			// Держать их дальше нечем оправдать — назад мотают через play_track,
+			// который соберёт Blob заново из чанков.
+			this.blob_cache_keep(key)
+
 			// Сброс времени ДО смены трека: иначе apply_trim в auto() прочитает
 			// stale-значения предыдущего трека и может мгновенно дёрнуть next().
 			this.current_time(0)
@@ -1184,6 +1195,31 @@ namespace $.$$ {
 		// (continuation). Для этого blob следующего трека должен быть доступен
 		// без suspend — держим его здесь, прогретым заранее.
 		private _blob_cache = new Map<string, Blob>()
+
+		/**
+		 * Потолок кеша: текущий трек и один прогретый следующий. Больше держать
+		 * незачем, а меньше нельзя — на одном месте останется тот самый
+		 * синхронный переход, ради которого кеш и заведён.
+		 */
+		private static BLOB_CACHE_MAX = 2
+
+		/**
+		 * Оставить в кеше только перечисленные ключи и подрезать остаток до
+		 * потолка. Зовётся на каждой смене трека: без этого кеш рос ровно на
+		 * длину прослушанного за сессию.
+		 */
+		private blob_cache_keep(...keep: (string | null | undefined)[]) {
+			const alive = new Set(keep.filter(Boolean) as string[])
+			for (const key of [...this._blob_cache.keys()]) {
+				if (!alive.has(key)) this._blob_cache.delete(key)
+			}
+			// Map сохраняет порядок вставки — лишним оказывается самый старый.
+			while (this._blob_cache.size > $bog_music_player.BLOB_CACHE_MAX) {
+				const oldest = this._blob_cache.keys().next().value
+				if (oldest === undefined) break
+				this._blob_cache.delete(oldest)
+			}
+		}
 
 		/** Прогреть blob СЛЕДУЮЩЕГО трека в RAM-кеш (fire-and-forget). */
 		private prefetch_next(key: string) {
@@ -1297,11 +1333,9 @@ namespace $.$$ {
 		cache_blob(key: string): boolean {
 			const blob = this.account().track(key)?.blob_wait()
 			if (!blob) return false
-			// Держим компактно: только текущий + этот (следующий).
-			for (const k of [...this._blob_cache.keys()]) {
-				if (k !== this.current_key() && k !== key) this._blob_cache.delete(k)
-			}
 			this._blob_cache.set(key, blob)
+			// Держим компактно: только текущий + этот (следующий).
+			this.blob_cache_keep(this.current_key(), key)
 			return true
 		}
 
