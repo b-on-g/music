@@ -942,107 +942,92 @@ namespace $.$$ {
 			return null
 		}
 
-		eq_band_list() {
-			return $bog_music_eq.bands.map((_, index) => this.Eq_band(index))
-		}
-
-		eq_freq_text(index: number) {
-			return $bog_music_eq.bands[index].title
-		}
-
-		eq_db_text(index: number) {
-			const db = this.eq_gains()[index]
-			return db > 0 ? `+${db}` : `${db}`
-		}
-
-		// Заливка растёт от середины дорожки: середина — это 0 dB, а не тишина,
-		// как у громкости.
-
-		eq_fill_top(index: number) {
-			const db = this.eq_gains()[index]
-			return `${50 - Math.max(0, db) / $bog_music_eq.range_db * 50}%`
-		}
-
-		eq_fill_height(index: number) {
-			const db = this.eq_gains()[index]
-			return `${Math.abs(db) / $bog_music_eq.range_db * 50}%`
-		}
-
-		eq_preset_options() {
-			const options = {} as Record<string, string>
-			for (const preset of $bog_music_eq.presets) options[preset.id] = preset.title
-			return options
-		}
-
-		eq_preset(next?: string): string {
-			if (next === undefined) return $bog_music_eq.preset_of(this.eq_gains())
-			const gains = $bog_music_eq.preset(next)
-			// Повторный клик по выбранному пресету $mol_switch отдаёт как '':
-			// снимать выбор нечем, полосы остаются как были.
-			if (!gains) return $bog_music_eq.preset_of(this.eq_gains())
-			this.eq_apply(gains)
-			return next
-		}
-
-		eq_reset() {
-			this.eq_apply($bog_music_eq.flat())
-			return null
-		}
-
 		/** Выставить полосы: в аккаунт, черновик прочь. */
 		@$mol_action
-		private eq_apply(gains: number[]) {
-			this.account().save_eq_gains(gains)
-			this.eq_draft(null)
-			// Тронули полосы при выключенном эквалайзере — включаем: иначе
-			// ползунок ездит, а звук не меняется, и это читается как поломка.
-			if (!this.eq_on() && $bog_music_eq.preset_of(gains) !== 'flat') this.eq_on(true)
+		private eq_apply( gains: number[] ) {
+			this.account().save_eq_gains( gains )
+			this.eq_draft( null )
+			// Тронули кривую при выключенном эквалайзере — включаем: иначе точка
+			// ездит, а звук не меняется, и это читается как поломка.
+			if( !this.eq_on() && $bog_music_eq.preset_of( gains ) !== 'default' ) this.eq_on( true )
 		}
 
-		// ---------- полосы (drag по вертикальным слайдерам) ----------
+		// ---------- пресеты ----------
+		// Список как в Я.Музыке: «Своя настройка» сверху, дальше пресеты по
+		// порядку. «Своя настройка» висит всегда и лишь показывает, что кривая
+		// ничьей заготовке не соответствует; нажатие на неё ничего не даёт —
+		// сделать из неё кривую неоткуда.
+
+		eq_preset_rows() {
+			return [ '', ... $bog_music_eq.presets.map( preset => preset.id ) ]
+				.map( id => this.Eq_preset_row( id ) )
+		}
+
+		eq_preset_title( id: string ) {
+			if( !id ) return $bog_music_eq.custom_title
+			return $bog_music_eq.presets.find( preset => preset.id === id )?.title ?? id
+		}
+
+		eq_preset_checked( id: string, next?: boolean ): boolean {
+			if( next === undefined ) return $bog_music_eq.preset_of( this.eq_gains() ) === id
+			const gains = $bog_music_eq.preset( id )
+			if( !gains ) return this.eq_preset_checked( id )
+			this.eq_apply( gains )
+			return true
+		}
+
+		// ---------- перетаскивание точек ----------
+
+		/** Полоса — по колонке графика, в которую попал палец. */
+		private eq_band_at( event: PointerEvent ) {
+			const rect = ( event.currentTarget as HTMLElement ).getBoundingClientRect()
+			const part = rect.width ? ( event.clientX - rect.left ) / rect.width : 0
+			return $bog_music_eq_curve.band_at( part * $bog_music_eq_curve.width )
+		}
+
+		private eq_db_at( event: PointerEvent ) {
+			const rect = ( event.currentTarget as HTMLElement ).getBoundingClientRect()
+			const part = rect.height ? ( event.clientY - rect.top ) / rect.height : 0.5
+			return $bog_music_eq_curve.db_at( part )
+		}
 
 		private _eq_dragging = -1
 
-		private eq_db_from_event(event: PointerEvent): number {
-			const target = event.currentTarget as HTMLElement
-			const rect = target.getBoundingClientRect()
-			const part = 1 - (event.clientY - rect.top) / rect.height // 0 — низ, 1 — верх
-			const range = $bog_music_eq.range_db
-			return Math.round(Math.max(-range, Math.min(range, (part * 2 - 1) * range)))
-		}
-
-		private eq_drag_to(index: number, event: PointerEvent) {
+		private eq_drag_to( event: PointerEvent ) {
+			if( this._eq_dragging < 0 ) return
 			const gains = this.eq_gains().slice()
-			gains[index] = this.eq_db_from_event(event)
-			this.eq_draft(gains)
+			gains[ this._eq_dragging ] = this.eq_db_at( event )
+			this.eq_draft( gains )
 		}
 
-		eq_pointer_down(index: number, event?: Event) {
-			if (!event) return null
+		eq_pointer_down( event?: Event ) {
+			if( !event ) return null
 			const e = event as PointerEvent
-			try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId) } catch {}
-			this._eq_dragging = index
-			this.eq_drag_to(index, e)
+			try { ( e.currentTarget as HTMLElement ).setPointerCapture( e.pointerId ) } catch {}
+			// Полосу выбираем один раз, на нажатии: иначе палец, уехавший вверх по
+			// диагонали, посреди жеста перескакивал бы на соседнюю точку.
+			this._eq_dragging = this.eq_band_at( e )
+			this.eq_drag_to( e )
 			e.preventDefault()
 			return null
 		}
 
-		eq_pointer_move(index: number, event?: Event) {
-			if (!event || this._eq_dragging !== index) return null
-			this.eq_drag_to(index, event as PointerEvent)
+		eq_pointer_move( event?: Event ) {
+			if( !event || this._eq_dragging < 0 ) return null
+			this.eq_drag_to( event as PointerEvent )
 			return null
 		}
 
-		eq_pointer_up(index: number, event?: Event) {
-			if (!event) return null
+		eq_pointer_up( event?: Event ) {
+			if( !event ) return null
 			const e = event as PointerEvent
-			try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId) } catch {}
-			if (this._eq_dragging !== index) return null
+			try { ( e.currentTarget as HTMLElement ).releasePointerCapture( e.pointerId ) } catch {}
+			if( this._eq_dragging < 0 ) return null
 			this._eq_dragging = -1
 			const gains = this.eq_draft()
-			if (gains) this.eq_apply(gains)
-			// Панель не закрываем, в отличие от громкости: полос пять, их крутят
-			// подряд, и захлопнуться после первой же было бы издевательством.
+			if( gains ) this.eq_apply( gains )
+			// Панель не закрываем, в отличие от громкости: точек шесть, их
+			// таскают подряд.
 			return null
 		}
 

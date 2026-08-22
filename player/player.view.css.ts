@@ -244,29 +244,39 @@ namespace $.$$ {
 				items: 'stretch',
 			},
 			gap: $mol_gap.text,
+			width: '17rem',
 		},
 
 		Eq_presets: {
 			flex: {
-				direction: 'row',
-				wrap: 'wrap',
+				direction: 'column',
 			},
-			justify: {
-				content: 'center',
+			align: {
+				items: 'stretch',
 			},
-			gap: '0.25rem',
-			maxWidth: '13.5rem',
 		},
 
-		Eq_bands: {
-			flex: {
-				direction: 'row',
-				shrink: 0,
-			},
+		/** Строка списка пресетов: подпись слева, галочка выбранного справа. */
+		Eq_preset_row: {
 			justify: {
-				content: 'center',
+				content: 'space-between',
 			},
-			gap: '0.25rem',
+			textAlign: 'left',
+			'::after': {
+				content: '"✓"',
+				color: $mol_theme.focus,
+				opacity: 0,
+			},
+			'@': {
+				mol_check_checked: {
+					'true': {
+						color: $mol_theme.focus,
+						'::after': {
+							opacity: 1,
+						},
+					},
+				},
+			},
 		},
 
 	})

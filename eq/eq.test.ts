@@ -21,16 +21,30 @@ namespace $ {
 			$mol_assert_equal( $bog_music_eq.preset_of( [ 1, 2, 3, 4, 5 ] ), '' )
 		},
 
-		'Плоский набор — это пресет flat, а не «Свой»'() {
-			$mol_assert_equal( $bog_music_eq.preset_of( $bog_music_eq.flat() ), 'flat' )
+		'Ровный набор — это пресет «По умолчанию», а не «Свой»'() {
+			$mol_assert_equal( $bog_music_eq.preset_of( $bog_music_eq.flat() ), 'default' )
 		},
 
 		'Чужой набор приводится к нашим полосам'() {
 			// Короче — недостающие полосы в ноль, длиннее — лишние прочь.
-			$mol_assert_equal( $bog_music_eq.clamp( [ 3 ] ).join(), '3,0,0,0,0' )
-			$mol_assert_equal( $bog_music_eq.clamp( [ 1, 1, 1, 1, 1, 1, 1 ] ).join(), '1,1,1,1,1' )
+			$mol_assert_equal( $bog_music_eq.clamp( [ 3 ] ).join(), '3,0,0,0,0,0' )
+			$mol_assert_equal( $bog_music_eq.clamp( [ 1, 1, 1, 1, 1, 1, 1, 1 ] ).join(), '1,1,1,1,1,1' )
 			// За пределом — в потолок, дробное — к целым dB.
-			$mol_assert_equal( $bog_music_eq.clamp( [ 99, -99, 2.4, 2.6, NaN ] ).join(), '12,-12,2,3,0' )
+			$mol_assert_equal( $bog_music_eq.clamp( [ 99, -99, 2.4, 2.6, NaN, 5 ] ).join(), '12,-12,2,3,0,5' )
+		},
+
+		'Настройка от пятиполосной версии не роняет полосы'() {
+			// В baza могла остаться строка на пять значений: шестая полоса в ноль,
+			// первые пять сохраняются как были.
+			$mol_assert_equal( $bog_music_eq.parse( '8,4,0,0,1' ).join(), '8,4,0,0,1,0' )
+		},
+
+		'Цвет едет от зелёного через жёлтый к красному'() {
+			$mol_assert_equal( $bog_music_eq.color( -12 ), 'hsl( 120 80% 55% )' )
+			$mol_assert_equal( $bog_music_eq.color( 0 ), 'hsl( 50 80% 55% )' )
+			$mol_assert_equal( $bog_music_eq.color( 12 ), 'hsl( 0 80% 55% )' )
+			// За пределом диапазона цвет не уезжает дальше края.
+			$mol_assert_equal( $bog_music_eq.color( 99 ), $bog_music_eq.color( 12 ) )
 		},
 
 		'Набор переживает запись строкой и чтение обратно'() {

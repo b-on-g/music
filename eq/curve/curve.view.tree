@@ -1,0 +1,61 @@
+$bog_music_eq_curve $mol_view
+	gains /number
+	pointer_down?event null
+	pointer_move?event null
+	pointer_up?event null
+	sub /
+		<= Db_row $mol_view
+			sub <= db_list /
+				<= Db*0 $mol_paragraph
+					title <= db_text* \
+					style *
+						color <= db_color* \
+		<= Plot $mol_svg_root
+			view_box <= view_box \
+			aspect \xMidYMid meet
+			event *
+				pointerdown?event <=> pointer_down?event
+				pointermove?event <=> pointer_move?event
+				pointerup?event <=> pointer_up?event
+				pointercancel?event <=> pointer_up?event
+			sub /
+				<= Defs $mol_svg
+					dom_name \defs
+					sub /
+						<= Gradient $mol_svg
+							dom_name \linearGradient
+							attr *
+								id <= gradient_id \
+								x1 \0%
+								x2 \100%
+								y1 \0%
+								y2 \0%
+							sub <= stop_list /
+								<= Stop*0 $mol_svg
+									dom_name \stop
+									attr *
+										offset <= stop_offset* \
+										stop-color <= stop_color* \
+				<= Zero $mol_svg_line
+					from_x <= zero_x1 \
+					from_y <= zero_y \
+					to_x <= zero_x2 \
+					to_y <= zero_y \
+				<= Curve $mol_svg_path
+					geometry <= curve_geometry \
+					attr *
+						^
+						stroke <= curve_stroke \
+				<= Dots $mol_svg_group
+					sub <= dot_list /
+						<= Dot*0 $mol_svg_circle
+							radius \4
+							pos_x <= dot_x* \
+							pos_y <= dot_y* \
+							attr *
+								^
+								stroke <= dot_color* \
+		<= Freq_row $mol_view
+			sub <= freq_list /
+				<= Freq*0 $mol_paragraph
+					title <= freq_text* \
