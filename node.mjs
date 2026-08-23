@@ -13905,8 +13905,8 @@ var $;
             return this.faces.tick(this.auth().pass().peer());
         }
         _pass = new $mol_wire_dict();
-        _seal_item = new $mol_wire_dict();
-        _seal_shot = new $mol_wire_dict();
+        _seal_item = new Map();
+        _seal_shot = new Map();
         _gift = new $mol_wire_dict();
         _sand = new $mol_wire_dict();
         _unit_hash = new Map();
@@ -13920,7 +13920,7 @@ var $;
             if (prev)
                 return;
             for (const hash of seal.hash_list()) {
-                const prev = this._seal_item.get(hash.str);
+                const prev = this.seal_item_get(seal.lord(), hash);
                 if ($giper_baza_unit_seal.compare(prev, seal) <= 0)
                     continue;
                 if (prev?.alive_items.has(hash.str)) {
@@ -13929,9 +13929,8 @@ var $;
                         this.seal_del(prev);
                     seal.alive_items.add(hash.str);
                 }
-                this._seal_item.set(hash.str, seal);
+                this.seal_item_set(seal, hash);
             }
-            const peer = seal.lord().peer();
             this._seal_shot.set(seal.shot().str, seal);
         }
         gift_add(gift) {
@@ -14001,8 +14000,8 @@ var $;
                 return;
             this._seal_shot.delete(shot.str);
             for (const hash of seal.hash_list()) {
-                if (this._seal_item.get(hash.str) === seal) {
-                    this._seal_item.delete(hash.str);
+                if (this.seal_item_get(seal.lord(), hash) === seal) {
+                    this.seal_item_del(seal.lord(), hash);
                 }
             }
             this.unit_reap(seal);
@@ -14037,12 +14036,19 @@ var $;
         unit_seal(unit) {
             if (!unit.encoded())
                 return null;
-            const seal = this._seal_item.get(unit.hash().str);
-            if (!seal)
-                return null;
-            if (seal.lord().str != unit.lord().str)
-                return null;
-            return seal;
+            return this.seal_item_get(unit.lord(), unit.hash()) ?? null;
+        }
+        seal_item_get(lord, hash) {
+            return this._seal_item.get(lord.str)?.get(hash.str);
+        }
+        seal_item_del(lord, hash) {
+            this._seal_item.get(lord.str)?.delete(hash.str);
+        }
+        seal_item_set(seal, hash) {
+            let seals = this._seal_item.get(seal.lord().str);
+            if (!seals)
+                this._seal_item.set(seal.lord().str, seals = new Map);
+            seals.set(hash.str, seal);
         }
         sand_get(head, lord, self) {
             return this._sand.get(head.str)?.get(lord.str)?.get(self.str) ?? null;
@@ -14138,7 +14144,7 @@ var $;
         }
         /** Total count of Units inside Land. */
         total() {
-            let total = this._gift.size + this._seal_item.size;
+            let total = this._gift.size + this._seal_shot.size;
             for (const peers of this._sand.values()) {
                 for (const units of peers.values()) {
                     total += units.size;
@@ -14228,16 +14234,12 @@ var $;
                     skip_mass,
                     peer_face: face,
                     self_face: this.faces.get(peer),
-                    debug: {
-                        seal_shot: this._seal_shot.size,
-                        seal_item: this._seal_item.size,
-                    },
                 });
                 for (const unit of skipped_units)
                     delta.add(unit);
             }
             for (const unit of delta) {
-                const seal = this._seal_item.get(unit.hash().str);
+                const seal = this.seal_item_get(unit.lord(), unit.hash());
                 if (seal)
                     seals.add(seal);
                 else
@@ -14527,7 +14529,8 @@ var $;
                         return $mol_fail(new Error(`Encrypted land can't be shared to everyone`));
                     const secret_mutual = this.auth().secret_mutual(mate_pass);
                     if (secret_mutual) {
-                        const code = $mol_wire_sync(secret_mutual).close(secret_land, gift.salt());
+                        const salt = $mol_buffer.from(gift.salt().slice()).mix(this.link().lord().toBin());
+                        const code = $mol_wire_sync(secret_mutual).close(secret_land, salt);
                         gift.code().set(code);
                     }
                 }
@@ -14805,8 +14808,10 @@ var $;
             let bin = sand._open;
             if (sand._vary !== null) {
                 const secret = sand._land.secret();
-                if (secret)
-                    bin = await secret.encrypt(bin, sand.salt());
+                if (secret) {
+                    const salt = $mol_buffer.from(sand.salt().slice()).mix(this.link().toBin());
+                    bin = await secret.encrypt(bin, salt);
+                }
             }
             sand.ball(bin);
             if (sand._alive)
@@ -14890,8 +14895,9 @@ var $;
             if (!sand._ball)
                 sand._ball = sand.big() ? await $mol_wire_async(this.mine()).ball_load(sand) : sand.data();
             if (secret && sand._ball && !sand.dead()) {
+                const salt = $mol_buffer.from(sand.salt().slice()).mix(this.link().toBin());
                 try {
-                    sand._open = await secret.decrypt(sand._ball, sand.salt());
+                    sand._open = await secret.decrypt(sand._ball, salt);
                 }
                 catch (error) {
                     if ($mol_fail_catch(error)) {
@@ -14950,7 +14956,8 @@ var $;
             const secret_mutual = auth.secret_mutual(this.lord_pass(gift.lord()));
             if (!secret_mutual)
                 return $mol_fail(new Error(`Can't decrypt secret`));
-            return new $mol_crypto_sacred($mol_wire_sync(secret_mutual).open(gift.code(), gift.salt()).buffer);
+            const salt = $mol_buffer.from(gift.salt().slice()).mix(this.link().lord().toBin());
+            return new $mol_crypto_sacred($mol_wire_sync(secret_mutual).open(gift.code(), salt).buffer);
         }
         dump() {
             this.units_saving();
@@ -16475,7 +16482,7 @@ var $;
                     return $mol_fail(new Error('Unexpected land', { cause: { expected: this.land().str, existen: land } }));
                 for (const unit of part.units) {
                     this.units_persisted.add(unit);
-                    $giper_baza_unit_trusted_grant(unit);
+                    // $giper_baza_unit_trusted_grant( unit )
                 }
                 return part.units;
             }
