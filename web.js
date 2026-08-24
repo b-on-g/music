@@ -4093,6 +4093,48 @@ var $;
 "use strict";
 var $;
 (function ($) {
+    class $mol_storage extends $mol_object2 {
+        /** Is storage a long term. */
+        static persisted(next) {
+            return false;
+        }
+        /** Total storage quota in bytes. */
+        static total() {
+            return 0;
+        }
+        /** Total storage usage in bytes. */
+        static used() {
+            return 0;
+        }
+        /** Minimum available free space in bytes. */
+        static free() {
+            return this.total() - this.used();
+        }
+        /** Fulfillness of storage. */
+        static portion() {
+            const total = this.total();
+            if (!total)
+                return 1;
+            return this.used() / total;
+        }
+        /**
+         * Fulfillness logarithmic level.
+         * `0` - empty
+         * `1` - half free
+         * `2` - quart free
+         * `Infinity` - fulfilled
+         */
+        static level() {
+            return -Math.log2(1 - this.portion());
+        }
+    }
+    $.$mol_storage = $mol_storage;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
     $.$mol_mem_persist = $mol_wire_solid;
 })($ || ($ = {}));
 
@@ -4190,7 +4232,35 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    class $mol_storage extends $mol_object2 {
+    /** State of time moment */
+    class $mol_state_time extends $mol_object {
+        static task(precision, reset) {
+            if (precision) {
+                return new $mol_after_timeout(precision, () => this.task(precision, null));
+            }
+            else {
+                return new $mol_after_frame(() => this.task(precision, null));
+            }
+        }
+        static now(precision) {
+            this.task(precision);
+            return Date.now();
+        }
+    }
+    __decorate([
+        $mol_mem_key
+    ], $mol_state_time, "task", null);
+    __decorate([
+        $mol_mem_key
+    ], $mol_state_time, "now", null);
+    $.$mol_state_time = $mol_state_time;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $mol_storage_web extends $mol_storage {
         static native() {
             return this.$.$mol_dom_context.navigator.storage ?? {
                 persisted: async () => false,
@@ -4218,7 +4288,24 @@ var $;
             return next ?? $mol_wire_sync(native).persisted();
         }
         static estimate() {
+            $mol_state_time.now(1000);
             return $mol_wire_sync(this.native() ?? {}).estimate();
+        }
+        static total() {
+            return this.estimate().quota ?? 0;
+        }
+        static used() {
+            return this.estimate().usage ?? 0;
+        }
+        static free() {
+            const { usage = 0, quota = 0 } = this.estimate();
+            return quota - usage;
+        }
+        static portion() {
+            const { usage = 0, quota = 0 } = this.estimate();
+            if (!quota)
+                return 1;
+            return usage / quota;
         }
         static dir() {
             return $mol_wire_sync(this.native()).getDirectory();
@@ -4226,11 +4313,15 @@ var $;
     }
     __decorate([
         $mol_mem
-    ], $mol_storage, "native", null);
+    ], $mol_storage_web, "native", null);
     __decorate([
         $mol_mem
-    ], $mol_storage, "persisted", null);
-    $.$mol_storage = $mol_storage;
+    ], $mol_storage_web, "persisted", null);
+    __decorate([
+        $mol_mem
+    ], $mol_storage_web, "estimate", null);
+    $.$mol_storage_web = $mol_storage_web;
+    $.$mol_storage = $.$mol_storage_web;
 })($ || ($ = {}));
 
 ;
@@ -8100,34 +8191,6 @@ var $;
 		}
 	};
 
-
-;
-"use strict";
-var $;
-(function ($) {
-    /** State of time moment */
-    class $mol_state_time extends $mol_object {
-        static task(precision, reset) {
-            if (precision) {
-                return new $mol_after_timeout(precision, () => this.task(precision, null));
-            }
-            else {
-                return new $mol_after_frame(() => this.task(precision, null));
-            }
-        }
-        static now(precision) {
-            this.task(precision);
-            return Date.now();
-        }
-    }
-    __decorate([
-        $mol_mem_key
-    ], $mol_state_time, "task", null);
-    __decorate([
-        $mol_mem_key
-    ], $mol_state_time, "now", null);
-    $.$mol_state_time = $mol_state_time;
-})($ || ($ = {}));
 
 ;
 "use strict";
@@ -17362,6 +17425,8 @@ var $;
         Mem_used: $giper_baza_stat_ranges,
         /** Memory in MB */
         Mem_free: $giper_baza_stat_ranges,
+        /** FS used */
+        Fs_used: $giper_baza_stat_ranges,
         /** FS free */
         Fs_free: $giper_baza_stat_ranges,
         /** FS read count */
@@ -17418,11 +17483,10 @@ var $;
             this.Cpu_system(null).tick_integral(Math.ceil(res.systemCPUTime / 1e4)); // %
             this.Fs_reads(null).tick_integral(res.fsRead); // pct
             this.Fs_writes(null).tick_integral(res.fsWrite); // pct
-            const mem_total = $node.os.totalmem();
-            this.Mem_used(null).tick_instant(Math.ceil((res.maxRSS - res.sharedMemorySize) * 1024 / mem_total * 100)); // %
-            this.Mem_free(null).tick_instant(Math.floor($node.os.freemem() / mem_total * 100)); // %
-            const fs = $node.fs.statfsSync('.');
-            this.Fs_free(null).tick_instant(Math.floor(Number(fs.bfree) / Number(fs.blocks) * 100)); // %
+            this.Mem_used(null).tick_instant(Math.ceil((res.maxRSS - res.sharedMemorySize) / 1024)); // MB
+            this.Mem_free(null).tick_instant(Math.floor($node.os.freemem() / 1024 / 1024)); // MB
+            this.Fs_used(null).tick_instant(Math.floor($mol_storage.used() / 1024 / 1024)); // MB
+            this.Fs_free(null).tick_instant(Math.floor($mol_storage.free() / 1024 / 1024)); // MB
             const masters = yard.masters()?.length ?? 0;
             this.Port_masters(null).tick_instant(masters); // pct
             const ports = yard.ports() ?? [];
@@ -31084,7 +31148,7 @@ var $;
 		}
 		Mem_free(){
 			const obj = new this.$.$mol_plot_line();
-			(obj.title) = () => ("Mem Free (%)");
+			(obj.title) = () => ("Mem Free (MB)");
 			(obj.series_y) = () => ((this.mem_free()));
 			return obj;
 		}
@@ -31093,7 +31157,7 @@ var $;
 		}
 		Mem_used(){
 			const obj = new this.$.$mol_plot_line();
-			(obj.title) = () => ("Mem Used (%)");
+			(obj.title) = () => ("Mem Used (MB)");
 			(obj.series_y) = () => ((this.mem_used()));
 			return obj;
 		}
@@ -31122,8 +31186,17 @@ var $;
 		}
 		Fs_free(){
 			const obj = new this.$.$mol_plot_line();
-			(obj.title) = () => ("FS Free (%)");
+			(obj.title) = () => ("FS Free (MB)");
 			(obj.series_y) = () => ((this.fs_free()));
+			return obj;
+		}
+		fs_used(){
+			return [];
+		}
+		Fs_used(){
+			const obj = new this.$.$mol_plot_line();
+			(obj.title) = () => ("FS Used (MB)");
+			(obj.series_y) = () => ((this.fs_used()));
 			return obj;
 		}
 		Fs_usage_ruler(){
@@ -31133,13 +31206,14 @@ var $;
 		Fs_usage_mark(){
 			const obj = new this.$.$mol_plot_mark_cross();
 			(obj.labels) = () => ((this.times()));
-			(obj.graphs) = () => ([(this.Fs_free())]);
+			(obj.graphs) = () => ([(this.Fs_used()), (this.Fs_free())]);
 			return obj;
 		}
 		Fs_usage(){
 			const obj = new this.$.$mol_chart();
 			(obj.graphs) = () => ([
 				(this.Fs_free()), 
+				(this.Fs_used()), 
 				(this.Fs_usage_ruler()), 
 				(this.Fs_usage_mark())
 			]);
@@ -31318,6 +31392,7 @@ var $;
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Mem_mark"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Mem"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Fs_free"));
+	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Fs_used"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Fs_usage_ruler"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Fs_usage_mark"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Fs_usage"));
@@ -31381,6 +31456,9 @@ var $;
             mem_free() {
                 return this.stat()?.Mem_free()?.series() ?? [];
             }
+            fs_used() {
+                return this.stat()?.Fs_used()?.series() ?? [];
+            }
             fs_free() {
                 return this.stat()?.Fs_free()?.series() ?? [];
             }
@@ -31438,6 +31516,9 @@ var $;
         __decorate([
             $mol_mem
         ], $giper_baza_app_stat_page.prototype, "mem_free", null);
+        __decorate([
+            $mol_mem
+        ], $giper_baza_app_stat_page.prototype, "fs_used", null);
         __decorate([
             $mol_mem
         ], $giper_baza_app_stat_page.prototype, "fs_free", null);
