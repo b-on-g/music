@@ -1,0 +1,20 @@
+$bog_music_mem_view $mol_list
+	rows /
+		<= Head $mol_view
+			sub /
+				<= Title $mol_paragraph
+					title \Память
+				<= Refresh $mol_button_minor
+					title \Пересчитать
+					click? <=> refresh? null
+				<= Reset $mol_button_minor
+					title \Обнулить счётчики
+					click? <=> reset? null
+		<= Heap $mol_view
+			sub / <= heap_label \
+		<= Counters $mol_view
+			sub / <= counters_label \
+		<= Audit $mol_view
+			sub / <= audit_label \
+		<= Hint $mol_paragraph
+			title \«Пересчитать» обходит фонотеку по заголовкам чанков, содержимое не читает. Треки, чей ленд в этот момент ещё грузился, попадают в «ждут» — жми второй раз.

@@ -84,15 +84,38 @@ namespace $.$$ {
 		}
 
 		/**
+		 * Сколько треков держим докачанными вперёд от текущего. Слушают по
+		 * одной песне: пары следующих хватает, чтобы переход не ждал сети, а
+		 * дальше докачка только тащила бы фонотеку на устройство и в память.
+		 */
+		static prefetch_ahead = 3
+
+		/**
+		 * Окно префетча: текущий трек и несколько следующих из видимого списка.
+		 * Играет что-то не из этого списка (или ничего) — греем его начало.
+		 */
+		prefetch_window(): readonly string[] {
+			const keys = this.visible_keys()
+			if (!keys.length) return []
+			const current = this.current_key()
+			const at = current ? keys.indexOf(current) : -1
+			const from = at >= 0 ? at : 0
+			return keys.slice(from, from + $bog_music_app.prefetch_ahead)
+		}
+
+		/**
 		 * Фоновый драйвер докачки blob'ов «по одной песне». Detached-атом (как
 		 * land.sync_yard): его suspend'ы на текущем blob'е не блокируют рендер UI.
 		 * @$mol_mem здесь — во view-слое (на baza-объекте @$mol_mem запрещён).
 		 * Востребован из auto(), пока приложение открыто.
+		 *
+		 * Окно читается ВНУТРИ атома, поэтому смена трека сама перенацеливает
+		 * докачку на новых соседей.
 		 */
 		@$mol_mem
 		prefetch() {
 			const account = this.account()
-			const root = new $mol_wire_atom('bog_music_prefetch', () => account.prefetch_step())
+			const root = new $mol_wire_atom('bog_music_prefetch', () => account.prefetch_step(this.prefetch_window()))
 			setTimeout(() => root.fresh())
 			return root
 		}
@@ -376,7 +399,7 @@ namespace $.$$ {
 
 		body() {
 			switch (this.section()) {
-				case 'logs': return [this.Logs()]
+				case 'logs': return [this.Mem(), this.Logs()]
 				case 'account': return [this.Account()]
 				case 'feedback': return [this.Feedback()]
 				case 'search': return [this.Tube_bar(), this.Tube_list()]

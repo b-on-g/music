@@ -36,6 +36,7 @@ $bog_music_app $mol_page
 			fm_button <= fm_button \
 			fm_status <= fm_status \
 			fm_link? <=> fm_link? null
+		<= Mem $bog_music_mem_view
 		<= Logs $bog_music_log_view
 		<= Feedback $bog_feedback2_form
 			feedback_id \bog_vk

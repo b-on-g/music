@@ -5,7 +5,8 @@ permissions: write-all
 on:
   workflow_dispatch:
   push:
-    branches: [master]
+    # Ветки собираются все: фича-ветка получает превью-деплой в подпапку.
+    branches: ['**']
     tags: ['v*']
   pull_request:
   schedule:
@@ -22,10 +23,41 @@ jobs:
         package: 'bog/music'
         modules: 'app'
 
+    # Прод. `clean-exclude: branch` обязателен: без него rsync --delete в корне
+    # снёс бы все превьюшки.
     - uses: hyoo-ru/gh-deploy@v4.4.1
       if: github.ref == 'refs/heads/master'
       with:
         folder: 'bog/music/app/-'
+        clean-exclude: branch
+
+    # Имя ветки в имя папки. Считаем в шаге, а не в выражении: у GitHub Actions
+    # нет replace(), а слэши в `mem/lazy-blobs` дали бы лишний уровень вложенности.
+    # Через env, а не подстановкой в текст команды — имя ветки пишет кто угодно.
+    - name: Preview slug
+      id: preview
+      if: github.event_name == 'push' && github.ref_type == 'branch' && github.ref_name != 'master'
+      env:
+        REF_NAME: ${{ github.ref_name }}
+      run: |
+        slug="${REF_NAME//\//-}"
+        slug="${slug//[^A-Za-z0-9._-]/-}"
+        echo "slug=$slug" >> "$GITHUB_OUTPUT"
+
+    # Превью. `target-folder` уводит rsync --delete внутрь подпапки, поэтому
+    # корень (прод) он не трогает.
+    - name: Deploy preview
+      if: steps.preview.outputs.slug != ''
+      uses: hyoo-ru/gh-deploy@v4.4.1
+      with:
+        folder: 'bog/music/app/-'
+        target-folder: 'branch/${{ steps.preview.outputs.slug }}'
+        commit-message: 'preview ${{ github.ref_name }}'
+
+    - name: Preview URL
+      if: steps.preview.outputs.slug != ''
+      run: |
+        echo "Превью: https://b-on-g.github.io/music/branch/${{ steps.preview.outputs.slug }}/" >> "$GITHUB_STEP_SUMMARY"
 
     - name: Pack extension
       if: github.ref == 'refs/heads/master'

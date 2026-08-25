@@ -80,17 +80,24 @@ namespace $ {
 		// ---------- фоновый префетч blob'ов «по одной песне» ----------
 
 		/**
-		 * Ключ следующего трека для докачки: первый (в порядке словаря), у кого
-		 * blob ещё НЕ локально. Проверка через `blob_local` не запускает sync, так
-		 * что перебор не поднимает загрузку всех лендов — качается строго по одному.
-		 * '' — вся библиотека уже на устройстве. БЕЗ @$mol_mem (baza-объект): мемо
-		 * держит view-атом, реактивность даёт чтение baza-атомов внутри blob_local.
+		 * Ключ следующего трека для докачки: первый из ОКНА (текущий трек и
+		 * несколько следующих за ним), у кого blob ещё не локально. '' — окно
+		 * целиком на устройстве.
+		 *
+		 * Раньше окна не было: префетч шёл по всему словарю и рано или поздно
+		 * стаскивал на устройство и в память всю фонотеку. Слушают её по одной
+		 * песне, поэтому вперёд нужно ровно столько, чтобы переход на следующий
+		 * трек не ждал сети.
+		 *
+		 * Проверка через `blob_local` не запускает sync, так что перебор окна не
+		 * поднимает загрузку соседних лендов — качается строго по одному. БЕЗ
+		 * @$mol_mem (baza-объект): мемо держит view-атом, реактивность даёт
+		 * чтение baza-атомов внутри blob_local.
 		 */
-		prefetch_active_key(): string {
-			const dict = this.tracks()
-			for (const key of (dict.keys() ?? []) as string[]) {
+		prefetch_active_key(keys: readonly string[]): string {
+			for (const key of keys) {
 				try {
-					const track = dict.key(key)
+					const track = this.track(key)
 					if (!track || !track.audio()) continue
 					if (track.blob_local()) continue
 					return key
@@ -106,10 +113,13 @@ namespace $ {
 		 * blob (suspend до готовности). Одна закачка в полёте — фибра висит на этом
 		 * blob'е; когда доедет, blob_local флипнется → prefetch_active_key укажет на
 		 * следующий → атом-драйвер (в app.view) перезапустится и возьмётся за него.
-		 * Драйвер живёт во view ($bog_music_app.prefetch), не на baza-объекте.
+		 * Драйвер живёт во view ($bog_music_app.prefetch), не на baza-объекте: он же
+		 * и считает окно, потому что знает текущий трек и видимый список.
+		 *
+		 * Ссылку на трек не держим: фибра берёт его по ключу и отпускает.
 		 */
-		prefetch_step(): void {
-			const key = this.prefetch_active_key()
+		prefetch_step(keys: readonly string[]): void {
+			const key = this.prefetch_active_key(keys)
 			if (!key) return
 			const track = this.track(key)
 			if (!track) return
