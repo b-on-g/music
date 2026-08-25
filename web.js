@@ -4125,7 +4125,7 @@ var $;
          * `Infinity` - fulfilled
          */
         static level() {
-            return -Math.log2(1 - this.portion());
+            return Math.floor(-Math.log2(1 - this.portion()));
         }
     }
     $.$mol_storage = $mol_storage;
@@ -10647,6 +10647,9 @@ var $;
 (function ($) {
     class $mol_rest_port_ws_std extends $mol_rest_port_ws {
         socket;
+        origin() {
+            return this.socket.url;
+        }
         send_nil() {
             if (this.socket.readyState !== this.socket.OPEN)
                 return;
@@ -14337,6 +14340,7 @@ var $;
             return this.post(seat ? units[seat - 1].self() : $giper_baza_link.hole, head, sand.self(), null, 'term');
         }
         broadcast() {
+            this.persisted(true);
             this.$.$giper_baza_glob.yard().lands_news.add(this.link().str);
         }
         sync() {
@@ -14378,6 +14382,8 @@ var $;
         loading() {
             $mol_wire_solid();
             let units = $mol_wire_sync(this.mine()).units_load();
+            if (units.length)
+                this.persisted(true);
             if (this.$.$giper_baza_log())
                 $mol_wire_sync(this.$).$mol_log3_rise({
                     place: this,
@@ -14466,6 +14472,8 @@ var $;
         }
         units_saving() {
             this.units_signing();
+            if (!this.persisted())
+                return;
             batch(this, this.units_unsaved, this.units_save);
         }
         async units_save(units) {
@@ -14483,6 +14491,20 @@ var $;
                     ins: units,
                     del: reaping,
                 });
+        }
+        persisted(next) {
+            $mol_wire_solid();
+            if (next !== undefined)
+                return next;
+            const level = $mol_wire_sync(this.$.$mol_storage).level();
+            if (level <= 0)
+                return true;
+            if (level > 6)
+                return false;
+            const crop = 8 - level;
+            const self = this.auth().pass().lord().toBin().at(-1);
+            const land = this.link().toBin().at(-1);
+            return (self >>> crop) === (land >>> crop);
         }
         async units_sign(units) {
             await Promise.resolve(); // prevent deps
@@ -14825,6 +14847,9 @@ var $;
     __decorate([
         $mol_mem
     ], $giper_baza_land.prototype, "units_saving", null);
+    __decorate([
+        $mol_mem
+    ], $giper_baza_land.prototype, "persisted", null);
     __decorate([
         $mol_mem_key
     ], $giper_baza_land.prototype, "sand_load", null);
@@ -16800,6 +16825,14 @@ var $;
                 Passives.set(port, passives = new Set);
             return passives;
         }
+        lands_alive() {
+            const ports = this.ports();
+            const actives = ports.flatMap(port => [...this.port_lands_active(port)]);
+            const passives = ports.flatMap(port => [...this.port_lands_passive(port)]);
+            const lands = new Set([...actives, ...passives]);
+            const glob = this.$.$giper_baza_glob;
+            return [...lands].map(id => glob.Land(new $giper_baza_link(id)));
+        }
         port_income(port, msg) {
             const pack = $mol_wire_sync($giper_baza_pack).from(msg);
             const parts = $mol_wire_sync(pack).parts();
@@ -16981,6 +17014,9 @@ var $;
     __decorate([
         $mol_mem_key
     ], $giper_baza_yard.prototype, "port_lands_active", null);
+    __decorate([
+        $mol_mem
+    ], $giper_baza_yard.prototype, "lands_alive", null);
     __decorate([
         $mol_action
     ], $giper_baza_yard.prototype, "port_income", null);
@@ -17416,6 +17452,7 @@ var $;
 (function ($) {
     class $giper_baza_app_stat extends $giper_baza_dict.with({
         Uptime: $giper_baza_atom_dura,
+        Masters: $giper_baza_atom.of($mol_schema_list($mol_schema_string)),
         Slaves: $giper_baza_atom.of($mol_schema_list($mol_schema_string)),
         /** User time in secs */
         Cpu_user: $giper_baza_stat_ranges,
@@ -17437,8 +17474,10 @@ var $;
         Port_slaves: $giper_baza_stat_ranges,
         /** Masters sockets count */
         Port_masters: $giper_baza_stat_ranges,
-        /** Active lands count */
-        Land_active: $giper_baza_stat_ranges,
+        /** Alive (in-memory) lands count */
+        Land_alive: $giper_baza_stat_ranges,
+        /** Ghost (non-persist) lands count */
+        Land_ghost: $giper_baza_stat_ranges,
         /** Unhandled errors */
         Errors: $giper_baza_stat_ranges,
     }) {
@@ -17454,6 +17493,9 @@ var $;
         }
         uptime(next) {
             return this.Uptime(next)?.val(next) ?? new $mol_time_duration(0);
+        }
+        masters(next) {
+            return this.Masters(next)?.val(next) ?? [];
         }
         slaves(next) {
             return this.Slaves(next)?.val(next) ?? [];
@@ -17477,6 +17519,7 @@ var $;
             this.$.$mol_state_time.now(1000);
             const yard = this.$.$giper_baza_glob.yard();
             this.uptime(new $mol_time_duration({ second: Math.floor(process.uptime()) }).normal);
+            this.masters([...yard.masters()].map(port => port.address() + ' ' + port.origin()));
             this.slaves([...yard.slaves].map(port => port.address() + ' ' + port.origin()));
             const res = process.resourceUsage();
             this.Cpu_user(null).tick_integral(Math.ceil(res.userCPUTime / 1e4)); // %
@@ -17489,10 +17532,11 @@ var $;
             this.Fs_free(null).tick_instant(Math.floor($mol_storage.free() / 1024 / 1024)); // MB
             const masters = yard.masters()?.length ?? 0;
             this.Port_masters(null).tick_instant(masters); // pct
-            const ports = yard.ports() ?? [];
-            this.Port_slaves(null).tick_instant(ports.length - masters); // pct
-            const lands = ports.reduce((sum, port) => sum + yard.port_lands_active(port).size, 0);
-            this.Land_active(null).tick_instant(lands); // pct
+            this.Port_slaves(null).tick_instant(yard.slaves.size); // pct
+            const lands_alive = yard.lands_alive();
+            const lands_persist = yard.lands_alive().filter(land => land.persisted());
+            this.Land_alive(null).tick_instant(lands_alive.length); // pct
+            this.Land_ghost(null).tick_instant(lands_alive.length - lands_persist.length); // pct
             this.Errors(null).tick_instant(0); // pct
         }
     }
@@ -17502,6 +17546,9 @@ var $;
     __decorate([
         $mol_mem
     ], $giper_baza_app_stat.prototype, "uptime", null);
+    __decorate([
+        $mol_mem
+    ], $giper_baza_app_stat.prototype, "masters", null);
     __decorate([
         $mol_mem
     ], $giper_baza_app_stat.prototype, "slaves", null);
@@ -21470,7 +21517,7 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    $mol_style_attach("mol/text/text/text.view.css", "[mol_text] {\n\tline-height: 1.5em;\n\tbox-sizing: border-box;\n\tborder-radius: var(--mol_gap_round);\n\twhite-space: pre-line;\n\tdisplay: flex;\n\tflex-direction: column;\n\tflex: 0 0 auto;\n\ttab-size: 4;\n}\n\n[mol_text_paragraph] {\n\tpadding: var(--mol_gap_text);\n\toverflow: auto;\n\toverflow-x: overlay;\n\tmax-width: 100%;\n\tdisplay: block;\n\tmax-width: 60rem;\n\tbreak-inside: avoid;\n}\n\n[mol_text_spoiler_label_paragraph] {\n\tpadding: 0;\n}\n\n[mol_text_span] {\n\tdisplay: inline;\n}\n\n[mol_text_string] {\n\tdisplay: inline;\n\tflex: 0 1 auto;\n\twhite-space: normal;\n}\n\n[mol_text_quote] {\n\tmargin: var(--mol_gap_block);\n\tpadding: var(--mol_gap_block);\n\tbackground: var(--mol_theme_card);\n\tbox-shadow: 0 0 0 1px var(--mol_theme_back);\n\tbreak-inside: avoid;\n}\n\n[mol_text_header] {\n\tdisplay: block;\n\ttext-shadow: 0 0;\n\tfont-weight: normal;\n\tbreak-after: avoid;\n}\n\n* + [mol_text_header] {\n\tmargin-top: 0.75rem;\n}\n\nh1[mol_text_header] {\n\tfont-size: 1.5rem;\n}\n\nh2[mol_text_header] {\n\tfont-size: 1.5rem;\n\tfont-style: italic;\n}\n\nh3[mol_text_header] {\n\tfont-size: 1.25rem;\n}\n\nh4[mol_text_header] {\n\tfont-size: 1.25em;\n\tfont-style: italic;\n}\n\nh5[mol_text_header] {\n\tfont-size: 1rem;\n}\n\nh6[mol_text_header] {\n\tfont-size: 1rem;\n\tfont-style: italic;\n}\n\n[mol_text_header_link] {\n\tcolor: inherit;\n}\n\n[mol_text_table] {\n\tbreak-inside: avoid;\n}\n\n[mol_text_table_cell] {\n\twidth: auto;\n\tdisplay: table-cell;\n\tvertical-align: baseline;\n\tpadding: 0;\n\tborder-radius: 0;\n}\n\n[mol_text_grid] {\n\tbreak-inside: avoid;\n}\n\n[mol_text_grid_cell] {\n\twidth: auto;\n\tdisplay: table-cell;\n\tvertical-align: top;\n\tpadding: 0;\n\tborder-radius: 0;\n}\n\n[mol_text_cut] {\n\tborder: none;\n\twidth: 100%;\n\tbox-shadow: 0 0 0 1px var(--mol_theme_line);\n}\n\n[mol_text_link_http],\n[mol_text_link] {\n\tpadding: 0;\n\tdisplay: inline;\n\twhite-space: nowrap;\n}\n\n[mol_text_link_icon] + [mol_text_embed] {\n\tmargin-inline-start: -1.5rem;\n}\n\n[mol_text_embed_youtube] {\n\tdisplay: inline;\n}\n\n[mol_text_embed_youtube_image],\n[mol_text_embed_youtube_frame],\n[mol_text_embed_object] {\n\tobject-fit: contain;\n\tobject-position: center;\n\twidth: 100vw;\n\tmax-height: calc( 100vh - 6rem );\n}\n[mol_text_embed_object_fallback] {\n\tpadding: 0;\n}\n[mol_text_embed_image] {\n\tobject-fit: contain;\n\tobject-position: center;\n\tdisplay: inline;\n\t/* max-height: calc( 100vh - 6rem ); */\n\tvertical-align: top;\n}\n\n[mol_text_pre] {\n\twhite-space: pre;\n\toverflow-x: auto;\n\toverflow-x: overlay;\n\ttab-size: 2;\n\tbreak-inside: avoid;\n}\n\n[mol_text_code_line] {\n\tdisplay: inline-block;\n}\n\n[mol_text_type=\"strong\"] {\n\ttext-shadow: 0 0;\n\tfilter: contrast(1.5);\n}\n\n[mol_text_type=\"emphasis\"] {\n\tfont-style: italic;\n}\n\n[mol_text_type=\"insert\"] {\n\tcolor: var(--mol_theme_special);\n}\n\n[mol_text_type=\"delete\"] {\n\tcolor: var(--mol_theme_shade);\n}\n\n[mol_text_type=\"remark\"] {\n\tcolor: var(--mol_theme_shade);\n}\n\n[mol_text_type=\"quote\"] {\n\tfont-style: italic;\n}\n");
+    $mol_style_attach("mol/text/text/text.view.css", "[mol_text] {\n\tline-height: 1.5em;\n\tbox-sizing: border-box;\n\tborder-radius: var(--mol_gap_round);\n\twhite-space: pre-line;\n\tdisplay: flex;\n\tflex-direction: column;\n\tflex: 0 0 auto;\n\ttab-size: 4;\n}\n\n[mol_text_paragraph] {\n\tpadding: var(--mol_gap_text);\n\toverflow: auto;\n\toverflow-x: overlay;\n\tmax-width: 100%;\n\tdisplay: block;\n\tmax-width: 60rem;\n\tbreak-inside: avoid;\n}\n\n[mol_text_spoiler_label_paragraph] {\n\tpadding: 0;\n}\n\n[mol_text_span] {\n\tdisplay: inline;\n}\n\n[mol_text_string] {\n\tdisplay: inline;\n\tflex: 0 1 auto;\n\twhite-space: normal;\n}\n\n[mol_text_quote] {\n\tmargin: var(--mol_gap_block);\n\tpadding: var(--mol_gap_block);\n\tbackground: var(--mol_theme_card);\n\tbox-shadow: 0 0 0 1px var(--mol_theme_back);\n\tbreak-inside: avoid;\n}\n\n[mol_text_header] {\n\tdisplay: block;\n\ttext-shadow: 0 0;\n\tfont-weight: normal;\n\tbreak-after: avoid;\n\tletter-spacing: 2px;\n}\n\n* + [mol_text_header] {\n\tmargin-top: 0.75rem;\n}\n\nh1[mol_text_header] {\n\tfont-size: 1.5rem;\n}\n\nh2[mol_text_header] {\n\tfont-size: 1.5rem;\n\tfont-style: italic;\n}\n\nh3[mol_text_header] {\n\tfont-size: 1.25rem;\n}\n\nh4[mol_text_header] {\n\tfont-size: 1.25em;\n\tfont-style: italic;\n}\n\nh5[mol_text_header] {\n\tfont-size: 1rem;\n}\n\nh6[mol_text_header] {\n\tfont-size: 1rem;\n\tfont-style: italic;\n}\n\n[mol_text_header_link] {\n\tcolor: inherit;\n}\n\n[mol_text_table] {\n\tbreak-inside: avoid;\n}\n\n[mol_text_table_cell] {\n\twidth: auto;\n\tdisplay: table-cell;\n\tvertical-align: baseline;\n\tpadding: 0;\n\tborder-radius: 0;\n}\n\n[mol_text_grid] {\n\tbreak-inside: avoid;\n}\n\n[mol_text_grid_cell] {\n\twidth: auto;\n\tdisplay: table-cell;\n\tvertical-align: top;\n\tpadding: 0;\n\tborder-radius: 0;\n}\n\n[mol_text_cut] {\n\tborder: none;\n\twidth: 100%;\n\tbox-shadow: 0 0 0 1px var(--mol_theme_line);\n}\n\n[mol_text_link_http],\n[mol_text_link] {\n\tpadding: 0;\n\tdisplay: inline;\n\twhite-space: nowrap;\n}\n\n[mol_text_link_icon] + [mol_text_embed] {\n\tmargin-inline-start: -1.5rem;\n}\n\n[mol_text_embed_youtube] {\n\tdisplay: inline;\n}\n\n[mol_text_embed_youtube_image],\n[mol_text_embed_youtube_frame],\n[mol_text_embed_object] {\n\tobject-fit: contain;\n\tobject-position: center;\n\twidth: 100vw;\n\tmax-height: calc( 100vh - 6rem );\n}\n[mol_text_embed_object_fallback] {\n\tpadding: 0;\n}\n[mol_text_embed_image] {\n\tobject-fit: contain;\n\tobject-position: center;\n\tdisplay: inline;\n\t/* max-height: calc( 100vh - 6rem ); */\n\tvertical-align: top;\n}\n\n[mol_text_pre] {\n\twhite-space: pre;\n\toverflow-x: auto;\n\toverflow-x: overlay;\n\ttab-size: 2;\n\tbreak-inside: avoid;\n}\n\n[mol_text_code_line] {\n\tdisplay: inline-block;\n}\n\n[mol_text_type=\"strong\"] {\n\ttext-shadow: 0 0;\n\tfilter: contrast(1.5);\n}\n\n[mol_text_type=\"emphasis\"] {\n\tfont-style: italic;\n}\n\n[mol_text_type=\"insert\"] {\n\tcolor: var(--mol_theme_special);\n}\n\n[mol_text_type=\"delete\"] {\n\tcolor: var(--mol_theme_shade);\n}\n\n[mol_text_type=\"remark\"] {\n\tcolor: var(--mol_theme_shade);\n}\n\n[mol_text_type=\"quote\"] {\n\tfont-style: italic;\n}\n");
 })($ || ($ = {}));
 
 ;
@@ -26170,6 +26217,7 @@ var $;
 		List_item_kill(id){
 			const obj = new this.$.$mol_button_minor();
 			(obj.clicks) = (next) => ((this.list_item_kill(id, next)));
+			(obj.hint) = () => ("Double to remove");
 			(obj.sub) = () => ([(this.List_item_kill_icon(id))]);
 			return obj;
 		}
@@ -26217,6 +26265,10 @@ var $;
 			const obj = new this.$.$mol_list();
 			(obj.rows) = () => ((this.list_items()));
 			return obj;
+		}
+		list_receive(next){
+			if(next !== undefined) return next;
+			return null;
 		}
 		list_pick(next){
 			if(next !== undefined) return next;
@@ -26267,6 +26319,14 @@ var $;
 		List_tools(){
 			const obj = new this.$.$mol_bar();
 			(obj.sub) = () => ((this.list_tools()));
+			return obj;
+		}
+		List_drop(){
+			const obj = new this.$.$mol_drop();
+			(obj.adopt) = (next) => ((this.list_item_adopt(next)));
+			(obj.receive) = (next) => ((this.list_receive(next)));
+			(obj.allow) = () => (["move", "copy"]);
+			(obj.Sub) = () => ((this.List_tools()));
 			return obj;
 		}
 		sub(){
@@ -26343,7 +26403,7 @@ var $;
 		}
 		List(){
 			const obj = new this.$.$mol_list();
-			(obj.rows) = () => ([(this.List_items()), (this.List_tools())]);
+			(obj.rows) = () => ([(this.List_items()), (this.List_drop())]);
 			return obj;
 		}
 	};
@@ -26377,6 +26437,7 @@ var $;
 	($mol_mem_key(($.$giper_baza_flex_field.prototype), "List_item_drag"));
 	($mol_mem_key(($.$giper_baza_flex_field.prototype), "List_item_drop"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "List_items"));
+	($mol_mem(($.$giper_baza_flex_field.prototype), "list_receive"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "list_pick"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "List_pick"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "list_item_add"));
@@ -26385,6 +26446,7 @@ var $;
 	($mol_mem(($.$giper_baza_flex_field.prototype), "list_item_link"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "List_item_link"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "List_tools"));
+	($mol_mem(($.$giper_baza_flex_field.prototype), "List_drop"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "pawn"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "prop"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "Enum"));
@@ -26802,21 +26864,18 @@ var $;
                 return sand;
             }
             list_item_value(sand) {
-                return $mol_schema_string.cast(this.land().sand_decode(sand));
+                return $mol_base64_encode($giper_baza_vary.pack([this.land().sand_decode(sand)]));
             }
             list_item_adopt(transfer) {
-                let val = transfer.getData("text/plain");
-                if (this.prop().Kind()?.val())
-                    val = $giper_baza_link_schema.cast(val);
-                return val;
+                return $giper_baza_vary.take($mol_base64_decode(transfer.getData("text/plain")))[0];
             }
             list_item_receive(sand, value) {
                 const list = this.pawn().cast($giper_baza_list);
-                this.pawn()?.cast($giper_baza_list).splice([value], list.units().indexOf(sand));
+                list.splice([value], list.units().indexOf(sand));
             }
             list_receive(value) {
                 const list = this.pawn().cast($giper_baza_list);
-                this.pawn()?.cast($giper_baza_list).splice([value]);
+                list.splice([value]);
             }
             list_item_drag_end(sand, event) {
                 if (event.dataTransfer?.dropEffect !== 'move')
@@ -26894,15 +26953,15 @@ var $;
             List_item_dump: {
             // padding: $mol_gap.text,
             },
-            // List_drop:{
-            // 	'[mol_drop_status]': {
-            // 		drag: {
-            // 			box: {
-            // 				shadow: [[ `inset`, 0, `-1px`, 0, 0, $mol_theme.focus ]],
-            // 			},
-            // 		},
-            // 	},
-            // },
+            List_drop: {
+                '[mol_drop_status]': {
+                    drag: {
+                        box: {
+                            shadow: [[`inset`, 0, `1px`, 0, 0, $mol_theme.focus]],
+                        },
+                    },
+                },
+            },
             List_item_drop: {
                 '[mol_drop_status]': {
                     drag: {
@@ -28402,7 +28461,7 @@ var $;
 			return obj;
 		}
 		menu_title(){
-			return "🌐 Global Explorer";
+			return "🌐 Database Explorer";
 		}
 		menu_tools(){
 			return [(this.Home_link())];
@@ -28672,6 +28731,25 @@ var $;
             },
         });
     })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $giper_baza_app_home extends $giper_baza_flex_peer {
+        init() {
+            this.meta($giper_baza_flex_peer.meta);
+        }
+        tick() {
+            this.init();
+            this.stat(null).tick();
+        }
+    }
+    __decorate([
+        $mol_mem
+    ], $giper_baza_app_home.prototype, "init", null);
+    $.$giper_baza_app_home = $giper_baza_app_home;
 })($ || ($ = {}));
 
 ;
@@ -31060,28 +31138,12 @@ var $;
 
 
 ;
-"use strict";
-var $;
-(function ($) {
-    class $giper_baza_app_home extends $giper_baza_flex_peer {
-        init() {
-            this.meta($giper_baza_flex_peer.meta);
-        }
-        tick() {
-            this.init();
-            this.stat(null).tick();
-        }
-    }
-    __decorate([
-        $mol_mem
-    ], $giper_baza_app_home.prototype, "init", null);
-    $.$giper_baza_app_home = $giper_baza_app_home;
-})($ || ($ = {}));
-
-;
 	($.$giper_baza_app_stat_page) = class $giper_baza_app_stat_page extends ($.$mol_page) {
 		home_link(){
 			return (this.home().link());
+		}
+		title(){
+			return (this.home().name());
 		}
 		Land(){
 			const obj = new this.$.$giper_baza_link_chip();
@@ -31295,13 +31357,22 @@ var $;
 			]);
 			return obj;
 		}
-		land_active(){
+		land_alive(){
 			return [];
 		}
-		Land_active(){
+		Land_alive(){
 			const obj = new this.$.$mol_plot_line();
-			(obj.title) = () => ("Active Lands");
-			(obj.series_y) = () => ((this.land_active()));
+			(obj.title) = () => ("Alive Lands");
+			(obj.series_y) = () => ((this.land_alive()));
+			return obj;
+		}
+		land_ghost(){
+			return [];
+		}
+		Land_ghost(){
+			const obj = new this.$.$mol_plot_line();
+			(obj.title) = () => ("Ghost Lands");
+			(obj.series_y) = () => ((this.land_ghost()));
 			return obj;
 		}
 		Land_count_ruler(){
@@ -31311,13 +31382,14 @@ var $;
 		Land_count_mark(){
 			const obj = new this.$.$mol_plot_mark_cross();
 			(obj.labels) = () => ((this.times()));
-			(obj.graphs) = () => ([(this.Land_active())]);
+			(obj.graphs) = () => ([(this.Land_alive()), (this.Land_ghost())]);
 			return obj;
 		}
 		Land_count(){
 			const obj = new this.$.$mol_chart();
 			(obj.graphs) = () => ([
-				(this.Land_active()), 
+				(this.Land_alive()), 
+				(this.Land_ghost()), 
 				(this.Land_count_ruler()), 
 				(this.Land_count_mark())
 			]);
@@ -31368,9 +31440,6 @@ var $;
 			const obj = new this.$.$giper_baza_app_home();
 			return obj;
 		}
-		title(){
-			return "📊 Server Statistics";
-		}
 		head(){
 			return [(this.Main()), (this.Tools())];
 		}
@@ -31406,7 +31475,8 @@ var $;
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Port_ruler_pct"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Port_mark"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Ports"));
-	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Land_active"));
+	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Land_alive"));
+	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Land_ghost"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Land_count_ruler"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Land_count_mark"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Land_count"));
@@ -31429,20 +31499,28 @@ var $;
     var $$;
     (function ($$) {
         class $giper_baza_app_stat_page extends $.$giper_baza_app_stat_page {
-            home() {
-                const url = this.$.$giper_baza_glob.yard().master_current();
-                if (!url)
-                    return null;
-                const link = new $giper_baza_link(this.$.$mol_fetch.text(url + 'link'));
-                return this.$.$giper_baza_glob.Pawn(link, $giper_baza_app_home);
-            }
             stat() {
                 return this.home()?.stat() ?? null;
             }
             uptime() {
-                const status = (this.stat()?.freshness() ?? Number.POSITIVE_INFINITY) < 5 ? '🟢' : '🔴';
-                const uptime = this.stat()?.uptime().toString('#Y #D hh:mm:ss') ?? '';
-                return `${status} ${uptime}`;
+                const stat = this.stat();
+                if (!stat)
+                    return '🔴';
+                if ((stat.freshness() ?? Number.POSITIVE_INFINITY) < 5) {
+                    const uptime = this.stat()?.uptime().toString('#Y #D hh:mm:ss');
+                    return `🟢 ${uptime}`;
+                }
+                else {
+                    const last = stat.last_change();
+                    if (!last)
+                        return '🔴';
+                    const range = new $mol_time_interval({
+                        start: last,
+                        end: new $mol_time_moment,
+                    });
+                    const downtime = range.duration.normal.toString('#Y #D hh:mm:ss');
+                    return `🔴 ${downtime}`;
+                }
             }
             cpu_user() {
                 return this.stat()?.Cpu_user()?.series() ?? [];
@@ -31462,8 +31540,11 @@ var $;
             fs_free() {
                 return this.stat()?.Fs_free()?.series() ?? [];
             }
-            land_active() {
-                return this.stat()?.Land_active()?.series() ?? [];
+            land_alive() {
+                return this.stat()?.Land_alive()?.series() ?? [];
+            }
+            land_ghost() {
+                return this.stat()?.Land_ghost()?.series() ?? [];
             }
             fs_reads() {
                 return this.stat()?.Fs_reads()?.series() ?? [];
@@ -31497,9 +31578,6 @@ var $;
         }
         __decorate([
             $mol_mem
-        ], $giper_baza_app_stat_page.prototype, "home", null);
-        __decorate([
-            $mol_mem
         ], $giper_baza_app_stat_page.prototype, "stat", null);
         __decorate([
             $mol_mem
@@ -31524,7 +31602,10 @@ var $;
         ], $giper_baza_app_stat_page.prototype, "fs_free", null);
         __decorate([
             $mol_mem
-        ], $giper_baza_app_stat_page.prototype, "land_active", null);
+        ], $giper_baza_app_stat_page.prototype, "land_alive", null);
+        __decorate([
+            $mol_mem
+        ], $giper_baza_app_stat_page.prototype, "land_ghost", null);
         __decorate([
             $mol_mem
         ], $giper_baza_app_stat_page.prototype, "fs_reads", null);
@@ -31573,6 +31654,109 @@ var $;
                 flex: {
                     basis: `25rem`,
                     shrink: 0,
+                },
+            },
+        });
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$giper_baza_app_stat_list) = class $giper_baza_app_stat_list extends ($.$mol_book2_catalog) {
+		peer_home(id){
+			const obj = new this.$.$giper_baza_app_home();
+			return obj;
+		}
+		peer_uptime(id){
+			return (this.Spread(id).uptime());
+		}
+		Menu_link_status(id){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.peer_uptime(id))]);
+			return obj;
+		}
+		menu_title(){
+			return "📊 Network Monitoring";
+		}
+		param(){
+			return "peer";
+		}
+		Spread(id){
+			const obj = new this.$.$giper_baza_app_stat_page();
+			(obj.home) = () => ((this.peer_home(id)));
+			(obj.tools) = () => ([(this.Spread_close())]);
+			return obj;
+		}
+		menu_link_content(id){
+			return [(this.Menu_link_title(id)), (this.Menu_link_status(id))];
+		}
+	};
+	($mol_mem_key(($.$giper_baza_app_stat_list.prototype), "peer_home"));
+	($mol_mem_key(($.$giper_baza_app_stat_list.prototype), "Menu_link_status"));
+	($mol_mem_key(($.$giper_baza_app_stat_list.prototype), "Spread"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $giper_baza_app_stat_list extends $.$giper_baza_app_stat_list {
+            self_link() {
+                try {
+                    const url = this.$.$giper_baza_glob.yard().master_current();
+                    if (!url)
+                        return null;
+                    const id = this.$.$mol_fetch.text(url + 'link');
+                    return new $giper_baza_link(id);
+                }
+                catch (error) {
+                    $mol_fail_log(error);
+                    return null;
+                }
+            }
+            spread_ids() {
+                return [
+                    ...$mol_maybe(this.self_link()?.str),
+                    ...this.$.$giper_baza_glob.Seed().peers().map(peer => peer.link().str),
+                ];
+            }
+            peer_home(id) {
+                return this.$.$giper_baza_glob.Pawn(new $giper_baza_link(id), $giper_baza_app_home);
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $giper_baza_app_stat_list.prototype, "self_link", null);
+        __decorate([
+            $mol_mem
+        ], $giper_baza_app_stat_list.prototype, "spread_ids", null);
+        __decorate([
+            $mol_mem_key
+        ], $giper_baza_app_stat_list.prototype, "peer_home", null);
+        $$.$giper_baza_app_stat_list = $giper_baza_app_stat_list;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $mol_style_define($giper_baza_app_stat_list, {
+            Menu: {
+                flex: {
+                    basis: '20rem',
+                },
+            },
+            Menu_link: {
+                justify: {
+                    content: 'space-between',
                 },
             },
         });
@@ -31784,8 +31968,8 @@ var $;
 			return obj;
 		}
 		Stat(){
-			const obj = new this.$.$giper_baza_app_stat_page();
-			(obj.tools) = () => ([(this.Spread_close())]);
+			const obj = new this.$.$giper_baza_app_stat_list();
+			(obj.menu_tools) = () => ([(this.Spread_close())]);
 			return obj;
 		}
 		Slot(){
