@@ -132,63 +132,234 @@ namespace $ {
 			})
 		}
 
+		// ---------- кеш готовых m4a ----------
+		//
+		// Готовый файл оставляем на диске и переиспользуем. Прослушивание и
+		// следующее за ним «скачать» — это два запроса к одному id, и раньше
+		// сервер дважды гонял yt-dlp с ffmpeg (по 10-30 с CPU) ради одного и
+		// того же трека. Кеш-заголовки от этого не спасают: <audio> ходит
+		// Range-запросами, а скачивание — обычным fetch, и переиспользовать
+		// ответ между ними браузер не обязан.
+		//
+		// Объём ограничен: на боксе 10 ГБ диска под всё, включая baza и VPN, и
+		// незаметно растущий кеш положил бы хост целиком.
+
+		static cache_dir() {
+			return String(process.env.BOG_MUSIC_TUBE_CACHE ?? '')
+		}
+
+		static cache_limit() {
+			return Number(process.env.BOG_MUSIC_TUBE_CACHE_MB ?? 256) * 1024 * 1024
+		}
+
+		private cache_made = false
+
+		/** Каталог кеша, создав его при первом обращении. '' — кеш недоступен. */
+		private cache_ensure() {
+			const dir = $bog_music_srv_tube.cache_dir()
+			if (!dir) return ''
+			if (this.cache_made) return dir
+			try {
+				fs.mkdirSync(dir, { recursive: true })
+				this.cache_made = true
+				return dir
+			} catch (e: any) {
+				console.warn('[tube] cache dir:', e?.message)
+				return ''
+			}
+		}
+
+		private cache_file(id: string) {
+			const dir = $bog_music_srv_tube.cache_dir()
+			return dir ? path.join(dir, `${id}.m4a`) : ''
+		}
+
+		/** Путь готового файла, либо '' — кеш выключен или промах. */
+		private cache_hit(id: string) {
+			const file = this.cache_file(id)
+			if (!file) return ''
+			try {
+				if (!fs.statSync(file).size) return ''
+				// mtime — отметка последнего использования для вытеснения.
+				const now = new Date()
+				fs.utimesSync(file, now, now)
+				return file
+			} catch {
+				return ''
+			}
+		}
+
+		/** Вытесняем самые давние, пока кеш не влезет в лимит. */
+		private cache_trim() {
+			const dir = this.cache_ensure()
+			if (!dir) return
+			try {
+				const files = fs.readdirSync(dir)
+					.filter((name: string) => name.endsWith('.m4a'))
+					.map((name: string) => {
+						const full = path.join(dir, name)
+						const stat = fs.statSync(full)
+						return { full, size: stat.size, used: stat.mtimeMs }
+					})
+				let total = files.reduce((sum: number, f: any) => sum + f.size, 0)
+				const limit = $bog_music_srv_tube.cache_limit()
+				if (total <= limit) return
+				files.sort((a: any, b: any) => a.used - b.used)
+				for (const f of files) {
+					if (total <= limit) break
+					try {
+						fs.rmSync(f.full, { force: true })
+						total -= f.size
+						console.info('[tube] кеш: вытеснен', path.basename(f.full))
+					} catch {}
+				}
+			} catch (e: any) {
+				console.warn('[tube] cache trim:', e?.message)
+			}
+		}
+
 		/**
-		 * Качаем с конверсией в m4a во временный файл (ffmpeg-постпроцессинг
-		 * yt-dlp не умеет в stdout), отдаём и удаляем. m4a — ради iOS Safari,
-		 * который не играет webm/opus.
+		 * Один yt-dlp-job на id, сколько бы клиентов его ни просило: клик
+		 * «скачать» во время прослушивания не должен заводить вторую качалку.
+		 * Ждущих считаем, чтобы уход одного клиента не убивал работу остальных.
+		 */
+		private jobs = new Map<string, { done: Promise<string>, waiters: number, kill: () => void }>()
+
+		private audio_job(id: string): { done: Promise<string>, waiters: number, kill: () => void } {
+
+			const running = this.jobs.get(id)
+			if (running) {
+				console.info('[tube] кеш: присоединился к идущей качалке', id)
+				return running
+			}
+
+			let kill = () => {}
+
+			const done = new Promise<string>((ok, fail) => {
+
+				if (!this.take_slot()) return fail(new Error('busy'))
+
+				const dir = this.cache_ensure()
+				// Качаем рядом с кешем: rename в пределах одной ФС атомарен, и
+				// недокачанный файл не попадёт в выдачу под видом готового.
+				const tmp_dir = dir || fs.mkdtempSync(path.join(os.tmpdir(), 'tube-'))
+				const part = path.join(tmp_dir, `${id}.part.m4a`)
+				const target = dir ? this.cache_file(id) : part
+
+				console.info('[tube] качаю', id)
+				const child = spawn('yt-dlp', [
+					'-f', 'bestaudio[ext=m4a]/bestaudio',
+					'-x', '--audio-format', 'm4a',
+					'--no-warnings', '--no-playlist',
+					'-o', part,
+					`https://www.youtube.com/watch?v=${id}`,
+				])
+				kill = () => { try { child.kill('SIGKILL') } catch {} }
+
+				child.on('error', (e: any) => {
+					console.error('[tube] spawn fail:', e?.message)
+					this.free_slot()
+					fail(e)
+				})
+
+				let err = ''
+				child.stderr.on('data', (d: any) => err += d)
+				// 3 мин достаточно на трек; раньше 10 мин копили процессы при спаме.
+				const timer = setTimeout(kill, 3 * 60000)
+
+				child.on('close', (code: number) => {
+					clearTimeout(timer)
+					this.free_slot()
+					if (code !== 0 || !fs.existsSync(part)) {
+						console.error('[tube] audio fail:', id, err.slice(0, 300))
+						try { fs.rmSync(part, { force: true }) } catch {}
+						return fail(new Error('yt-dlp failed'))
+					}
+					if (target !== part) {
+						try { fs.renameSync(part, target) } catch (e: any) {
+							console.warn('[tube] cache put:', e?.message)
+							return ok(part)
+						}
+						console.info('[tube] кеш: положен', id)
+						this.cache_trim()
+					}
+					ok(target)
+				})
+
+			})
+
+			const job = { done, waiters: 0, kill }
+			this.jobs.set(id, job)
+			done.catch(() => {}).then(() => { this.jobs.delete(id) })
+			return job
+		}
+
+		/**
+		 * Отдаём готовый m4a. Конверсия нужна ради iOS Safari, который не играет
+		 * webm/opus, а ffmpeg-постпроцессинг yt-dlp не умеет в stdout — поэтому
+		 * через файл.
 		 */
 		audio(req: any, res: any) {
+
 			const id = String(req.query.id ?? '')
 			if (!/^[\w-]{6,16}$/.test(id)) {
 				res.statusCode = 400
 				res.end()
 				return
 			}
-			if (!this.take_slot()) { this.busy(res); return }
-			const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tube-'))
-			const file = path.join(dir, `${id}.m4a`)
-			const cleanup = () => { try { fs.rmSync(dir, { recursive: true, force: true }) } catch {} }
 
-			const child = spawn('yt-dlp', [
-				'-f', 'bestaudio[ext=m4a]/bestaudio',
-				'-x', '--audio-format', 'm4a',
-				'--no-warnings', '--no-playlist',
-				'-o', file,
-				`https://www.youtube.com/watch?v=${id}`,
-			])
-			child.on('error', (e: any) => {
-				console.error('[tube] spawn fail:', e?.message)
-				cleanup()
-				res.statusCode = 500
-				try { res.end() } catch {}
+			const cached = this.cache_hit(id)
+			if (cached) {
+				console.info('[tube] кеш: попадание', id)
+				this.send_audio(res, cached, false)
+				return
+			}
+
+			const job = this.audio_job(id)
+			job.waiters++
+			// Ушёл последний ждущий — работу можно бросить. Пока ждёт хоть один,
+			// чужой disconnect job не убивает.
+			req.on('close', () => {
+				job.waiters--
+				if (job.waiters <= 0) job.kill()
 			})
-			let err = ''
-			child.stderr.on('data', (d: any) => err += d)
-			// 3 мин достаточно на трек; раньше 10 мин копили процессы при спаме.
-			const timer = setTimeout(() => { try { child.kill('SIGKILL') } catch {} }, 3 * 60000)
-			req.on('close', () => { try { child.kill('SIGKILL') } catch {} })
 
-			child.on('close', (code: number) => {
-				clearTimeout(timer)
-				this.free_slot()
-				if (res.writableEnded) return
-				if (code !== 0 || !fs.existsSync(file)) {
-					console.error('[tube] audio fail:', id, err.slice(0, 300))
+			job.done.then(
+				(file: string) => {
+					if (res.writableEnded) return
+					this.send_audio(res, file, !this.cache_ensure())
+				},
+				(e: any) => {
+					if (res.writableEnded) return
+					if (e?.message === 'busy') return this.busy(res)
 					res.statusCode = 502
-					cleanup()
 					try { res.end() } catch {}
-					return
-				}
+				},
+			)
+		}
+
+		/** Отдать файл. `temp` — удалить после отдачи (режим без кеша). */
+		private send_audio(res: any, file: string, temp: boolean) {
+			const drop = () => {
+				if (!temp) return
+				try { fs.rmSync(path.dirname(file), { recursive: true, force: true }) } catch {}
+			}
+			try {
 				res.setHeader('Content-Type', 'audio/mp4')
 				res.setHeader('Content-Length', String(fs.statSync(file).size))
 				// Аудио трека по id неизменно — кэшируем надолго (сутки, immutable).
-				// Экономит и трафик, и дорогие yt-dlp-перекачки.
 				res.setHeader('Cache-Control', 'public, max-age=86400, immutable')
-				const stream = fs.createReadStream(file)
-				stream.pipe(res)
-				stream.on('close', cleanup)
-				stream.on('error', () => { cleanup(); try { res.end() } catch {} })
-			})
+			} catch (e: any) {
+				console.warn('[tube] send:', e?.message)
+				res.statusCode = 502
+				drop()
+				try { res.end() } catch {}
+				return
+			}
+			const stream = fs.createReadStream(file)
+			stream.pipe(res)
+			stream.on('close', drop)
+			stream.on('error', () => { drop(); try { res.end() } catch {} })
 		}
 
 	}

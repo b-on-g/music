@@ -23,6 +23,12 @@ services:
       BOG_MUSIC_FM_KEY: "${BOG_MUSIC_FM_KEY:-}"
       BOG_MUSIC_FM_SECRET: "${BOG_MUSIC_FM_SECRET:-}"
       BOG_MUSIC_FM_STATE: /data/fm.json
+      # Кеш готовых m4a. Прослушать трек и потом нажать «скачать» — это два
+      # запроса к одному id, и без кеша сервер дважды гонял yt-dlp с ffmpeg.
+      # Лимит обязателен: на боксе 10 ГБ на всё, включая baza и VPN, и кеш,
+      # растущий без потолка, положил бы хост. Вытесняются самые давние.
+      BOG_MUSIC_TUBE_CACHE: /data/audio
+      BOG_MUSIC_TUBE_CACHE_MB: "256"
       # Публичный origin — сюда last.fm вернёт юзера после подтверждения.
       BOG_MUSIC_FM_BASE: "${BOG_MUSIC_FM_BASE:-https://tube.87.120.36.150.ip.giper.dev}"
     volumes:
