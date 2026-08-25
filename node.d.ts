@@ -39199,6 +39199,170 @@ declare namespace $ {
 }
 
 declare namespace $ {
+    /**
+     * Счётчики памяти для дебага «вся фонотека в оперативке».
+     *
+     * Без цифр правки не проверить: экономия здесь — это не сделанные копии, и
+     * увидеть её можно только по размеру кучи и по числу треков, чьё содержимое
+     * реально поднято из IndexedDB.
+     *
+     * Счётчики — обычные статические поля, а не реактивные ячейки: писать в них
+     * приходится из тел вычислений (`blob()` зовётся из мемоизированных
+     * методов), а запись в ячейку оттуда роняет пересчёт. Панель вместо подписки
+     * перечитывает их по таймеру — как это уже сделано в журнале
+     * ($bog_music_log).
+     */
+    class $bog_music_mem extends $mol_object {
+        /** Сколько раз материализовали Blob трека. */
+        static blobs: number;
+        /** Суммарный объём материализованных Blob'ов, байт. */
+        static blob_bytes: number;
+        /** Сколько треков запускали на воспроизведение. */
+        static plays: number;
+        static blob_made(bytes: number): void;
+        static play_started(): void;
+        static reset(): void;
+        /**
+         * Занятая JS-куча, байт. Есть только в Chromium (в Firefox и Safari
+         * `performance.memory` нет) — 0 значит «браузер не говорит».
+         */
+        static heap(): number;
+        /** Потолок JS-кучи, байт. 0 — браузер не говорит. */
+        static heap_limit(): number;
+        /**
+         * Сколько нагрузки чанков реально поднято в память.
+         *
+         * Заголовок sand-юнита живёт в ленде всегда, а нагрузка (`ball`)
+         * приезжает лениво и потом уже не отпускается. Так что «сколько байт
+         * звука висит в куче» — это ровно сумма по юнитам с проставленным
+         * `_ball`/`_open`, и считается она по заголовкам, ничего не подгружая.
+         */
+        static units_stat(units: readonly $giper_baza_unit_sand[]): {
+            units: number;
+            loaded: number;
+            bytes_total: number;
+            bytes_loaded: number;
+        };
+        /** Байты человеку: 12.3 МБ. */
+        static size_label(bytes: number): string;
+    }
+}
+
+declare namespace $ {
+
+	type $mol_paragraph__title_bog_music_mem_view_1 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_button_minor__title_bog_music_mem_view_2 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['title'] >
+	>
+	type $mol_button_minor__click_bog_music_mem_view_3 = $mol_type_enforce<
+		ReturnType< $bog_music_mem_view['refresh'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__title_bog_music_mem_view_4 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['title'] >
+	>
+	type $mol_button_minor__click_bog_music_mem_view_5 = $mol_type_enforce<
+		ReturnType< $bog_music_mem_view['reset'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_view__sub_bog_music_mem_view_6 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_music_mem_view_7 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_music_mem_view_8 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_music_mem_view_9 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_paragraph__title_bog_music_mem_view_10 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	export class $bog_music_mem_view extends $mol_list {
+		Title( ): $mol_paragraph
+		refresh( next?: any ): any
+		Refresh( ): $mol_button_minor
+		reset( next?: any ): any
+		Reset( ): $mol_button_minor
+		Head( ): $mol_view
+		heap_label( ): string
+		Heap( ): $mol_view
+		counters_label( ): string
+		Counters( ): $mol_view
+		audit_label( ): string
+		Audit( ): $mol_view
+		Hint( ): $mol_paragraph
+		rows( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=view.view.tree.d.ts.map
+declare namespace $.$$ {
+    type Audit = {
+        tracks: number;
+        files: number;
+        units: number;
+        loaded: number;
+        bytes_total: number;
+        bytes_loaded: number;
+        pending: number;
+    };
+    /**
+     * Панель диагностики памяти в отладочной секции (рядом с журналом).
+     *
+     * Показывает три вещи: занятую кучу от браузера, счётчики приложения
+     * (сколько Blob'ов материализовали и сколько треков запускали) и обход
+     * фонотеки — сколько чанков у треков и у скольких из них поднято в память
+     * содержимое. Последнее и есть та цифра, ради которой всё затевалось:
+     * пока она близка к нулю при полном списке — фонотека в куче не оседает.
+     */
+    export class $bog_music_mem_view extends $.$bog_music_mem_view {
+        account(): $bog_music_account_baza;
+        /**
+         * Счётчики лежат в обычных полях, подписаться на них нельзя —
+         * перечитываем раз в секунду, как в журнале.
+         */
+        heap_label(): string;
+        counters_label(): string;
+        audit(next?: Audit): Audit | null;
+        audit_label(): string;
+        /**
+         * Один проход по фонотеке. Трек, чей blob-land в этот момент ещё
+         * читается из IndexedDB, кидает Promise — считаем его «ждущим» и идём
+         * дальше, а не ретраим весь обход: ретрай на каждом ленде превратил бы
+         * проход в квадрат.
+         */
+        audit_run(): void;
+        refresh(): null;
+        reset(): null;
+    }
+    export {};
+}
+
+declare namespace $ {
 
 	type $mol_view__sub_bog_music_log_view_1 = $mol_type_enforce<
 		readonly(any)[]
@@ -48251,6 +48415,7 @@ declare namespace $ {
 		fm_status( ): string
 		fm_link( next?: any ): any
 		Account( ): $bog_music_account
+		Mem( ): $bog_music_mem_view
 		Logs( ): $bog_music_log_view
 		Feedback( ): $bog_feedback2_form
 		share_toast_text( ): string
@@ -48316,10 +48481,24 @@ declare namespace $.$$ {
         };
         current_key(next?: string): string;
         /**
+         * Сколько треков держим докачанными вперёд от текущего. Слушают по
+         * одной песне: пары следующих хватает, чтобы переход не ждал сети, а
+         * дальше докачка только тащила бы фонотеку на устройство и в память.
+         */
+        static prefetch_ahead: number;
+        /**
+         * Окно префетча: текущий трек и несколько следующих из видимого списка.
+         * Играет что-то не из этого списка (или ничего) — греем его начало.
+         */
+        prefetch_window(): readonly string[];
+        /**
          * Фоновый драйвер докачки blob'ов «по одной песне». Detached-атом (как
          * land.sync_yard): его suspend'ы на текущем blob'е не блокируют рендер UI.
          * @$mol_mem здесь — во view-слое (на baza-объекте @$mol_mem запрещён).
          * Востребован из auto(), пока приложение открыто.
+         *
+         * Окно читается ВНУТРИ атома, поэтому смена трека сама перенацеливает
+         * докачку на новых соседей.
          */
         prefetch(): $mol_wire_atom<unknown, [], void>;
         play_key(key?: string | null): void;
@@ -57752,6 +57931,29 @@ declare namespace $ {
         /** Позиция в плейлисте. Fallback — время добавления. */
         order(): number;
         order_set(next: number): void;
+        /**
+         * Unit'ы чанков файла — БЕЗ чтения их содержимого.
+         *
+         * У sand-юнита две половины: 52-байтовый заголовок и `ball` с полезной
+         * нагрузкой. В IndexedDB это разные сторы, и `units_load()` тянет только
+         * заголовки; за нагрузкой ходит отдельный ленивый `ball_load`. Поэтому
+         * структуру файла (сколько чанков, какого размера) видно, не подняв в
+         * память ни байта звука: трек на 10 МБ — это 320 заголовков, ~17 КБ.
+         *
+         * Публичный `file.chunks()` для такого вопроса не годится: он идёт через
+         * `pawn.units_of()`, а тот сразу зовёт `land.sands_open()` и материализует
+         * ВСЮ нагрузку. Берём тот же `land.sand_ordered()`, но без `sands_open`.
+         */
+        static chunk_units(file: $giper_baza_file): readonly $giper_baza_unit_sand[];
+        /**
+         * Blob поверх чанков, БЕЗ сплошной копии.
+         *
+         * `file.buffer()` склеивал бы все чанки в один Uint8Array (копия №1), а
+         * `buf.buffer.slice()` делал из него ещё одну (копия №2) — и только потом
+         * содержимое уезжало в Blob (копия №3). Blob принимает список кусков как
+         * есть, поэтому копия остаётся одна, и та за пределами JS-кучи.
+         */
+        private blob_of;
         /** Blob из baza. null если не закеширован. */
         blob(): Blob | null;
         /**
@@ -57766,19 +57968,33 @@ declare namespace $ {
         blob_wait(): Blob | null;
         /**
          * Blob полностью на устройстве — ЛЁГКАЯ проверка (без материализации
-         * Blob, в отличие от cached()): зовётся из keys_in на каждый трек.
+         * Blob, в отличие от blob()): зовётся из keys_in на каждый трек.
          * Само чтение File→remote через link_synced запускает sync blob-land,
          * так что недосинканный трек начнёт качаться и по готовности реактивно
          * появится в списке.
          */
         has_blob(): boolean;
         /**
-         * Есть ли blob локально — БЕЗ запуска sync (в отличие от has_blob/cached).
+         * Есть ли blob локально — БЕЗ запуска sync (в отличие от has_blob).
          * Использует `remote_local`, поэтому проверка на каждый трек в списке НЕ
          * поднимает загрузку всех blob-лендов. Реактивна: когда префетч догонит
          * этот трек и blob доедет, флипнется в true и строка перестанет тускнеть.
+         *
+         * Отвечает на булев вопрос по заголовкам чанков. Раньше здесь звался
+         * `file.buffer()` — то есть на КАЖДЫЙ трек списка в память поднималась
+         * вся песня целиком, и фонотека оседала в куче просто от рендера.
          */
         blob_local(): boolean;
+        /**
+         * Сколько чанков у трека и сколько из них подняты в память (для панели
+         * диагностики). Ничего не подгружает — смотрит только заголовки.
+         */
+        chunks_stat(): {
+            units: number;
+            loaded: number;
+            bytes_total: number;
+            bytes_loaded: number;
+        };
         /**
          * Дожидается докачки blob-land с мастера (suspend под $mol_wire_sync) и
          * возвращает, доехал ли blob. Как blob_wait, но без материализации Blob —
@@ -57786,6 +58002,11 @@ declare namespace $ {
          * фибра висит пока не досинкается, потом берётся за следующий.
          */
         blob_ensure(): boolean;
+        /**
+         * Файл уже в базе. Проверка по заголовкам чанков: раньше здесь звался
+         * `blob()`, и вопрос «а не скачано ли уже?» перед каждой докачкой с VK
+         * поднимал в память весь трек.
+         */
         cached(): boolean;
         /** Интегральная громкость (LUFS). null — ещё не измерена. */
         lufs(next?: number): number | null;
@@ -61512,21 +61733,32 @@ declare namespace $ {
         keys_in(playlist: string): string[];
         audios_in(playlist: string): $bog_music_api_audio[];
         /**
-         * Ключ следующего трека для докачки: первый (в порядке словаря), у кого
-         * blob ещё НЕ локально. Проверка через `blob_local` не запускает sync, так
-         * что перебор не поднимает загрузку всех лендов — качается строго по одному.
-         * '' — вся библиотека уже на устройстве. БЕЗ @$mol_mem (baza-объект): мемо
-         * держит view-атом, реактивность даёт чтение baza-атомов внутри blob_local.
+         * Ключ следующего трека для докачки: первый из ОКНА (текущий трек и
+         * несколько следующих за ним), у кого blob ещё не локально. '' — окно
+         * целиком на устройстве.
+         *
+         * Раньше окна не было: префетч шёл по всему словарю и рано или поздно
+         * стаскивал на устройство и в память всю фонотеку. Слушают её по одной
+         * песне, поэтому вперёд нужно ровно столько, чтобы переход на следующий
+         * трек не ждал сети.
+         *
+         * Проверка через `blob_local` не запускает sync, так что перебор окна не
+         * поднимает загрузку соседних лендов — качается строго по одному. БЕЗ
+         * @$mol_mem (baza-объект): мемо держит view-атом, реактивность даёт
+         * чтение baza-атомов внутри blob_local.
          */
-        prefetch_active_key(): string;
+        prefetch_active_key(keys: readonly string[]): string;
         /**
          * Один шаг фонового префетча «по одной песне»: докачать текущий недостающий
          * blob (suspend до готовности). Одна закачка в полёте — фибра висит на этом
          * blob'е; когда доедет, blob_local флипнется → prefetch_active_key укажет на
          * следующий → атом-драйвер (в app.view) перезапустится и возьмётся за него.
-         * Драйвер живёт во view ($bog_music_app.prefetch), не на baza-объекте.
+         * Драйвер живёт во view ($bog_music_app.prefetch), не на baza-объекте: он же
+         * и считает окно, потому что знает текущий трек и видимый список.
+         *
+         * Ссылку на трек не держим: фибра берёт его по ключу и отпускает.
          */
-        prefetch_step(): void;
+        prefetch_step(keys: readonly string[]): void;
         /** Плейлисты, импортированные из шаров, с числом треков. */
         shared_playlists(): {
             id: string;
@@ -62767,6 +62999,18 @@ declare namespace $.$$ {
         private ensure_shuffle_bag;
         play_track(key?: string | null): void;
         private _blob_cache;
+        /**
+         * Потолок кеша: текущий трек и один прогретый следующий. Больше держать
+         * незачем, а меньше нельзя — на одном месте останется тот самый
+         * синхронный переход, ради которого кеш и заведён.
+         */
+        private static BLOB_CACHE_MAX;
+        /**
+         * Оставить в кеше только перечисленные ключи и подрезать остаток до
+         * потолка. Зовётся на каждой смене трека: без этого кеш рос ровно на
+         * длину прослушанного за сессию.
+         */
+        private blob_cache_keep;
         /** Прогреть blob СЛЕДУЮЩЕГО трека в RAM-кеш (fire-and-forget). */
         private prefetch_next;
         /**

@@ -517,6 +517,27 @@ $bog_theme_toggle $mol_pop
 			theme_auto <= theme_auto
 			close? <=> picker_close? null
 
+$bog_music_mem_view $mol_list
+	rows /
+		<= Head $mol_view
+			sub /
+				<= Title $mol_paragraph
+					title \Память
+				<= Refresh $mol_button_minor
+					title \Пересчитать
+					click? <=> refresh? null
+				<= Reset $mol_button_minor
+					title \Обнулить счётчики
+					click? <=> reset? null
+		<= Heap $mol_view
+			sub / <= heap_label \
+		<= Counters $mol_view
+			sub / <= counters_label \
+		<= Audit $mol_view
+			sub / <= audit_label \
+		<= Hint $mol_paragraph
+			title \«Пересчитать» обходит фонотеку по заголовкам чанков, содержимое не читает. Треки, чей ленд в этот момент ещё грузился, попадают в «ждут» — жми второй раз.
+
 $bog_music_log_view $mol_list
 	rows <= log_rows /
 	Head $mol_view
@@ -1223,6 +1244,7 @@ $bog_music_app $mol_page
 			fm_button <= fm_button \
 			fm_status <= fm_status \
 			fm_link? <=> fm_link? null
+		<= Mem $bog_music_mem_view
 		<= Logs $bog_music_log_view
 		<= Feedback $bog_feedback2_form
 			feedback_id \bog_vk

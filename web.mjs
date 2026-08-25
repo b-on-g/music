@@ -18818,6 +18818,295 @@ var $;
 })($ || ($ = {}));
 
 ;
+"use strict";
+var $;
+(function ($) {
+    /**
+     * Счётчики памяти для дебага «вся фонотека в оперативке».
+     *
+     * Без цифр правки не проверить: экономия здесь — это не сделанные копии, и
+     * увидеть её можно только по размеру кучи и по числу треков, чьё содержимое
+     * реально поднято из IndexedDB.
+     *
+     * Счётчики — обычные статические поля, а не реактивные ячейки: писать в них
+     * приходится из тел вычислений (`blob()` зовётся из мемоизированных
+     * методов), а запись в ячейку оттуда роняет пересчёт. Панель вместо подписки
+     * перечитывает их по таймеру — как это уже сделано в журнале
+     * ($bog_music_log).
+     */
+    class $bog_music_mem extends $mol_object {
+        /** Сколько раз материализовали Blob трека. */
+        static blobs = 0;
+        /** Суммарный объём материализованных Blob'ов, байт. */
+        static blob_bytes = 0;
+        /** Сколько треков запускали на воспроизведение. */
+        static plays = 0;
+        static blob_made(bytes) {
+            this.blobs += 1;
+            this.blob_bytes += bytes;
+        }
+        static play_started() {
+            this.plays += 1;
+        }
+        static reset() {
+            this.blobs = 0;
+            this.blob_bytes = 0;
+            this.plays = 0;
+        }
+        /**
+         * Занятая JS-куча, байт. Есть только в Chromium (в Firefox и Safari
+         * `performance.memory` нет) — 0 значит «браузер не говорит».
+         */
+        static heap() {
+            return Number(performance?.memory?.usedJSHeapSize ?? 0);
+        }
+        /** Потолок JS-кучи, байт. 0 — браузер не говорит. */
+        static heap_limit() {
+            return Number(performance?.memory?.jsHeapSizeLimit ?? 0);
+        }
+        /**
+         * Сколько нагрузки чанков реально поднято в память.
+         *
+         * Заголовок sand-юнита живёт в ленде всегда, а нагрузка (`ball`)
+         * приезжает лениво и потом уже не отпускается. Так что «сколько байт
+         * звука висит в куче» — это ровно сумма по юнитам с проставленным
+         * `_ball`/`_open`, и считается она по заголовкам, ничего не подгружая.
+         */
+        static units_stat(units) {
+            let loaded = 0;
+            let bytes_total = 0;
+            let bytes_loaded = 0;
+            for (const unit of units) {
+                const size = unit.size();
+                bytes_total += size;
+                if (!unit._ball && !unit._open)
+                    continue;
+                loaded += 1;
+                bytes_loaded += size;
+            }
+            return { units: units.length, loaded, bytes_total, bytes_loaded };
+        }
+        /** Байты человеку: 12.3 МБ. */
+        static size_label(bytes) {
+            if (!bytes)
+                return '0';
+            const units = ['Б', 'КБ', 'МБ', 'ГБ'];
+            let rank = 0;
+            let value = bytes;
+            while (value >= 1024 && rank < units.length - 1) {
+                value /= 1024;
+                rank += 1;
+            }
+            return `${value.toFixed(rank ? 1 : 0)} ${units[rank]}`;
+        }
+    }
+    $.$bog_music_mem = $bog_music_mem;
+})($ || ($ = {}));
+
+;
+	($.$bog_music_mem_view) = class $bog_music_mem_view extends ($.$mol_list) {
+		Title(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ("Память");
+			return obj;
+		}
+		refresh(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Refresh(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ("Пересчитать");
+			(obj.click) = (next) => ((this.refresh(next)));
+			return obj;
+		}
+		reset(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Reset(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ("Обнулить счётчики");
+			(obj.click) = (next) => ((this.reset(next)));
+			return obj;
+		}
+		Head(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([
+				(this.Title()), 
+				(this.Refresh()), 
+				(this.Reset())
+			]);
+			return obj;
+		}
+		heap_label(){
+			return "";
+		}
+		Heap(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.heap_label())]);
+			return obj;
+		}
+		counters_label(){
+			return "";
+		}
+		Counters(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.counters_label())]);
+			return obj;
+		}
+		audit_label(){
+			return "";
+		}
+		Audit(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.audit_label())]);
+			return obj;
+		}
+		Hint(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ("«Пересчитать» обходит фонотеку по заголовкам чанков, содержимое не читает. Треки, чей ленд в этот момент ещё грузился, попадают в «ждут» — жми второй раз.");
+			return obj;
+		}
+		rows(){
+			return [
+				(this.Head()), 
+				(this.Heap()), 
+				(this.Counters()), 
+				(this.Audit()), 
+				(this.Hint())
+			];
+		}
+	};
+	($mol_mem(($.$bog_music_mem_view.prototype), "Title"));
+	($mol_mem(($.$bog_music_mem_view.prototype), "refresh"));
+	($mol_mem(($.$bog_music_mem_view.prototype), "Refresh"));
+	($mol_mem(($.$bog_music_mem_view.prototype), "reset"));
+	($mol_mem(($.$bog_music_mem_view.prototype), "Reset"));
+	($mol_mem(($.$bog_music_mem_view.prototype), "Head"));
+	($mol_mem(($.$bog_music_mem_view.prototype), "Heap"));
+	($mol_mem(($.$bog_music_mem_view.prototype), "Counters"));
+	($mol_mem(($.$bog_music_mem_view.prototype), "Audit"));
+	($mol_mem(($.$bog_music_mem_view.prototype), "Hint"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        /**
+         * Панель диагностики памяти в отладочной секции (рядом с журналом).
+         *
+         * Показывает три вещи: занятую кучу от браузера, счётчики приложения
+         * (сколько Blob'ов материализовали и сколько треков запускали) и обход
+         * фонотеки — сколько чанков у треков и у скольких из них поднято в память
+         * содержимое. Последнее и есть та цифра, ради которой всё затевалось:
+         * пока она близка к нулю при полном списке — фонотека в куче не оседает.
+         */
+        class $bog_music_mem_view extends $.$bog_music_mem_view {
+            account() {
+                return $bog_music_account_baza.home();
+            }
+            /**
+             * Счётчики лежат в обычных полях, подписаться на них нельзя —
+             * перечитываем раз в секунду, как в журнале.
+             */
+            heap_label() {
+                this.$.$mol_state_time.now(1000);
+                const used = $bog_music_mem.heap();
+                if (!used)
+                    return 'Куча: браузер не сообщает (только Chromium)';
+                const limit = $bog_music_mem.heap_limit();
+                const size = $bog_music_mem.size_label(used);
+                return limit
+                    ? `Куча: ${size} из ${$bog_music_mem.size_label(limit)}`
+                    : `Куча: ${size}`;
+            }
+            counters_label() {
+                this.$.$mol_state_time.now(1000);
+                const blobs = $bog_music_mem.blobs;
+                const bytes = $bog_music_mem.size_label($bog_music_mem.blob_bytes);
+                return `Запусков ${$bog_music_mem.plays}, Blob'ов собрано ${blobs} на ${bytes}`;
+            }
+            audit(next) {
+                return next ?? null;
+            }
+            audit_label() {
+                const a = this.audit();
+                if (!a)
+                    return 'Фонотека: нажми «Пересчитать»';
+                const loaded = $bog_music_mem.size_label(a.bytes_loaded);
+                const total = $bog_music_mem.size_label(a.bytes_total);
+                const pending = a.pending ? `, ждут загрузки ${a.pending}` : '';
+                return `Фонотека: треков ${a.tracks}, с файлом ${a.files}`
+                    + `, чанков ${a.units} на ${total}`
+                    + `, поднято в память ${a.loaded} на ${loaded}${pending}`;
+            }
+            /**
+             * Один проход по фонотеке. Трек, чей blob-land в этот момент ещё
+             * читается из IndexedDB, кидает Promise — считаем его «ждущим» и идём
+             * дальше, а не ретраим весь обход: ретрай на каждом ленде превратил бы
+             * проход в квадрат.
+             */
+            audit_run() {
+                const account = this.account();
+                const dict = account.tracks();
+                const keys = (dict.keys() ?? []);
+                const res = {
+                    tracks: keys.length,
+                    files: 0,
+                    units: 0,
+                    loaded: 0,
+                    bytes_total: 0,
+                    bytes_loaded: 0,
+                    pending: 0,
+                };
+                for (const key of keys) {
+                    try {
+                        const stat = dict.key(key)?.chunks_stat();
+                        if (!stat || !stat.units)
+                            continue;
+                        res.files += 1;
+                        res.units += stat.units;
+                        res.loaded += stat.loaded;
+                        res.bytes_total += stat.bytes_total;
+                        res.bytes_loaded += stat.bytes_loaded;
+                    }
+                    catch {
+                        res.pending += 1;
+                    }
+                }
+                this.audit(res);
+            }
+            refresh() {
+                $mol_wire_async(this).audit_run();
+                return null;
+            }
+            reset() {
+                $bog_music_mem.reset();
+                return null;
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $bog_music_mem_view.prototype, "audit", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_mem_view.prototype, "refresh", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_mem_view.prototype, "reset", null);
+        $$.$bog_music_mem_view = $bog_music_mem_view;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
 	($.$bog_music_log_view) = class $bog_music_log_view extends ($.$mol_list) {
 		log_rows(){
 			return [];
@@ -31662,12 +31951,23 @@ var $;
 
 ;
 	($.$giper_baza_app_stat_list) = class $giper_baza_app_stat_list extends ($.$mol_book2_catalog) {
+		peer_urls(id){
+			return (this.peer_home(id).urls());
+		}
 		peer_home(id){
 			const obj = new this.$.$giper_baza_app_home();
 			return obj;
 		}
 		peer_uptime(id){
 			return (this.Spread(id).uptime());
+		}
+		peer_uri(id){
+			return "";
+		}
+		Menu_link_avatar(id){
+			const obj = new this.$.$mol_avatar();
+			(obj.id) = () => ((this.peer_uri(id)));
+			return obj;
 		}
 		Menu_link_status(id){
 			const obj = new this.$.$mol_view();
@@ -31687,10 +31987,15 @@ var $;
 			return obj;
 		}
 		menu_link_content(id){
-			return [(this.Menu_link_title(id)), (this.Menu_link_status(id))];
+			return [
+				(this.Menu_link_avatar(id)), 
+				(this.Menu_link_title(id)), 
+				(this.Menu_link_status(id))
+			];
 		}
 	};
 	($mol_mem_key(($.$giper_baza_app_stat_list.prototype), "peer_home"));
+	($mol_mem_key(($.$giper_baza_app_stat_list.prototype), "Menu_link_avatar"));
 	($mol_mem_key(($.$giper_baza_app_stat_list.prototype), "Menu_link_status"));
 	($mol_mem_key(($.$giper_baza_app_stat_list.prototype), "Spread"));
 
@@ -31728,6 +32033,9 @@ var $;
             peer_home(id) {
                 return this.$.$giper_baza_glob.Pawn(new $giper_baza_link(id), $giper_baza_app_home);
             }
+            peer_uri(id) {
+                return this.peer_urls(id)[0] ?? '';
+            }
         }
         __decorate([
             $mol_mem
@@ -31738,6 +32046,9 @@ var $;
         __decorate([
             $mol_mem_key
         ], $giper_baza_app_stat_list.prototype, "peer_home", null);
+        __decorate([
+            $mol_mem_key
+        ], $giper_baza_app_stat_list.prototype, "peer_uri", null);
         $$.$giper_baza_app_stat_list = $giper_baza_app_stat_list;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
@@ -31751,12 +32062,17 @@ var $;
         $mol_style_define($giper_baza_app_stat_list, {
             Menu: {
                 flex: {
-                    basis: '20rem',
+                    basis: '25rem',
                 },
             },
             Menu_link: {
                 justify: {
                     content: 'space-between',
+                },
+            },
+            Menu_link_title: {
+                flex: {
+                    grow: 1,
                 },
             },
         });
@@ -32179,6 +32495,10 @@ var $;
 			(obj.fm_link) = (next) => ((this.fm_link(next)));
 			return obj;
 		}
+		Mem(){
+			const obj = new this.$.$bog_music_mem_view();
+			return obj;
+		}
 		Logs(){
 			const obj = new this.$.$bog_music_log_view();
 			return obj;
@@ -32367,6 +32687,7 @@ var $;
 		body(){
 			return [
 				(this.Account()), 
+				(this.Mem()), 
 				(this.Logs()), 
 				(this.Feedback()), 
 				(this.Share_toast()), 
@@ -32399,6 +32720,7 @@ var $;
 	($mol_mem(($.$bog_music_app.prototype), "tg_link"));
 	($mol_mem(($.$bog_music_app.prototype), "fm_link"));
 	($mol_mem(($.$bog_music_app.prototype), "Account"));
+	($mol_mem(($.$bog_music_app.prototype), "Mem"));
 	($mol_mem(($.$bog_music_app.prototype), "Logs"));
 	($mol_mem(($.$bog_music_app.prototype), "Feedback"));
 	($mol_mem(($.$bog_music_app.prototype), "Share_toast"));
@@ -34234,7 +34556,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.46';
+    $.$bog_music_version = 'v1.48';
 })($ || ($ = {}));
 
 ;
@@ -34318,14 +34640,36 @@ var $;
                 return next ?? '';
             }
             /**
+             * Сколько треков держим докачанными вперёд от текущего. Слушают по
+             * одной песне: пары следующих хватает, чтобы переход не ждал сети, а
+             * дальше докачка только тащила бы фонотеку на устройство и в память.
+             */
+            static prefetch_ahead = 3;
+            /**
+             * Окно префетча: текущий трек и несколько следующих из видимого списка.
+             * Играет что-то не из этого списка (или ничего) — греем его начало.
+             */
+            prefetch_window() {
+                const keys = this.visible_keys();
+                if (!keys.length)
+                    return [];
+                const current = this.current_key();
+                const at = current ? keys.indexOf(current) : -1;
+                const from = at >= 0 ? at : 0;
+                return keys.slice(from, from + $bog_music_app.prefetch_ahead);
+            }
+            /**
              * Фоновый драйвер докачки blob'ов «по одной песне». Detached-атом (как
              * land.sync_yard): его suspend'ы на текущем blob'е не блокируют рендер UI.
              * @$mol_mem здесь — во view-слое (на baza-объекте @$mol_mem запрещён).
              * Востребован из auto(), пока приложение открыто.
+             *
+             * Окно читается ВНУТРИ атома, поэтому смена трека сама перенацеливает
+             * докачку на новых соседей.
              */
             prefetch() {
                 const account = this.account();
-                const root = new $mol_wire_atom('bog_music_prefetch', () => account.prefetch_step());
+                const root = new $mol_wire_atom('bog_music_prefetch', () => account.prefetch_step(this.prefetch_window()));
                 setTimeout(() => root.fresh());
                 return root;
             }
@@ -34591,7 +34935,7 @@ var $;
             }
             body() {
                 switch (this.section()) {
-                    case 'logs': return [this.Logs()];
+                    case 'logs': return [this.Mem(), this.Logs()];
                     case 'account': return [this.Account()];
                     case 'feedback': return [this.Feedback()];
                     case 'search': return [this.Tube_bar(), this.Tube_list()];
@@ -36378,16 +36722,58 @@ var $;
         order_set(next) {
             this.Order('auto').val(next);
         }
+        /**
+         * Unit'ы чанков файла — БЕЗ чтения их содержимого.
+         *
+         * У sand-юнита две половины: 52-байтовый заголовок и `ball` с полезной
+         * нагрузкой. В IndexedDB это разные сторы, и `units_load()` тянет только
+         * заголовки; за нагрузкой ходит отдельный ленивый `ball_load`. Поэтому
+         * структуру файла (сколько чанков, какого размера) видно, не подняв в
+         * память ни байта звука: трек на 10 МБ — это 320 заголовков, ~17 КБ.
+         *
+         * Публичный `file.chunks()` для такого вопроса не годится: он идёт через
+         * `pawn.units_of()`, а тот сразу зовёт `land.sands_open()` и материализует
+         * ВСЮ нагрузку. Берём тот же `land.sand_ordered()`, но без `sands_open`.
+         */
+        static chunk_units(file) {
+            const list = file.Chunks();
+            if (!list)
+                return [];
+            return list.land()
+                .sand_ordered({ head: list.head(), peer: $giper_baza_link.hole })
+                .filter(unit => !unit.dead() && unit.self().str !== '');
+        }
+        /**
+         * Blob поверх чанков, БЕЗ сплошной копии.
+         *
+         * `file.buffer()` склеивал бы все чанки в один Uint8Array (копия №1), а
+         * `buf.buffer.slice()` делал из него ещё одну (копия №2) — и только потом
+         * содержимое уезжало в Blob (копия №3). Blob принимает список кусков как
+         * есть, поэтому копия остаётся одна, и та за пределами JS-кучи.
+         */
+        blob_of(file) {
+            const chunks = file.chunks();
+            if (!chunks.length)
+                return null;
+            // baza отдаёт 'application/octet-stream', когда Type не проставлен;
+            // у нас такой файл — всегда звук из ранних версий.
+            const type = file.type();
+            const blob = new $mol_blob(chunks, {
+                type: type === 'application/octet-stream' ? 'audio/mpeg' : type,
+            });
+            $bog_music_mem.blob_made(blob.size);
+            return blob;
+        }
         /** Blob из baza. null если не закеширован. */
         blob() {
             const file = this.File()?.remote();
             if (!file)
                 return null;
-            const buf = file.buffer();
-            if (!buf || buf.byteLength === 0)
+            // Сперва дешёвая проверка по заголовкам: у пустого файла содержимое
+            // не читаем вовсе.
+            if (!$bog_music_track_baza.chunk_units(file).length)
                 return null;
-            const type = file.type() || 'audio/mpeg';
-            return new Blob([buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)], { type });
+            return this.blob_of(file);
         }
         /**
          * Blob, ДОЖИДАЯСЬ докачки blob-land с мастера. Для проигрывания.
@@ -36411,15 +36797,13 @@ var $;
                     return null;
             }
             file.land().sync(); // проброс Promise → suspend пока не досинкается
-            const buf = file.buffer();
-            if (!buf || buf.byteLength === 0)
+            if (!$bog_music_track_baza.chunk_units(file).length)
                 return null;
-            const type = file.type() || 'audio/mpeg';
-            return new Blob([buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)], { type });
+            return this.blob_of(file);
         }
         /**
          * Blob полностью на устройстве — ЛЁГКАЯ проверка (без материализации
-         * Blob, в отличие от cached()): зовётся из keys_in на каждый трек.
+         * Blob, в отличие от blob()): зовётся из keys_in на каждый трек.
          * Само чтение File→remote через link_synced запускает sync blob-land,
          * так что недосинканный трек начнёт качаться и по готовности реактивно
          * появится в списке.
@@ -36429,18 +36813,21 @@ var $;
                 const file = this.File()?.remote();
                 if (!file)
                     return false;
-                const buf = file.buffer();
-                return !!buf && buf.byteLength > 0;
+                return $bog_music_track_baza.chunk_units(file).length > 0;
             }
             catch (e) {
                 return false; // Promise (ещё синкается) или битый pawn — пока нет
             }
         }
         /**
-         * Есть ли blob локально — БЕЗ запуска sync (в отличие от has_blob/cached).
+         * Есть ли blob локально — БЕЗ запуска sync (в отличие от has_blob).
          * Использует `remote_local`, поэтому проверка на каждый трек в списке НЕ
          * поднимает загрузку всех blob-лендов. Реактивна: когда префетч догонит
          * этот трек и blob доедет, флипнется в true и строка перестанет тускнеть.
+         *
+         * Отвечает на булев вопрос по заголовкам чанков. Раньше здесь звался
+         * `file.buffer()` — то есть на КАЖДЫЙ трек списка в память поднималась
+         * вся песня целиком, и фонотека оседала в куче просто от рендера.
          */
         blob_local() {
             const link = this.File();
@@ -36449,8 +36836,18 @@ var $;
             const file = link.remote_local ? link.remote_local() : link.remote();
             if (!file)
                 return false;
-            const buf = file.buffer();
-            return !!buf && buf.byteLength > 0;
+            return $bog_music_track_baza.chunk_units(file).length > 0;
+        }
+        /**
+         * Сколько чанков у трека и сколько из них подняты в память (для панели
+         * диагностики). Ничего не подгружает — смотрит только заголовки.
+         */
+        chunks_stat() {
+            const link = this.File();
+            const file = link && (link.remote_local ? link.remote_local() : link.remote());
+            if (!file)
+                return $bog_music_mem.units_stat([]);
+            return $bog_music_mem.units_stat($bog_music_track_baza.chunk_units(file));
         }
         /**
          * Дожидается докачки blob-land с мастера (suspend под $mol_wire_sync) и
@@ -36467,14 +36864,23 @@ var $;
                     return false;
             }
             file.land().sync(); // проброс Promise → suspend пока не досинкается
-            const buf = file.buffer();
-            return !!buf && buf.byteLength > 0;
+            return $bog_music_track_baza.chunk_units(file).length > 0;
         }
+        /**
+         * Файл уже в базе. Проверка по заголовкам чанков: раньше здесь звался
+         * `blob()`, и вопрос «а не скачано ли уже?» перед каждой докачкой с VK
+         * поднимал в память весь трек.
+         */
         cached() {
             try {
-                return this.blob() !== null;
+                const file = this.File()?.remote();
+                if (!file)
+                    return false;
+                return $bog_music_track_baza.chunk_units(file).length > 0;
             }
             catch (e) {
+                // Promise пробрасываем: зовут из фибры докачки, и «ещё грузится»
+                // нельзя выдавать за «не скачано» — иначе трек качается заново.
                 if (e instanceof Promise)
                     throw e;
                 return false; // битый pawn/CBOR — считаем что кеша нет
@@ -36861,17 +37267,24 @@ var $;
         }
         // ---------- фоновый префетч blob'ов «по одной песне» ----------
         /**
-         * Ключ следующего трека для докачки: первый (в порядке словаря), у кого
-         * blob ещё НЕ локально. Проверка через `blob_local` не запускает sync, так
-         * что перебор не поднимает загрузку всех лендов — качается строго по одному.
-         * '' — вся библиотека уже на устройстве. БЕЗ @$mol_mem (baza-объект): мемо
-         * держит view-атом, реактивность даёт чтение baza-атомов внутри blob_local.
+         * Ключ следующего трека для докачки: первый из ОКНА (текущий трек и
+         * несколько следующих за ним), у кого blob ещё не локально. '' — окно
+         * целиком на устройстве.
+         *
+         * Раньше окна не было: префетч шёл по всему словарю и рано или поздно
+         * стаскивал на устройство и в память всю фонотеку. Слушают её по одной
+         * песне, поэтому вперёд нужно ровно столько, чтобы переход на следующий
+         * трек не ждал сети.
+         *
+         * Проверка через `blob_local` не запускает sync, так что перебор окна не
+         * поднимает загрузку соседних лендов — качается строго по одному. БЕЗ
+         * @$mol_mem (baza-объект): мемо держит view-атом, реактивность даёт
+         * чтение baza-атомов внутри blob_local.
          */
-        prefetch_active_key() {
-            const dict = this.tracks();
-            for (const key of (dict.keys() ?? [])) {
+        prefetch_active_key(keys) {
+            for (const key of keys) {
                 try {
-                    const track = dict.key(key);
+                    const track = this.track(key);
                     if (!track || !track.audio())
                         continue;
                     if (track.blob_local())
@@ -36889,10 +37302,13 @@ var $;
          * blob (suspend до готовности). Одна закачка в полёте — фибра висит на этом
          * blob'е; когда доедет, blob_local флипнется → prefetch_active_key укажет на
          * следующий → атом-драйвер (в app.view) перезапустится и возьмётся за него.
-         * Драйвер живёт во view ($bog_music_app.prefetch), не на baza-объекте.
+         * Драйвер живёт во view ($bog_music_app.prefetch), не на baza-объекте: он же
+         * и считает окно, потому что знает текущий трек и видимый список.
+         *
+         * Ссылку на трек не держим: фибра берёт его по ключу и отпускает.
          */
-        prefetch_step() {
-            const key = this.prefetch_active_key();
+        prefetch_step(keys) {
+            const key = this.prefetch_active_key(keys);
             if (!key)
                 return;
             const track = this.track(key);
@@ -39256,7 +39672,13 @@ var $;
                 $mol_wire_async(this).blob_of(key).then((blob) => {
                     if (!blob)
                         return;
+                    // URL держим в _last_blob_url: раньше он создавался «мимо» поля, и
+                    // каждый resume после потери src оставлял в браузере ещё одну
+                    // неотзываемую ссылку на целый трек.
+                    if (this._last_blob_url)
+                        URL.revokeObjectURL(this._last_blob_url);
                     const url = URL.createObjectURL(blob);
+                    this._last_blob_url = url;
                     this.set_track_src(el, url);
                     this.attach_seek_listener(el, pos);
                     el.play().catch(() => { });
@@ -40233,6 +40655,11 @@ var $;
                 if (!audio)
                     return;
                 this._ext = null; // возвращаемся к baza-треку, гасим tube-превью
+                $bog_music_mem.play_started();
+                // Предыдущий трек больше не нужен: отпускаем и его Blob, и object URL.
+                // Держать их дальше нечем оправдать — назад мотают через play_track,
+                // который соберёт Blob заново из чанков.
+                this.blob_cache_keep(key);
                 // Сброс времени ДО смены трека: иначе apply_trim в auto() прочитает
                 // stale-значения предыдущего трека и может мгновенно дёрнуть next().
                 this.current_time(0);
@@ -40288,6 +40715,31 @@ var $;
             // (continuation). Для этого blob следующего трека должен быть доступен
             // без suspend — держим его здесь, прогретым заранее.
             _blob_cache = new Map();
+            /**
+             * Потолок кеша: текущий трек и один прогретый следующий. Больше держать
+             * незачем, а меньше нельзя — на одном месте останется тот самый
+             * синхронный переход, ради которого кеш и заведён.
+             */
+            static BLOB_CACHE_MAX = 2;
+            /**
+             * Оставить в кеше только перечисленные ключи и подрезать остаток до
+             * потолка. Зовётся на каждой смене трека: без этого кеш рос ровно на
+             * длину прослушанного за сессию.
+             */
+            blob_cache_keep(...keep) {
+                const alive = new Set(keep.filter(Boolean));
+                for (const key of [...this._blob_cache.keys()]) {
+                    if (!alive.has(key))
+                        this._blob_cache.delete(key);
+                }
+                // Map сохраняет порядок вставки — лишним оказывается самый старый.
+                while (this._blob_cache.size > $bog_music_player.BLOB_CACHE_MAX) {
+                    const oldest = this._blob_cache.keys().next().value;
+                    if (oldest === undefined)
+                        break;
+                    this._blob_cache.delete(oldest);
+                }
+            }
             /** Прогреть blob СЛЕДУЮЩЕГО трека в RAM-кеш (fire-and-forget). */
             prefetch_next(key) {
                 try {
@@ -40406,12 +40858,9 @@ var $;
                 const blob = this.account().track(key)?.blob_wait();
                 if (!blob)
                     return false;
-                // Держим компактно: только текущий + этот (следующий).
-                for (const k of [...this._blob_cache.keys()]) {
-                    if (k !== this.current_key() && k !== key)
-                        this._blob_cache.delete(k);
-                }
                 this._blob_cache.set(key, blob);
+                // Держим компактно: только текущий + этот (следующий).
+                this.blob_cache_keep(this.current_key(), key);
                 return true;
             }
             /** Sync-чтение блоба: сперва RAM-кеш (без suspend), потом baza. */
