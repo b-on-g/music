@@ -27386,7 +27386,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.52';
+    $.$bog_music_version = 'v1.53';
 })($ || ($ = {}));
 
 ;
@@ -27517,6 +27517,7 @@ var $;
                 if (!key)
                     return;
                 $bog_music_log.act(`воспроизведение ${key}`);
+                this.tube_current(-1); // ушли в фонотеку — выдача больше не очередь
                 const keys = this.visible_keys();
                 const idx = keys.indexOf(key);
                 this.Player().queue_index(idx >= 0 ? idx : 0);
@@ -27853,12 +27854,44 @@ var $;
                 const item = this.tube_item(index);
                 return item ? $bog_music_tube.cover_url(item.id) : '';
             }
+            /**
+             * Индекс играющего результата выдачи. -1 — играет не из выдачи.
+             * Нужен, чтобы плеер мог шагнуть на соседний результат, а не свалиться
+             * в личную фонотеку.
+             *
+             * Обычное поле, а не @$mol_mem: значение не участвует в рендере, никто
+             * его не читает как зависимость — и неиспользуемую ячейку $mol сметает.
+             * На меме индекс сам откатывался к -1 через секунду после установки,
+             * из-за чего «назад» по выдаче переставал работать.
+             */
+            _tube_at = -1;
+            tube_current(next) {
+                if (next !== undefined)
+                    this._tube_at = next;
+                return this._tube_at;
+            }
+            /**
+             * Шаг по выдаче YouTube. Зовётся плеером: он знает только то, что играет
+             * внешний стрим, и просит соседа — про tube ему знать незачем.
+             * false — выдача кончилась, дальше идти некуда.
+             */
+            tube_step(step) {
+                const at = this.tube_current();
+                if (at < 0)
+                    return false;
+                const to = at + step;
+                if (to < 0 || to >= this.tube_items().length)
+                    return false;
+                this.tube_play(to);
+                return true;
+            }
             /** Прослушать трек стримом с сервера, не скачивая в baza. */
             tube_play(index) {
                 const item = this.tube_item(index);
                 if (!item)
                     return;
                 $bog_music_log.act(`стрим с YouTube: ${item.title}`);
+                this.tube_current(index);
                 this.Player().play_external($bog_music_tube.audio_url(item.id), item.title, item.channel);
             }
             tube_status_text(index, next) {
@@ -28226,6 +28259,9 @@ var $;
         __decorate([
             $mol_mem
         ], $bog_music_app.prototype, "tube_rows", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "tube_step", null);
         __decorate([
             $mol_action
         ], $bog_music_app.prototype, "tube_play", null);
@@ -34086,6 +34122,12 @@ var $;
                 this.current_key('');
             }
             prev() {
+                // Тот же случай, что и в next(): играет выдача — шагаем по ней.
+                if (this._ext) {
+                    $bog_music_log.act('предыдущий результат выдачи');
+                    this.ext_step(-1);
+                    return;
+                }
                 const queue = this.queue_keys();
                 const idx = this.queue_index();
                 if (idx > 0) {
@@ -34095,6 +34137,22 @@ var $;
                 }
                 else {
                     $bog_music_log.act('предыдущий трек: уже первый, шага нет');
+                }
+            }
+            /**
+             * Сосед по выдаче YouTube. Плеер про tube ничего не знает — он лишь
+             * сообщает app, что играет внешний стрим, и просит шагнуть.
+             * false — выдача кончилась.
+             */
+            ext_step(step) {
+                try {
+                    return !!$bog_music_app.Root(0).tube_step(step);
+                }
+                catch (e) {
+                    if (e instanceof Promise)
+                        throw e;
+                    console.warn('[player] ext_step failed:', e?.message);
+                    return false;
                 }
             }
             /** Рекомендация «Моей волны» из app (null если режим выключен). */
@@ -34112,6 +34170,18 @@ var $;
                 const mode = this.repeat_mode();
                 const queue = this.queue_keys();
                 $bog_music_log.act(`следующий трек (${manual ? 'кнопка' : 'авто'}, режим ${mode})`);
+                // Играет стрим из выдачи YouTube. Шагаем по выдаче, а не по фонотеке:
+                // у внешнего трека current_key пустой, и общий путь ниже взял бы
+                // queue[0] — по концу трека молча стартовал личный плейлист с начала.
+                if (this._ext) {
+                    if (!manual && mode === 'one') {
+                        const ext = this._ext;
+                        this.play_external(ext.url, ext.title, ext.artist);
+                        return;
+                    }
+                    this.ext_step(1); // выдача кончилась — просто встаём, трек уже доиграл
+                    return;
+                }
                 // Авто-advance при mode='one': перезапуск того же трека через
                 // play_track — он подхватит trim_start (native loop крутит от 0).
                 // Ручной клик по Next всё равно ведёт к следующему.
