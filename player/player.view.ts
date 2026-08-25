@@ -36,6 +36,7 @@ namespace $.$$ {
 				// В extension нет прямого <audio>; превью работает только в PWA/сайте.
 				return
 			}
+			$bog_music_log.act(`внешний стрим: ${artist} — ${title}`)
 			this._ext = { url, title, artist }
 			this.current_key('')
 			this.current_time(0)
@@ -336,6 +337,7 @@ namespace $.$$ {
 		 */
 		@$mol_mem
 		normalize(next?: boolean) {
+			if (next !== undefined) $bog_music_log.act(`выравнивание громкости: ${next ? 'включено' : 'выключено'}`)
 			const v = $mol_state_local.value('bog_music_gain_norm', next) as boolean | null
 			return v ?? true
 		}
@@ -824,6 +826,7 @@ namespace $.$$ {
 		volume_toggle() {
 			const pop = this.Volume()
 			const showed = pop.showed()
+			$bog_music_log.act(`панель громкости: ${showed ? 'закрыта' : 'открыта'}`)
 			pop.showed(!showed)
 			if (!showed) this.setup_pop_dismiss(pop)
 			return null
@@ -879,6 +882,9 @@ namespace $.$$ {
 			const e = event as PointerEvent
 			try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId) } catch {}
 			this._vol_dragging = false
+			// Пишем в журнал на отпускании, а не на каждом шаге: за одно
+			// перетаскивание сеттер зовётся десятки раз и вытеснил бы журнал.
+			$bog_music_log.act(`громкость: ${Math.round(this.volume() * 100)}%`)
 			// Ползунок отпущен — панель своё отработала, убираем её с экрана.
 			try { this.Volume().showed(false) } catch {}
 			return null
@@ -942,6 +948,7 @@ namespace $.$$ {
 		eq_pop_toggle() {
 			const pop = this.Eq()
 			const showed = pop.showed()
+			$bog_music_log.act(`эквалайзер: ${showed ? 'закрыт' : 'открыт'}`)
 			pop.showed(!showed)
 			if (!showed) this.setup_pop_dismiss(pop)
 			return null
@@ -1072,7 +1079,9 @@ namespace $.$$ {
 		repeat_cycle() {
 			const order: ('all' | 'one' | 'shuffle')[] = ['all', 'one', 'shuffle']
 			const idx = order.indexOf(this.repeat_mode() as any)
-			this.repeat_mode(order[(idx + 1) % order.length])
+			const mode = order[(idx + 1) % order.length]
+			$bog_music_log.act(`режим повтора: ${mode}`)
+			this.repeat_mode(mode)
 		}
 
 		repeat_hint() {
@@ -1127,7 +1136,11 @@ namespace $.$$ {
 		play_track(key?: string | null) {
 			if (!key) return
 			const audio = this.audio_of(key)
-			if (!audio) return
+			if (!audio) {
+				$bog_music_log.err(`трек не найден в фонотеке: ${key}`)
+				return
+			}
+			$bog_music_log.act(`старт трека ${audio.artist} — ${audio.title} (${key})`)
 
 			this._ext = null // возвращаемся к baza-треку, гасим tube-превью
 
@@ -1489,6 +1502,7 @@ namespace $.$$ {
 			// жмём resume, иначе ios_pause молча выйдет по _silent и кнопка
 			// перестанет что-либо делать.
 			const was_playing = this.playing() && !this._silent
+			$bog_music_log.act(`${was_playing ? 'пауза' : 'продолжить'}: ${this.current_key() || 'без трека'}`)
 			if (this.is_extension()) {
 				if (was_playing) this.send('pause')
 				else this.send('resume')
@@ -1517,6 +1531,7 @@ namespace $.$$ {
 		 * чтобы после перезагрузки плеер не воскрес сам.
 		 */
 		close() {
+			$bog_music_log.act('закрытие плеера')
 			this._dispatch_token++ // инвалидировать pending dispatch'и
 			this._ext = null
 			this._planned_wave = null
@@ -1560,8 +1575,11 @@ namespace $.$$ {
 			const queue = this.queue_keys()
 			const idx = this.queue_index()
 			if (idx > 0) {
+				$bog_music_log.act(`предыдущий трек: ${queue[idx - 1]}`)
 				this.queue_index(idx - 1)
 				this.play_track(queue[idx - 1])
+			} else {
+				$bog_music_log.act('предыдущий трек: уже первый, шага нет')
 			}
 		}
 
@@ -1578,6 +1596,7 @@ namespace $.$$ {
 		next(manual: boolean = true) {
 			const mode = this.repeat_mode()
 			const queue = this.queue_keys()
+			$bog_music_log.act(`следующий трек (${manual ? 'кнопка' : 'авто'}, режим ${mode})`)
 
 			// Авто-advance при mode='one': перезапуск того же трека через
 			// play_track — он подхватит trim_start (native loop крутит от 0).

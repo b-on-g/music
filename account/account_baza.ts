@@ -29,6 +29,15 @@ namespace $ {
 			return `${audio.owner_id}_${audio.id}`
 		}
 
+		/**
+		 * Идентификатор ленда для журнала — по нему записи фильтруются на
+		 * экране логов. Дефенсивно: журнал не имеет права ронять запись данных,
+		 * поэтому любая осечка превращается в пустую строку.
+		 */
+		land_id(): string {
+			try { return this.land().link().str } catch { return '' }
+		}
+
 		tracks() {
 			return this.Tracks(null)!
 		}
@@ -216,11 +225,19 @@ namespace $ {
 			store.buffer(buffer as Uint8Array<ArrayBuffer>)
 			store.type(mime || 'audio/mpeg')
 			track.File('auto')!.remote(store)
+			$bog_music_log.act(
+				`blob записан: ${audio.artist} — ${audio.title}, ${buffer.length} байт, ${mime || 'audio/mpeg'}`,
+				this.land_id(),
+			)
 		}
 
 		/** Метаданные + blob + плейлист одним действием (одна фибра снаружи). */
 		@$mol_action
 		import_audio(audio: $bog_music_api_audio, buffer: Uint8Array, mime: string, playlist = ''): void {
+			$bog_music_log.act(
+				`импорт трека ${audio.artist} — ${audio.title}${playlist ? ` в «${playlist}»` : ''}`,
+				this.land_id(),
+			)
 			this.save_track(audio)
 			if (playlist) this.move_to_playlist($bog_music_account_baza.key_of(audio), playlist)
 			this.save_blob(audio, buffer, mime)
@@ -232,6 +249,10 @@ namespace $ {
 			const { artist, title, order: parsed_order } = $bog_music_account_baza.parse_filename(file.name)
 			const id = $bog_music_account_baza.hash_str(`${file.name}|${file.size}|${file.lastModified}`)
 			const audio: $bog_music_api_audio = { id, owner_id: 0, artist, title, duration: 0, url: '' }
+			$bog_music_log.act(
+				`файл с устройства: ${file.name}, ${file.size} байт → ${artist} — ${title}`,
+				this.land_id(),
+			)
 			this.save_track(audio)
 			const track = this.tracks().key($bog_music_account_baza.key_of(audio), 'auto')
 			if (!track) return null
@@ -263,11 +284,13 @@ namespace $ {
 		move_to_playlist(key: string, playlist: string): void {
 			const track = this.track(key)
 			if (!track) return
+			$bog_music_log.act(`${key} → плейлист «${playlist || 'Моя музыка'}»`, this.land_id())
 			track.Playlist('auto')!.val(playlist)
 		}
 
 		@$mol_action
 		delete_track(key: string): void {
+			$bog_music_log.act(`трек вырезан из фонотеки: ${key}`, this.land_id())
 			this.tracks().cut(key)
 		}
 
@@ -276,6 +299,7 @@ namespace $ {
 		drop_blob(key: string): void {
 			const track = this.track(key)
 			if (!track) return
+			$bog_music_log.act(`blob сброшен, метаданные оставлены: ${key}`, this.land_id())
 			track.File('auto')!.val(null)
 		}
 

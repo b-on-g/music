@@ -1,14 +1,23 @@
 namespace $.$$ {
-	// Синхронизация через Гипер Базу отключена: список мастеров пустой.
-	// Чистки одного masters_default мало — masters() склеивает его с пирами
-	// из бандленного сида, где зашит публичный мастер. Глушим сам masters().
+	/**
+	 * Единственный мастер синхронизации — свой болгарский узел.
+	 *
+	 * Список мастеров задаётся ПОЛНОЙ заменой, а не дополнением. Штатный
+	 * `masters()` склеивает `masters_default` с пирами из бандленного сида,
+	 * а там зашит чужой публичный мастер: чистки одного `masters_default`
+	 * мало, надо глушить сам `masters()`. Поэтому сначала обнуляем список по
+	 * умолчанию, затем подменяем функцию — ничего от Гипер Базы не остаётся.
+	 */
+	const master = 'https://cmyser-bg-pony.87.120.36.150.ip.giper.dev/'
+
 	$giper_baza_yard.masters_default.length = 0
-	$giper_baza_yard.masters = (): string[] => []
+	$giper_baza_yard.masters = (): string[] => [ master ]
 
 
 	// Фиксы окружения (yard masters, vk_token bridge, #account/#share из URL) —
 	// до первого обращения к baza.
 	$bog_music_boot.init()
+	$bog_music_log.act( `мастер синка: ${ master }` )
 
 	export class $bog_music_app extends $.$bog_music_app {
 
@@ -35,9 +44,11 @@ namespace $.$$ {
 				// Клик на табе «Расшаренный» в режиме шаринга финализирует шар,
 				// не переключая страницу.
 				if (next === 'share') {
+					$bog_music_log.act('финализация шара по клику на табе')
 					this.share().submit()
 					return $mol_state_arg.value('page') ?? 'my'
 				}
+				$bog_music_log.act(`вкладка: ${next}`)
 				$mol_state_arg.value('page', next)
 				return next
 			}
@@ -138,6 +149,7 @@ namespace $.$$ {
 
 		@$mol_mem
 		wave_mode(next?: boolean) {
+			if (next !== undefined) $bog_music_log.act(`моя волна: ${next ? 'включена' : 'выключена'}`)
 			return $mol_state_local.value('music_wave_mode', next) ?? false
 		}
 
@@ -177,6 +189,7 @@ namespace $.$$ {
 			if (from === to) return
 			if (from < 0 || to < 0 || from >= keys.length || to >= keys.length) return
 			const moving = keys[from]
+			$bog_music_log.act(`перестановка ${moving}: ${from} → ${to}`)
 			const step = from < to ? 1 : -1
 			for (let i = from; i !== to; i += step) {
 				this.account().swap_order(moving, keys[i + step])
@@ -185,12 +198,16 @@ namespace $.$$ {
 
 		@$mol_action
 		archive_key(key?: string | null) {
-			if (key) this.account().move_to_playlist(key, 'archive')
+			if (!key) return
+			$bog_music_log.act(`в архив ${key}`)
+			this.account().move_to_playlist(key, 'archive')
 		}
 
 		@$mol_action
 		restore_key(key?: string | null) {
-			if (key) this.account().move_to_playlist(key, '')
+			if (!key) return
+			$bog_music_log.act(`из архива ${key}`)
+			this.account().move_to_playlist(key, '')
 		}
 
 		/**
@@ -212,6 +229,7 @@ namespace $.$$ {
 			const keys = this.visible_keys()
 			const from = keys.indexOf(key)
 			if (from < 0 || from === keys.length - 1) return // уже внизу
+			$bog_music_log.act(`вниз списка ${key}`)
 
 			const current = this.current_key()
 			const at = current ? keys.indexOf(current) : -1
@@ -235,7 +253,9 @@ namespace $.$$ {
 
 		@$mol_action
 		delete_key(key?: string | null) {
-			if (key) this.account().delete_track(key)
+			if (!key) return
+			$bog_music_log.act(`удаление ${key}`)
+			this.account().delete_track(key)
 		}
 
 		// =====================================================================
@@ -298,6 +318,7 @@ namespace $.$$ {
 			this.download_playlist_status(`Скачиваю ${items.length}…`)
 			await this.prefetch_blobs(items)
 			const s = this.prefetch_state()
+			$bog_music_log.act(`плейлист скачан: ${s.done}/${s.total}, ошибок ${s.failed}`)
 			this.download_playlist_status(`Готово: ${s.done}/${s.total}${s.failed ? `, ошибок ${s.failed}` : ''}`)
 		}
 
@@ -339,7 +360,9 @@ namespace $.$$ {
 					done++
 				} catch (e: any) {
 					failed++
-					console.warn('[app] prefetch failed:', audio.artist, '—', audio.title, '|', e?.message ?? String(e))
+					const name = `${audio.artist} — ${audio.title}`
+					console.warn('[app] prefetch failed:', name, '|', e?.message ?? String(e))
+					$bog_music_log.err(`докачка не удалась: ${name}: ${e?.message ?? String(e)}`)
 				}
 				this.prefetch_state({ total: items.length, done, failed })
 			}
@@ -380,6 +403,7 @@ namespace $.$$ {
 			a.remove()
 			setTimeout(() => URL.revokeObjectURL(url), 1000)
 			const skipped_note = skipped ? `, пропущено ${skipped}` : ''
+			$bog_music_log.act(`zip собран: ${files.length} файлов${skipped_note}`)
 			this.download_playlist_status(`Готово: ${files.length} ${$bog_music_share.plural_tracks(files.length)}${skipped_note}`)
 		}
 
@@ -394,6 +418,7 @@ namespace $.$$ {
 		/** Нижняя навигация: music / account / feedback. */
 		@$mol_mem
 		section(next?: string): string {
+			if (next !== undefined) $bog_music_log.act(`раздел: ${next}`)
 			return next ?? 'music'
 		}
 
@@ -436,7 +461,9 @@ namespace $.$$ {
 
 		@$mol_action
 		tube_find() {
-			this.tube_committed(this.tube_query())
+			const query = this.tube_query()
+			$bog_music_log.act(`поиск на YouTube: ${query}`)
+			this.tube_committed(query)
 		}
 
 		@$mol_mem
@@ -477,6 +504,7 @@ namespace $.$$ {
 		tube_play(index: number) {
 			const item = this.tube_item(index)
 			if (!item) return
+			$bog_music_log.act(`стрим с YouTube: ${item.title}`)
 			;(this.Player() as any).play_external(
 				$bog_music_tube.audio_url(item.id),
 				item.title,
@@ -516,10 +544,12 @@ namespace $.$$ {
 					url: '',
 				}
 				await ($mol_wire_async(this.account()) as any).import_audio(audio, bytes, 'audio/mp4')
+				$bog_music_log.act(`скачано с YouTube: ${item.title} (${bytes.length} байт)`)
 				this.tube_status_text(index, '✓ в Моей музыке')
 			} catch (e: any) {
 				if (e instanceof Promise) throw e
 				console.warn('[tube] download failed:', e?.message ?? e)
+				$bog_music_log.err(`скачивание с YouTube не удалось: ${item.title}: ${e?.message ?? e}`)
 				this.tube_status_text(index, 'Ошибка')
 				setTimeout(() => this.tube_status_text(index, ''), 4000)
 			}
@@ -561,6 +591,7 @@ namespace $.$$ {
 		@$mol_action
 		tg_link() {
 			const code = $bog_music_tg.code_ensure()
+			$bog_music_log.act('открытие телеграм-бота для связки')
 			window.open($bog_music_tg.link_url(code), '_blank')
 			$mol_wire_async(this).tg_drain()
 		}
@@ -608,6 +639,7 @@ namespace $.$$ {
 					error: '',
 				})
 				if (!status.linked || !status.pending) return
+				$bog_music_log.act(`Телеграм: в очереди ${status.pending}, забираю`)
 
 				for (const row of await $bog_music_tg.inbox(code)) {
 					try {
@@ -618,6 +650,7 @@ namespace $.$$ {
 					} catch (e: any) {
 						if (e instanceof Promise) throw e
 						console.warn('[tg] import failed:', row.id, e?.message ?? e)
+						$bog_music_log.err(`импорт из Телеграма не удался: ${row.id}: ${e?.message ?? e}`)
 						continue
 					}
 					const state = this.tg_state()
@@ -626,6 +659,7 @@ namespace $.$$ {
 			} catch (e: any) {
 				if (e instanceof Promise) throw e
 				console.warn('[tg] drain failed:', e?.message ?? e)
+				$bog_music_log.err(`Телеграм-бот недоступен: ${e?.message ?? e}`)
 				this.tg_state({ ...this.tg_state(), error: 'Телеграм-бот недоступен' })
 			} finally {
 				this._tg_busy = false
@@ -677,9 +711,11 @@ namespace $.$$ {
 		@$mol_action
 		fm_link() {
 			if (this.fm_user()) {
+				$bog_music_log.act('отключение last.fm')
 				$mol_wire_async($bog_music_scrobble).logout()
 				return
 			}
+			$bog_music_log.act('подключение last.fm')
 			window.open($bog_music_scrobble.login_url($bog_music_scrobble.code_ensure()), '_blank')
 		}
 
@@ -692,6 +728,7 @@ namespace $.$$ {
 			} catch (e: any) {
 				if (e instanceof Promise) throw e
 				console.warn('[fm] status failed:', e?.message ?? e)
+				$bog_music_log.err(`сервер скробблинга недоступен: ${e?.message ?? e}`)
 				this.fm_error('Сервер скробблинга недоступен')
 			}
 		}
@@ -735,8 +772,10 @@ namespace $.$$ {
 								.import_audio(entry.audio, buf, entry.mime || 'audio/aac')
 						} catch (e: any) {
 							console.warn('[app] pending save failed:', entry.key, e?.message ?? e)
+							$bog_music_log.err(`сохранение из очереди не удалось: ${entry.key}: ${e?.message ?? e}`)
 							continue
 						}
+						$bog_music_log.act(`трек из очереди сохранён: ${entry.key}`)
 						await $bog_music_pending.remove(entry.key)
 					}
 				}
@@ -758,8 +797,14 @@ namespace $.$$ {
 		}
 
 		async import_share(token: string) {
+			$bog_music_log.act('импорт расшаренного плейлиста по ссылке')
 			const playlist = await this.share().import(token)
-			if (playlist) this.page(playlist)
+			if (playlist) {
+				$bog_music_log.act(`расшаренный плейлист импортирован: ${playlist}`)
+				this.page(playlist)
+			} else {
+				$bog_music_log.err('импорт расшаренного плейлиста ничего не вернул')
+			}
 		}
 
 		auto() {

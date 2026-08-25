@@ -49,6 +49,7 @@ namespace $ {
 
 		@$mol_action
 		enter(key: string) {
+			$bog_music_log.act(`режим шаринга включён с ${key}`)
 			this.selection([key])
 			this.mode(true)
 		}
@@ -56,11 +57,14 @@ namespace $ {
 		@$mol_action
 		toggle(key: string) {
 			const cur = this.selection()
-			this.selection(cur.includes(key) ? cur.filter(k => k !== key) : [...cur, key])
+			const next = cur.includes(key) ? cur.filter(k => k !== key) : [...cur, key]
+			$bog_music_log.act(`${cur.includes(key) ? 'снят' : 'выбран'} для шаринга ${key}, всего ${next.length}`)
+			this.selection(next)
 		}
 
 		@$mol_action
 		exit() {
+			if (this.mode()) $bog_music_log.act('режим шаринга выключен')
 			this.selection([])
 			this.mode(false)
 		}
@@ -87,6 +91,7 @@ namespace $ {
 		/** Клик по share-иконке вне режима выбора — мгновенный одиночный шар. */
 		@$mol_action
 		share_single(key: string) {
+			$bog_music_log.act(`одиночный шар ${key}`)
 			$mol_wire_async(this).share_keys([key])
 		}
 
@@ -124,9 +129,11 @@ namespace $ {
 		async share_keys(keys: string[]) {
 			if (this.busy()) return
 			if (!keys.length) {
+				$bog_music_log.act('шар отменён: нет выбранных треков')
 				this.status('Нет выбранных треков')
 				return
 			}
+			$bog_music_log.act(`сборка шара: ${keys.length} трек(ов)`)
 			this.busy(true)
 			this.status('Готовлю шар…')
 			try {
@@ -179,9 +186,11 @@ namespace $ {
 					sender_cipher, verifier_cipher, ciphers
 				) as string
 				if (!land_link) {
+					$bog_music_log.err('шар не залился: write_in_fiber не вернул ленд')
 					this.status('Не удалось залить треки')
 					return
 				}
+				$bog_music_log.act(`шар залит: ${ciphers.length} трек(ов)`, land_link)
 
 				const url = this.url_for(land_link, key.toString())
 				try {
@@ -195,6 +204,7 @@ namespace $ {
 					try { await e } catch {}
 				}
 				console.warn('[share] failed:', e?.message ?? e)
+				$bog_music_log.err(`шар не собрался: ${e?.message ?? e}`)
 				this.status('Ошибка: ' + (e?.message ?? 'неизвестно'))
 			} finally {
 				this.busy(false)
@@ -254,6 +264,7 @@ namespace $ {
 
 			const dot = token.indexOf('.')
 			if (dot <= 0) {
+				$bog_music_log.err('импорт шара: битая ссылка, нет разделителя ленда и ключа')
 				this.import_status('Битая ссылка')
 				this.finish(token)
 				return null
@@ -265,10 +276,12 @@ namespace $ {
 			try {
 				key = $mol_crypto_sacred.from(key_str)
 			} catch {
+				$bog_music_log.err('импорт шара: битый ключ расшифровки', link_str)
 				this.import_status('Битый ключ')
 				this.finish(token)
 				return null
 			}
+			$bog_music_log.act('импорт шара: ленд и ключ разобраны', link_str)
 
 			try {
 				const land = $giper_baza_glob.Land(new $giper_baza_link(link_str))

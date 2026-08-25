@@ -38,6 +38,7 @@ namespace $.$$ {
 		static owner_lords = [
 			'rkya36Pg_4GhW4PYB',
 			'xSwlxBfW_flwwJqOO',
+			'24q6G0lY_q0azSzlh',
 		]
 
 		Tab_logs() {
