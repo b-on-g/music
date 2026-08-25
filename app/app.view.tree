@@ -62,6 +62,9 @@ $bog_music_app $mol_page
 				<= Tube_query $mol_string
 					hint \Что ищем на YouTube?
 					value? <=> tube_query? \
+					submit? <=> tube_find? null
+					keyboard \search
+					enter \search
 				<= Tube_find $mol_button_major
 					title \Найти
 					click? <=> tube_find? null
