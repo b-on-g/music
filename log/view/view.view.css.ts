@@ -36,7 +36,7 @@ namespace $.$$ {
 			color: $mol_theme.shade,
 			// Счётчик уступает место кнопкам, но не режется в ноль.
 			flex: { shrink: 1 },
-			minWidth: '0',
+			minWidth: 0,
 		},
 
 		Tools: {
@@ -103,7 +103,7 @@ namespace $.$$ {
 		Land: {
 			// Идентификатор ленда длинный: пусть переносится, а не растягивает
 			// строку и не выдавливает время с видом записи.
-			minWidth: '0',
+			minWidth: 0,
 			overflowWrap: 'anywhere',
 			opacity: 0.8,
 		},
@@ -115,7 +115,7 @@ namespace $.$$ {
 			},
 			// Логи — длинные строки без пробелов (ссылки, id). Без minWidth: 0
 			// flex-элемент не сжимается и уезжает за край экрана.
-			minWidth: '0',
+			minWidth: 0,
 			whiteSpace: 'pre-wrap',
 			overflowWrap: 'anywhere',
 			color: $mol_theme.text,

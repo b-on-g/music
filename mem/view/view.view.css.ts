@@ -38,7 +38,7 @@ namespace $.$$ {
 		Title: {
 			font: { weight: 600 },
 			flex: { grow: 1, shrink: 1 },
-			minWidth: '0',
+			minWidth: 0,
 		},
 
 		Heap: {
@@ -46,7 +46,7 @@ namespace $.$$ {
 				size: '0.8125rem',
 				family: 'monospace',
 			},
-			minWidth: '0',
+			minWidth: 0,
 			overflowWrap: 'anywhere',
 			padding: {
 				top: '0.375rem',
@@ -63,7 +63,7 @@ namespace $.$$ {
 				size: '0.8125rem',
 				family: 'monospace',
 			},
-			minWidth: '0',
+			minWidth: 0,
 			overflowWrap: 'anywhere',
 			padding: {
 				top: '0.375rem',
@@ -80,7 +80,7 @@ namespace $.$$ {
 				size: '0.8125rem',
 				family: 'monospace',
 			},
-			minWidth: '0',
+			minWidth: 0,
 			overflowWrap: 'anywhere',
 			padding: {
 				top: '0.375rem',
