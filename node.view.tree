@@ -538,28 +538,48 @@ $bog_music_mem_view $mol_list
 		<= Hint $mol_paragraph
 			title \«Пересчитать» обходит фонотеку по заголовкам чанков, содержимое не читает. Треки, чей ленд в этот момент ещё грузился, попадают в «ждут» — жми второй раз.
 
+$mol_icon_tick $mol_icon path \M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z
+
+$mol_check_box $mol_check
+	Icon $mol_icon_tick
+
 $bog_music_log_view $mol_list
 	rows <= log_rows /
 	Head $mol_view
 		sub /
 			<= Count $mol_view
 				sub / <= count_label \
-			<= Copy $mol_button_minor
-				title \Скопировать
-				click? <=> copy? null
-			<= Clear $mol_button_minor
-				title \Очистить
-				click? <=> clear? null
+			<= Tools $mol_view
+				sub /
+					<= Sync $mol_check_box
+						title \Логи синка
+						checked? <=> sync_logging? false
+					<= Copy $mol_button_minor
+						title \Скопировать
+						click? <=> copy? null
+					<= Clear $mol_button_minor
+						title \Очистить
+						click? <=> clear? null
+	Filter $mol_string
+		value? <=> filter? \
+		hint \Фильтр: ленд, действие или текст ошибки
 	Row* $mol_view
 		attr *
 			mol_theme <= row_theme* \
+			bog_music_log_kind <= kind_id* \
 		sub /
-			<= Time* $mol_view
-				sub / <= time* \
+			<= Meta* $mol_view
+				sub /
+					<= Time* $mol_view
+						sub / <= time* \
+					<= Kind* $mol_view
+						sub / <= kind* \
+					<= Land* $mol_view
+						sub / <= land* \
 			<= Text* $mol_view
 				sub / <= text* \
 	Empty $mol_view
-		sub / \Пока пусто. Понажимай в приложении — записи появятся здесь.
+		sub / <= empty_label \
 
 $mol_stack $mol_view
 

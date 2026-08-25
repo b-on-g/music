@@ -383,6 +383,8 @@
     "$bog_music_hls",
     "$bog_music_mem_view",
     "$bog_music_log_view",
+    "$mol_check_box",
+    "$mol_icon_tick",
     "$bog_feedback2_form",
     "$bog_feedback2",
     "$mol_text_text",

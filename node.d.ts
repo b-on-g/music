@@ -39166,10 +39166,17 @@ declare namespace $.$$ {
 }
 
 declare namespace $ {
+    /**
+     * `act` — действие пользователя или приложения, `sync` — событие обмена с
+     * Гипер Базой, `err` — ошибка (своя или пойманная общим обработчиком).
+     */
+    type $bog_music_log_kind = 'act' | 'sync' | 'err';
     type $bog_music_log_record = {
         readonly time: number;
-        readonly kind: 'act' | 'err';
+        readonly kind: $bog_music_log_kind;
         readonly text: string;
+        /** Ленд, которого касается запись. Пусто — запись не про ленд. */
+        readonly land: string;
     };
     /**
      * Журнал действий и ошибок для разбора багов с телефона, где консоли нет.
@@ -39183,11 +39190,33 @@ declare namespace $ {
         /** Сколько записей держим. Дальше вытесняются старые. */
         static limit: number;
         static records: $bog_music_log_record[];
-        static add(kind: $bog_music_log_record['kind'], text: string): void;
+        static add(kind: $bog_music_log_kind, text: string, land?: string): void;
         /** Действие пользователя или приложения. */
-        static act(text: string): void;
+        static act(text: string, land?: string): void;
+        /** Событие обмена с Гипер Базой. */
+        static sync(text: string, land?: string): void;
         /** Ошибка. Пишется и руками, и автоматически из общего обработчика. */
-        static err(text: string): void;
+        static err(text: string, land?: string): void;
+        /**
+         * Baza пишет события через `$mol_log3_*`, но только когда взведён
+         * URL-аргумент `giper_baza_log` — его же читает `$giper_baza_log()`.
+         * Гейт общий, поэтому переключатель в журнале дёргает именно его.
+         */
+        static sync_logging(next?: boolean): boolean;
+        /**
+         * Ленд из `place` события. Baza подписывает события местом вида
+         * `$giper_baza_mine_fs.land<24q6G0lY_q0azSzlh>.store<>` — вытаскиваем
+         * оттуда идентификатор, чтобы журнал можно было отфильтровать по ленду.
+         */
+        static land_of(place: unknown): string;
+        /** Событие baza одной строкой: сообщение плюс осмысленные поля. */
+        static event_text(event: $mol_log3_event<{}>): string;
+        /**
+         * Зеркалит события baza в журнал. Консольные логгеры — обычные `let` на
+         * `$`, поэтому оборачиваем их, сохраняя возврат: у `$mol_log3_area` это
+         * функция закрытия группы, потерять её нельзя.
+         */
+        static hook_baza(): void;
         /** Перехват необработанных ошибок. Вызывается один раз при старте. */
         static init(): {
             destructor: () => boolean;
@@ -39362,6 +39391,30 @@ declare namespace $.$$ {
     export {};
 }
 
+declare namespace $.$$ {
+}
+
+declare namespace $ {
+
+	export class $mol_icon_tick extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=tick.view.tree.d.ts.map
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_check_box extends $mol_check {
+		Icon( ): $mol_icon_tick
+	}
+	
+}
+
+//# sourceMappingURL=box.view.tree.d.ts.map
 declare namespace $ {
 
 	type $mol_view__sub_bog_music_log_view_1 = $mol_type_enforce<
@@ -39369,15 +39422,15 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_button_minor__title_bog_music_log_view_2 = $mol_type_enforce<
+	type $mol_check_box__title_bog_music_log_view_2 = $mol_type_enforce<
 		string
 		,
-		ReturnType< $mol_button_minor['title'] >
+		ReturnType< $mol_check_box['title'] >
 	>
-	type $mol_button_minor__click_bog_music_log_view_3 = $mol_type_enforce<
-		ReturnType< $bog_music_log_view['copy'] >
+	type $mol_check_box__checked_bog_music_log_view_3 = $mol_type_enforce<
+		ReturnType< $bog_music_log_view['sync_logging'] >
 		,
-		ReturnType< $mol_button_minor['click'] >
+		ReturnType< $mol_check_box['checked'] >
 	>
 	type $mol_button_minor__title_bog_music_log_view_4 = $mol_type_enforce<
 		string
@@ -39385,31 +39438,29 @@ declare namespace $ {
 		ReturnType< $mol_button_minor['title'] >
 	>
 	type $mol_button_minor__click_bog_music_log_view_5 = $mol_type_enforce<
-		ReturnType< $bog_music_log_view['clear'] >
+		ReturnType< $bog_music_log_view['copy'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_view__sub_bog_music_log_view_6 = $mol_type_enforce<
-		readonly(any)[]
+	type $mol_button_minor__title_bog_music_log_view_6 = $mol_type_enforce<
+		string
 		,
-		ReturnType< $mol_view['sub'] >
+		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_view__sub_bog_music_log_view_7 = $mol_type_enforce<
-		readonly(any)[]
+	type $mol_button_minor__click_bog_music_log_view_7 = $mol_type_enforce<
+		ReturnType< $bog_music_log_view['clear'] >
 		,
-		ReturnType< $mol_view['sub'] >
+		ReturnType< $mol_button_minor['click'] >
 	>
 	type $mol_view__sub_bog_music_log_view_8 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__attr_bog_music_log_view_9 = $mol_type_enforce<
-		({ 
-			'mol_theme': ReturnType< $bog_music_log_view['row_theme'] >,
-		}) 
+	type $mol_view__sub_bog_music_log_view_9 = $mol_type_enforce<
+		readonly(any)[]
 		,
-		ReturnType< $mol_view['attr'] >
+		ReturnType< $mol_view['sub'] >
 	>
 	type $mol_view__sub_bog_music_log_view_10 = $mol_type_enforce<
 		readonly(any)[]
@@ -39421,21 +39472,76 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['sub'] >
 	>
+	type $mol_view__sub_bog_music_log_view_12 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_music_log_view_13 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_music_log_view_14 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_string__value_bog_music_log_view_15 = $mol_type_enforce<
+		ReturnType< $bog_music_log_view['filter'] >
+		,
+		ReturnType< $mol_string['value'] >
+	>
+	type $mol_string__hint_bog_music_log_view_16 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_string['hint'] >
+	>
+	type $mol_view__attr_bog_music_log_view_17 = $mol_type_enforce<
+		({ 
+			'mol_theme': ReturnType< $bog_music_log_view['row_theme'] >,
+			'bog_music_log_kind': ReturnType< $bog_music_log_view['kind_id'] >,
+		}) 
+		,
+		ReturnType< $mol_view['attr'] >
+	>
+	type $mol_view__sub_bog_music_log_view_18 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_music_log_view_19 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
 	export class $bog_music_log_view extends $mol_list {
 		log_rows( ): readonly(any)[]
 		count_label( ): string
 		Count( ): $mol_view
+		sync_logging( next?: boolean ): boolean
+		Sync( ): $mol_check_box
 		copy( next?: any ): any
 		Copy( ): $mol_button_minor
 		clear( next?: any ): any
 		Clear( ): $mol_button_minor
+		Tools( ): $mol_view
+		filter( next?: string ): string
 		row_theme( id: any): string
+		kind_id( id: any): string
 		time( id: any): string
 		Time( id: any): $mol_view
+		kind( id: any): string
+		Kind( id: any): $mol_view
+		land( id: any): string
+		Land( id: any): $mol_view
+		Meta( id: any): $mol_view
 		text( id: any): string
 		Text( id: any): $mol_view
+		empty_label( ): string
 		rows( ): ReturnType< $bog_music_log_view['log_rows'] >
 		Head( ): $mol_view
+		Filter( ): $mol_string
 		Row( id: any): $mol_view
 		Empty( ): $mol_view
 	}
@@ -39450,16 +39556,32 @@ declare namespace $.$$ {
          * подписаться на них нельзя — перечитываем раз в секунду по таймеру.
          */
         records(): $bog_music_log_record[];
-        log_rows(): $mol_view[];
+        /**
+         * Фильтр живёт в URL, поэтому журнал по конкретному ленду открывается
+         * ссылкой: `#!log_filter=24q6G0lY_q0azSzlh`. Совпадение ищем и в ленде,
+         * и в тексте — по идентификатору, по слову из действия, по тексту ошибки.
+         */
+        filter(next?: string): string;
+        filtered(): $bog_music_log_record[];
+        /** Гейт логов baza общий с самим движком — см. $bog_music_log. */
+        sync_logging(next?: boolean): boolean;
+        log_rows(): ($mol_view | $.$mol_string)[];
         count_label(): string;
+        empty_label(): "Под фильтр ничего не подошло. Очисти поле, чтобы увидеть весь журнал." | "Пока пусто. Понажимай в приложении — записи появятся здесь.";
         record(index: number): $bog_music_log_record;
         time(index: number): string;
+        kind_id(index: number): $bog_music_log_kind;
+        kind(index: number): "ошибка" | "синк" | "действие";
+        land(index: number): string;
         text(index: number): string;
         /** Ошибки подсвечиваем темой, чтобы находить их взглядом. */
         row_theme(index: number): "$mol_theme_special" | "$mol_theme_base";
         copy(): null;
         clear(): null;
     }
+}
+
+declare namespace $.$$ {
 }
 
 declare namespace $ {
@@ -61723,6 +61845,12 @@ declare namespace $ {
         /** Модель текущего пользователя (home land). */
         static home(): $bog_music_account_baza;
         static key_of(audio: $bog_music_api_audio): string;
+        /**
+         * Идентификатор ленда для журнала — по нему записи фильтруются на
+         * экране логов. Дефенсивно: журнал не имеет права ронять запись данных,
+         * поэтому любая осечка превращается в пустую строку.
+         */
+        land_id(): string;
         tracks(): $bog_music_tracks_dict;
         track(key: string): $bog_music_track_baza;
         nickname(next?: string): string;
