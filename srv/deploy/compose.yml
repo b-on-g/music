@@ -32,6 +32,13 @@ services:
       # scp node.js рядом с compose.yml + docker compose restart tube.
       # (В Dockerfile COPY node.js оставлен — на случай сборки с нуля.)
       - ./node.js:/app/node.js:ro
+      # yt-dlp монтируем по той же причине. Слой с ним в образе кешируется, и
+      # обычная пересборка тащит старую версию — а протухший yt-dlp получает от
+      # YouTube 403 на медиа-поток. Поиск при этом продолжает работать (метаданные
+      # извлекаются по-прежнему), поэтому поломка выглядит как «качалка молчит».
+      # Обновление: curl -L .../releases/latest/download/yt-dlp -o yt-dlp
+      # рядом с compose.yml, chmod +x, docker compose up -d tube.
+      - ./yt-dlp:/usr/local/bin/yt-dlp:ro
 
 volumes:
   state:
