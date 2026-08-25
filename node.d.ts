@@ -48439,72 +48439,87 @@ declare namespace $ {
 		,
 		ReturnType< $mol_string['value'] >
 	>
-	type $mol_button_major__title_bog_music_app_37 = $mol_type_enforce<
+	type $mol_string__submit_bog_music_app_37 = $mol_type_enforce<
+		ReturnType< $bog_music_app['tube_find'] >
+		,
+		ReturnType< $mol_string['submit'] >
+	>
+	type $mol_string__keyboard_bog_music_app_38 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_string['keyboard'] >
+	>
+	type $mol_string__enter_bog_music_app_39 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_string['enter'] >
+	>
+	type $mol_button_major__title_bog_music_app_40 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_major['title'] >
 	>
-	type $mol_button_major__click_bog_music_app_38 = $mol_type_enforce<
+	type $mol_button_major__click_bog_music_app_41 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_find'] >
 		,
 		ReturnType< $mol_button_major['click'] >
 	>
-	type $mol_view__sub_bog_music_app_39 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_app_42 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_list__rows_bog_music_app_40 = $mol_type_enforce<
+	type $mol_list__rows_bog_music_app_43 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_rows'] >
 		,
 		ReturnType< $mol_list['rows'] >
 	>
-	type $bog_music_tube_row__title_bog_music_app_41 = $mol_type_enforce<
+	type $bog_music_tube_row__title_bog_music_app_44 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_title'] >
 		,
 		ReturnType< $bog_music_tube_row['title'] >
 	>
-	type $bog_music_tube_row__subtitle_bog_music_app_42 = $mol_type_enforce<
+	type $bog_music_tube_row__subtitle_bog_music_app_45 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_meta'] >
 		,
 		ReturnType< $bog_music_tube_row['subtitle'] >
 	>
-	type $bog_music_tube_row__status_bog_music_app_43 = $mol_type_enforce<
+	type $bog_music_tube_row__status_bog_music_app_46 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_status_text'] >
 		,
 		ReturnType< $bog_music_tube_row['status'] >
 	>
-	type $bog_music_tube_row__cover_bog_music_app_44 = $mol_type_enforce<
+	type $bog_music_tube_row__cover_bog_music_app_47 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_cover'] >
 		,
 		ReturnType< $bog_music_tube_row['cover'] >
 	>
-	type $bog_music_tube_row__busy_bog_music_app_45 = $mol_type_enforce<
+	type $bog_music_tube_row__busy_bog_music_app_48 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_busy'] >
 		,
 		ReturnType< $bog_music_tube_row['busy'] >
 	>
-	type $bog_music_tube_row__play_bog_music_app_46 = $mol_type_enforce<
+	type $bog_music_tube_row__play_bog_music_app_49 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_play'] >
 		,
 		ReturnType< $bog_music_tube_row['play'] >
 	>
-	type $bog_music_tube_row__get_bog_music_app_47 = $mol_type_enforce<
+	type $bog_music_tube_row__get_bog_music_app_50 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_get'] >
 		,
 		ReturnType< $bog_music_tube_row['get'] >
 	>
-	type $bog_music_player__queue_keys_bog_music_app_48 = $mol_type_enforce<
+	type $bog_music_player__queue_keys_bog_music_app_51 = $mol_type_enforce<
 		ReturnType< $bog_music_app['visible_keys'] >
 		,
 		ReturnType< $bog_music_player['queue_keys'] >
 	>
-	type $bog_music_player__current_key_bog_music_app_49 = $mol_type_enforce<
+	type $bog_music_player__current_key_bog_music_app_52 = $mol_type_enforce<
 		ReturnType< $bog_music_app['current_key'] >
 		,
 		ReturnType< $bog_music_player['current_key'] >
 	>
-	type $bog_music_nav__section_bog_music_app_50 = $mol_type_enforce<
+	type $bog_music_nav__section_bog_music_app_53 = $mol_type_enforce<
 		ReturnType< $bog_music_app['section'] >
 		,
 		ReturnType< $bog_music_nav['section'] >
@@ -48559,8 +48574,8 @@ declare namespace $ {
 		demote_key( next?: any ): any
 		Tracks( ): $bog_music_tracks
 		tube_query( next?: string ): string
-		Tube_query( ): $mol_string
 		tube_find( next?: any ): any
+		Tube_query( ): $mol_string
 		Tube_find( ): $mol_button_major
 		Tube_bar( ): $mol_view
 		tube_rows( ): readonly(any)[]

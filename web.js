@@ -32982,15 +32982,18 @@ var $;
 			if(next !== undefined) return next;
 			return "";
 		}
+		tube_find(next){
+			if(next !== undefined) return next;
+			return null;
+		}
 		Tube_query(){
 			const obj = new this.$.$mol_string();
 			(obj.hint) = () => ("Что ищем на YouTube?");
 			(obj.value) = (next) => ((this.tube_query(next)));
+			(obj.submit) = (next) => ((this.tube_find(next)));
+			(obj.keyboard) = () => ("search");
+			(obj.enter) = () => ("search");
 			return obj;
-		}
-		tube_find(next){
-			if(next !== undefined) return next;
-			return null;
 		}
 		Tube_find(){
 			const obj = new this.$.$mol_button_major();
@@ -33137,8 +33140,8 @@ var $;
 	($mol_mem(($.$bog_music_app.prototype), "demote_key"));
 	($mol_mem(($.$bog_music_app.prototype), "Tracks"));
 	($mol_mem(($.$bog_music_app.prototype), "tube_query"));
-	($mol_mem(($.$bog_music_app.prototype), "Tube_query"));
 	($mol_mem(($.$bog_music_app.prototype), "tube_find"));
+	($mol_mem(($.$bog_music_app.prototype), "Tube_query"));
 	($mol_mem(($.$bog_music_app.prototype), "Tube_find"));
 	($mol_mem(($.$bog_music_app.prototype), "Tube_bar"));
 	($mol_mem(($.$bog_music_app.prototype), "Tube_list"));
@@ -34972,7 +34975,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.50';
+    $.$bog_music_version = 'v1.51';
 })($ || ($ = {}));
 
 ;
