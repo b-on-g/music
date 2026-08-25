@@ -1572,6 +1572,12 @@ namespace $.$$ {
 		}
 
 		prev() {
+			// Тот же случай, что и в next(): играет выдача — шагаем по ней.
+			if (this._ext) {
+				$bog_music_log.act('предыдущий результат выдачи')
+				this.ext_step(-1)
+				return
+			}
 			const queue = this.queue_keys()
 			const idx = this.queue_index()
 			if (idx > 0) {
@@ -1580,6 +1586,21 @@ namespace $.$$ {
 				this.play_track(queue[idx - 1])
 			} else {
 				$bog_music_log.act('предыдущий трек: уже первый, шага нет')
+			}
+		}
+
+		/**
+		 * Сосед по выдаче YouTube. Плеер про tube ничего не знает — он лишь
+		 * сообщает app, что играет внешний стрим, и просит шагнуть.
+		 * false — выдача кончилась.
+		 */
+		private ext_step(step: number): boolean {
+			try {
+				return !!($bog_music_app.Root(0) as any).tube_step(step)
+			} catch (e: any) {
+				if (e instanceof Promise) throw e
+				console.warn('[player] ext_step failed:', e?.message)
+				return false
 			}
 		}
 
@@ -1597,6 +1618,19 @@ namespace $.$$ {
 			const mode = this.repeat_mode()
 			const queue = this.queue_keys()
 			$bog_music_log.act(`следующий трек (${manual ? 'кнопка' : 'авто'}, режим ${mode})`)
+
+			// Играет стрим из выдачи YouTube. Шагаем по выдаче, а не по фонотеке:
+			// у внешнего трека current_key пустой, и общий путь ниже взял бы
+			// queue[0] — по концу трека молча стартовал личный плейлист с начала.
+			if (this._ext) {
+				if (!manual && mode === 'one') {
+					const ext = this._ext
+					this.play_external(ext.url, ext.title, ext.artist)
+					return
+				}
+				this.ext_step(1) // выдача кончилась — просто встаём, трек уже доиграл
+				return
+			}
 
 			// Авто-advance при mode='one': перезапуск того же трека через
 			// play_track — он подхватит trim_start (native loop крутит от 0).

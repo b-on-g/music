@@ -135,6 +135,7 @@ namespace $.$$ {
 		play_key(key?: string | null) {
 			if (!key) return
 			$bog_music_log.act(`воспроизведение ${key}`)
+			this.tube_current(-1) // ушли в фонотеку — выдача больше не очередь
 			const keys = this.visible_keys()
 			const idx = keys.indexOf(key)
 			this.Player().queue_index(idx >= 0 ? idx : 0)
@@ -499,12 +500,45 @@ namespace $.$$ {
 			return item ? $bog_music_tube.cover_url(item.id) : ''
 		}
 
+		/**
+		 * Индекс играющего результата выдачи. -1 — играет не из выдачи.
+		 * Нужен, чтобы плеер мог шагнуть на соседний результат, а не свалиться
+		 * в личную фонотеку.
+		 *
+		 * Обычное поле, а не @$mol_mem: значение не участвует в рендере, никто
+		 * его не читает как зависимость — и неиспользуемую ячейку $mol сметает.
+		 * На меме индекс сам откатывался к -1 через секунду после установки,
+		 * из-за чего «назад» по выдаче переставал работать.
+		 */
+		private _tube_at = -1
+
+		tube_current(next?: number): number {
+			if (next !== undefined) this._tube_at = next
+			return this._tube_at
+		}
+
+		/**
+		 * Шаг по выдаче YouTube. Зовётся плеером: он знает только то, что играет
+		 * внешний стрим, и просит соседа — про tube ему знать незачем.
+		 * false — выдача кончилась, дальше идти некуда.
+		 */
+		@$mol_action
+		tube_step(step: number): boolean {
+			const at = this.tube_current()
+			if (at < 0) return false
+			const to = at + step
+			if (to < 0 || to >= this.tube_items().length) return false
+			this.tube_play(to)
+			return true
+		}
+
 		/** Прослушать трек стримом с сервера, не скачивая в baza. */
 		@$mol_action
 		tube_play(index: number) {
 			const item = this.tube_item(index)
 			if (!item) return
 			$bog_music_log.act(`стрим с YouTube: ${item.title}`)
+			this.tube_current(index)
 			;(this.Player() as any).play_external(
 				$bog_music_tube.audio_url(item.id),
 				item.title,
