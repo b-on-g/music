@@ -19,28 +19,27 @@
 	pack mws git \https://github.com/reatailret/milkywaystd_mol.git
 	pack raggu git \https://github.com/RaguTeam/raggu.git
 \/bog
-	pack horrorgamelanding git \https://github.com/best-online-games/horrorgamelanding.com.git
-	pack theme git \https://github.com/best-online-games/theme.git
-	pack game git \https://github.com/best-online-games/game.git
-	pack pay git \https://github.com/best-online-games/pay.git
-	pack prof git \https://github.com/best-online-games/prof.git
-	pack ainews git \https://github.com/best-online-games/ainews.git
-	pack favicon git \https://github.com/best-online-games/favicon.git
-	pack bhelper git \https://github.com/best-online-games/bhelper
-	pack dobro git \https://github.com/best-online-games/bhelper
-	pack lk git \https://github.com/best-online-games/lk.git
-	pack pazzle git \https://github.com/best-online-games/pazzle.git
-	pack pay_server git \https://github.com/best-online-games/pay_server.git
-	pack card git \https://github.com/best-online-games/card.git
+	pack horrorgamelanding git \https://github.com/b-on-g/horrorgamelanding.com.git
+	pack theme git \https://github.com/b-on-g/theme.git
+	pack game git \https://github.com/b-on-g/game.git
+	pack pay git \https://github.com/b-on-g/pay.git
+	pack prof git \https://github.com/b-on-g/prof.git
+	pack ainews git \https://github.com/b-on-g/ainews.git
+	pack favicon git \https://github.com/b-on-g/favicon.git
+	pack bhelper git \https://github.com/b-on-g/bhelper.git
+	pack dobro git \https://github.com/b-on-g/dobro.git
+	pack lk git \https://github.com/b-on-g/lk.git
+	pack pazzle git \https://github.com/b-on-g/pazzle.git
+	pack pay_server git \https://github.com/b-on-g/pay_server.git
+	pack card git \https://github.com/b-on-g/card.git
 	pack calculator git \https://github.com/b-on-g/calculator.git
-	pack bzrl git \https://github.com/BezRieltora/bzrl.git
 	pack slider git \https://github.com/b-on-g/slider.git
 	pack snow git \https://github.com/b-on-g/snow.git
 	pack mol_skill git \https://github.com/b-on-g/mol_skill.git
 	pack tauri_mol_workflow_template git \https://github.com/b-on-g/tauri-mol-workflow-template.git
 	pack mol_prerender_action git \https://github.com/b-on-g/mol-prerender-action.git
 	pack quiz git \https://github.com/b-on-g/quiz.git
-	pack docs git \https://github.com/b-on-g/quiz.git
+	pack docs git \https://github.com/b-on-g/docs.git
 	pack blitz git \https://github.com/b-on-g/blitz.git
 	pack wikilive git \https://github.com/b-on-g/WikiLive.git
 	pack wiki git \https://github.com/b-on-g/wiki.git
@@ -52,6 +51,53 @@
 	pack journal git \https://github.com/b-on-g/journal.git
 	pack figmol git \https://github.com/b-on-g/figmol.git
 	pack smalljs git \https://github.com/b-on-g/smalljs.git
+	pack api git \https://github.com/b-on-g/api.git
+	pack articles git \https://github.com/b-on-g/articles.git
+	pack browser git \https://github.com/b-on-g/browser.git
+	pack demo git \https://github.com/b-on-g/demo.git
+	pack effects git \https://github.com/b-on-g/effects.git
+	pack feedback git \https://github.com/b-on-g/feedback.git
+	pack feedback2 git \https://github.com/b-on-g/feedback2.git
+	pack forge git \https://github.com/b-on-g/forge.git
+	pack langleak git \https://github.com/b-on-g/langleak.git
+	pack meta git \https://github.com/b-on-g/meta.git
+	pack popup git \https://github.com/b-on-g/popup.git
+	pack qr git \https://github.com/b-on-g/qr.git
+	pack recsys git \https://github.com/b-on-g/recsys.git
+	pack requisites git \https://github.com/b-on-g/requisites.git
+	pack sample git \https://github.com/b-on-g/sample.git
+	pack seo git \https://github.com/b-on-g/seo.git
+	pack tooltip git \https://github.com/b-on-g/tooltip.git
+	pack ui git \https://github.com/b-on-g/ui.git
+	pack version git \https://github.com/b-on-g/version.git
+	pack apps git \https://github.com/b-on-g/apps.git
+	pack gram git \https://github.com/b-on-g/gram.git
+	pack invest git \https://github.com/b-on-g/invest.git
+	pack slop git \https://github.com/b-on-g/slop.git
+	pack worm git \https://github.com/b-on-g/worm.git
+	pack harp git \https://github.com/b-on-g/harp.git
+	pack call git \https://github.com/b-on-g/call.git
+	pack klik git \https://github.com/b-on-g/klik.git
+	pack mediagram git \https://github.com/b-on-g/mediagram.git
+	pack formigo git \https://github.com/b-on-g/formigo.git
+	pack talks git \https://github.com/b-on-g/talks.git
+	pack ragufront git \https://github.com/b-on-g/ragufront.git
+	pack GPTHub git \https://github.com/b-on-g/GPTHub.git
+	pack LocalScript git \https://github.com/b-on-g/LocalScript.git
+	pack leaderboard git \https://github.com/b-on-g/leaderboard.git
+	pack brl git \https://github.com/b-on-g/brl.git
+	pack techradar git \https://github.com/b-on-g/techradar.git
+	pack peek git \https://github.com/b-on-g/peek.git
+	pack page git \https://github.com/b-on-g/page.git
+	pack quest git \https://github.com/b-on-g/quest.git
+	pack testops git \https://github.com/b-on-g/testops.git
+	pack sum git \https://github.com/b-on-g/sum.git
+	pack ssg git \https://github.com/b-on-g/ssg.git
+	pack weather git \https://github.com/b-on-g/weather.git
+	pack copilot git \https://github.com/b-on-g/copilot.git
+	pack bot git \https://github.com/b-on-g/bot.git
+	pack tree git \https://github.com/b-on-g/three.git
+	pack eve git \https://github.com/b-on-g/eve.git
 \/mol
 	pack icon git \https://github.com/nin-jin/mol_icon.git
 \/mol/view
