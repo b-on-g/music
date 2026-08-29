@@ -27386,7 +27386,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.53';
+    $.$bog_music_version = 'v1.54';
 })($ || ($ = {}));
 
 ;
@@ -33639,6 +33639,36 @@ var $;
                     return null;
                 return super.Shuffle_icon();
             }
+            // ---------- позиция в очереди ----------
+            /**
+             * Индекс текущего трека в очереди. Обычное поле, а не @$mol_mem (как
+             * tube_current в app): индекс не участвует в рендере, подписчиков у
+             * ячейки нет — $mol её сметает, и записанное значение молча
+             * откатывается к дефолту. Именно так плеер залипал: индекс всё время
+             * был 0, и автопереход бесконечно играл queue[1].
+             */
+            _queue_at = 0;
+            /**
+             * Индекс назначен снаружи (demote_key целится в конкретного соседа, а
+             * не в позицию играющего). Действует до старта следующего трека.
+             */
+            _queue_at_forced = false;
+            /**
+             * Позиция текущего трека в очереди. Источник правды — сам трек:
+             * список переупорядочивают, фильтруют и дозагружают из базы, а после
+             * восстановления сессии индекс вообще никто не ставит. Сохранённое
+             * число берём, только когда играет что-то не из этого списка.
+             */
+            queue_index(next) {
+                if (next !== undefined) {
+                    this._queue_at_forced = true;
+                    return this._queue_at = next;
+                }
+                if (this._queue_at_forced)
+                    return this._queue_at;
+                const at = this.queue_keys().indexOf(this.current_key());
+                return at >= 0 ? at : this._queue_at;
+            }
             // ---------- shuffle-bag ----------
             // Одна перетасовка всего плейлиста, играем без повторов до конца, затем
             // тасуем заново. Состояние обхода — не reactive: его никто не рендерит.
@@ -33685,6 +33715,7 @@ var $;
                 this.duration(0);
                 this._await_seek = 0; // новый трек — не ждём resume-seek
                 this.current_key(key);
+                this._queue_at_forced = false; // дальше позиция считается по треку
                 this._trim_end_skip = '';
                 // Обрез начала может быть ещё не прогрет: play_track зовётся из
                 // 'ended'/микротаска — ВНЕ фибры, а холодный baza-атом там суспендится.
@@ -34236,7 +34267,12 @@ var $;
                 }
                 if (!queue.length)
                     return;
-                const next_idx = this.queue_index() + 1 < queue.length ? this.queue_index() + 1 : 0;
+                let next_idx = this.queue_index() + 1 < queue.length ? this.queue_index() + 1 : 0;
+                // Страховка от залипания: в списке есть куда шагнуть, а шагаем на
+                // себя же (дубль в очереди, протухший индекс) — берём следующего.
+                if (queue.length > 1 && queue[next_idx] === this.current_key()) {
+                    next_idx = next_idx + 1 < queue.length ? next_idx + 1 : 0;
+                }
                 this.queue_index(next_idx);
                 this.play_track(queue[next_idx]);
             }
