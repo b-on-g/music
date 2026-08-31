@@ -21017,14 +21017,11 @@ var $;
 var $;
 (function ($) {
     /**
-     * Рабочий baza-master экосистемы bog. Bundled seed (giper/baza peer.baza)
-     * может указывать на недоступный хост — добавляем актуальный явно,
-     * чтобы виджет фидбека работал в любом приложении без своего boot-кода.
+     * Ленд-реестр: feedback_id → ссылка на ленд с отзывами этого проекта.
+     * Пресет `[null, post('just')]` — ленд нового проекта заводит первый
+     * отправитель отзыва, заход владельца не нужен.
      */
-    $.$bog_feedback2_master = 'https://baza.87.120.36.150.ip.giper.dev/';
-    if (!$giper_baza_yard.masters_default.includes($.$bog_feedback2_master)) {
-        $giper_baza_yard.masters_default.push($.$bog_feedback2_master);
-    }
+    $.$bog_feedback2_registry = 'c0FEYfG8_tUFJEKfo';
     /** Отдельный отзыв пользователя. Ключ в dict — lord string. */
     class $bog_feedback2_entry extends $giper_baza_dict.with({
         Text: $giper_baza_atom_text,
@@ -24109,9 +24106,6 @@ var $;
 			(obj.content) = () => ((this.entry_rows()));
 			return obj;
 		}
-		waiting_title(){
-			return (this.$.$mol_locale.text("$bog_feedback2_form_waiting_title"));
-		}
 		Head(){
 			return null;
 		}
@@ -24119,10 +24113,49 @@ var $;
 			return "";
 		}
 		registry_link(){
-			return "c0FEYfG8_tUFJEKfo";
+			return "";
 		}
 		title(){
 			return (this.$.$mol_locale.text("$bog_feedback2_form_title"));
+		}
+		prompt_title(){
+			return (this.$.$mol_locale.text("$bog_feedback2_form_prompt_title"));
+		}
+		prompt_like(){
+			return (this.$.$mol_locale.text("$bog_feedback2_form_prompt_like"));
+		}
+		prompt_better(){
+			return (this.$.$mol_locale.text("$bog_feedback2_form_prompt_better"));
+		}
+		prompt_future(){
+			return (this.$.$mol_locale.text("$bog_feedback2_form_prompt_future"));
+		}
+		submit_send(){
+			return (this.$.$mol_locale.text("$bog_feedback2_form_submit_send"));
+		}
+		submit_update(){
+			return (this.$.$mol_locale.text("$bog_feedback2_form_submit_update"));
+		}
+		anonymous(){
+			return (this.$.$mol_locale.text("$bog_feedback2_form_anonymous"));
+		}
+		reply_send(){
+			return (this.$.$mol_locale.text("$bog_feedback2_form_reply_send"));
+		}
+		reply_update(){
+			return (this.$.$mol_locale.text("$bog_feedback2_form_reply_update"));
+		}
+		reply_open(){
+			return (this.$.$mol_locale.text("$bog_feedback2_form_reply_open"));
+		}
+		reply_cancel(){
+			return (this.$.$mol_locale.text("$bog_feedback2_form_reply_cancel"));
+		}
+		reply_edit(){
+			return (this.$.$mol_locale.text("$bog_feedback2_form_reply_edit"));
+		}
+		not_ready(){
+			return (this.$.$mol_locale.text("$bog_feedback2_form_not_ready"));
 		}
 		tools(){
 			return [(this.Close())];
@@ -24139,11 +24172,6 @@ var $;
 		Not_configured(){
 			const obj = new this.$.$mol_status();
 			(obj.message) = () => ((this.$.$mol_locale.text("$bog_feedback2_form_Not_configured_message")));
-			return obj;
-		}
-		Waiting(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ((this.waiting_title()));
 			return obj;
 		}
 	};
@@ -24169,7 +24197,6 @@ var $;
 	($mol_mem_key(($.$bog_feedback2_form.prototype), "Entry_row"));
 	($mol_mem(($.$bog_feedback2_form.prototype), "Entries"));
 	($mol_mem(($.$bog_feedback2_form.prototype), "Not_configured"));
-	($mol_mem(($.$bog_feedback2_form.prototype), "Waiting"));
 
 
 ;
@@ -24185,6 +24212,10 @@ var $;
         const Entries_dict = $giper_baza_dict_to($bog_feedback2_entry);
         const Registry_dict = $giper_baza_dict_to($giper_baza_atom_text);
         class $bog_feedback2_form extends $.$bog_feedback2_form {
+            /** Реестр по умолчанию — общий; приложение может подменить биндингом. */
+            registry_link() {
+                return super.registry_link() || $bog_feedback2_registry;
+            }
             registry_land() {
                 return this.$.$giper_baza_glob.Land(new $giper_baza_link(this.registry_link()));
             }
@@ -24204,23 +24235,34 @@ var $;
                     return from_arg;
                 return this.registry_dict().key(this.feedback_id())?.val() ?? null;
             }
+            /**
+             * Ленд проекта. null — ленда ещё нет.
+             *
+             * Заводить его ЗДЕСЬ нельзя: land() зовётся из рендера, land_grab внутри
+             * считает PoW и бросает Promise, рендер ретраится — и так по кругу, на
+             * экране вечный спиннер. Плюс на холодном кеше «указателя нет» и «реестр
+             * ещё не доехал» неотличимы, так что каждый второй посетитель форкал бы
+             * ленд и перетирал указатель. Заводим только из submit(), по явному клику.
+             */
             land() {
                 const link = this.feedback_land_link();
-                if (link)
-                    return this.$.$giper_baza_glob.Land(new $giper_baza_link(link));
-                // Реестр с пресетом [null, post]: ленд для нового feedback_id создаёт
-                // ПЕРВЫЙ посетитель, заход владельца не нужен. На старом read-only
-                // реестре запись доступна только владельцу — поведение как раньше.
-                if (!this.can_registry_post())
+                if (!link)
                     return null;
-                return this.land_ensure();
+                return this.$.$giper_baza_glob.Land(new $giper_baza_link(link));
             }
             /** Хватает ли прав записать ссылку нового ленда в реестр. */
             can_registry_post() {
                 const rank = this.registry_land().pass_rank(this.my_pass());
                 return $giper_baza_rank_tier_of(rank) >= $giper_baza_rank_tier.post;
             }
+            /**
+             * Реестр с пресетом [null, post]: ленд для нового feedback_id заводит
+             * первый отправитель отзыва, заход владельца не нужен. На старом
+             * read-only реестре прав не хватит — тогда отзыв просто не уедет.
+             */
             land_ensure() {
+                if (!this.can_registry_post())
+                    return null;
                 const land = this.$.$giper_baza_glob.land_grab([[null, $giper_baza_rank_post('just')]]);
                 const link = land.link().str;
                 const entry = this.registry_dict().key(this.feedback_id(), 'auto');
@@ -24242,14 +24284,26 @@ var $;
                 return this.entries_dict()?.key(this.my_lord()) ?? null;
             }
             entry_mine_or_create() {
-                return this.entries_dict()?.key(this.my_lord(), 'auto') ?? null;
+                const land = this.land() ?? this.land_ensure();
+                if (!land)
+                    return null;
+                const dict = land.Data(Entries_dict);
+                // Ленд ещё не доехал с мастера: гифтов нет, pass_rank молча отдаёт
+                // дефолтный read, и запись ушла бы в никуда — «отправил, а ничего не
+                // появилось». Заводить взамен свой ленд нельзя: указатель в реестре
+                // перевесится, и ветка отзывов расщепится у всех остальных. Честнее
+                // ошибка на кнопке — через секунду ленд доедет и повтор пройдёт.
+                if (!dict.can_change()) {
+                    return $mol_fail(new Error(this.not_ready()));
+                }
+                return dict.key(this.my_lord(), 'auto') ?? null;
             }
             prompt() {
                 return [
-                    '**Tell us what you think:**',
-                    '- What did you **like**?',
-                    '- What could be done **better**?',
-                    '- Any **suggestions** for the future?',
+                    this.prompt_title(),
+                    this.prompt_like(),
+                    this.prompt_better(),
+                    this.prompt_future(),
                 ].join('\n');
             }
             draft_text(next) {
@@ -24268,8 +24322,10 @@ var $;
                 return !!this.entry_mine();
             }
             submit_title() {
-                return this.has_entry() ? 'Update feedback' : 'Send feedback';
+                return this.has_entry() ? this.submit_update() : this.submit_send();
             }
+            // Подвисающие чтения — первыми: land_ensure ниже считает PoW и ретраит
+            // фибру, а перечитанные drafts к тому моменту уже закешированы.
             submit() {
                 const text = this.draft_text();
                 const contact = this.draft_contact();
@@ -24285,14 +24341,13 @@ var $;
             body() {
                 if (!this.is_configured())
                     return [this.Not_configured()];
-                if (!this.land())
-                    return [this.Waiting()];
                 return [
                     this.Prompt(),
                     this.Entry_my(),
                     this.Contact_field(),
                     this.Submit(),
-                    this.Entries(),
+                    // Ленда ещё нет — показывать нечего, но форму это не блокирует.
+                    ...(this.land() ? [this.Entries()] : []),
                 ];
             }
             all_lords() {
@@ -24325,7 +24380,7 @@ var $;
                 return this.entry_by_index(index)?.Text()?.val() ?? '';
             }
             entry_row_contact(index) {
-                return this.entry_by_index(index)?.Contact()?.val() ?? 'Anonymous';
+                return this.entry_by_index(index)?.Contact()?.val() || this.anonymous();
             }
             entry_row_has_reply(index) {
                 return !!this.entry_by_index(index)?.Reply()?.val();
@@ -24342,12 +24397,12 @@ var $;
                 return this.entry_by_index(index)?.Reply()?.val() ?? '';
             }
             entry_row_reply_submit_title(index) {
-                return this.entry_row_has_reply(index) ? 'Update reply' : 'Send reply';
+                return this.entry_row_has_reply(index) ? this.reply_update() : this.reply_send();
             }
             entry_row_reply_toggle_title(index) {
                 if (this.entry_row_has_reply(index))
-                    return 'Edit reply';
-                return this.entry_row_reply_form_open(index) ? 'Cancel' : 'Reply';
+                    return this.reply_edit();
+                return this.entry_row_reply_form_open(index) ? this.reply_cancel() : this.reply_open();
             }
             entry_row_reply_toggle(index) {
                 const open = this.entry_row_reply_form_open(index);
@@ -24416,30 +24471,12 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    $mol_style_attach("bog/feedback2/form/form.view.css", "@keyframes bog_feedback2_form_pulse {\n\t0%, 100% { opacity: 0.3; }\n\t50% { opacity: 0.8; }\n}\n");
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
     $mol_style_define($bog_feedback2_form, {
         color: $mol_theme.text,
         flex: {
             basis: '40rem',
         },
         margin: [0, 'auto'],
-        Waiting: {
-            padding: $mol_gap.block,
-            textAlign: 'center',
-            opacity: 0.5,
-            animation: {
-                name: 'bog_feedback2_form_pulse',
-                duration: '1.5s',
-                iterationCount: 'infinite',
-                timingFunction: 'ease-in-out',
-            },
-        },
         Prompt: {
             padding: $mol_gap.block,
         },
@@ -25712,10 +25749,6 @@ var $;
                 if (e)
                     e.preventDefault();
                 this.section('logs');
-                return null;
-            }
-            /** Отзывы пока скрыты: форма не работает. Вернуть — удалить override. */
-            Tab_feedback() {
                 return null;
             }
             feedback_click(e) {
@@ -27386,7 +27419,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.54';
+    $.$bog_music_version = 'v1.55';
 })($ || ($ = {}));
 
 ;

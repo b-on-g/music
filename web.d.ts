@@ -36320,11 +36320,11 @@ declare namespace $.$$ {
 
 declare namespace $ {
     /**
-     * Рабочий baza-master экосистемы bog. Bundled seed (giper/baza peer.baza)
-     * может указывать на недоступный хост — добавляем актуальный явно,
-     * чтобы виджет фидбека работал в любом приложении без своего boot-кода.
+     * Ленд-реестр: feedback_id → ссылка на ленд с отзывами этого проекта.
+     * Пресет `[null, post('just')]` — ленд нового проекта заводит первый
+     * отправитель отзыва, заход владельца не нужен.
      */
-    export const $bog_feedback2_master = "https://baza.87.120.36.150.ip.giper.dev/";
+    export const $bog_feedback2_registry = "c0FEYfG8_tUFJEKfo";
     const $bog_feedback2_entry_base: Omit<typeof $giper_baza_dict, "prototype"> & {
         new (...args: any[]): $mol_type_override<$giper_baza_dict, {
             readonly Text: (auto?: any) => $giper_baza_atom_text | null;
@@ -38205,11 +38205,6 @@ declare namespace $ {
 		,
 		ReturnType< $mol_status['message'] >
 	>
-	type $mol_paragraph__title_bog_feedback2_form_25 = $mol_type_enforce<
-		ReturnType< $bog_feedback2_form['waiting_title'] >
-		,
-		ReturnType< $mol_paragraph['title'] >
-	>
 	export class $bog_feedback2_form extends $mol_page {
 		Close( ): any
 		prompt( ): string
@@ -38243,15 +38238,26 @@ declare namespace $ {
 		Entry_row( id: any): $mol_section
 		entry_rows( ): readonly(any)[]
 		Entries( ): $mol_section
-		waiting_title( ): string
 		Head( ): any
 		feedback_id( ): string
 		registry_link( ): string
 		title( ): string
+		prompt_title( ): string
+		prompt_like( ): string
+		prompt_better( ): string
+		prompt_future( ): string
+		submit_send( ): string
+		submit_update( ): string
+		anonymous( ): string
+		reply_send( ): string
+		reply_update( ): string
+		reply_open( ): string
+		reply_cancel( ): string
+		reply_edit( ): string
+		not_ready( ): string
 		tools( ): readonly(any)[]
 		body( ): readonly(any)[]
 		Not_configured( ): $mol_status
-		Waiting( ): $mol_paragraph
 	}
 	
 }
@@ -38259,6 +38265,8 @@ declare namespace $ {
 //# sourceMappingURL=form.view.tree.d.ts.map
 declare namespace $.$$ {
     class $bog_feedback2_form extends $.$bog_feedback2_form {
+        /** Реестр по умолчанию — общий; приложение может подменить биндингом. */
+        registry_link(): string;
         registry_land(): $giper_baza_land;
         registry_dict(): {
             Value: typeof $giper_baza_atom_text;
@@ -38302,10 +38310,24 @@ declare namespace $.$$ {
         my_lord(): string;
         /** Ссылка на feedback land: из URL (приоритет) или из реестра */
         feedback_land_link(): string | null;
+        /**
+         * Ленд проекта. null — ленда ещё нет.
+         *
+         * Заводить его ЗДЕСЬ нельзя: land() зовётся из рендера, land_grab внутри
+         * считает PoW и бросает Promise, рендер ретраится — и так по кругу, на
+         * экране вечный спиннер. Плюс на холодном кеше «указателя нет» и «реестр
+         * ещё не доехал» неотличимы, так что каждый второй посетитель форкал бы
+         * ленд и перетирал указатель. Заводим только из submit(), по явному клику.
+         */
         land(): $giper_baza_land | null;
         /** Хватает ли прав записать ссылку нового ленда в реестр. */
         can_registry_post(): boolean;
-        land_ensure(): $giper_baza_land;
+        /**
+         * Реестр с пресетом [null, post]: ленд для нового feedback_id заводит
+         * первый отправитель отзыва, заход владельца не нужен. На старом
+         * read-only реестре прав не хватит — тогда отзыв просто не уедет.
+         */
+        land_ensure(): $giper_baza_land | null;
         entries_dict(): {
             Value: typeof $bog_feedback2_entry;
             key(key: $giper_baza_vary_type, auto?: any): $bog_feedback2_entry;
@@ -38352,9 +38374,9 @@ declare namespace $.$$ {
         draft_text(next?: string): string;
         draft_contact(next?: string): string;
         has_entry(): boolean;
-        submit_title(): "Update feedback" | "Send feedback";
+        submit_title(): string;
         submit(): void;
-        body(): $.$mol_status[] | $.$mol_paragraph[] | ($.$mol_string | $.$mol_text | $.$mol_textarea | $.$mol_section | $mol_button_major)[];
+        body(): $.$mol_status[] | ($.$mol_string | $.$mol_text | $.$mol_textarea | $.$mol_section | $mol_button_major)[];
         all_lords(): string[];
         entry_rows(): $.$mol_section[];
         private entry_by_index;
@@ -38365,15 +38387,12 @@ declare namespace $.$$ {
         entry_row_reply_text(index: number): string;
         entry_row_reply_form_open(index: number, next?: boolean): boolean;
         entry_row_reply_draft(index: number, next?: string): string;
-        entry_row_reply_submit_title(index: number): "Update reply" | "Send reply";
-        entry_row_reply_toggle_title(index: number): "Edit reply" | "Cancel" | "Reply";
+        entry_row_reply_submit_title(index: number): string;
+        entry_row_reply_toggle_title(index: number): string;
         entry_row_reply_toggle(index: number): void;
         entry_row_reply_submit(index: number): void;
         entry_row_reply_sub(index: number): readonly any[];
     }
-}
-
-declare namespace $ {
 }
 
 declare namespace $ {
@@ -38972,8 +38991,6 @@ declare namespace $.$$ {
         static owner_lords: string[];
         Tab_logs(): any;
         logs_click(e?: Event): null;
-        /** Отзывы пока скрыты: форма не работает. Вернуть — удалить override. */
-        Tab_feedback(): any;
         feedback_click(e?: Event): null;
     }
 }
