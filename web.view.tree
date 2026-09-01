@@ -2543,7 +2543,7 @@ $bog_music_app $mol_page
 		<= Mem $bog_music_mem_view
 		<= Logs $bog_music_log_view
 		<= Feedback $bog_feedback2_form
-			feedback_id \bog_vk
+			feedback_id \bog_music
 		<= Share_toast $mol_view
 			sub / <= share_toast_text \
 		<= Tabs $mol_switch

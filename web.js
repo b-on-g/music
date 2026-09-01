@@ -32940,7 +32940,7 @@ var $;
 		}
 		Feedback(){
 			const obj = new this.$.$bog_feedback2_form();
-			(obj.feedback_id) = () => ("bog_vk");
+			(obj.feedback_id) = () => ("bog_music");
 			return obj;
 		}
 		share_toast_text(){
@@ -35008,7 +35008,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.55';
+    $.$bog_music_version = 'v1.56';
 })($ || ($ = {}));
 
 ;
