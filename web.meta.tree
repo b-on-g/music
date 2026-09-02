@@ -101,6 +101,7 @@
 	pack merch git \https://github.com/b-on-g/merch.git
 	pack tox git \https://github.com/b-on-g/tox.git
 	pack sert git \https://github.com/b-on-g/sert.git
+	pack bg git \https://github.com/b-on-g/bg.git
 \/mol
 	pack icon git \https://github.com/nin-jin/mol_icon.git
 \/mol/view
@@ -209,5 +210,6 @@
 	include \/mol/offline/install
 \/bog/music/app
 	include \/mol/offline/install
+	include \/bog/rec/take/auto
 	deploy \/bog/music/app/favicon.svg
 	deploy \/bog/music/ext
