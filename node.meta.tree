@@ -63,6 +63,7 @@
 	pack meta git \https://github.com/b-on-g/meta.git
 	pack popup git \https://github.com/b-on-g/popup.git
 	pack qr git \https://github.com/b-on-g/qr.git
+	pack rec git \https://github.com/b-on-g/rec.git
 	pack recsys git \https://github.com/b-on-g/recsys.git
 	pack requisites git \https://github.com/b-on-g/requisites.git
 	pack sample git \https://github.com/b-on-g/sample.git

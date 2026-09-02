@@ -48275,6 +48275,331 @@ declare namespace $ {
 }
 
 declare namespace $ {
+    /** Выжимка из DOM-события, достаточная, чтобы собрать его заново. */
+    type $bog_rec_data = {
+        key?: string;
+        code?: string;
+        alt?: boolean;
+        ctrl?: boolean;
+        shift?: boolean;
+        meta?: boolean;
+        button?: number;
+        x?: number;
+        y?: number;
+        value?: string;
+        checked?: boolean;
+    };
+    /** Одно воздействие пользователя на приложение. */
+    type $bog_rec_event = {
+        /** Смещение от старта сессии, мс. */
+        time: number;
+        /** Путь вида, вроде `Root<0>.Menu<>.Row<"2">` с именем корневого класса впереди. */
+        view: string;
+        /** Имя DOM-события. */
+        kind: string;
+        data: $bog_rec_data;
+    };
+    /** Ответ бэка, сохранённый, чтобы при проигрывании не ходить в сеть. */
+    type $bog_rec_call = {
+        key: string;
+        status: number;
+        headers: [string, string][];
+        body: string;
+    };
+    /** Слепок сессии: всё, из чего приложение собирается заново. */
+    type $bog_rec_session = {
+        version: 1;
+        id: string;
+        /** Адрес бандла, которым сессия записана. Проигрывать можно только им. */
+        bundle: string;
+        /** Имя корневого класса вида. */
+        root: string;
+        /** Момент старта, epoch ms. */
+        started: number;
+        /** Хвост адреса на момент старта, вида `#!page=home`. */
+        arg: string;
+        /** Язык документа, чтобы фрейм выглядел как оригинал. */
+        lang: string;
+        /** Значение `mol_theme` у корня документа. */
+        theme: string;
+        viewport: [number, number];
+        local: [string, string][];
+        store: [string, string][];
+        /** Лента значений `Math.random` в порядке вызова. */
+        rand: number[];
+        /** Лента значений `crypto.randomUUID` в порядке вызова. */
+        uuid: string[];
+        calls: $bog_rec_call[];
+        events: $bog_rec_event[];
+    };
+    /** Формат записи сессии и утилиты вокруг него. */
+    class $bog_rec extends $mol_object {
+        /** Ключ, по которому запрос сопоставляется с записанным ответом. */
+        static key(request: Request): Promise<string>;
+        static text(session: $bog_rec_session): string;
+        static parse(text: string): $bog_rec_session;
+        /** Длительность сессии, мс. */
+        static duration(session: $bog_rec_session): number;
+        /** Пустая сессия, от которой отталкиваются рекордер и фаззер. */
+        static blank(root: string, bundle: string): $bog_rec_session;
+    }
+}
+
+declare namespace $ {
+    type $bog_rec_clock_task = {
+        id: number;
+        at: number;
+        task: () => void;
+    };
+    /**
+     * Виртуальные часы: время стоит, пока его не двигают.
+     * Плеер подменяет ими таймеры и кадры внутри фрейма, поэтому проигрывание
+     * не зависит ни от скорости машины, ни от того, свёрнута ли вкладка.
+     */
+    class $bog_rec_clock extends $mol_object2 {
+        /** Смещение от старта сессии, мс. */
+        now: number;
+        serial: number;
+        queue: $bog_rec_clock_task[];
+        /** Занять идентификатор заранее, чтобы переставляемый таймер сохранял его. */
+        reserve(): number;
+        plan(delay: number, task: () => void, id?: number): number;
+        drop(id?: number): void;
+        /** Ближайший запланированный момент. */
+        nearest(): number;
+        /**
+         * Прокрутить время до момента, выполнив всё, что успело созреть.
+         * Задачи, поставленные во время прокрутки, тоже выполняются, если попали в окно.
+         */
+        warp(till: number, limit?: number): void;
+    }
+}
+
+declare namespace $ {
+    /**
+     * Детерминированный ГПСЧ (xorshift32).
+     * Нужен фаззеру и подстраховывает плеер, когда лента записанных значений кончилась.
+     */
+    class $bog_rec_rand extends $mol_object2 {
+        state: number;
+        constructor(seed?: number);
+        /** Следующее число в полуинтервале [0, 1). */
+        next(): number;
+        /** Целое в полуинтервале [0, limit). */
+        below(limit: number): number;
+        /** Случайный элемент непустого списка. */
+        pick<Item>(items: readonly Item[]): Item;
+    }
+}
+
+declare namespace $ {
+    type $bog_rec_hook_events = Record<string, (event: Event) => unknown>;
+    type $bog_rec_hook_method = ((this: $mol_view) => $bog_rec_hook_events) & {
+        /** Исходное тело метода, которое `$mol_wire_solo` кладёт рядом с мемоизированным. */
+        orig?: (this: $mol_view) => $bog_rec_hook_events;
+    };
+    type $bog_rec_hook_sink = {
+        /** Вид получил слушателей, то есть впервые попал в DOM. */
+        mount?: (view: $mol_view) => void;
+        /** По виду щёлкнули, напечатали и так далее. */
+        event?: (view: $mol_view, kind: string, event: Event) => void;
+    };
+    /**
+     * Единственная точка, через которую проходят все пользовательские события $mol-приложения.
+     *
+     * Подменяет `event_async` у `$mol_view`, сохраняя мемоизацию: `destructor` снимает
+     * слушатели по ссылкам из той же ячейки, поэтому возвращать каждый раз новый объект нельзя.
+     *
+     * Контекст передаётся снаружи, так что прицепиться можно и к своей странице,
+     * и к `$` из iframe с чужим бандлом.
+     */
+    class $bog_rec_hook extends $mol_object {
+        static patched: WeakSet<object>;
+        static sinks: WeakMap<object, $bog_rec_hook_sink[]>;
+        /** Возвращает функцию отцепления. */
+        static attach(context: $, sink: $bog_rec_hook_sink): () => void;
+        static detach(proto: object, sink: $bog_rec_hook_sink): void;
+        static notify(proto: object, pick: (sink: $bog_rec_hook_sink) => void): void;
+        static patch(context: $, proto: $mol_view): void;
+    }
+}
+
+declare namespace $ {
+    type $bog_rec_play_window = typeof globalThis & {
+        $: $;
+    };
+    type $bog_rec_play_config = {
+        session: $bog_rec_session;
+    };
+    /**
+     * Детерминированное проигрывание записанной сессии.
+     *
+     * Приложение поднимается тем же бандлом в изолированном фрейме, но с подменёнными
+     * часами, таймерами, случайностью, сетью и хранилищами. На выходе не видео,
+     * а живое приложение: его можно остановить, полистать состояние и продолжить.
+     *
+     * Перемотка назад делается пересборкой фрейма и быстрым проигрыванием вперёд —
+     * ровно потому, что проигрывание детерминировано, снимки состояния не нужны.
+     */
+    class $bog_rec_play extends $mol_object {
+        readonly session: $bog_rec_session;
+        id: string;
+        clock: $bog_rec_clock;
+        rand: $bog_rec_rand;
+        views: Map<string, $mol_view>;
+        calls: Map<string, $bog_rec_call[]>;
+        /** Чего не нашлось при проигрывании: пропавшие виды и незаписанные запросы. */
+        misses: string[];
+        cursor: number;
+        rand_cursor: number;
+        uuid_cursor: number;
+        win: null | $bog_rec_play_window;
+        root: null | $mol_view;
+        hook_name(): string;
+        /** Крючок в своём окне: фрейм зовёт его синхронно, до `DOMContentLoaded`. */
+        hook(): {
+            destructor: () => void;
+        };
+        escape(text: string): string;
+        /**
+         * Документ фрейма. Встроенный скрипт стоит сразу за бандлом, поэтому успевает
+         * подменить окружение до того, как `$mol_view.auto()` смонтирует приложение.
+         */
+        html(generation?: number): string;
+        boot(win: $bog_rec_play_window): void;
+        install_time(win: $bog_rec_play_window): void;
+        install_rand(win: $bog_rec_play_window): void;
+        install_net(win: $bog_rec_play_window): void;
+        install_state(win: $bog_rec_play_window): void;
+        storage(dump: [string, string][]): {
+            getItem: (key: string) => string | null;
+            setItem: (key: string, value: string) => void;
+            removeItem: (key: string) => void;
+        };
+        install_hook(win: $bog_rec_play_window): void;
+        /** Ждёт, пока фрейм поднимется, подменит окружение и смонтирует приложение. */
+        ready(timeout?: number): Promise<this>;
+        /** Сколько событий уже проиграно. */
+        progress(): number;
+        done(): boolean;
+        /** Проиграть следующее событие. `false` — лог кончился. */
+        step(): boolean;
+        fire(entry: $bog_rec_event): void;
+        event(entry: $bog_rec_event): Event;
+        /** Дать приложению доработать: микрозадачи, кадр, отложенные таймеры. */
+        settle(span?: number): Promise<void>;
+        /**
+         * Прокрутка микрозадач: планировщик фибр $mol сидит именно на них.
+         * Макрозадачи для этого не годятся, браузер режет их до одной в секунду
+         * в неактивной вкладке, и проигрывание уползает в минуты.
+         */
+        drain(depth?: number): Promise<void>;
+        /** Настоящая пауза. Нужна только там, где ждём загрузку фрейма. */
+        pause(delay?: number): Promise<void>;
+        /** Проиграть всё до указанного события включительно. */
+        seek(index: number): Promise<void>;
+        /** Ошибки, которые приложение показало на экране. */
+        errors(): string[];
+        /** Сбросить проигрывание. Фрейм пересоздаёт хозяин. */
+        reset(): void;
+    }
+}
+
+declare namespace $ {
+    type $bog_rec_take_config = {
+        /** Имя корневого класса вида. По умолчанию берётся из `[mol_view_root]`. */
+        root?: string;
+        /** Адрес бандла. По умолчанию берётся из тега `<script>`. */
+        bundle?: string;
+        /** Вернуть `true` для путей, значения которых писать нельзя. */
+        mask?: (view: string) => boolean;
+        /** Писать ли тела ответов бэка. По умолчанию да. */
+        calls?: boolean;
+        /** Какие ключи хранилищ попадают в запись. По умолчанию чужие приложения отсеиваются. */
+        keys?: (key: string) => boolean;
+        /** Держать запись в `localStorage`, чтобы она пережила перезагрузку и падение. */
+        keep?: boolean;
+        /** Куда слать запись при уходе со страницы. */
+        sink?: string;
+    };
+    /**
+     * Рекордер: пишет не картинку, а вход приложения.
+     *
+     * События, ответы бэка, стартовые хранилища, адрес, размер окна и ленты
+     * недетерминированных значений. Этого хватает, чтобы `$bog_rec_play`
+     * собрал тот же сеанс заново.
+     */
+    class $bog_rec_take extends $mol_object {
+        static session: null | $bog_rec_session;
+        static config: $bog_rec_take_config;
+        static detach: null | (() => void);
+        /** Родной `fetch`, чтобы отправка записи не попадала в саму запись. */
+        static fetch_orig: null | typeof globalThis.fetch;
+        /** Последняя остановленная сессия: её ещё можно забрать после `stop()`. */
+        static last: null | $bog_rec_session;
+        static store_key: string;
+        static config_key: string;
+        static win(): typeof globalThis;
+        /** Адрес бандла, которым сейчас исполняется приложение. */
+        static bundle(): string;
+        /** Имя корневого класса вида, объявленное в разметке. */
+        static root(): string;
+        static started(): boolean;
+        static start(config?: $bog_rec_take_config): $bog_rec_session;
+        /** Останавливает запись и отдаёт сессию. */
+        static stop(): $bog_rec_session | null;
+        /** Текущая или последняя записанная сессия. */
+        static current(): $bog_rec_session | null;
+        /** JSON записи. Обычно вызывается из консоли. */
+        static text(session?: $bog_rec_session | null): string;
+        /**
+         * Скачивает запись файлом. Вызывается ИЗ КОНСОЛИ, кнопки в приложении нет и не будет:
+         * рекордер не имеет права подмешивать свой интерфейс в чужое приложение.
+         */
+        static save(session?: $bog_rec_session | null): number;
+        /**
+         * Взводит автосброс так, чтобы он пережил перезагрузку: настройки ложатся
+         * в `localStorage`, откуда их читает автозапуск при следующей загрузке.
+         * Функции сюда не кладут, только простые значения.
+         */
+        static arm(config?: Pick<$bog_rec_take_config, 'keep' | 'sink' | 'calls'>): Pick<$bog_rec_take_config, "keep" | "sink" | "calls">;
+        /** Снимает взвод. */
+        static disarm(): void;
+        /** Настройки, оставленные для следующей загрузки. */
+        static armed(): $bog_rec_take_config;
+        /** Кладёт запись в `localStorage`, чтобы она пережила перезагрузку. */
+        static store(session?: $bog_rec_session | null): void;
+        /** Достаёт отложенную запись. */
+        static stored(): $bog_rec_session | null;
+        static forget(): void;
+        /** Отправляет запись на приёмник. Идёт мимо собственной обёртки, чтобы не писать саму себя. */
+        static send(url: string, session?: $bog_rec_session | null): void;
+        /** Сбрасывает запись туда, куда просили в настройках. */
+        static flush(): void;
+        /** Уход со страницы — последний момент, когда запись ещё можно спасти. */
+        static watch(win: typeof globalThis): void;
+        static dump(native: Storage | null, root: string): [string, string][];
+        /**
+         * На общем origin (тот же дев-сервер) в хранилище лежит состояние всех приложений
+         * воркспейса. Ключи чужих корней, разобранные по путям видов, в запись не попадают.
+         */
+        static suits(key: string, root: string): boolean;
+        static put(view: $mol_view, kind: string, event: Event): void;
+        static data(path: string, event: Event): $bog_rec_data;
+        /**
+         * Значения полей пишутся как есть, иначе реплей уедет.
+         * Пароли не пишутся никогда, остальное закрывается через `mask` в настройках.
+         */
+        static value(path: string, target: HTMLInputElement | HTMLTextAreaElement): string;
+        static wrap_rand(win: typeof globalThis): void;
+        static wrap_net(win: typeof globalThis): void;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
     let $bog_music_version: string;
 }
 

@@ -460,7 +460,14 @@
     "$bog_recsys",
     "$bog_music_zip",
     "$bog_music_tg",
-    "$bog_music_pending"
+    "$bog_music_pending",
+    "$bog_rec_take_auto",
+    "$bog_rec_take",
+    "$bog_rec",
+    "$bog_rec_play",
+    "$bog_rec_clock",
+    "$bog_rec_rand",
+    "$bog_rec_hook"
   ],
   "dependencies": {
     "autoinstall": "*",

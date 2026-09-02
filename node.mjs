@@ -27433,8 +27433,884 @@ var $;
 "use strict";
 var $;
 (function ($) {
+    /** Формат записи сессии и утилиты вокруг него. */
+    class $bog_rec extends $mol_object {
+        /** Ключ, по которому запрос сопоставляется с записанным ответом. */
+        static async key(request) {
+            const method = request.method.toUpperCase();
+            const body = (method === 'GET' || method === 'HEAD') ? '' : await request.text();
+            return `${method} ${request.url} ${body}`;
+        }
+        static text(session) {
+            return JSON.stringify(session, null, '\t');
+        }
+        static parse(text) {
+            const session = JSON.parse(text);
+            if (session?.version !== 1) {
+                return $mol_fail(new Error(`Не похоже на запись сессии`));
+            }
+            return session;
+        }
+        /** Длительность сессии, мс. */
+        static duration(session) {
+            const events = session.events;
+            return events.length ? events[events.length - 1].time : 0;
+        }
+        /** Пустая сессия, от которой отталкиваются рекордер и фаззер. */
+        static blank(root, bundle) {
+            return {
+                version: 1,
+                id: $mol_guid(),
+                bundle,
+                root,
+                started: Date.now(),
+                arg: '',
+                lang: '',
+                theme: '',
+                viewport: [0, 0],
+                local: [],
+                store: [],
+                rand: [],
+                uuid: [],
+                calls: [],
+                events: [],
+            };
+        }
+    }
+    $.$bog_rec = $bog_rec;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /**
+     * Виртуальные часы: время стоит, пока его не двигают.
+     * Плеер подменяет ими таймеры и кадры внутри фрейма, поэтому проигрывание
+     * не зависит ни от скорости машины, ни от того, свёрнута ли вкладка.
+     */
+    class $bog_rec_clock extends $mol_object2 {
+        /** Смещение от старта сессии, мс. */
+        now = 0;
+        serial = 0;
+        queue = [];
+        /** Занять идентификатор заранее, чтобы переставляемый таймер сохранял его. */
+        reserve() {
+            return ++this.serial;
+        }
+        plan(delay, task, id = this.reserve()) {
+            this.queue.push({ id, at: this.now + Math.max(0, delay), task });
+            return id;
+        }
+        drop(id) {
+            if (id === undefined)
+                return;
+            const index = this.queue.findIndex(task => task.id === id);
+            if (index >= 0)
+                this.queue.splice(index, 1);
+        }
+        /** Ближайший запланированный момент. */
+        nearest() {
+            let found = Number.POSITIVE_INFINITY;
+            for (const task of this.queue)
+                if (task.at < found)
+                    found = task.at;
+            return found;
+        }
+        /**
+         * Прокрутить время до момента, выполнив всё, что успело созреть.
+         * Задачи, поставленные во время прокрутки, тоже выполняются, если попали в окно.
+         */
+        warp(till, limit = 10000) {
+            for (let guard = 0; guard < limit; ++guard) {
+                let next = null;
+                for (const task of this.queue) {
+                    if (task.at > till)
+                        continue;
+                    if (!next) {
+                        next = task;
+                        continue;
+                    }
+                    if (task.at < next.at)
+                        next = task;
+                    else if (task.at === next.at && task.id < next.id)
+                        next = task;
+                }
+                if (!next)
+                    break;
+                this.drop(next.id);
+                this.now = Math.max(this.now, next.at);
+                try {
+                    next.task();
+                }
+                catch (error) {
+                    $mol_fail_log(error);
+                }
+            }
+            this.now = Math.max(this.now, till);
+        }
+    }
+    $.$bog_rec_clock = $bog_rec_clock;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /**
+     * Детерминированный ГПСЧ (xorshift32).
+     * Нужен фаззеру и подстраховывает плеер, когда лента записанных значений кончилась.
+     */
+    class $bog_rec_rand extends $mol_object2 {
+        state;
+        constructor(seed = 1) {
+            super();
+            this.state = (seed | 0) || 1;
+        }
+        /** Следующее число в полуинтервале [0, 1). */
+        next() {
+            let x = this.state | 0;
+            x ^= x << 13;
+            x |= 0;
+            x ^= x >>> 17;
+            x ^= x << 5;
+            x |= 0;
+            this.state = x || 1;
+            return (x >>> 0) / 0x1_0000_0000;
+        }
+        /** Целое в полуинтервале [0, limit). */
+        below(limit) {
+            return Math.floor(this.next() * limit);
+        }
+        /** Случайный элемент непустого списка. */
+        pick(items) {
+            return items[this.below(items.length)];
+        }
+    }
+    $.$bog_rec_rand = $bog_rec_rand;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /**
+     * Единственная точка, через которую проходят все пользовательские события $mol-приложения.
+     *
+     * Подменяет `event_async` у `$mol_view`, сохраняя мемоизацию: `destructor` снимает
+     * слушатели по ссылкам из той же ячейки, поэтому возвращать каждый раз новый объект нельзя.
+     *
+     * Контекст передаётся снаружи, так что прицепиться можно и к своей странице,
+     * и к `$` из iframe с чужим бандлом.
+     */
+    class $bog_rec_hook extends $mol_object {
+        static patched = new WeakSet();
+        static sinks = new WeakMap();
+        /** Возвращает функцию отцепления. */
+        static attach(context, sink) {
+            const proto = context.$mol_view.prototype;
+            let sinks = this.sinks.get(proto);
+            if (!sinks)
+                this.sinks.set(proto, sinks = []);
+            sinks.push(sink);
+            if (!this.patched.has(proto)) {
+                this.patched.add(proto);
+                this.patch(context, proto);
+            }
+            return () => this.detach(proto, sink);
+        }
+        static detach(proto, sink) {
+            const sinks = this.sinks.get(proto);
+            if (!sinks)
+                return;
+            const index = sinks.indexOf(sink);
+            if (index >= 0)
+                sinks.splice(index, 1);
+        }
+        static notify(proto, pick) {
+            for (const sink of this.sinks.get(proto) ?? []) {
+                try {
+                    pick(sink);
+                }
+                catch (error) {
+                    $mol_fail_log(error);
+                }
+            }
+        }
+        static patch(context, proto) {
+            const current = Reflect.get(proto, 'event_async');
+            const base = current.orig ?? current;
+            const all = this;
+            context.$mol_mem(proto, 'event_async', {
+                configurable: true,
+                value: function event_async() {
+                    const events = base.call(this);
+                    const hooked = {};
+                    for (const kind in events) {
+                        const handler = events[kind];
+                        hooked[kind] = (event) => {
+                            all.notify(proto, sink => sink.event?.(this, kind, event));
+                            return handler(event);
+                        };
+                    }
+                    all.notify(proto, sink => sink.mount?.(this));
+                    return hooked;
+                },
+            });
+        }
+    }
+    $.$bog_rec_hook = $bog_rec_hook;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /**
+     * Детерминированное проигрывание записанной сессии.
+     *
+     * Приложение поднимается тем же бандлом в изолированном фрейме, но с подменёнными
+     * часами, таймерами, случайностью, сетью и хранилищами. На выходе не видео,
+     * а живое приложение: его можно остановить, полистать состояние и продолжить.
+     *
+     * Перемотка назад делается пересборкой фрейма и быстрым проигрыванием вперёд —
+     * ровно потому, что проигрывание детерминировано, снимки состояния не нужны.
+     */
+    class $bog_rec_play extends $mol_object {
+        session;
+        id = $mol_guid();
+        clock = new $bog_rec_clock;
+        rand = new $bog_rec_rand(1);
+        views = new Map();
+        calls = new Map();
+        /** Чего не нашлось при проигрывании: пропавшие виды и незаписанные запросы. */
+        misses = [];
+        cursor = 0;
+        rand_cursor = 0;
+        uuid_cursor = 0;
+        win = null;
+        root = null;
+        hook_name() {
+            return `__bog_rec_boot_${this.id}`;
+        }
+        /** Крючок в своём окне: фрейм зовёт его синхронно, до `DOMContentLoaded`. */
+        hook() {
+            const win = this.$.$mol_dom_context;
+            const name = this.hook_name();
+            win[name] = (frame) => this.boot(frame);
+            return {
+                destructor: () => { delete win[name]; },
+            };
+        }
+        escape(text) {
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+        }
+        /**
+         * Документ фрейма. Встроенный скрипт стоит сразу за бандлом, поэтому успевает
+         * подменить окружение до того, как `$mol_view.auto()` смонтирует приложение.
+         */
+        html(generation = 0) {
+            const session = this.session;
+            const base = session.bundle.replace(/[^/]*$/, '');
+            const attrs = [
+                session.lang ? ` lang="${this.escape(session.lang)}"` : '',
+                session.theme ? ` mol_theme="${this.escape(session.theme)}"` : '',
+            ].join('');
+            return [
+                '<!doctype html>',
+                `<!-- ${generation} -->`,
+                `<html${attrs}><head>`,
+                '<meta charset="utf-8"/>',
+                `<base href="${this.escape(base)}"/>`,
+                '<link href="web.css" rel="stylesheet"/>',
+                '</head>',
+                '<body style="margin:0">',
+                `<div mol_view_root="${this.escape(session.root)}"></div>`,
+                `<script src="${this.escape(session.bundle)}" charset="utf-8"></script>`,
+                `<script>parent.${this.hook_name()}( window )</script>`,
+                '</body></html>',
+            ].join('\n');
+        }
+        boot(win) {
+            this.win = win;
+            this.install_time(win);
+            this.install_rand(win);
+            this.install_net(win);
+            this.install_state(win);
+            this.install_hook(win);
+        }
+        install_time(win) {
+            const clock = this.clock;
+            const started = this.session.started;
+            const native = win.Date;
+            win.Date = new Proxy(native, {
+                construct(target, args) {
+                    return args.length
+                        ? Reflect.construct(target, args)
+                        : Reflect.construct(target, [started + clock.now]);
+                },
+                get(target, field, receiver) {
+                    if (field === 'now')
+                        return () => started + clock.now;
+                    return Reflect.get(target, field, receiver);
+                },
+            });
+            win.performance.now = () => clock.now;
+            /// Сигнатуры таймеров в браузере и в ноде расходятся, поэтому кладём их по имени
+            const globals = win;
+            globals.setTimeout = (task, delay) => {
+                if (typeof task !== 'function')
+                    return 0;
+                return clock.plan(delay ?? 0, task);
+            };
+            globals.setInterval = (task, delay) => {
+                if (typeof task !== 'function')
+                    return 0;
+                const period = Math.max(1, delay ?? 0);
+                const id = clock.reserve();
+                const repeat = () => {
+                    task();
+                    clock.plan(period, repeat, id);
+                };
+                return clock.plan(period, repeat, id);
+            };
+            globals.clearTimeout = (id) => clock.drop(id);
+            globals.clearInterval = (id) => clock.drop(id);
+            globals.requestAnimationFrame = (task) => clock.plan(16, () => task(clock.now));
+            globals.cancelAnimationFrame = (id) => clock.drop(id);
+        }
+        install_rand(win) {
+            const session = this.session;
+            win.Math.random = () => {
+                if (this.rand_cursor < session.rand.length)
+                    return session.rand[this.rand_cursor++];
+                return this.rand.next();
+            };
+            const crypto = win.crypto;
+            const native = crypto?.randomUUID?.bind(crypto);
+            if (!native)
+                return;
+            crypto.randomUUID = () => {
+                if (this.uuid_cursor >= session.uuid.length)
+                    return native();
+                return session.uuid[this.uuid_cursor++];
+            };
+        }
+        install_net(win) {
+            for (const call of this.session.calls) {
+                const bucket = this.calls.get(call.key);
+                if (bucket)
+                    bucket.push(call);
+                else
+                    this.calls.set(call.key, [call]);
+            }
+            win.fetch = async (input, init) => {
+                const request = new win.Request(input, init);
+                const key = await $bog_rec.key(request.clone());
+                const call = this.calls.get(key)?.shift();
+                if (!call) {
+                    this.misses.push(`Нет записи ответа: ${key}`);
+                    return new win.Response('{}', { status: 504 });
+                }
+                const empty = [204, 205, 304].includes(call.status);
+                return new win.Response(empty ? null : call.body, {
+                    status: call.status,
+                    headers: call.headers.map(([name, value]) => [name, value]),
+                });
+            };
+        }
+        install_state(win) {
+            const context = win.$.$mol_view.$;
+            const session = this.session;
+            context.$mol_state_local['native()'] = this.storage(session.local);
+            context.$mol_state_session['native()'] = this.storage(session.store);
+            /// `about:srcdoc` глушит попытку переписать историю, но аргументы разбираются как обычно
+            context.$mol_state_arg.href('about:srcdoc' + session.arg);
+        }
+        storage(dump) {
+            const data = new Map(dump);
+            return {
+                getItem: (key) => data.has(key) ? data.get(key) : null,
+                setItem: (key, value) => { data.set(key, value); },
+                removeItem: (key) => { data.delete(key); },
+            };
+        }
+        install_hook(win) {
+            $bog_rec_hook.attach(win.$, {
+                mount: view => { this.views.set(String(view), view); },
+            });
+        }
+        /** Ждёт, пока фрейм поднимется, подменит окружение и смонтирует приложение. */
+        async ready(timeout = 10000) {
+            const limit = Date.now() + timeout;
+            while (!this.win || !this.views.size) {
+                if (Date.now() > limit)
+                    return $mol_fail(new Error('Фрейм не запустился'));
+                await this.pause(16);
+            }
+            await this.settle();
+            return this;
+        }
+        /** Сколько событий уже проиграно. */
+        progress() {
+            return this.cursor;
+        }
+        done() {
+            return this.cursor >= this.session.events.length;
+        }
+        /** Проиграть следующее событие. `false` — лог кончился. */
+        step() {
+            const events = this.session.events;
+            if (this.cursor >= events.length)
+                return false;
+            const entry = events[this.cursor++];
+            this.clock.warp(entry.time);
+            this.fire(entry);
+            return true;
+        }
+        fire(entry) {
+            const view = this.views.get(entry.view);
+            if (!view) {
+                this.misses.push(`Вид не найден: ${entry.view}`);
+                return;
+            }
+            const node = view.dom_node();
+            const data = entry.data;
+            if (data.value !== undefined && 'value' in node) {
+                node.value = data.value;
+            }
+            if (data.checked !== undefined && 'checked' in node) {
+                node.checked = data.checked;
+            }
+            node.dispatchEvent(this.event(entry));
+        }
+        event(entry) {
+            const win = this.win;
+            if (!win)
+                return $mol_fail(new Error('Фрейм ещё не запущен'));
+            const data = entry.data;
+            const base = {
+                bubbles: true,
+                cancelable: true,
+                altKey: data.alt ?? false,
+                ctrlKey: data.ctrl ?? false,
+                shiftKey: data.shift ?? false,
+                metaKey: data.meta ?? false,
+            };
+            if (data.key !== undefined) {
+                return new win.KeyboardEvent(entry.kind, { ...base, key: data.key, code: data.code });
+            }
+            if (data.x !== undefined) {
+                return new win.MouseEvent(entry.kind, {
+                    ...base,
+                    button: data.button ?? 0,
+                    clientX: data.x,
+                    clientY: data.y ?? 0,
+                });
+            }
+            return new win.Event(entry.kind, { bubbles: true, cancelable: true });
+        }
+        /** Дать приложению доработать: микрозадачи, кадр, отложенные таймеры. */
+        async settle(span = 32) {
+            await this.drain();
+            this.clock.warp(this.clock.now + span);
+            await this.drain();
+        }
+        /**
+         * Прокрутка микрозадач: планировщик фибр $mol сидит именно на них.
+         * Макрозадачи для этого не годятся, браузер режет их до одной в секунду
+         * в неактивной вкладке, и проигрывание уползает в минуты.
+         */
+        async drain(depth = 8) {
+            for (let step = 0; step < depth; ++step)
+                await Promise.resolve();
+        }
+        /** Настоящая пауза. Нужна только там, где ждём загрузку фрейма. */
+        pause(delay = 0) {
+            return new Promise(done => {
+                const timer = new this.$.$mol_after_timeout(delay, () => {
+                    timer.destructor();
+                    done();
+                });
+            });
+        }
+        /** Проиграть всё до указанного события включительно. */
+        async seek(index) {
+            while (this.cursor < index && this.step())
+                await this.settle();
+        }
+        /** Ошибки, которые приложение показало на экране. */
+        errors() {
+            const win = this.win;
+            if (!win)
+                return [];
+            const waiting = /^(Promise|.*wire.*)$/i;
+            const found = [];
+            for (const node of win.document.querySelectorAll('[mol_view_error]')) {
+                const kind = node.getAttribute('mol_view_error') ?? '';
+                if (waiting.test(kind))
+                    continue;
+                found.push(`${node.localName}: ${kind}`);
+            }
+            return found;
+        }
+        /** Сбросить проигрывание. Фрейм пересоздаёт хозяин. */
+        reset() {
+            this.clock = new $bog_rec_clock;
+            this.rand = new $bog_rec_rand(1);
+            this.views = new Map;
+            this.calls = new Map;
+            this.misses = [];
+            this.cursor = 0;
+            this.rand_cursor = 0;
+            this.uuid_cursor = 0;
+            this.win = null;
+            this.root = null;
+        }
+    }
+    __decorate([
+        $mol_mem
+    ], $bog_rec_play.prototype, "hook", null);
+    $.$bog_rec_play = $bog_rec_play;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /**
+     * Рекордер: пишет не картинку, а вход приложения.
+     *
+     * События, ответы бэка, стартовые хранилища, адрес, размер окна и ленты
+     * недетерминированных значений. Этого хватает, чтобы `$bog_rec_play`
+     * собрал тот же сеанс заново.
+     */
+    class $bog_rec_take extends $mol_object {
+        static session = null;
+        static config = {};
+        static detach = null;
+        /** Родной `fetch`, чтобы отправка записи не попадала в саму запись. */
+        static fetch_orig = null;
+        /** Последняя остановленная сессия: её ещё можно забрать после `stop()`. */
+        static last = null;
+        static store_key = 'bog_rec_session';
+        static config_key = 'bog_rec_config';
+        static win() {
+            return $mol_dom_context;
+        }
+        /** Адрес бандла, которым сейчас исполняется приложение. */
+        static bundle() {
+            const doc = this.win().document;
+            const scripts = [...doc.querySelectorAll('script[src]')];
+            const found = scripts.find(script => /web\.js(\?|$)/.test(script.src));
+            return found?.src ?? new URL('web.js', doc.baseURI).toString();
+        }
+        /** Имя корневого класса вида, объявленное в разметке. */
+        static root() {
+            const node = this.win().document.querySelector('[mol_view_root]:not([mol_view_root=""])');
+            return node?.getAttribute('mol_view_root') ?? '';
+        }
+        static started() {
+            return Boolean(this.session);
+        }
+        static start(config = {}) {
+            if (this.session)
+                return this.session;
+            const win = this.win();
+            this.config = config;
+            const session = $bog_rec.blank(config.root ?? this.root(), config.bundle ?? this.bundle());
+            session.arg = win.location.hash;
+            session.lang = win.document.documentElement.lang;
+            session.theme = win.document.documentElement.getAttribute('mol_theme') ?? '';
+            session.viewport = [win.innerWidth, win.innerHeight];
+            session.local = this.dump(win.localStorage, session.root);
+            session.store = this.dump(win.sessionStorage, session.root);
+            this.session = session;
+            this.detach = $bog_rec_hook.attach(this.$, {
+                event: (view, kind, event) => this.put(view, kind, event),
+            });
+            this.wrap_rand(win);
+            this.wrap_net(win);
+            this.watch(win);
+            return session;
+        }
+        /** Останавливает запись и отдаёт сессию. */
+        static stop() {
+            const session = this.session;
+            this.session = null;
+            this.last = session;
+            this.detach?.();
+            this.detach = null;
+            return session;
+        }
+        /** Текущая или последняя записанная сессия. */
+        static current() {
+            return this.session ?? this.last;
+        }
+        /** JSON записи. Обычно вызывается из консоли. */
+        static text(session = this.current()) {
+            if (!session)
+                return $mol_fail(new Error('Запись не найдена'));
+            return $bog_rec.text(session);
+        }
+        /**
+         * Скачивает запись файлом. Вызывается ИЗ КОНСОЛИ, кнопки в приложении нет и не будет:
+         * рекордер не имеет права подмешивать свой интерфейс в чужое приложение.
+         */
+        static save(session = this.current()) {
+            if (!session)
+                return $mol_fail(new Error('Запись не найдена'));
+            const doc = this.win().document;
+            const blob = new Blob([$bog_rec.text(session)], { type: 'application/json' });
+            const uri = URL.createObjectURL(blob);
+            const link = doc.createElement('a');
+            link.href = uri;
+            link.download = `${session.root}-${session.id}.rec.json`;
+            link.click();
+            URL.revokeObjectURL(uri);
+            return session.events.length;
+        }
+        /**
+         * Взводит автосброс так, чтобы он пережил перезагрузку: настройки ложатся
+         * в `localStorage`, откуда их читает автозапуск при следующей загрузке.
+         * Функции сюда не кладут, только простые значения.
+         */
+        static arm(config = { keep: true }) {
+            this.win().localStorage?.setItem(this.config_key, JSON.stringify(config));
+            Object.assign(this.config, config);
+            return config;
+        }
+        /** Снимает взвод. */
+        static disarm() {
+            this.win().localStorage?.removeItem(this.config_key);
+        }
+        /** Настройки, оставленные для следующей загрузки. */
+        static armed() {
+            const text = this.win().localStorage?.getItem(this.config_key);
+            if (!text)
+                return {};
+            try {
+                return JSON.parse(text);
+            }
+            catch (error) {
+                $mol_fail_log(error);
+                return {};
+            }
+        }
+        /** Кладёт запись в `localStorage`, чтобы она пережила перезагрузку. */
+        static store(session = this.current()) {
+            if (!session)
+                return;
+            try {
+                this.win().localStorage?.setItem(this.store_key, $bog_rec.text(session));
+            }
+            catch (error) {
+                $mol_fail_log(error);
+            }
+        }
+        /** Достаёт отложенную запись. */
+        static stored() {
+            const text = this.win().localStorage?.getItem(this.store_key);
+            return text ? $bog_rec.parse(text) : null;
+        }
+        static forget() {
+            this.win().localStorage?.removeItem(this.store_key);
+        }
+        /** Отправляет запись на приёмник. Идёт мимо собственной обёртки, чтобы не писать саму себя. */
+        static send(url, session = this.current()) {
+            if (!session)
+                return;
+            const native = this.fetch_orig ?? this.win().fetch;
+            native(url, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: $bog_rec.text(session),
+                keepalive: true,
+            }).catch(error => $mol_fail_log(error));
+        }
+        /** Сбрасывает запись туда, куда просили в настройках. */
+        static flush() {
+            if (!this.session)
+                return;
+            if (this.config.keep)
+                this.store();
+            if (this.config.sink)
+                this.send(this.config.sink);
+        }
+        /** Уход со страницы — последний момент, когда запись ещё можно спасти. */
+        static watch(win) {
+            if (typeof win.addEventListener !== 'function')
+                return;
+            win.addEventListener('pagehide', () => this.flush());
+            win.addEventListener('visibilitychange', () => {
+                if (win.document.visibilityState === 'hidden')
+                    this.flush();
+            });
+        }
+        static dump(native, root) {
+            const dump = [];
+            if (!native)
+                return dump;
+            for (let index = 0; index < native.length; ++index) {
+                const key = native.key(index);
+                if (key === null)
+                    continue;
+                if (!this.suits(key, root))
+                    continue;
+                dump.push([key, native.getItem(key) ?? '']);
+            }
+            return dump;
+        }
+        /**
+         * На общем origin (тот же дев-сервер) в хранилище лежит состояние всех приложений
+         * воркспейса. Ключи чужих корней, разобранные по путям видов, в запись не попадают.
+         */
+        static suits(key, root) {
+            /// Свои ключи не берём никогда, иначе с `keep` запись вложится сама в себя
+            if (key === this.store_key || key === this.config_key)
+                return false;
+            const filter = this.config.keys;
+            if (filter)
+                return filter(key);
+            if (key.startsWith(root))
+                return true;
+            return !/^\$\w+\.Root</.test(key);
+        }
+        static put(view, kind, event) {
+            const session = this.session;
+            if (!session)
+                return;
+            const path = String(view);
+            session.events.push({
+                time: Date.now() - session.started,
+                view: path,
+                kind,
+                data: this.data(path, event),
+            });
+        }
+        static data(path, event) {
+            const win = this.win();
+            const data = {};
+            if (event instanceof win.UIEvent) {
+                const source = event;
+                data.alt = source.altKey;
+                data.ctrl = source.ctrlKey;
+                data.shift = source.shiftKey;
+                data.meta = source.metaKey;
+            }
+            if (event instanceof win.KeyboardEvent) {
+                data.key = event.key;
+                data.code = event.code;
+            }
+            if (event instanceof win.MouseEvent) {
+                data.button = event.button;
+                data.x = event.clientX;
+                data.y = event.clientY;
+            }
+            const target = event.target;
+            if (target instanceof win.HTMLInputElement || target instanceof win.HTMLTextAreaElement) {
+                data.value = this.value(path, target);
+            }
+            if (target instanceof win.HTMLInputElement && (target.type === 'checkbox' || target.type === 'radio')) {
+                data.checked = target.checked;
+            }
+            return data;
+        }
+        /**
+         * Значения полей пишутся как есть, иначе реплей уедет.
+         * Пароли не пишутся никогда, остальное закрывается через `mask` в настройках.
+         */
+        static value(path, target) {
+            const secret = (target instanceof this.win().HTMLInputElement && target.type === 'password')
+                || Boolean(this.config.mask?.(path));
+            return secret ? '•'.repeat(target.value.length) : target.value;
+        }
+        static wrap_rand(win) {
+            if (typeof win.Math?.random !== 'function')
+                return;
+            const rand = win.Math.random.bind(win.Math);
+            win.Math.random = () => {
+                const value = rand();
+                this.session?.rand.push(value);
+                return value;
+            };
+            const crypto = win.crypto;
+            const uuid = crypto?.randomUUID?.bind(crypto);
+            if (!uuid)
+                return;
+            crypto.randomUUID = () => {
+                const value = uuid();
+                this.session?.uuid.push(value);
+                return value;
+            };
+        }
+        static wrap_net(win) {
+            /// Рекордер не имеет права ронять хозяина, а окружение бывает и без сети
+            if (typeof win.fetch !== 'function')
+                return;
+            const native = win.fetch.bind(win);
+            this.fetch_orig = native;
+            win.fetch = async (input, init) => {
+                const request = new win.Request(input, init);
+                const key = await $bog_rec.key(request.clone());
+                const response = await native(request);
+                const session = this.session;
+                if (!session || this.config.calls === false)
+                    return response;
+                try {
+                    const copy = response.clone();
+                    const headers = [];
+                    copy.headers.forEach((value, name) => headers.push([name, value]));
+                    session.calls.push({
+                        key,
+                        status: copy.status,
+                        headers,
+                        body: await copy.text(),
+                    });
+                }
+                catch (error) {
+                    $mol_fail_log(error);
+                }
+                return response;
+            };
+        }
+    }
+    $.$bog_rec_take = $bog_rec_take;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /**
+     * Включает запись сессии при загрузке бандла.
+     * Подключается через `include \/bog/rec/take/auto` в meta.tree приложения.
+     *
+     * Настройки берутся из взвода, оставленного прошлой загрузкой
+     * (`$bog_rec_take.arm()`), поэтому автосброс переживает перезагрузку.
+     *
+     * Без объявленного в разметке корня записывать нечего: так модуль молчит
+     * и в ноде, где приложения нет вовсе.
+     */
+    function $bog_rec_take_auto() {
+        if (!$bog_rec_take.root())
+            return;
+        $bog_rec_take.start($bog_rec_take.armed());
+    }
+    if ($bog_rec_take.root()) {
+        $bog_rec_take_auto();
+    }
+    else {
+        $mol_dom_context.document?.addEventListener('DOMContentLoaded', $bog_rec_take_auto, { once: true });
+    }
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.59';
+    $.$bog_music_version = 'v1.60';
 })($ || ($ = {}));
 
 ;
