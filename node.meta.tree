@@ -103,6 +103,7 @@
 	pack tox git \https://github.com/b-on-g/tox.git
 	pack sert git \https://github.com/b-on-g/sert.git
 	pack bg git \https://github.com/b-on-g/bg.git
+	pack kit git \https://github.com/b-on-g/kit.git
 \/mol
 	pack icon git \https://github.com/nin-jin/mol_icon.git
 \/mol/view
