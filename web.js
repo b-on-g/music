@@ -25656,9 +25656,9 @@ var $;
 
 
 ;
-	($.$mol_icon_chevron_left) = class $mol_icon_chevron_left extends ($.$mol_icon) {
+	($.$mol_icon_menu) = class $mol_icon_menu extends ($.$mol_icon) {
 		path(){
-			return "M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z";
+			return "M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z";
 		}
 	};
 
@@ -25668,9 +25668,9 @@ var $;
 
 
 ;
-	($.$mol_icon_chevron_right) = class $mol_icon_chevron_right extends ($.$mol_icon) {
+	($.$mol_icon_menu_down) = class $mol_icon_menu_down extends ($.$mol_icon) {
 		path(){
-			return "M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z";
+			return "M7,10L12,15L17,10H7Z";
 		}
 	};
 
@@ -25678,11 +25678,287 @@ var $;
 ;
 "use strict";
 
+
+;
+	($.$mol_icon_menu_down_outline) = class $mol_icon_menu_down_outline extends ($.$mol_icon) {
+		path(){
+			return "M18,9V10.5L12,16.5L6,10.5V9H18M12,13.67L14.67,11H9.33L12,13.67Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_menu_up) = class $mol_icon_menu_up extends ($.$mol_icon) {
+		path(){
+			return "M7,15L12,10L17,15H7Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_menu_up_outline) = class $mol_icon_menu_up_outline extends ($.$mol_icon) {
+		path(){
+			return "M18,16V14.5L12,8.5L6,14.5V16H18M12,11.33L14.67,14H9.33L12,11.33Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_bigint_field) = class $mol_bigint_field extends ($.$mol_bar) {
+		decrement(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		increment(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		decrement_boost(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		increment_boost(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Hotkey(){
+			const obj = new this.$.$mol_hotkey();
+			(obj.key) = () => ({
+				"down": (next) => (this.decrement(next)), 
+				"up": (next) => (this.increment(next)), 
+				"pageDown": (next) => (this.decrement_boost(next)), 
+				"pageUp": (next) => (this.increment_boost(next))
+			});
+			return obj;
+		}
+		value_string(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		hint(){
+			return " ";
+		}
+		string_enabled(){
+			return (this.enabled());
+		}
+		submit(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		selection(next){
+			if(next !== undefined) return next;
+			return [];
+		}
+		String(){
+			const obj = new this.$.$mol_string();
+			(obj.type) = () => ("text");
+			(obj.keyboard) = () => ("decimal");
+			(obj.value) = (next) => ((this.value_string(next)));
+			(obj.hint) = () => ((this.hint()));
+			(obj.enabled) = () => ((this.string_enabled()));
+			(obj.submit) = (next) => ((this.submit(next)));
+			(obj.selection) = (next) => ((this.selection(next)));
+			return obj;
+		}
+		decrement_enabled(){
+			return (this.enabled());
+		}
+		Decrement_icon(){
+			const obj = new this.$.$mol_icon_menu_down_outline();
+			return obj;
+		}
+		Decrement(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.click) = (next) => ((this.decrement(next)));
+			(obj.enabled) = () => ((this.decrement_enabled()));
+			(obj.sub) = () => ([(this.Decrement_icon())]);
+			return obj;
+		}
+		increment_enabled(){
+			return (this.enabled());
+		}
+		Increment_icon(){
+			const obj = new this.$.$mol_icon_menu_up_outline();
+			return obj;
+		}
+		Increment(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.click) = (next) => ((this.increment(next)));
+			(obj.enabled) = () => ((this.increment_enabled()));
+			(obj.sub) = () => ([(this.Increment_icon())]);
+			return obj;
+		}
+		step(){
+			return 1n;
+		}
+		boost(){
+			return 10n;
+		}
+		value_min(){
+			return null;
+		}
+		value_max(){
+			return null;
+		}
+		value(next){
+			if(next !== undefined) return next;
+			return 0n;
+		}
+		enabled(next){
+			if(next !== undefined) return next;
+			return true;
+		}
+		plugins(){
+			return [(this.Hotkey())];
+		}
+		sub(){
+			return [
+				(this.String()), 
+				(this.Decrement()), 
+				(this.Increment())
+			];
+		}
+	};
+	($mol_mem(($.$mol_bigint_field.prototype), "decrement"));
+	($mol_mem(($.$mol_bigint_field.prototype), "increment"));
+	($mol_mem(($.$mol_bigint_field.prototype), "decrement_boost"));
+	($mol_mem(($.$mol_bigint_field.prototype), "increment_boost"));
+	($mol_mem(($.$mol_bigint_field.prototype), "Hotkey"));
+	($mol_mem(($.$mol_bigint_field.prototype), "value_string"));
+	($mol_mem(($.$mol_bigint_field.prototype), "submit"));
+	($mol_mem(($.$mol_bigint_field.prototype), "selection"));
+	($mol_mem(($.$mol_bigint_field.prototype), "String"));
+	($mol_mem(($.$mol_bigint_field.prototype), "Decrement_icon"));
+	($mol_mem(($.$mol_bigint_field.prototype), "Decrement"));
+	($mol_mem(($.$mol_bigint_field.prototype), "Increment_icon"));
+	($mol_mem(($.$mol_bigint_field.prototype), "Increment"));
+	($mol_mem(($.$mol_bigint_field.prototype), "value"));
+	($mol_mem(($.$mol_bigint_field.prototype), "enabled"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $mol_bigint_field extends $.$mol_bigint_field {
+            sub() {
+                return [
+                    this.String(),
+                    ...this.decrement_enabled() ? [this.Decrement()] : [],
+                    ...this.increment_enabled() ? [this.Increment()] : [],
+                ];
+            }
+            value_string(next) {
+                const val = this.value(next === undefined ? undefined : BigInt(next));
+                return val == null ? '' : next === '' ? '' : String(val);
+            }
+            shift(diff) {
+                let next = this.value() + diff;
+                const max = this.value_max();
+                const min = this.value_min();
+                if (min !== null && next < min)
+                    next = min;
+                if (max !== null && next > max)
+                    next = max;
+                this.value(next);
+            }
+            shift_boost(diff) {
+                const pos = this.selection()[0];
+                const len = this.value_string().length;
+                const boost = 10n ** BigInt(len - pos);
+                this.shift(diff * boost);
+            }
+            increment(event) {
+                this.shift(this.step());
+                event?.preventDefault();
+            }
+            decrement(event) {
+                this.shift(-this.step());
+                event?.preventDefault();
+            }
+            increment_boost(event) {
+                this.shift_boost(1n);
+                event?.preventDefault();
+            }
+            decrement_boost(event) {
+                this.shift_boost(-1n);
+                event?.preventDefault();
+            }
+            decrement_enabled() {
+                if (!this.enabled())
+                    return false;
+                const min = this.value_min();
+                if (min === null)
+                    return true;
+                return this.value() > min;
+            }
+            increment_enabled() {
+                if (!this.enabled())
+                    return false;
+                const max = this.value_max();
+                if (max === null)
+                    return true;
+                return this.value() < max;
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_bigint_field.prototype, "sub", null);
+        __decorate([
+            $mol_mem
+        ], $mol_bigint_field.prototype, "value_string", null);
+        __decorate([
+            $mol_action
+        ], $mol_bigint_field.prototype, "shift", null);
+        __decorate([
+            $mol_action
+        ], $mol_bigint_field.prototype, "shift_boost", null);
+        $$.$mol_bigint_field = $mol_bigint_field;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $mol_style_define($mol_bigint_field, {
+            maxWidth: '100%',
+            String: {
+                flex: {
+                    grow: 1,
+                    shrink: 1,
+                    basis: `7rem`
+                },
+                width: `7rem`,
+            },
+        });
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
 
 ;
 	($.$mol_number) = class $mol_number extends ($.$mol_view) {
 		precision(){
-			return 1;
+			return 0;
 		}
 		event_dec(next){
 			if(next !== undefined) return next;
@@ -25710,20 +25986,6 @@ var $;
 			});
 			return obj;
 		}
-		dec_enabled(){
-			return (this.enabled());
-		}
-		dec_icon(){
-			const obj = new this.$.$mol_icon_chevron_left();
-			return obj;
-		}
-		Dec(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.event_click) = (next) => ((this.event_dec(next)));
-			(obj.enabled) = () => ((this.dec_enabled()));
-			(obj.sub) = () => ([(this.dec_icon())]);
-			return obj;
-		}
 		type(){
 			return "text";
 		}
@@ -25741,6 +26003,10 @@ var $;
 			if(next !== undefined) return next;
 			return null;
 		}
+		selection(next){
+			if(next !== undefined) return next;
+			return [];
+		}
 		String(){
 			const obj = new this.$.$mol_string();
 			(obj.type) = () => ((this.type()));
@@ -25749,13 +26015,28 @@ var $;
 			(obj.hint) = () => ((this.hint()));
 			(obj.enabled) = () => ((this.string_enabled()));
 			(obj.submit) = (next) => ((this.submit(next)));
+			(obj.selection) = (next) => ((this.selection(next)));
+			return obj;
+		}
+		dec_enabled(){
+			return (this.enabled());
+		}
+		dec_icon(){
+			const obj = new this.$.$mol_icon_menu_down_outline();
+			return obj;
+		}
+		Dec(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.event_click) = (next) => ((this.event_dec(next)));
+			(obj.enabled) = () => ((this.dec_enabled()));
+			(obj.sub) = () => ([(this.dec_icon())]);
 			return obj;
 		}
 		inc_enabled(){
 			return (this.enabled());
 		}
 		inc_icon(){
-			const obj = new this.$.$mol_icon_chevron_right();
+			const obj = new this.$.$mol_icon_menu_up_outline();
 			return obj;
 		}
 		Inc(){
@@ -25792,8 +26073,8 @@ var $;
 		}
 		sub(){
 			return [
-				(this.Dec()), 
 				(this.String()), 
+				(this.Dec()), 
 				(this.Inc())
 			];
 		}
@@ -25803,11 +26084,12 @@ var $;
 	($mol_mem(($.$mol_number.prototype), "event_dec_boost"));
 	($mol_mem(($.$mol_number.prototype), "event_inc_boost"));
 	($mol_mem(($.$mol_number.prototype), "Hotkey"));
-	($mol_mem(($.$mol_number.prototype), "dec_icon"));
-	($mol_mem(($.$mol_number.prototype), "Dec"));
 	($mol_mem(($.$mol_number.prototype), "value_string"));
 	($mol_mem(($.$mol_number.prototype), "submit"));
+	($mol_mem(($.$mol_number.prototype), "selection"));
 	($mol_mem(($.$mol_number.prototype), "String"));
+	($mol_mem(($.$mol_number.prototype), "dec_icon"));
+	($mol_mem(($.$mol_number.prototype), "Dec"));
 	($mol_mem(($.$mol_number.prototype), "inc_icon"));
 	($mol_mem(($.$mol_number.prototype), "Inc"));
 	($mol_mem(($.$mol_number.prototype), "value"));
@@ -25835,6 +26117,13 @@ var $;
          * @see https://mol.hyoo.ru/#!section=demos/demo=mol_number_demo
          */
         class $mol_number extends $.$mol_number {
+            sub() {
+                return [
+                    this.String(),
+                    ...this.dec_enabled() ? [this.Dec()] : [],
+                    ...this.inc_enabled() ? [this.Inc()] : [],
+                ];
+            }
             value_limited(val) {
                 if (Number.isNaN(val))
                     return this.value(val);
@@ -25872,8 +26161,8 @@ var $;
                 if (!val)
                     return '';
                 const precision_view = this.precision_view();
-                if (!precision_view)
-                    return val.toFixed();
+                if (precision_view === 0)
+                    return String(val);
                 if (precision_view >= 1) {
                     return (val / precision_view).toFixed();
                 }
@@ -25890,7 +26179,7 @@ var $;
                     return current;
                 const precision = this.precision_view();
                 // Точку в конце поставить нельзя, если precision_view целое число > 0
-                if (precision - Math.floor(precision) === 0)
+                if (precision > 0 && precision - Math.floor(precision) === 0)
                     next = next.replace(/[.,]/g, '');
                 // Запятые меняем на точки, удаляем не-цифры и не-точки и лишние ноли в начале целой части.
                 // Минус получится ввести только в начале.
@@ -25929,6 +26218,9 @@ var $;
                 return this.enabled() && (!((this.value() || 0) >= this.value_max()));
             }
         }
+        __decorate([
+            $mol_mem
+        ], $mol_number.prototype, "sub", null);
         __decorate([
             $mol_mem
         ], $mol_number.prototype, "value_string", null);
@@ -26085,6 +26377,30 @@ var $;
 	($.$mol_icon_chevron_double_left) = class $mol_icon_chevron_double_left extends ($.$mol_icon) {
 		path(){
 			return "M18.41,7.41L17,6L11,12L17,18L18.41,16.59L13.83,12L18.41,7.41M12.41,7.41L11,6L5,12L11,18L12.41,16.59L7.83,12L12.41,7.41Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_chevron_left) = class $mol_icon_chevron_left extends ($.$mol_icon) {
+		path(){
+			return "M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_chevron_right) = class $mol_icon_chevron_right extends ($.$mol_icon) {
+		path(){
+			return "M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z";
 		}
 	};
 
@@ -26826,6 +27142,886 @@ var $;
 })($ || ($ = {}));
 
 ;
+	($.$mol_icon_circle) = class $mol_icon_circle extends ($.$mol_icon) {
+		path(){
+			return "M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_circle_off_outline) = class $mol_icon_circle_off_outline extends ($.$mol_icon) {
+		path(){
+			return "M22.11 21.46L2.39 1.73L1.11 3L4.06 5.95C2.78 7.63 2 9.72 2 12C2 17.5 6.5 22 12 22C14.28 22 16.37 21.23 18.05 19.94L20.84 22.73L22.11 21.46M12 20C7.58 20 4 16.42 4 12C4 10.27 4.56 8.68 5.5 7.38L16.62 18.5C15.32 19.45 13.73 20 12 20M8.17 4.97L6.72 3.5C8.25 2.56 10.06 2 12 2C17.5 2 22 6.5 22 12C22 13.94 21.44 15.75 20.5 17.28L19.03 15.83C19.65 14.69 20 13.39 20 12C20 7.58 16.42 4 12 4C10.61 4 9.31 4.35 8.17 4.97Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_flag) = class $mol_icon_flag extends ($.$mol_icon) {
+		path(){
+			return "M14.4,6L14,4H5V21H7V14H12.6L13,16H20V6H14.4Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_flag_checkered) = class $mol_icon_flag_checkered extends ($.$mol_icon) {
+		path(){
+			return "M14.4,6H20V16H13L12.6,14H7V21H5V4H14L14.4,6M14,14H16V12H18V10H16V8H14V10L13,8V6H11V8H9V6H7V8H9V10H7V12H9V10H11V12H13V10L14,12V14M11,10V8H13V10H11M14,10H16V12H14V10Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_pound) = class $mol_icon_pound extends ($.$mol_icon) {
+		path(){
+			return "M5.41,21L6.12,17H2.12L2.47,15H6.47L7.53,9H3.53L3.88,7H7.88L8.59,3H10.59L9.88,7H15.88L16.59,3H18.59L17.88,7H21.88L21.53,9H17.53L16.47,15H20.47L20.12,17H16.12L15.41,21H13.41L14.12,17H8.12L7.41,21H5.41M9.53,9L8.47,15H14.47L15.53,9H9.53Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_division) = class $mol_icon_division extends ($.$mol_icon) {
+		path(){
+			return "M19,13H5V11H19V13M12,5A2,2 0 0,1 14,7A2,2 0 0,1 12,9A2,2 0 0,1 10,7A2,2 0 0,1 12,5M12,15A2,2 0 0,1 14,17A2,2 0 0,1 12,19A2,2 0 0,1 10,17A2,2 0 0,1 12,15Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_clock) = class $mol_icon_clock extends ($.$mol_icon) {
+		path(){
+			return "M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M16.2,16.2L11,13V7H12.5V12.2L17,14.9L16.2,16.2Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_clock_outline) = class $mol_icon_clock_outline extends ($.$mol_icon) {
+		path(){
+			return "M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_card) = class $mol_icon_card extends ($.$mol_icon) {
+		path(){
+			return "M20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_card_text) = class $mol_icon_card_text extends ($.$mol_icon) {
+		path(){
+			return "M20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20M5,13V15H16V13H5M5,9V11H19V9H5Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_card_text_outline) = class $mol_icon_card_text_outline extends ($.$mol_icon) {
+		path(){
+			return "M20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20M4,6V18H20V6H4M6,9H18V11H6V9M6,13H16V15H6V13Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_format_list_bulleted) = class $mol_icon_format_list_bulleted extends ($.$mol_icon) {
+		path(){
+			return "M7,5H21V7H7V5M7,13V11H21V13H7M4,4.5A1.5,1.5 0 0,1 5.5,6A1.5,1.5 0 0,1 4,7.5A1.5,1.5 0 0,1 2.5,6A1.5,1.5 0 0,1 4,4.5M4,10.5A1.5,1.5 0 0,1 5.5,12A1.5,1.5 0 0,1 4,13.5A1.5,1.5 0 0,1 2.5,12A1.5,1.5 0 0,1 4,10.5M7,19V17H21V19H7M4,16.5A1.5,1.5 0 0,1 5.5,18A1.5,1.5 0 0,1 4,19.5A1.5,1.5 0 0,1 2.5,18A1.5,1.5 0 0,1 4,16.5Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_table) = class $mol_icon_table extends ($.$mol_icon) {
+		path(){
+			return "M5,4H19A2,2 0 0,1 21,6V18A2,2 0 0,1 19,20H5A2,2 0 0,1 3,18V6A2,2 0 0,1 5,4M5,8V12H11V8H5M13,8V12H19V8H13M5,14V18H11V14H5M13,14V18H19V14H13Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_vary_edit) = class $mol_vary_edit extends ($.$mol_list) {
+		item_adopt(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		type_receive(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Type_icon(id){
+			const obj = new this.$.$mol_icon();
+			return obj;
+		}
+		enabled(){
+			return true;
+		}
+		type_mutable(){
+			return (this.enabled());
+		}
+		type(next){
+			if(next !== undefined) return next;
+			return "Null";
+		}
+		Type(){
+			const obj = new this.$.$mol_select();
+			(obj.Filter) = () => (null);
+			(obj.Trigger_icon) = () => (null);
+			(obj.option_content) = (id) => ([(this.Type_icon(id))]);
+			(obj.enabled) = () => ((this.type_mutable()));
+			(obj.dictionary) = () => ({
+				"Null": "Nothing", 
+				"Bool": "Boolean", 
+				"Bint": "Integer", 
+				"Real": "Real", 
+				"Text": "Text", 
+				"List": "Array", 
+				"Tupl": "Dictionary"
+			});
+			(obj.value) = (next) => ((this.type(next)));
+			return obj;
+		}
+		Type_drop(){
+			const obj = new this.$.$mol_drop();
+			(obj.adopt) = (next) => ((this.item_adopt(next)));
+			(obj.receive) = (next) => ((this.type_receive(next)));
+			(obj.Sub) = () => ((this.Type()));
+			return obj;
+		}
+		bool(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		Bool(){
+			const obj = new this.$.$mol_check_box();
+			(obj.checked) = (next) => ((this.bool(next)));
+			(obj.enabled) = () => ((this.enabled()));
+			return obj;
+		}
+		bint(next){
+			if(next !== undefined) return next;
+			return 0n;
+		}
+		text_selection(next){
+			if(next !== undefined) return next;
+			return [];
+		}
+		Bint(){
+			const obj = new this.$.$mol_bigint_field();
+			(obj.value) = (next) => ((this.bint(next)));
+			(obj.enabled) = () => ((this.enabled()));
+			(obj.selection) = (next) => ((this.text_selection(next)));
+			return obj;
+		}
+		real(next){
+			if(next !== undefined) return next;
+			return 0;
+		}
+		Real(){
+			const obj = new this.$.$mol_number();
+			(obj.value) = (next) => ((this.real(next)));
+			(obj.enabled) = () => ((this.enabled()));
+			(obj.selection) = (next) => ((this.text_selection(next)));
+			return obj;
+		}
+		date(next){
+			if(next !== undefined) return next;
+			const obj = new this.$.$mol_time_moment();
+			return obj;
+		}
+		Date(){
+			const obj = new this.$.$mol_date();
+			(obj.value_moment) = (next) => ((this.date(next)));
+			(obj.enabled) = () => ((this.enabled()));
+			return obj;
+		}
+		text(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		Text(){
+			const obj = new this.$.$mol_textarea();
+			(obj.value) = (next) => ((this.text(next)));
+			(obj.enabled) = () => ((this.enabled()));
+			(obj.selection) = (next) => ((this.text_selection(next)));
+			return obj;
+		}
+		expanded(next){
+			if(next !== undefined) return next;
+			return true;
+		}
+		Item_expand(){
+			const obj = new this.$.$mol_check_expand();
+			(obj.expanded) = (next) => ((this.expanded(next)));
+			return obj;
+		}
+		item_add(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Item_add_icon(){
+			const obj = new this.$.$mol_icon_plus();
+			return obj;
+		}
+		Item_add(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.click) = (next) => ((this.item_add(next)));
+			(obj.enabled) = () => ((this.enabled()));
+			(obj.sub) = () => ([(this.Item_add_icon())]);
+			return obj;
+		}
+		field_add(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Field_add_icon(){
+			const obj = new this.$.$mol_icon_plus();
+			return obj;
+		}
+		Field_add(){
+			const obj = new this.$.$mol_string();
+			(obj.hint) = () => ("+");
+			(obj.submit) = (next) => ((this.field_add(next)));
+			(obj.enabled) = () => ((this.enabled()));
+			(obj.sub) = () => ([(this.Field_add_icon())]);
+			return obj;
+		}
+		head(){
+			return [
+				(this.Bool()), 
+				(this.Bint()), 
+				(this.Real()), 
+				(this.Date()), 
+				(this.Text()), 
+				(this.Item_expand()), 
+				(this.Item_add()), 
+				(this.Field_add())
+			];
+		}
+		Head(){
+			const obj = new this.$.$mol_bar();
+			(obj.sub) = () => ([(this.Type_drop()), ...(this.head())]);
+			return obj;
+		}
+		item_receive(id, next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		item_drag_end(id, next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		transfer_vary(id){
+			return "";
+		}
+		item_key(id){
+			return null;
+		}
+		Item_key(id){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.item_key(id))]);
+			return obj;
+		}
+		Item_drag(id){
+			const obj = new this.$.$mol_drag();
+			(obj.drag_end) = (next) => ((this.item_drag_end(id, next)));
+			(obj.transfer) = () => ({
+				"text/plain": (this.transfer_vary(id)), 
+				"text/html": "", 
+				"text/uri-list": (this.transfer_vary(id))
+			});
+			(obj.Sub) = () => ((this.Item_key(id)));
+			return obj;
+		}
+		Item_drop(id){
+			const obj = new this.$.$mol_drop();
+			(obj.adopt) = (next) => ((this.item_adopt(next)));
+			(obj.receive) = (next) => ((this.item_receive(id, next)));
+			(obj.Sub) = () => ((this.Item_drag(id)));
+			return obj;
+		}
+		item_val(id, next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		item_selection(id, next){
+			if(next !== undefined) return next;
+			return [];
+		}
+		Item_val(id){
+			const obj = new this.$.$mol_vary_edit();
+			(obj.enabled) = () => ((this.enabled()));
+			(obj.value) = (next) => ((this.item_val(id, next)));
+			(obj.selection) = (next) => ((this.item_selection(id, next)));
+			return obj;
+		}
+		Item(id){
+			const obj = new this.$.$mol_bar();
+			(obj.sub) = () => ([(this.Item_drop(id)), (this.Item_val(id))]);
+			return obj;
+		}
+		body(){
+			return [(this.Item("0"))];
+		}
+		Body(){
+			const obj = new this.$.$mol_list();
+			(obj.rows) = () => ((this.body()));
+			return obj;
+		}
+		schema(){
+			return null;
+		}
+		value(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Vary(){
+			const obj = new this.$.$mol_vary_class();
+			return obj;
+		}
+		selection(next){
+			if(next !== undefined) return next;
+			return [];
+		}
+		Null_icon(){
+			const obj = new this.$.$mol_icon_circle_off_outline();
+			return obj;
+		}
+		Bool_icon(){
+			const obj = new this.$.$mol_icon_flag_checkered();
+			return obj;
+		}
+		Bint_icon(){
+			const obj = new this.$.$mol_icon_pound();
+			return obj;
+		}
+		Real_icon(){
+			const obj = new this.$.$mol_icon_division();
+			return obj;
+		}
+		Date_icon(){
+			const obj = new this.$.$mol_icon_clock_outline();
+			return obj;
+		}
+		Text_icon(){
+			const obj = new this.$.$mol_icon_card_text_outline();
+			return obj;
+		}
+		List_icon(){
+			const obj = new this.$.$mol_icon_format_list_bulleted();
+			return obj;
+		}
+		Tupl_icon(){
+			const obj = new this.$.$mol_icon_table();
+			return obj;
+		}
+		rows(){
+			return [(this.Head()), (this.Body())];
+		}
+	};
+	($mol_mem(($.$mol_vary_edit.prototype), "item_adopt"));
+	($mol_mem(($.$mol_vary_edit.prototype), "type_receive"));
+	($mol_mem_key(($.$mol_vary_edit.prototype), "Type_icon"));
+	($mol_mem(($.$mol_vary_edit.prototype), "type"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Type"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Type_drop"));
+	($mol_mem(($.$mol_vary_edit.prototype), "bool"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Bool"));
+	($mol_mem(($.$mol_vary_edit.prototype), "bint"));
+	($mol_mem(($.$mol_vary_edit.prototype), "text_selection"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Bint"));
+	($mol_mem(($.$mol_vary_edit.prototype), "real"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Real"));
+	($mol_mem(($.$mol_vary_edit.prototype), "date"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Date"));
+	($mol_mem(($.$mol_vary_edit.prototype), "text"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Text"));
+	($mol_mem(($.$mol_vary_edit.prototype), "expanded"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Item_expand"));
+	($mol_mem(($.$mol_vary_edit.prototype), "item_add"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Item_add_icon"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Item_add"));
+	($mol_mem(($.$mol_vary_edit.prototype), "field_add"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Field_add_icon"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Field_add"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Head"));
+	($mol_mem_key(($.$mol_vary_edit.prototype), "item_receive"));
+	($mol_mem_key(($.$mol_vary_edit.prototype), "item_drag_end"));
+	($mol_mem_key(($.$mol_vary_edit.prototype), "Item_key"));
+	($mol_mem_key(($.$mol_vary_edit.prototype), "Item_drag"));
+	($mol_mem_key(($.$mol_vary_edit.prototype), "Item_drop"));
+	($mol_mem_key(($.$mol_vary_edit.prototype), "item_val"));
+	($mol_mem_key(($.$mol_vary_edit.prototype), "item_selection"));
+	($mol_mem_key(($.$mol_vary_edit.prototype), "Item_val"));
+	($mol_mem_key(($.$mol_vary_edit.prototype), "Item"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Body"));
+	($mol_mem(($.$mol_vary_edit.prototype), "value"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Vary"));
+	($mol_mem(($.$mol_vary_edit.prototype), "selection"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Null_icon"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Bool_icon"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Bint_icon"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Real_icon"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Date_icon"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Text_icon"));
+	($mol_mem(($.$mol_vary_edit.prototype), "List_icon"));
+	($mol_mem(($.$mol_vary_edit.prototype), "Tupl_icon"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $mol_vary_edit extends $.$mol_vary_edit {
+            Vary() {
+                return this.$.$mol_vary;
+            }
+            type(next) {
+                if (next !== undefined) {
+                    if (next !== 'Null')
+                        return next;
+                    this.value(null);
+                }
+                const schema = this.schema();
+                if (schema)
+                    return schema;
+                const val = this.value();
+                if (val == null)
+                    return 'Null';
+                switch (typeof val) {
+                    case 'boolean': return 'Bool';
+                    case 'bigint': return 'Bint';
+                    case 'number': return 'Real';
+                    case 'string': return 'Text';
+                }
+                if (Array.isArray(val))
+                    return 'List';
+                if (val instanceof Date)
+                    return 'Date';
+                return 'Tupl';
+            }
+            type_mutable() {
+                return this.enabled() && !this.schema();
+            }
+            Type_icon(type) {
+                switch (type) {
+                    case 'Bool': return this.Bool_icon();
+                    case 'Bint': return this.Bint_icon();
+                    case 'Real': return this.Real_icon();
+                    case 'Date': return this.Date_icon();
+                    case 'Text': return this.Text_icon();
+                    case 'List': return this.List_icon();
+                    case 'Tupl': return this.Tupl_icon();
+                }
+                return this.Null_icon();
+            }
+            bool(next) {
+                return Boolean(this.value(next));
+            }
+            bint(next) {
+                return BigInt(this.value(next) ?? 0n);
+            }
+            real(next) {
+                return Number(this.value(next));
+            }
+            date(next) {
+                return new $mol_time_moment(this.value(next?.native));
+            }
+            text(next) {
+                return String(this.value(next) ?? '');
+            }
+            list(next) {
+                return [].concat(this.value(next));
+            }
+            tupl(next) {
+                let val = next ? this.Vary().rich(next[0] ?? [], next[1] ?? [[], []]) : undefined;
+                val = this.value(val) ?? {};
+                return this.Vary().lean(val);
+            }
+            head() {
+                const type = this.type();
+                return [
+                    ...type === 'Bool' ? [this.Bool()] : [],
+                    ...type === 'Bint' ? [this.Bint()] : [],
+                    ...type === 'Real' ? [this.Real()] : [],
+                    ...type === 'Date' ? [this.Date()] : [],
+                    ...type === 'Text' ? [this.Text()] : [],
+                    ...type === 'List' || type === 'Tupl' ? [this.Item_expand()] : [],
+                    ...type === 'List' && this.enabled() ? [this.Item_add()] : [],
+                    ...type === 'Tupl' && this.enabled() ? [this.Field_add()] : [],
+                ];
+            }
+            body() {
+                if (!this.expanded())
+                    return [];
+                switch (this.type()) {
+                    case 'List': return this.list().map((_, index) => this.Item(index));
+                    case 'Tupl': return this.tupl()[0].map((_, index) => this.Item(index));
+                }
+                return [];
+            }
+            item_key(index) {
+                switch (this.type()) {
+                    case 'Tupl': return this.tupl()[0][index];
+                }
+                return index;
+            }
+            item_val(index, next) {
+                switch (this.type()) {
+                    case 'List': {
+                        let list = this.list();
+                        if (next !== undefined)
+                            list = this.list([
+                                ...list.slice(0, index),
+                                ...next === null ? [] : [next],
+                                ...list.slice(index + 1),
+                            ]);
+                        return list[index];
+                    }
+                    case 'Tupl': {
+                        let tupl = this.tupl();
+                        if (next !== undefined)
+                            tupl = this.tupl([
+                                [
+                                    ...tupl[0].slice(0, index),
+                                    ...next === null ? [] : [tupl[0][index]],
+                                    ...tupl[0].slice(index + 1),
+                                ],
+                                [
+                                    ...tupl[1].slice(0, index),
+                                    ...next === null ? [] : [next],
+                                    ...tupl[1].slice(index + 1),
+                                ],
+                            ]);
+                        return next === null ? null : tupl[1][index] ?? null;
+                    }
+                }
+                return null;
+            }
+            item_add() {
+                this.list([undefined, ...this.list()]);
+            }
+            field_add() {
+                const tupl = this.tupl();
+                this.tupl([
+                    [this.Field_add().value(), ...tupl[0]],
+                    [undefined, ...tupl[1]],
+                ]);
+                this.Field_add().value('');
+            }
+            text_selection(next) {
+                const sel = this.selection(next === undefined ? undefined : ['', next[0], next[1]]);
+                if (sel[0] !== '')
+                    return [0, 0];
+                return [sel[1], sel[2]];
+            }
+            item_selection(index, next) {
+                const prefix = '/' + index;
+                const sel = this.selection(next === undefined ? undefined : [prefix + next[0], next[1], next[2]]);
+                if (!sel[0]?.startsWith(prefix))
+                    return ['', 0, 0];
+                return [sel[0].slice(prefix.length), sel[1], sel[2]];
+            }
+            _last_drop_index = 0;
+            transfer_vary(index) {
+                this._last_drop_index = 0;
+                const data = [
+                    this.item_val(index),
+                    this.item_key(index),
+                ];
+                const buf = this.Vary().pack(data);
+                return 'data:application/x-vary;base64,' + $mol_base64_encode(buf);
+            }
+            item_adopt(transfer) {
+                const uri = transfer.getData('text/uri-list');
+                const match = uri.match(/^data:application\/x-vary;base64,(.*)$/);
+                if (!match)
+                    return null;
+                const buf = $mol_base64_decode(match[1]);
+                return this.Vary().take(buf);
+            }
+            type_receive([val, key]) {
+                this._last_drop_index = 0;
+                switch (this.type()) {
+                    case 'List': {
+                        this.list([val, ...this.list()]);
+                        return;
+                    }
+                    case 'Tupl': {
+                        const tupl = this.tupl();
+                        this.tupl([
+                            [key, ...tupl[0]],
+                            [val, ...tupl[1]],
+                        ]);
+                    }
+                }
+            }
+            item_receive(index, [val, key]) {
+                this._last_drop_index = index;
+                switch (this.type()) {
+                    case 'List': {
+                        const list = this.list();
+                        this.list([
+                            ...list.slice(0, index + 1),
+                            val,
+                            ...list.slice(index + 1),
+                        ]);
+                        return;
+                    }
+                    case 'Tupl': {
+                        const tupl = this.tupl().map(list => [...list]);
+                        const pos = tupl[0].indexOf(key);
+                        if (pos >= 0) {
+                            tupl[0].splice(pos, 1);
+                            tupl[1].splice(pos, 1);
+                            if (pos < index)
+                                index--;
+                        }
+                        this.tupl([
+                            [
+                                ...tupl[0].slice(0, index + 1),
+                                key,
+                                ...tupl[0].slice(index + 1),
+                            ],
+                            [
+                                ...tupl[1].slice(0, index + 1),
+                                val,
+                                ...tupl[1].slice(index + 1),
+                            ],
+                        ]);
+                    }
+                }
+            }
+            item_drag_end(index, event) {
+                if (event.dataTransfer?.dropEffect !== 'move')
+                    return;
+                if (this._last_drop_index <= index)
+                    index++;
+                switch (this.type()) {
+                    case 'List': {
+                        let list = this.list();
+                        this.list([
+                            ...list.slice(0, index),
+                            ...list.slice(index + 1),
+                        ]);
+                    }
+                }
+                return;
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_vary_edit.prototype, "type", null);
+        __decorate([
+            $mol_mem_key
+        ], $mol_vary_edit.prototype, "Type_icon", null);
+        __decorate([
+            $mol_mem
+        ], $mol_vary_edit.prototype, "bool", null);
+        __decorate([
+            $mol_mem
+        ], $mol_vary_edit.prototype, "bint", null);
+        __decorate([
+            $mol_mem
+        ], $mol_vary_edit.prototype, "real", null);
+        __decorate([
+            $mol_mem
+        ], $mol_vary_edit.prototype, "date", null);
+        __decorate([
+            $mol_mem
+        ], $mol_vary_edit.prototype, "text", null);
+        __decorate([
+            $mol_mem
+        ], $mol_vary_edit.prototype, "list", null);
+        __decorate([
+            $mol_mem
+        ], $mol_vary_edit.prototype, "tupl", null);
+        __decorate([
+            $mol_mem
+        ], $mol_vary_edit.prototype, "head", null);
+        __decorate([
+            $mol_mem
+        ], $mol_vary_edit.prototype, "body", null);
+        __decorate([
+            $mol_mem_key
+        ], $mol_vary_edit.prototype, "item_key", null);
+        __decorate([
+            $mol_mem_key
+        ], $mol_vary_edit.prototype, "item_val", null);
+        __decorate([
+            $mol_action
+        ], $mol_vary_edit.prototype, "item_add", null);
+        __decorate([
+            $mol_action
+        ], $mol_vary_edit.prototype, "field_add", null);
+        $$.$mol_vary_edit = $mol_vary_edit;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $mol_style_define($mol_vary_edit, {
+            Head: {
+                background: {
+                    color: $mol_theme.card,
+                },
+                box: {
+                    shadow: [['inset', '0px', '0px', '0px', '1px', $mol_theme.field]],
+                },
+            },
+            Body: {
+                display: 'table',
+            },
+            Type: {
+                width: '2.5rem',
+                color: $mol_theme.shade,
+                Trigger: {
+                    padding: $mol_gap.text,
+                },
+                Option_row: {
+                    padding: $mol_gap.text,
+                },
+            },
+            Bint: {
+                flex: {
+                    grow: 1,
+                },
+            },
+            Real: {
+                flex: {
+                    grow: 1,
+                },
+            },
+            Text: {
+                flex: {
+                    shrink: 1,
+                },
+            },
+            Field_add: {
+                background: 'none',
+                box: {
+                    shadow: 'none',
+                },
+            },
+            Item_expand: {
+                Icon: {
+                    margin: 0,
+                },
+            },
+            Item: {
+                display: 'table-row',
+            },
+            Item_key: {
+                padding: $mol_gap.text,
+                // color: $mol_theme.shade,
+                justify: {
+                    content: 'center',
+                },
+                minWidth: '2.5rem',
+                display: 'table-cell',
+                verticalAlign: 'top',
+            },
+            Item_val: {
+                flex: {
+                    grow: 1,
+                },
+                width: `100%`,
+                display: 'table-cell',
+            },
+            Item_drag: {
+                cursor: 'move',
+            },
+            Type_drop: {
+                '[mol_drop_status]': {
+                    drag: {
+                        box: {
+                            shadow: [['0px', '1px', '0px', '0px', $mol_theme.focus]],
+                        },
+                    }
+                },
+            },
+            Item_drop: {
+                '[mol_drop_status]': {
+                    drag: {
+                        box: {
+                            shadow: [['0px', '1px', '0px', '0px', $mol_theme.focus]],
+                        },
+                    }
+                },
+            },
+        });
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
 	($.$giper_baza_flex_field) = class $giper_baza_flex_field extends ($.$mol_view) {
 		Sub(){
 			const obj = new this.$.$mol_view();
@@ -26843,6 +28039,17 @@ var $;
 		}
 		enum_label(id){
 			return "";
+		}
+		atom_value(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		schema(){
+			return null;
+		}
+		atom_selection(next){
+			if(next !== undefined) return next;
+			return [];
 		}
 		bool(next){
 			if(next !== undefined) return next;
@@ -27113,6 +28320,14 @@ var $;
 			(obj.option_label) = (id) => ((this.enum_label(id)));
 			return obj;
 		}
+		Atom(){
+			const obj = new this.$.$mol_vary_edit();
+			(obj.enabled) = () => ((this.enabled()));
+			(obj.value) = (next) => ((this.atom_value(next)));
+			(obj.schema) = () => ((this.schema()));
+			(obj.selection) = (next) => ((this.atom_selection(next)));
+			return obj;
+		}
 		Bool(){
 			const obj = new this.$.$mol_check_box();
 			(obj.enabled) = () => ((this.enabled()));
@@ -27170,6 +28385,8 @@ var $;
 	};
 	($mol_mem(($.$giper_baza_flex_field.prototype), "Sub"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "enum"));
+	($mol_mem(($.$giper_baza_flex_field.prototype), "atom_value"));
+	($mol_mem(($.$giper_baza_flex_field.prototype), "atom_selection"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "bool"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "int"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "real"));
@@ -27211,6 +28428,7 @@ var $;
 	($mol_mem(($.$giper_baza_flex_field.prototype), "pawn"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "prop"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "Enum"));
+	($mol_mem(($.$giper_baza_flex_field.prototype), "Atom"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "Bool"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "Int"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "Real"));
@@ -27486,15 +28704,32 @@ var $;
             dict_pawn() {
                 return this.pawn();
             }
+            schema() {
+                const type = this.prop().Type()?.val() ?? 'str';
+                switch (type) {
+                    case 'vary': return null;
+                    case 'enum': return null;
+                    case 'bool': return 'Bool';
+                    case 'int': return 'Bint';
+                    case 'real': return 'Real';
+                    case 'str': return 'Text';
+                    case 'link': return null;
+                    case 'time': return null;
+                    case 'dict': return null;
+                    case 'text': return null;
+                    case 'list': return null;
+                    default: return null;
+                }
+            }
             Sub() {
                 const type = this.prop().Type()?.val() ?? 'str';
                 switch (type) {
-                    case 'vary': return this.Str();
+                    case 'vary': return this.Atom();
                     case 'enum': return this.Enum();
-                    case 'bool': return this.Bool();
+                    case 'bool': return this.Atom();
                     case 'int': return this.Int();
                     case 'real': return this.Real();
-                    case 'str': return this.Str();
+                    case 'str': return this.Atom();
                     case 'link': return this.Ref();
                     case 'time': return this.Time();
                     case 'dict': return this.Dict();
@@ -27511,6 +28746,28 @@ var $;
             }
             enum_label(option) {
                 return $mol_schema_string.cast(option);
+            }
+            atom_value(next) {
+                return this.pawn(next)?.cast($giper_baza_atom).vary(next) ?? null;
+            }
+            atom_selection(next) {
+                const link = this.pawn()?.head().str ?? '';
+                const user = this.$.$giper_baza_glob.Land(this.$.$giper_baza_auth.current().pass().lord()).Data($giper_baza_flex_user);
+                if (next) {
+                    user.caret([[link + next[0], next[1], 0], [link + next[0], next[2], 0]]);
+                    return next;
+                }
+                else {
+                    this.atom_value(); // track text to recalc selection on its change
+                    const sel = user.caret();
+                    if (!sel)
+                        return ['', 0, 0];
+                    if (!sel[0][0].startsWith(link))
+                        return ['', 0, 0];
+                    if (!sel[1][0].startsWith(link))
+                        return ['', 0, 0];
+                    return [sel[0][0].slice(link.length), sel[0][1], sel[1][1]];
+                }
             }
             bool(next) {
                 return this.pawn(next)?.cast($giper_baza_atom_bool).val(next) ?? false;
@@ -27646,6 +28903,9 @@ var $;
         }
         __decorate([
             $mol_mem
+        ], $giper_baza_flex_field.prototype, "schema", null);
+        __decorate([
+            $mol_mem
         ], $giper_baza_flex_field.prototype, "Sub", null);
         __decorate([
             $mol_mem
@@ -27697,6 +28957,11 @@ var $;
             flex: {
                 grow: 1,
                 shrink: 1,
+            },
+            Atom: {
+                flex: {
+                    grow: 1,
+                },
             },
             Link_new: {
                 Trigger: {
