@@ -10125,15 +10125,23 @@ var $;
         return (right.str > left.str ? 1 : right.str < left.str ? -1 : 0);
     }
     $.$giper_baza_link_compare = $giper_baza_link_compare;
+    const regexp = /(?<![\p{L}_])(?:(?:[a-zæA-ZÆ0-9]{8})?_){0,3}(?:[a-zæA-ZÆ0-9]{8})(?![\p{L}_])/gu;
     class $giper_baza_link extends Object {
         str;
         constructor(str) {
             super();
             this.str = str;
-            if (!/^(([a-zæA-ZÆ0-9]{8})?_){0,3}([a-zæA-ZÆ0-9]{8})?$/.test(str)) {
-                $mol_fail(new Error(`Wrong Link (${str})`));
-            }
-            this.str = str.replace(/AAAAAAAA/g, '').replace(/_+$/, '');
+            const short = str.replace(/AAAAAAAA/g, '').replace(/_+$/, '');
+            const found = short && (short.match(regexp)?.[0] ?? null);
+            if (found !== short)
+                $mol_fail(new Error('Wrong Link', { cause: str }));
+            this.str = found;
+        }
+        static [Symbol.match](str) {
+            return str.match(regexp);
+        }
+        static [Symbol.matchAll](str) {
+            return str.matchAll(regexp);
         }
         static hole = new this('');
         static check(val) {
@@ -24904,7 +24912,7 @@ var $;
                 return this.$.$giper_baza_glob.Pawn(link, $giper_baza_flex_meta);
             }
             icon() {
-                return this.subj()?.icon() || '💠';
+                return (this.subj()?.icon() || '💠') + ' ';
             }
             title() {
                 const link = this.link();
@@ -24949,559 +24957,6 @@ var $;
                 family: 'monospace',
             },
         });
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-	($.$mol_dump_list) = class $mol_dump_list extends ($.$mol_view) {
-		dump_value(id){
-			return null;
-		}
-		dump_expanded(id, next){
-			if(next !== undefined) return next;
-			return false;
-		}
-		prototypes(){
-			return false;
-		}
-		preview_show(){
-			return true;
-		}
-		Dump(id){
-			const obj = new this.$.$mol_dump_value();
-			(obj.value) = () => ((this.dump_value(id)));
-			(obj.expanded) = (next) => ((this.dump_expanded(id, next)));
-			(obj.prototypes) = () => ((this.prototypes()));
-			(obj.preview_show) = () => ((this.preview_show()));
-			return obj;
-		}
-		values(){
-			return [];
-		}
-		sub(){
-			return [(this.Dump("0"))];
-		}
-	};
-	($mol_mem_key(($.$mol_dump_list.prototype), "dump_expanded"));
-	($mol_mem_key(($.$mol_dump_list.prototype), "Dump"));
-
-
-;
-"use strict";
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        /**
-         * Dumps any JS values.
-         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_dump_demo
-         */
-        class $mol_dump_list extends $.$mol_dump_list {
-            sub() {
-                return this.values().map((_, index) => this.Dump(index));
-            }
-            dump_value(index) {
-                return this.values()[index];
-            }
-            expand_all(event) {
-                this.Dump(1).expanded(true);
-            }
-        }
-        __decorate([
-            $mol_mem
-        ], $mol_dump_list.prototype, "sub", null);
-        $$.$mol_dump_list = $mol_dump_list;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_attach("mol/dump/list/list.view.css", "[mol_dump_list] {\n\talign-items: flex-start;\n\tgap: var(--mol_gap_space);\n}\n\n[mol_dump_list_dump]:first-child {\n\tposition: sticky;\n\ttop: 0;\n}\n");
-})($ || ($ = {}));
-
-;
-	($.$mol_dump_value) = class $mol_dump_value extends ($.$mol_view) {
-		simple(){
-			return "";
-		}
-		Simple(){
-			const obj = new this.$.$mol_text_code();
-			(obj.text) = () => ((this.simple()));
-			return obj;
-		}
-		expanded(next){
-			if(next !== undefined) return next;
-			return false;
-		}
-		expandable(){
-			return true;
-		}
-		expand_all(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		expand_title(){
-			return "";
-		}
-		Expand_title(){
-			const obj = new this.$.$mol_text_code();
-			(obj.text) = () => ((this.expand_title()));
-			return obj;
-		}
-		Expand_head(){
-			const obj = new this.$.$mol_check_expand();
-			(obj.minimal_height) = () => (24);
-			(obj.minimal_width) = () => (24);
-			(obj.expanded) = (next) => ((this.expanded(next)));
-			(obj.expandable) = () => ((this.expandable()));
-			(obj.clicks) = (next) => ((this.expand_all(next)));
-			(obj.label) = () => ([(this.Expand_title())]);
-			return obj;
-		}
-		preview_dom(){
-			return null;
-		}
-		preview(){
-			return null;
-		}
-		Preview_dom(){
-			const obj = new this.$.$mol_view();
-			(obj.dom_node) = () => ((this.preview_dom()));
-			(obj.render) = () => ((this.preview()));
-			return obj;
-		}
-		Preview(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.Preview_dom())]);
-			return obj;
-		}
-		row_values(id){
-			return [];
-		}
-		prototypes(){
-			return false;
-		}
-		Row(id){
-			const obj = new this.$.$mol_dump_list();
-			(obj.values) = () => ((this.row_values(id)));
-			(obj.prototypes) = () => ((this.prototypes()));
-			(obj.preview_show) = () => ((this.preview_show()));
-			return obj;
-		}
-		expand_content(){
-			return [(this.Preview()), (this.Row("0"))];
-		}
-		Expand(){
-			const obj = new this.$.$mol_expander();
-			(obj.expanded) = (next) => ((this.expanded(next)));
-			(obj.Trigger) = () => ((this.Expand_head()));
-			(obj.content) = () => ((this.expand_content()));
-			return obj;
-		}
-		value(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		preview_show(next){
-			if(next !== undefined) return next;
-			return true;
-		}
-		sub(){
-			return [(this.Simple()), (this.Expand())];
-		}
-	};
-	($mol_mem(($.$mol_dump_value.prototype), "Simple"));
-	($mol_mem(($.$mol_dump_value.prototype), "expanded"));
-	($mol_mem(($.$mol_dump_value.prototype), "expand_all"));
-	($mol_mem(($.$mol_dump_value.prototype), "Expand_title"));
-	($mol_mem(($.$mol_dump_value.prototype), "Expand_head"));
-	($mol_mem(($.$mol_dump_value.prototype), "Preview_dom"));
-	($mol_mem(($.$mol_dump_value.prototype), "Preview"));
-	($mol_mem_key(($.$mol_dump_value.prototype), "Row"));
-	($mol_mem(($.$mol_dump_value.prototype), "Expand"));
-	($mol_mem(($.$mol_dump_value.prototype), "value"));
-	($mol_mem(($.$mol_dump_value.prototype), "preview_show"));
-
-
-;
-"use strict";
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        /**
-         * Dumps any JS values.
-         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_dump_demo
-         */
-        class $mol_dump_value extends $.$mol_dump_value {
-            sub() {
-                const value = this.value();
-                if (!value)
-                    return [this.Simple()];
-                if (typeof value === 'object')
-                    return [this.Expand()];
-                if (typeof value === 'function')
-                    return [this.Expand()];
-                return [this.Simple()];
-            }
-            simple() {
-                const value = this.value();
-                if (typeof value === 'number')
-                    return value.toLocaleString('en', { maximumSignificantDigits: 21 }).replaceAll(',', '_');
-                if (typeof value === 'bigint')
-                    return value.toLocaleString('en').replaceAll(',', '_');
-                return value ? String(value) : JSON.stringify(value) ?? 'undefined';
-            }
-            expand_title() {
-                const value = this.value();
-                if (typeof value === 'function') {
-                    const name = Reflect.getOwnPropertyDescriptor(value, 'name')?.value;
-                    const source = Function.prototype.toString.call(value);
-                    const args = source.match(/^[^{=>]*?\(([\s\S]*?)\)/)?.[1] ?? source.match(/^([$\w]+)\s+=>/)?.[1] ?? '';
-                    if (name)
-                        return name + '(' + args + ')';
-                }
-                if (value instanceof RegExp)
-                    return String(value);
-                if (value instanceof Date)
-                    return value.toISOString();
-                const kind = Reflect.getOwnPropertyDescriptor(value, Symbol.toStringTag)?.value
-                    ?? value.constructor.name
-                    ?? 'Object';
-                if (value instanceof Node) {
-                    try {
-                        switch (value.nodeType) {
-                            case value.TEXT_NODE: return kind + ' ' + value.nodeValue?.trim();
-                            case value.ELEMENT_NODE: return `<${value.localName}> ${value.id}`;
-                            case value.DOCUMENT_NODE: return kind + ' ' + value.baseURI;
-                        }
-                    }
-                    catch { }
-                }
-                return kind;
-            }
-            rows_values() {
-                let value = this.value();
-                const res = [];
-                if (value instanceof Map) {
-                    for (const [key, val] of value) {
-                        res.push([key, '▶', val]);
-                    }
-                }
-                if (value instanceof Set) {
-                    for (const val of value) {
-                        res.push([val]);
-                    }
-                }
-                if (value instanceof Function) {
-                    let source = Function.prototype.toString.call(value)
-                        .replace(/^.*?\{\r?\n?/, '')
-                        .replace(/}$/, '')
-                        .trimEnd();
-                    const indent = source.match(/^\s*/)[0];
-                    source = source.replace(new RegExp(`^${indent}`, 'gm'), '\t');
-                    res.push([source]);
-                }
-                if (value instanceof Element) {
-                    try {
-                        for (const kid of value.childNodes) {
-                            res.push([kid]);
-                        }
-                        for (const attr of value.attributes) {
-                            if (attr.nodeName === 'id')
-                                continue;
-                            res.push([attr.nodeName, '=', attr.nodeValue]);
-                        }
-                    }
-                    catch { }
-                }
-                if (value && (typeof value === 'object' || typeof value === 'function')) {
-                    for (const key of Reflect.ownKeys(value)) {
-                        const prefix = String(key) + '∶';
-                        const descr = Reflect.getOwnPropertyDescriptor(value, key);
-                        if ('value' in descr) {
-                            const line = [prefix, descr.value];
-                            // let proto = descr.value
-                            // while( proto && typeof proto === 'object' ) {
-                            // 	proto = Reflect.getPrototypeOf( proto )
-                            // 	if( proto ) line.push( ' - ', proto )
-                            // }
-                            res.push(line);
-                        }
-                        else {
-                            res.push([prefix, descr.get, descr.set]);
-                        }
-                    }
-                    if (this.prototypes()) {
-                        res.push(['__proto__:', Reflect.getPrototypeOf(value)]);
-                    }
-                }
-                return res;
-            }
-            preview_dom() {
-                const value = this.value();
-                if (value instanceof Element) {
-                    if ($mol_try(() => value.localName) instanceof Error)
-                        return null;
-                    if (value.isConnected)
-                        return null;
-                    return value;
-                }
-                return null;
-            }
-            expand_content() {
-                return [
-                    ...this.preview_show() && this.preview_dom() ? [this.Preview()] : [],
-                    ...this.rows_values().map((_, index) => this.Row(index)),
-                ];
-            }
-            expandable() {
-                return this.expand_content().length > 0;
-            }
-            row_values(index) {
-                return this.rows_values()[index];
-            }
-            expand_all(event) {
-                this.expanded(true);
-                for (const row of this.expand_content()) {
-                    if (!(row instanceof $mol_dump_list))
-                        continue;
-                    if (row.values()[0] === '__proto__:')
-                        continue;
-                    row.expand_all(event);
-                }
-            }
-        }
-        __decorate([
-            $mol_mem
-        ], $mol_dump_value.prototype, "sub", null);
-        __decorate([
-            $mol_mem
-        ], $mol_dump_value.prototype, "simple", null);
-        __decorate([
-            $mol_mem
-        ], $mol_dump_value.prototype, "expand_title", null);
-        __decorate([
-            $mol_mem
-        ], $mol_dump_value.prototype, "rows_values", null);
-        __decorate([
-            $mol_mem
-        ], $mol_dump_value.prototype, "preview_dom", null);
-        __decorate([
-            $mol_mem
-        ], $mol_dump_value.prototype, "expand_content", null);
-        $$.$mol_dump_value = $mol_dump_value;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_attach("mol/dump/value/value.view.css", "[mol_dump_value] {\n\tmin-height: 1.5rem;\n}\n\n[mol_dump_value_simple] {\n\tpadding: 0;\n}\n\n[mol_dump_value_expand_head] {\n\tmin-height: 1.5rem;\n}\n\n[mol_dump_value_expand_content] {\n\tpadding-inline-start: 1.5rem;\n\talign-items: flex-start;\n}\n\n[mol_dump_value_expand_title_rows],\n[mol_dump_value_simple_rows],\n[mol_dump_value_expand_head] {\n\tpadding: 0;\n\tgap: 0;\n}\n");
-})($ || ($ = {}));
-
-;
-	($.$giper_baza_unit_sand_dump) = class $giper_baza_unit_sand_dump extends ($.$mol_view) {
-		value(){
-			return null;
-		}
-		land(){
-			const obj = new this.$.$giper_baza_land();
-			return obj;
-		}
-		sand(){
-			const obj = new this.$.$giper_baza_unit_sand();
-			return obj;
-		}
-		Ref(){
-			const obj = new this.$.$giper_baza_link_chip();
-			(obj.link) = () => ((this.value()));
-			return obj;
-		}
-		Other(){
-			const obj = new this.$.$mol_dump_value();
-			(obj.value) = () => ((this.value()));
-			return obj;
-		}
-	};
-	($mol_mem(($.$giper_baza_unit_sand_dump.prototype), "land"));
-	($mol_mem(($.$giper_baza_unit_sand_dump.prototype), "sand"));
-	($mol_mem(($.$giper_baza_unit_sand_dump.prototype), "Ref"));
-	($mol_mem(($.$giper_baza_unit_sand_dump.prototype), "Other"));
-
-
-;
-"use strict";
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        class $giper_baza_unit_sand_dump extends $.$giper_baza_unit_sand_dump {
-            value() {
-                return this.land().sand_decode(this.sand());
-            }
-            sub() {
-                const value = this.value();
-                if (value instanceof $giper_baza_link)
-                    return [this.Ref()];
-                return [this.Other()];
-            }
-        }
-        __decorate([
-            $mol_mem
-        ], $giper_baza_unit_sand_dump.prototype, "sub", null);
-        $$.$giper_baza_unit_sand_dump = $giper_baza_unit_sand_dump;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $mol_style_define($giper_baza_unit_sand_dump, {
-            Other: {
-                padding: $mol_gap.text,
-            },
-        });
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-	($.$mol_icon_plus) = class $mol_icon_plus extends ($.$mol_icon) {
-		path(){
-			return "M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_drag) = class $mol_drag extends ($.$mol_ghost) {
-		start(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		drag_start(next){
-			return (this.start(next));
-		}
-		move(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		drag_move(next){
-			return (this.move(next));
-		}
-		end(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		drag_end(next){
-			return (this.end(next));
-		}
-		status(next){
-			if(next !== undefined) return next;
-			return "ready";
-		}
-		event(){
-			return {
-				"dragstart": (next) => (this.drag_start(next)), 
-				"drag": (next) => (this.drag_move(next)), 
-				"dragend": (next) => (this.drag_end(next))
-			};
-		}
-		attr(){
-			return {"draggable": true, "mol_drag_status": (this.status())};
-		}
-		transfer(){
-			return {
-				"text/plain": "", 
-				"text/html": "", 
-				"text/uri-list": ""
-			};
-		}
-		allow_copy(){
-			return true;
-		}
-		allow_link(){
-			return true;
-		}
-		allow_move(){
-			return true;
-		}
-		image(){
-			return (this.dom_node());
-		}
-	};
-	($mol_mem(($.$mol_drag.prototype), "start"));
-	($mol_mem(($.$mol_drag.prototype), "move"));
-	($mol_mem(($.$mol_drag.prototype), "end"));
-	($mol_mem(($.$mol_drag.prototype), "status"));
-
-
-;
-"use strict";
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        /**
-         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_drag_demo
-         */
-        class $mol_drag extends $.$mol_drag {
-            status(next = 'ready') { return next; }
-            drag_start(event) {
-                setTimeout(() => this.status('drag'));
-                const transfer = this.transfer();
-                for (let type in transfer) {
-                    event.dataTransfer.setData(type, transfer[type]);
-                }
-                event.dataTransfer.setDragImage(this.image(), 0, -32);
-                const effects = [];
-                if (this.allow_copy())
-                    effects.push('Copy');
-                if (this.allow_link())
-                    effects.push('Link');
-                if (this.allow_move())
-                    effects.push('Move');
-                let effectAllowed = effects[0].toLowerCase() + effects.slice(1).join('');
-                if (effectAllowed === 'copyLinkMove')
-                    effectAllowed = 'all';
-                event.dataTransfer.effectAllowed = effectAllowed;
-                this.start(event);
-            }
-            drag_end(event) {
-                setTimeout(() => this.status('ready'));
-                this.end(event);
-            }
-        }
-        __decorate([
-            $mol_mem
-        ], $mol_drag.prototype, "status", null);
-        $$.$mol_drag = $mol_drag;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 
@@ -26140,6 +25595,9 @@ var $;
             event_dec(next) {
                 this.value_limited((this.value_limited() || 0) - this.precision_change());
                 next?.preventDefault();
+            }
+            precision_change() {
+                return this.precision() || 1;
             }
             event_inc(next) {
                 this.value_limited((this.value_limited() || 0) + this.precision_change());
@@ -27142,6 +26600,128 @@ var $;
 })($ || ($ = {}));
 
 ;
+	($.$mol_icon_plus) = class $mol_icon_plus extends ($.$mol_icon) {
+		path(){
+			return "M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_drag) = class $mol_drag extends ($.$mol_ghost) {
+		start(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		drag_start(next){
+			return (this.start(next));
+		}
+		move(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		drag_move(next){
+			return (this.move(next));
+		}
+		end(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		drag_end(next){
+			return (this.end(next));
+		}
+		status(next){
+			if(next !== undefined) return next;
+			return "ready";
+		}
+		event(){
+			return {
+				"dragstart": (next) => (this.drag_start(next)), 
+				"drag": (next) => (this.drag_move(next)), 
+				"dragend": (next) => (this.drag_end(next))
+			};
+		}
+		attr(){
+			return {"draggable": true, "mol_drag_status": (this.status())};
+		}
+		transfer(){
+			return {
+				"text/plain": "", 
+				"text/html": "", 
+				"text/uri-list": ""
+			};
+		}
+		allow_copy(){
+			return true;
+		}
+		allow_link(){
+			return true;
+		}
+		allow_move(){
+			return true;
+		}
+		image(){
+			return (this.dom_node());
+		}
+	};
+	($mol_mem(($.$mol_drag.prototype), "start"));
+	($mol_mem(($.$mol_drag.prototype), "move"));
+	($mol_mem(($.$mol_drag.prototype), "end"));
+	($mol_mem(($.$mol_drag.prototype), "status"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        /**
+         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_drag_demo
+         */
+        class $mol_drag extends $.$mol_drag {
+            status(next = 'ready') { return next; }
+            drag_start(event) {
+                setTimeout(() => this.status('drag'));
+                const transfer = this.transfer();
+                for (let type in transfer) {
+                    event.dataTransfer.setData(type, transfer[type]);
+                }
+                event.dataTransfer.setDragImage(this.image(), 0, -32);
+                const effects = [];
+                if (this.allow_copy())
+                    effects.push('Copy');
+                if (this.allow_link())
+                    effects.push('Link');
+                if (this.allow_move())
+                    effects.push('Move');
+                let effectAllowed = effects[0].toLowerCase() + effects.slice(1).join('');
+                if (effectAllowed === 'copyLinkMove')
+                    effectAllowed = 'all';
+                event.dataTransfer.effectAllowed = effectAllowed;
+                this.start(event);
+            }
+            drag_end(event) {
+                setTimeout(() => this.status('ready'));
+                this.end(event);
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_drag.prototype, "status", null);
+        $$.$mol_drag = $mol_drag;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
 	($.$mol_icon_circle) = class $mol_icon_circle extends ($.$mol_icon) {
 		path(){
 			return "M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z";
@@ -27307,9 +26887,15 @@ var $;
 			if(next !== undefined) return next;
 			return null;
 		}
+		type_label(id){
+			return (this.Type().option_label(id));
+		}
 		Type_icon(id){
 			const obj = new this.$.$mol_icon();
 			return obj;
+		}
+		type_option_content(id){
+			return [(this.Type_icon(id)), (this.type_label(id))];
 		}
 		enabled(){
 			return true;
@@ -27317,17 +26903,8 @@ var $;
 		type_mutable(){
 			return (this.enabled());
 		}
-		type(next){
-			if(next !== undefined) return next;
-			return "Null";
-		}
-		Type(){
-			const obj = new this.$.$mol_select();
-			(obj.Filter) = () => (null);
-			(obj.Trigger_icon) = () => (null);
-			(obj.option_content) = (id) => ([(this.Type_icon(id))]);
-			(obj.enabled) = () => ((this.type_mutable()));
-			(obj.dictionary) = () => ({
+		type_dict(){
+			return {
 				"Null": "Nothing", 
 				"Bool": "Boolean", 
 				"Bint": "Integer", 
@@ -27335,7 +26912,22 @@ var $;
 				"Text": "Text", 
 				"List": "Array", 
 				"Tupl": "Dictionary"
-			});
+			};
+		}
+		type_auto(){
+			return "Null";
+		}
+		type(next){
+			if(next !== undefined) return next;
+			return (this.type_auto());
+		}
+		Type(){
+			const obj = new this.$.$mol_select();
+			(obj.Filter) = () => (null);
+			(obj.Trigger_icon) = () => (null);
+			(obj.option_content) = (id) => ((this.type_option_content(id)));
+			(obj.enabled) = () => ((this.type_mutable()));
+			(obj.dictionary) = () => ((this.type_dict()));
 			(obj.value) = (next) => ((this.type(next)));
 			return obj;
 		}
@@ -27642,13 +27234,39 @@ var $;
             }
             type(next) {
                 if (next !== undefined) {
-                    if (next !== 'Null')
-                        return next;
-                    this.value(null);
+                    switch (next) {
+                        case 'Null':
+                            this.value(null);
+                            return next;
+                        case 'Bool':
+                            this.bool(this.bool());
+                            return next;
+                        case 'Bint':
+                            this.bint(this.bint());
+                            return next;
+                        case 'Real':
+                            this.real(this.real());
+                            return next;
+                        case 'Date':
+                            this.date(this.date());
+                            return next;
+                        case 'Text':
+                            this.text(this.text());
+                            return next;
+                        case 'List':
+                            this.list(this.list());
+                            return next;
+                        case 'Tupl':
+                            this.tupl(this.tupl());
+                            return next;
+                    }
                 }
                 const schema = this.schema();
                 if (schema)
                     return schema;
+                return this.type_auto();
+            }
+            type_auto() {
                 const val = this.value();
                 if (val == null)
                     return 'Null';
@@ -27666,6 +27284,11 @@ var $;
             }
             type_mutable() {
                 return this.enabled() && !this.schema();
+            }
+            type_option_content(type) {
+                if (type == this.type())
+                    return [this.Type_icon(type)];
+                return super.type_option_content(type);
             }
             Type_icon(type) {
                 switch (type) {
@@ -27875,7 +27498,7 @@ var $;
         }
         __decorate([
             $mol_mem
-        ], $mol_vary_edit.prototype, "type", null);
+        ], $mol_vary_edit.prototype, "type_auto", null);
         __decorate([
             $mol_mem_key
         ], $mol_vary_edit.prototype, "Type_icon", null);
@@ -28022,6 +27645,179 @@ var $;
 })($ || ($ = {}));
 
 ;
+	($.$mol_icon_link) = class $mol_icon_link extends ($.$mol_icon) {
+		path(){
+			return "M3.9,12C3.9,10.29 5.29,8.9 7,8.9H11V7H7A5,5 0 0,0 2,12A5,5 0 0,0 7,17H11V15.1H7C5.29,15.1 3.9,13.71 3.9,12M8,13H16V11H8V13M17,7H13V8.9H17C18.71,8.9 20.1,10.29 20.1,12C20.1,13.71 18.71,15.1 17,15.1H13V17H17A5,5 0 0,0 22,12A5,5 0 0,0 17,7Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$giper_baza_vary_edit) = class $giper_baza_vary_edit extends ($.$mol_vary_edit) {
+		link(){
+			const obj = new this.$.$giper_baza_link();
+			return obj;
+		}
+		Vary(){
+			const obj = new this.$.$mol_vary_class();
+			return obj;
+		}
+		Link_icon(){
+			const obj = new this.$.$mol_icon_link();
+			return obj;
+		}
+		Link(){
+			const obj = new this.$.$giper_baza_link_chip();
+			(obj.link) = () => ((this.link()));
+			return obj;
+		}
+		type_dict(){
+			return {...(super.type_dict()), "Link": "Link"};
+		}
+	};
+	($mol_mem(($.$giper_baza_vary_edit.prototype), "link"));
+	($mol_mem(($.$giper_baza_vary_edit.prototype), "Vary"));
+	($mol_mem(($.$giper_baza_vary_edit.prototype), "Link_icon"));
+	($mol_mem(($.$giper_baza_vary_edit.prototype), "Link"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $giper_baza_vary_edit extends $.$giper_baza_vary_edit {
+            get $() {
+                if (super.$.$mol_vary_edit === this.constructor)
+                    return super.$;
+                return super.$.$mol_ambient({
+                    $mol_vary_edit: super.$.$giper_baza_vary_edit,
+                    $mol_vary: super.$.$giper_baza_vary,
+                });
+            }
+            type(next) {
+                if (next !== undefined) {
+                    switch (next) {
+                        case 'Link':
+                            this.link(this.link());
+                            return next;
+                    }
+                }
+                return super.type(next);
+            }
+            type_auto() {
+                const val = this.value();
+                if (val instanceof $giper_baza_link)
+                    return 'Link';
+                return super.type_auto();
+            }
+            Type_icon(type) {
+                switch (type) {
+                    case 'Link': return this.Link_icon();
+                }
+                return super.Type_icon(type);
+            }
+            link(next) {
+                const val = this.value(next);
+                if (val instanceof $giper_baza_link)
+                    return val;
+                if (typeof val === 'string')
+                    return new $giper_baza_link(val);
+                return $giper_baza_link.hole;
+            }
+            head() {
+                const type = this.type();
+                if (type === 'Link')
+                    return [this.Link()];
+                return super.head();
+            }
+        }
+        __decorate([
+            $mol_memo.field
+        ], $giper_baza_vary_edit.prototype, "$", null);
+        __decorate([
+            $mol_mem
+        ], $giper_baza_vary_edit.prototype, "type_auto", null);
+        __decorate([
+            $mol_mem_key
+        ], $giper_baza_vary_edit.prototype, "Type_icon", null);
+        __decorate([
+            $mol_mem
+        ], $giper_baza_vary_edit.prototype, "head", null);
+        $$.$giper_baza_vary_edit = $giper_baza_vary_edit;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$giper_baza_unit_sand_dump) = class $giper_baza_unit_sand_dump extends ($.$giper_baza_vary_edit) {
+		land(){
+			const obj = new this.$.$giper_baza_land();
+			return obj;
+		}
+		sand(){
+			const obj = new this.$.$giper_baza_unit_sand();
+			return obj;
+		}
+	};
+	($mol_mem(($.$giper_baza_unit_sand_dump.prototype), "land"));
+	($mol_mem(($.$giper_baza_unit_sand_dump.prototype), "sand"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $giper_baza_unit_sand_dump extends $.$giper_baza_unit_sand_dump {
+            value(next) {
+                const sand = this.sand();
+                if (next === undefined)
+                    return this.land().sand_decode(sand);
+                this.land().post(sand.lead(), sand.head(), sand.self(), next, sand.tag());
+                return next;
+            }
+        }
+        $$.$giper_baza_unit_sand_dump = $giper_baza_unit_sand_dump;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $mol_style_define($giper_baza_unit_sand_dump, {});
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$mol_icon_content_paste) = class $mol_icon_content_paste extends ($.$mol_icon) {
+		path(){
+			return "M19,20H5V4H7V7H17V4H19M12,2A1,1 0 0,1 13,3A1,1 0 0,1 12,4A1,1 0 0,1 11,3A1,1 0 0,1 12,2M19,2H14.82C14.4,0.84 13.3,0 12,0C10.7,0 9.6,0.84 9.18,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
 	($.$giper_baza_flex_field) = class $giper_baza_flex_field extends ($.$mol_view) {
 		Sub(){
 			const obj = new this.$.$mol_view();
@@ -28050,18 +27846,6 @@ var $;
 		atom_selection(next){
 			if(next !== undefined) return next;
 			return [];
-		}
-		bool(next){
-			if(next !== undefined) return next;
-			return false;
-		}
-		int(next){
-			if(next !== undefined) return next;
-			return +NaN;
-		}
-		real(next){
-			if(next !== undefined) return next;
-			return +NaN;
 		}
 		link_value(){
 			return null;
@@ -28157,83 +27941,6 @@ var $;
 			if(next !== undefined) return next;
 			return null;
 		}
-		list_item_receive(id, next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		list_item_drag_end(id, next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		list_item_value(id){
-			return "";
-		}
-		list_item_html(id){
-			return "";
-		}
-		list_item_uri(id){
-			return "";
-		}
-		list_item_kill(id, next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		List_item_kill_icon(id){
-			const obj = new this.$.$mol_icon_close();
-			return obj;
-		}
-		List_item_kill(id){
-			const obj = new this.$.$mol_button_minor();
-			(obj.clicks) = (next) => ((this.list_item_kill(id, next)));
-			(obj.hint) = () => ("Double to remove");
-			(obj.sub) = () => ([(this.List_item_kill_icon(id))]);
-			return obj;
-		}
-		list_sand(id){
-			const obj = new this.$.$giper_baza_unit_sand();
-			return obj;
-		}
-		List_item_dump(id){
-			const obj = new this.$.$giper_baza_unit_sand_dump();
-			(obj.land) = () => ((this.land()));
-			(obj.sand) = () => ((this.list_sand(id)));
-			return obj;
-		}
-		List_item_content(id){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.List_item_kill(id)), (this.List_item_dump(id))]);
-			return obj;
-		}
-		List_item_drag(id){
-			const obj = new this.$.$mol_drag();
-			(obj.end) = (next) => ((this.list_item_drag_end(id, next)));
-			(obj.transfer) = () => ({
-				"text/plain": (this.list_item_value(id)), 
-				"text/html": (this.list_item_html(id)), 
-				"text/uri-list": (this.list_item_uri(id))
-			});
-			(obj.Sub) = () => ((this.List_item_content(id)));
-			return obj;
-		}
-		List_item_drop(id){
-			const obj = new this.$.$mol_drop();
-			(obj.adopt) = (next) => ((this.list_item_adopt(next)));
-			(obj.receive) = (next) => ((this.list_item_receive(id, next)));
-			(obj.allow) = () => (["move", "copy"]);
-			(obj.Sub) = () => ((this.List_item_drag(id)));
-			return obj;
-		}
-		List_item(id){
-			return (this.List_item_drop(id));
-		}
-		list_items(){
-			return [(this.List_item("0"))];
-		}
-		List_items(){
-			const obj = new this.$.$mol_list();
-			(obj.rows) = () => ((this.list_items()));
-			return obj;
-		}
 		list_receive(next){
 			if(next !== undefined) return next;
 			return null;
@@ -28261,27 +27968,27 @@ var $;
 			(obj.title) = () => ("+");
 			return obj;
 		}
-		list_item_link_value(next){
-			if(next !== undefined) return next;
-			return "";
-		}
-		list_item_link(next){
+		list_item_paste(next){
 			if(next !== undefined) return next;
 			return null;
 		}
-		List_item_link(){
-			const obj = new this.$.$mol_string();
+		List_item_paste_icon(){
+			const obj = new this.$.$mol_icon_content_paste();
+			return obj;
+		}
+		List_item_paste(){
+			const obj = new this.$.$mol_button_minor();
 			(obj.enabled) = () => ((this.enabled()));
-			(obj.value) = (next) => ((this.list_item_link_value(next)));
-			(obj.submit) = (next) => ((this.list_item_link(next)));
-			(obj.hint) = () => ("Link");
+			(obj.click) = (next) => ((this.list_item_paste(next)));
+			(obj.title) = () => ("Paste item");
+			(obj.sub) = () => ([(this.List_item_paste_icon())]);
 			return obj;
 		}
 		list_tools(){
 			return [
 				(this.List_pick()), 
 				(this.List_item_add()), 
-				(this.List_item_link())
+				(this.List_item_paste())
 			];
 		}
 		List_tools(){
@@ -28295,6 +28002,64 @@ var $;
 			(obj.receive) = (next) => ((this.list_receive(next)));
 			(obj.allow) = () => (["move", "copy"]);
 			(obj.Sub) = () => ((this.List_tools()));
+			return obj;
+		}
+		list_item_receive(id, next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		list_item_drag_end(id, next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		list_item_text(id){
+			return "";
+		}
+		list_item_html(id){
+			return "";
+		}
+		list_item_uri(id){
+			return "";
+		}
+		list_item_sand(id){
+			const obj = new this.$.$giper_baza_unit_sand();
+			return obj;
+		}
+		List_item_dump(id){
+			const obj = new this.$.$giper_baza_unit_sand_dump();
+			(obj.land) = () => ((this.land()));
+			(obj.sand) = () => ((this.list_item_sand(id)));
+			(obj.enabled) = () => ((this.enabled()));
+			return obj;
+		}
+		List_item_drag(id){
+			const obj = new this.$.$mol_drag();
+			(obj.end) = (next) => ((this.list_item_drag_end(id, next)));
+			(obj.transfer) = () => ({
+				"text/plain": (this.list_item_text(id)), 
+				"text/html": (this.list_item_html(id)), 
+				"text/uri-list": (this.list_item_uri(id))
+			});
+			(obj.Sub) = () => ((this.List_item_dump(id)));
+			return obj;
+		}
+		List_item_drop(id){
+			const obj = new this.$.$mol_drop();
+			(obj.adopt) = (next) => ((this.list_item_adopt(next)));
+			(obj.receive) = (next) => ((this.list_item_receive(id, next)));
+			(obj.allow) = () => (["move", "copy"]);
+			(obj.Sub) = () => ((this.List_item_drag(id)));
+			return obj;
+		}
+		List_item(id){
+			return (this.List_item_drop(id));
+		}
+		list_items(){
+			return [(this.List_item("0"))];
+		}
+		List_items(){
+			const obj = new this.$.$mol_list();
+			(obj.rows) = () => ((this.list_items()));
 			return obj;
 		}
 		sub(){
@@ -28321,29 +28086,11 @@ var $;
 			return obj;
 		}
 		Atom(){
-			const obj = new this.$.$mol_vary_edit();
+			const obj = new this.$.$giper_baza_vary_edit();
 			(obj.enabled) = () => ((this.enabled()));
 			(obj.value) = (next) => ((this.atom_value(next)));
 			(obj.schema) = () => ((this.schema()));
 			(obj.selection) = (next) => ((this.atom_selection(next)));
-			return obj;
-		}
-		Bool(){
-			const obj = new this.$.$mol_check_box();
-			(obj.enabled) = () => ((this.enabled()));
-			(obj.checked) = (next) => ((this.bool(next)));
-			return obj;
-		}
-		Int(){
-			const obj = new this.$.$mol_number();
-			(obj.enabled) = () => ((this.enabled()));
-			(obj.value) = (next) => ((this.int(next)));
-			return obj;
-		}
-		Real(){
-			const obj = new this.$.$mol_number();
-			(obj.enabled) = () => ((this.enabled()));
-			(obj.value) = (next) => ((this.real(next)));
 			return obj;
 		}
 		Ref(){
@@ -28379,7 +28126,7 @@ var $;
 		}
 		List(){
 			const obj = new this.$.$mol_list();
-			(obj.rows) = () => ([(this.List_items()), (this.List_drop())]);
+			(obj.rows) = () => ([(this.List_drop()), (this.List_items())]);
 			return obj;
 		}
 	};
@@ -28387,9 +28134,6 @@ var $;
 	($mol_mem(($.$giper_baza_flex_field.prototype), "enum"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "atom_value"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "atom_selection"));
-	($mol_mem(($.$giper_baza_flex_field.prototype), "bool"));
-	($mol_mem(($.$giper_baza_flex_field.prototype), "int"));
-	($mol_mem(($.$giper_baza_flex_field.prototype), "real"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "Link_dump"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "link"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "Link_pick"));
@@ -28404,34 +28148,27 @@ var $;
 	($mol_mem(($.$giper_baza_flex_field.prototype), "text"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "text_selection"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "list_item_adopt"));
-	($mol_mem_key(($.$giper_baza_flex_field.prototype), "list_item_receive"));
-	($mol_mem_key(($.$giper_baza_flex_field.prototype), "list_item_drag_end"));
-	($mol_mem_key(($.$giper_baza_flex_field.prototype), "list_item_kill"));
-	($mol_mem_key(($.$giper_baza_flex_field.prototype), "List_item_kill_icon"));
-	($mol_mem_key(($.$giper_baza_flex_field.prototype), "List_item_kill"));
-	($mol_mem_key(($.$giper_baza_flex_field.prototype), "list_sand"));
-	($mol_mem_key(($.$giper_baza_flex_field.prototype), "List_item_dump"));
-	($mol_mem_key(($.$giper_baza_flex_field.prototype), "List_item_content"));
-	($mol_mem_key(($.$giper_baza_flex_field.prototype), "List_item_drag"));
-	($mol_mem_key(($.$giper_baza_flex_field.prototype), "List_item_drop"));
-	($mol_mem(($.$giper_baza_flex_field.prototype), "List_items"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "list_receive"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "list_pick"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "List_pick"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "list_item_add"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "List_item_add"));
-	($mol_mem(($.$giper_baza_flex_field.prototype), "list_item_link_value"));
-	($mol_mem(($.$giper_baza_flex_field.prototype), "list_item_link"));
-	($mol_mem(($.$giper_baza_flex_field.prototype), "List_item_link"));
+	($mol_mem(($.$giper_baza_flex_field.prototype), "list_item_paste"));
+	($mol_mem(($.$giper_baza_flex_field.prototype), "List_item_paste_icon"));
+	($mol_mem(($.$giper_baza_flex_field.prototype), "List_item_paste"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "List_tools"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "List_drop"));
+	($mol_mem_key(($.$giper_baza_flex_field.prototype), "list_item_receive"));
+	($mol_mem_key(($.$giper_baza_flex_field.prototype), "list_item_drag_end"));
+	($mol_mem_key(($.$giper_baza_flex_field.prototype), "list_item_sand"));
+	($mol_mem_key(($.$giper_baza_flex_field.prototype), "List_item_dump"));
+	($mol_mem_key(($.$giper_baza_flex_field.prototype), "List_item_drag"));
+	($mol_mem_key(($.$giper_baza_flex_field.prototype), "List_item_drop"));
+	($mol_mem(($.$giper_baza_flex_field.prototype), "List_items"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "pawn"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "prop"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "Enum"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "Atom"));
-	($mol_mem(($.$giper_baza_flex_field.prototype), "Bool"));
-	($mol_mem(($.$giper_baza_flex_field.prototype), "Int"));
-	($mol_mem(($.$giper_baza_flex_field.prototype), "Real"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "Ref"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "Str"));
 	($mol_mem(($.$giper_baza_flex_field.prototype), "Time"));
@@ -28727,11 +28464,11 @@ var $;
                     case 'vary': return this.Atom();
                     case 'enum': return this.Enum();
                     case 'bool': return this.Atom();
-                    case 'int': return this.Int();
-                    case 'real': return this.Real();
+                    case 'int': return this.Atom();
+                    case 'real': return this.Atom();
                     case 'str': return this.Atom();
                     case 'link': return this.Ref();
-                    case 'time': return this.Time();
+                    case 'time': return this.Atom();
                     case 'dict': return this.Dict();
                     case 'text': return this.Text();
                     case 'list': return this.List();
@@ -28768,24 +28505,6 @@ var $;
                         return ['', 0, 0];
                     return [sel[0][0].slice(link.length), sel[0][1], sel[1][1]];
                 }
-            }
-            bool(next) {
-                return this.pawn(next)?.cast($giper_baza_atom_bool).val(next) ?? false;
-            }
-            int(next) {
-                return Number(this.pawn(next)?.cast($giper_baza_atom_bint).val(next === undefined ? undefined : BigInt(next)) ?? Number.NaN);
-            }
-            real(next) {
-                return this.pawn(next)?.cast($giper_baza_atom_real).val(next) ?? Number.NaN;
-            }
-            str(next) {
-                return this.pawn(next)?.cast($giper_baza_atom_text).val(next) ?? '';
-            }
-            str_selection(next) {
-                return this.pawn(next)?.cast($giper_baza_atom_text).selection(this.land().auth().pass().lord(), next) ?? [0, 0];
-            }
-            time(next) {
-                return this.pawn(next)?.cast($giper_baza_atom_time).val(next) ?? null;
             }
             link(next) {
                 this.pawn(next)?.cast($giper_baza_atom_link).val(next) ?? null;
@@ -28847,13 +28566,13 @@ var $;
                 return this.pawn().cast($giper_baza_entity).Title()?.val() || this.pawn().link().str;
             }
             list_items() {
-                return this.pawn()?.units().map((unit, i) => this.List_item(unit)) ?? [];
+                return this.pawn()?.units().map((_, index) => this.List_item(index)) ?? [];
             }
             list_tools() {
                 return [
                     ...this.link_options().length ? [this.List_pick()] : [],
                     this.List_item_add(),
-                    this.List_item_link(),
+                    this.List_item_paste(),
                 ];
             }
             list_pick(next) {
@@ -28868,37 +28587,47 @@ var $;
                 if (meta)
                     target.meta(meta);
             }
-            list_item_link() {
-                const link = new $giper_baza_link(this.list_item_link_value());
-                this.pawn(null).cast($giper_baza_list).add(link);
-                this.list_item_link_value('');
+            list_item_paste() {
+                const str = $mol_wire_sync(navigator.clipboard).readText();
+                let val = str;
+                const Target = this.prop().Kind()?.remote();
+                if (Target) {
+                    const link = str.match($giper_baza_link)?.at(-1);
+                    if (!link)
+                        return null;
+                    val = new $giper_baza_link(link);
+                }
+                this.pawn(null).cast($giper_baza_list).add(val);
             }
             list_item_kill(sand) {
                 const list = this.pawn(null).cast($giper_baza_list);
                 const index = list.units().indexOf(sand);
                 list.wipe(index);
             }
-            list_sand(sand) {
-                return sand;
+            list_item_sand(index) {
+                return this.pawn()?.units()[index] ?? null;
             }
-            list_item_value(sand) {
-                return $mol_base64_encode($giper_baza_vary.pack([this.land().sand_decode(sand)]));
+            list_item_text(index) {
+                const sand = this.list_item_sand(index);
+                if (!sand)
+                    return '';
+                return String(this.land().sand_decode(sand));
             }
             list_item_adopt(transfer) {
                 return $giper_baza_vary.take($mol_base64_decode(transfer.getData("text/plain")))[0];
             }
-            list_item_receive(sand, value) {
+            list_item_receive(index, value) {
                 const list = this.pawn().cast($giper_baza_list);
-                list.splice([value], list.units().indexOf(sand));
+                list.splice([value], index);
             }
             list_receive(value) {
                 const list = this.pawn().cast($giper_baza_list);
                 list.splice([value]);
             }
-            list_item_drag_end(sand, event) {
+            list_item_drag_end(index, event) {
                 if (event.dataTransfer?.dropEffect !== 'move')
                     return;
-                this.land().sand_wipe(sand);
+                this.land().sand_wipe(this.list_item_sand(index));
             }
         }
         __decorate([
@@ -28936,13 +28665,13 @@ var $;
         ], $giper_baza_flex_field.prototype, "list_item_add", null);
         __decorate([
             $mol_action
-        ], $giper_baza_flex_field.prototype, "list_item_link", null);
+        ], $giper_baza_flex_field.prototype, "list_item_paste", null);
         __decorate([
             $mol_action
         ], $giper_baza_flex_field.prototype, "list_item_kill", null);
         __decorate([
             $mol_mem_key
-        ], $giper_baza_flex_field.prototype, "list_sand", null);
+        ], $giper_baza_flex_field.prototype, "list_item_sand", null);
         $$.$giper_baza_flex_field = $giper_baza_flex_field;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
@@ -29242,21 +28971,6 @@ var $;
 			(obj.sub) = () => ([(this.unit_time(id))]);
 			return obj;
 		}
-		Unit_wipe_icon(id){
-			const obj = new this.$.$mol_icon_close();
-			return obj;
-		}
-		unit_wipe(id, next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Unit_wipe(id){
-			const obj = new this.$.$mol_button_minor();
-			(obj.sub) = () => ([(this.Unit_wipe_icon(id))]);
-			(obj.enabled) = () => ((this.can_change()));
-			(obj.click) = (next) => ((this.unit_wipe(id, next)));
-			return obj;
-		}
 		unit_value(id){
 			return null;
 		}
@@ -29270,7 +28984,6 @@ var $;
 			return [
 				(this.Unit_tag(id)), 
 				(this.Unit_time(id)), 
-				(this.Unit_wipe(id)), 
 				(this.Unit_value(id))
 			];
 		}
@@ -29337,9 +29050,6 @@ var $;
 	($mol_mem_key(($.$giper_baza_pawn_dump.prototype), "unit_tag"));
 	($mol_mem_key(($.$giper_baza_pawn_dump.prototype), "Unit_tag"));
 	($mol_mem_key(($.$giper_baza_pawn_dump.prototype), "Unit_time"));
-	($mol_mem_key(($.$giper_baza_pawn_dump.prototype), "Unit_wipe_icon"));
-	($mol_mem_key(($.$giper_baza_pawn_dump.prototype), "unit_wipe"));
-	($mol_mem_key(($.$giper_baza_pawn_dump.prototype), "Unit_wipe"));
 	($mol_mem_key(($.$giper_baza_pawn_dump.prototype), "Unit_value"));
 	($mol_mem_key(($.$giper_baza_pawn_dump.prototype), "pawn_inner"));
 	($mol_mem_key(($.$giper_baza_pawn_dump.prototype), "Pawn_inner"));
@@ -29384,20 +29094,6 @@ var $;
                 }
                 return this.units()[index].tag();
             }
-            // unit_tip( index: number, next?: keyof typeof $giper_baza_vary_tip ) {
-            // 	if( next ) {
-            // 		const units = this.units()
-            // 		const unit = units[ index ]
-            // 		this.pawn().land().post(
-            // 			index ? units[ index - 1 ].self() : $giper_baza_link.hole,
-            // 			unit.head(),
-            // 			unit.self(),
-            // 			[ $giper_baza_vary_cast( next, this.pawn().land().sand_decode( unit ) ) ],
-            // 			unit.tag(),
-            // 		)
-            // 	}
-            // 	return this.units()[ index ].tip()
-            // }
             unit_time(index) {
                 const unit = this.units()[index];
                 return $giper_baza_time_dump(unit.time(), unit.tick());
@@ -29405,39 +29101,8 @@ var $;
             unit_value(index) {
                 return this.units()[index];
             }
-            unit_wipe(index, event) {
-                this.pawn().land().sand_wipe(this.units()[index]);
-            }
             pawn_inner(index) {
                 return this.pawn().land().Pawn($giper_baza_dict).Head(this.units()[index].self());
-            }
-            add_key(event) {
-                if (!this.expandable())
-                    this.expanded(true);
-                this.pawn().cast($giper_baza_list).has(this.key_new(), true, 'solo');
-                this.key_new('');
-            }
-            add_value(event) {
-                if (!this.expandable())
-                    this.expanded(true);
-                this.pawn().cast($giper_baza_list).splice([this.value_new()]);
-                this.value_new('');
-            }
-            value_str(next) {
-                return this.pawn().cast($giper_baza_atom_text).val(next) ?? '';
-            }
-            text(next) {
-                return this.pawn().cast($giper_baza_text).str(next);
-            }
-            editors() {
-                return [
-                    ...this.tag() === 'keys' ? [this.Add_key()] : [],
-                    ...this.tag() === 'vals' ? [
-                        this.Add_value(),
-                        // this.Value_text(),
-                    ] : [],
-                    // ... this.tag() === 'solo' ? [ this.Value_str() ] : [],
-                ];
             }
         }
         __decorate([
@@ -29446,9 +29111,6 @@ var $;
         __decorate([
             $mol_mem
         ], $giper_baza_pawn_dump.prototype, "pawns", null);
-        __decorate([
-            $mol_mem
-        ], $giper_baza_pawn_dump.prototype, "editors", null);
         $$.$giper_baza_pawn_dump = $giper_baza_pawn_dump;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
@@ -29536,9 +29198,8 @@ var $;
                 color: $mol_theme.shade,
             },
             Unit_value: {
-                // padding: $mol_gap.text,
-                align: {
-                    self: 'flex-start',
+                flex: {
+                    grow: 1,
                 },
             },
             Content: {
