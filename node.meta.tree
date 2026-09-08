@@ -18,6 +18,7 @@
 	pack bog git \https://github.com/b-on-g/bog.git
 	pack mws git \https://github.com/reatailret/milkywaystd_mol.git
 	pack raggu git \https://github.com/RaguTeam/raggu.git
+	pack vsqla git \https://github.com/vsqla/vsqla.git
 \/bog
 	pack horrorgamelanding git \https://github.com/b-on-g/horrorgamelanding.com.git
 	pack theme git \https://github.com/b-on-g/theme.git
@@ -104,6 +105,7 @@
 	pack sert git \https://github.com/b-on-g/sert.git
 	pack bg git \https://github.com/b-on-g/bg.git
 	pack kit git \https://github.com/b-on-g/kit.git
+	pack vmap git \https://github.com/b-on-g/vmap.git
 \/mol
 	pack icon git \https://github.com/nin-jin/mol_icon.git
 \/mol/view

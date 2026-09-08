@@ -9434,6 +9434,7 @@ var $;
     class $mol_rest_port extends $mol_object {
         send_code(code) { }
         send_type(mime) { }
+        send_name(name) { }
         origin() { return 'unknown'; }
         address() { return 'unknown'; }
         send_data(data) {
