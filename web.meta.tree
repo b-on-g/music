@@ -106,6 +106,7 @@
 	pack bg git \https://github.com/b-on-g/bg.git
 	pack kit git \https://github.com/b-on-g/kit.git
 	pack vmap git \https://github.com/b-on-g/vmap.git
+	pack trip git \https://github.com/b-on-g/trip.git
 \/mol
 	pack icon git \https://github.com/nin-jin/mol_icon.git
 \/mol/view
