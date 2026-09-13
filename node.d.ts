@@ -653,8 +653,8 @@ declare namespace $ {
         dir: string;
     }> {
     }
-    const $mol_run_spawn: (...args: Parameters<(typeof $node)["child_process"]["spawn"]>) => import("child_process").ChildProcess;
-    const $mol_run_spawn_sync: (...args: Parameters<(typeof $node)["child_process"]["spawnSync"]>) => import("child_process").SpawnSyncReturns<string | NonSharedBuffer>;
+    const $mol_run_spawn: (...args: Parameters<(typeof $node)["child_process"]["spawn"]>) => import("node:child_process").ChildProcess;
+    const $mol_run_spawn_sync: (...args: Parameters<(typeof $node)["child_process"]["spawnSync"]>) => import("node:child_process").SpawnSyncReturns<string | NonSharedBuffer>;
     type $mol_run_options = {
         command: readonly string[] | string;
         dir: string;
@@ -663,10 +663,10 @@ declare namespace $ {
     };
     class $mol_run extends $mol_object {
         static async_enabled(): boolean;
-        static spawn(options: $mol_run_options): import("child_process").SpawnSyncReturns<string | NonSharedBuffer> | $mol_run_error_context;
+        static spawn(options: $mol_run_options): import("node:child_process").SpawnSyncReturns<string | NonSharedBuffer> | $mol_run_error_context;
         static spawn_async({ dir, sync, timeout, command, env }: $mol_run_options & {
             sync?: boolean;
-        }): import("child_process").SpawnSyncReturns<string | NonSharedBuffer> | (Promise<$mol_run_error_context> & {
+        }): import("node:child_process").SpawnSyncReturns<string | NonSharedBuffer> | (Promise<$mol_run_error_context> & {
             destructor: () => void;
         });
         static error_message(res?: $mol_run_error_context): string;
@@ -1957,7 +1957,7 @@ declare namespace $ {
 declare namespace $ {
     class $mol_storage_node extends $mol_storage {
         static persisted(): boolean;
-        static stats(): import("fs").StatsFs;
+        static stats(): import("node:fs").StatsFs;
         static total(): number;
         static used(): number;
         static free(): number;
@@ -2188,44 +2188,9 @@ declare namespace $ {
 }
 
 declare namespace $ {
-    /** State of arguments like `foo=bar xxx` */
-    class $mol_state_arg extends $mol_object {
-        prefix: string;
-        static prolog: string;
-        static separator: string;
-        static href(next?: string): string;
-        static href_normal(): string;
-        static dict(next?: {
-            [key: string]: string | null;
-        }): Readonly<{
-            [key: string]: string;
-        }>;
-        static value(key: string, next?: string | null): string | null;
-        static link(next: Record<string, string | null>): string;
-        static make_link(next: Record<string, string | null>): string;
-        static go(next: {
-            [key: string]: string | null;
-        }): void;
-        static commit(): void;
-        constructor(prefix?: string);
-        value(key: string, next?: string): string | null;
-        sub(postfix: string): $mol_state_arg;
-        link(next: Record<string, string | null>): string;
-    }
-}
-
-declare namespace $ {
     class $mol_media extends $mol_object2 {
         static match(query: string, next?: boolean): boolean;
     }
-}
-
-declare namespace $ {
-    /**
-     * Switcher between light/dark themes (usually for `mol_theme_auto` plugin).
-     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_lights_demo
-     */
-    function $mol_lights(this: $, next?: boolean): boolean;
 }
 
 declare namespace $ {
@@ -2262,6 +2227,7 @@ declare namespace $.$$ {
         click_step(next?: number): number;
         /** 3-click cycle: opposite → back → system. */
         mode_next(): void;
+        system_light(): boolean;
         is_light_now(): any;
         theme_index(next?: number): number;
         system_theme_index(): number;
@@ -3723,6 +3689,33 @@ declare namespace $ {
 }
 
 //# sourceMappingURL=off.view.tree.d.ts.map
+declare namespace $ {
+    /** State of arguments like `foo=bar xxx` */
+    class $mol_state_arg extends $mol_object {
+        prefix: string;
+        static prolog: string;
+        static separator: string;
+        static href(next?: string): string;
+        static href_normal(): string;
+        static dict(next?: {
+            [key: string]: string | null;
+        }): Readonly<{
+            [key: string]: string;
+        }>;
+        static value(key: string, next?: string | null): string | null;
+        static link(next: Record<string, string | null>): string;
+        static make_link(next: Record<string, string | null>): string;
+        static go(next: {
+            [key: string]: string | null;
+        }): void;
+        static commit(): void;
+        constructor(prefix?: string);
+        value(key: string, next?: string): string | null;
+        sub(postfix: string): $mol_state_arg;
+        link(next: Record<string, string | null>): string;
+    }
+}
+
 declare namespace $ {
     function $mol_dom_safe_uri(uri: string): string;
     function $mol_dom_safe_attr(val: string): string;
@@ -35520,11 +35513,11 @@ declare namespace $ {
         log(): boolean;
         port(): number;
         start(): void;
-        http_server(): import("http").Server<typeof import("http").IncomingMessage, typeof import("http").ServerResponse>;
+        http_server(): import("node:http").Server<typeof import("node:http").IncomingMessage, typeof import("node:http").ServerResponse>;
         http_income(req: InstanceType<$node['http']['IncomingMessage']>, res: InstanceType<$node['http']['ServerResponse']>): void;
         ws_upgrade(req: InstanceType<$node['http']['IncomingMessage']>, socket: InstanceType<$node['stream']['Duplex']>, head: Buffer<ArrayBuffer>): void;
-        _ws_income_chunks: WeakMap<import("stream").Duplex, Uint8Array<ArrayBuffer>[]>;
-        _ws_income_frames: WeakMap<import("stream").Duplex, (string | Uint8Array<ArrayBuffer>)[]>;
+        _ws_income_chunks: WeakMap<import("node:stream").Duplex, Uint8Array<ArrayBuffer>[]>;
+        _ws_income_frames: WeakMap<import("node:stream").Duplex, (string | Uint8Array<ArrayBuffer>)[]>;
         ws_income(chunk: Buffer<ArrayBuffer>, upgrade: $mol_rest_message, sock: InstanceType<typeof $node.stream.Duplex>): Promise<undefined>;
         root(resource?: $mol_rest_resource): $mol_rest_resource;
     }
