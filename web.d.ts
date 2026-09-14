@@ -1982,6 +1982,16 @@ declare namespace $.$$ {
 }
 
 declare namespace $ {
+    function $bog_tooltip_room(box: {
+        readonly left: number;
+        readonly width: number;
+    }, view: number): {
+        left: number;
+        right: number;
+    };
+}
+
+declare namespace $ {
 
 	export class $bog_tooltip_plugin extends $mol_plugin {
 	}

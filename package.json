@@ -156,6 +156,7 @@
     "$mol_media",
     "$bog_popup",
     "$bog_tooltip",
+    "$bog_tooltip_room",
     "$mol_image",
     "$giper_baza_status",
     "$giper_baza",
