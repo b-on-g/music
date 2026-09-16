@@ -1688,6 +1688,124 @@ $giper_baza_unit_sand_dump $giper_baza_vary_edit
 
 $mol_icon_content_paste $mol_icon path \M19,20H5V4H7V7H17V4H19M12,2A1,1 0 0,1 13,3A1,1 0 0,1 12,4A1,1 0 0,1 11,3A1,1 0 0,1 12,2M19,2H14.82C14.4,0.84 13.3,0 12,0C10.7,0 9.6,0.84 9.18,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z
 
+$mol_icon_marker $mol_icon path \M18.5,1.15C17.97,1.15 17.46,1.34 17.07,1.73L11.26,7.55L16.91,13.2L22.73,7.39C23.5,6.61 23.5,5.35 22.73,4.56L19.89,1.73C19.5,1.34 19,1.15 18.5,1.15M10.3,8.5L4.34,14.46C3.56,15.24 3.56,16.5 4.36,17.31C3.14,18.54 1.9,19.77 0.67,21H6.33L7.19,20.14C7.97,20.9 9.22,20.89 10,20.12L15.95,14.16
+
+$mol_icon_format_size $mol_icon path \M2 4V7H7V19H10V7H15V4H2M21 9H12V12H15V19H18V12H21V9Z
+
+$mol_icon_comment $mol_icon path \M9,22A1,1 0 0,1 8,21V18H4A2,2 0 0,1 2,16V4C2,2.89 2.9,2 4,2H20A2,2 0 0,1 22,4V16A2,2 0 0,1 20,18H13.9L10.2,21.71C10,21.9 9.75,22 9.5,22V22H9Z
+
+$mol_icon_comment_quote $mol_icon path \M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H8V21C8 21.6 8.4 22 9 22H9.5C9.7 22 10 21.9 10.2 21.7L13.9 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2M11 13H7V8.8L8.3 6H10.3L8.9 9H11V13M17 13H13V8.8L14.3 6H16.3L14.9 9H17V13Z
+
+$mol_icon_comment_quote_outline $mol_icon path \M9 22C8.4 22 8 21.6 8 21V18H4C2.9 18 2 17.1 2 16V4C2 2.9 2.9 2 4 2H20C21.1 2 22 2.9 22 4V16C22 17.1 21.1 18 20 18H13.9L10.2 21.7C10 21.9 9.8 22 9.5 22H9M10 16V19.1L13.1 16H20V4H4V16H10M16.3 6L14.9 9H17V13H13V8.8L14.3 6H16.3M10.3 6L8.9 9H11V13H7V8.8L8.3 6H10.3Z
+
+$giper_baza_rich_edit $mol_view
+	pawn? $giper_baza_rich
+	enabled true
+	hint \
+	auto /
+		<= selection_load null
+		<= selection_sync null
+	plugins /
+		<= Inline_toggle $mol_hotkey
+			mod_ctrl true
+			key *
+				B? <=> inline_toggle*strong? null - \Brutal
+				I? <=> inline_toggle*em? null - \Ironic
+				U? <=> inline_toggle*ins? null - \Update
+				O? <=> inline_toggle*del? null - \Omit
+				M? <=> inline_toggle*code? null - \Monospace
+	sub /
+		<= Tools $mol_float sub /
+			<= Inline_format_menu $mol_pick
+				hint @ \Inline Formating
+				trigger_content /
+					<= Inline_format_menu_icon $mol_icon_marker
+				bubble_content /
+					<= Strong_button $mol_button_minor
+						title @ \Strong
+						hint \Ctrl+B
+						enabled? <=> selected? false
+						click? <=> inline_toggle*strong?
+					<= Em_button $mol_button_minor
+						title @ \Emphasis
+						hint \Ctrl+I
+						enabled? <=> selected? false
+						click? <=> inline_toggle*em?
+					<= Ins_button $mol_button_minor
+						title @ \Insertion
+						hint \Ctrl+U
+						enabled? <=> selected? false
+						click? <=> inline_toggle*ins?
+					<= Del_button $mol_button_minor
+						title @ \Deletion
+						hint \Ctrl+O
+						enabled? <=> selected? false
+						click? <=> inline_toggle*del?
+					<= Code_button $mol_button_minor
+						title @ \Code
+						hint \Ctrl+M
+						enabled? <=> selected? false
+						click? <=> inline_toggle*code?
+			<= Heading_menu $mol_pick
+				hint @ \Heading
+				trigger_content /
+					<= Heading_menu_icon $mol_icon_format_size
+				bubble_content /
+					<= Header_inc_button $mol_button_minor
+						title @ \Increase
+						hint \Ctrl+H
+						enabled false
+					<= Header_dec_button $mol_button_minor
+						title @ \Decrease
+						hint \Ctrl+Shift+H
+						enabled false
+			<= Indent_menu $mol_pick
+				hint @ \Indentation
+				trigger_content /
+					<= Indent_menu_icon $mol_icon_format_list_bulleted
+				bubble_content /
+					<= Indent_inc_button $mol_button_minor
+						title @ \Increase
+						hint \Ctrl+Shift+L
+						enabled false
+					<= Indent_dec_button $mol_button_minor
+						title @ \Decrease
+						hint \Ctrl+L
+						enabled false
+					<= Bullet_button $mol_button_minor
+						title @ \Bullets
+						hint \Ctrl+8
+						enabled false
+					<= Number_button $mol_button_minor
+						title @ \Numbers
+						hint \Ctrl+1
+						enabled false
+			<= Quote_menu $mol_pick
+				hint @ \Quotation
+				trigger_content /
+					<= Quote_menu_icon $mol_icon_comment_quote_outline
+				bubble_content /
+					<= Quote_inc_button $mol_button_minor
+						title @ \Increase
+						hint \Ctrl+Shift+Q
+						enabled false
+					<= Quote_dec_button $mol_button_minor
+						title @ \Decrease
+						hint \Ctrl+Q
+						enabled false
+					<= Quote_code_button $mol_button_minor
+						title @ \Code
+						hint \Ctrl+3
+						enabled false
+		<= Content $mol_view
+			attr *
+				contenteditable <= editable? \true
+			event *
+				input? <=> save? null
+				paste? <=> paste? null
+				pointermove? <=> hover? null
+			sub <= content /
+
 $giper_baza_flex_field $mol_view
 	sub / <= Sub $mol_view
 	pawn? $giper_baza_pawn
@@ -1739,6 +1857,9 @@ $giper_baza_flex_field $mol_view
 		enabled <= enabled true
 		value? <=> text? \
 		selection? <=> text_selection? /
+	Rich $giper_baza_rich_edit
+		enabled <= enabled true
+		pawn? <=> rich_pawn? $giper_baza_rich
 	List $mol_list
 		rows /
 			<= List_drop $mol_drop
