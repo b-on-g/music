@@ -229,10 +229,13 @@ $mol_list $mol_view
 		0
 		0
 
-$mol_hotkey $mol_plugin
+$mol_hotkey2 $mol_plugin
 	event *
 		^
 		keydown? <=> keydown? null
+	action *
+
+$mol_hotkey $mol_hotkey2
 	key *
 	mod_ctrl false
 	mod_alt false
@@ -1700,20 +1703,24 @@ $mol_icon_comment_quote_outline $mol_icon path \M9 22C8.4 22 8 21.6 8 21V18H4C2.
 
 $giper_baza_rich_edit $mol_view
 	pawn? $giper_baza_rich
-	enabled true
+	attr *
+		^
+		giper_baza_rich_edit_enabled <= enabled true
 	hint \
 	auto /
 		<= selection_load null
 		<= selection_sync null
 	plugins /
-		<= Inline_toggle $mol_hotkey
-			mod_ctrl true
-			key *
-				B? <=> inline_toggle*strong? null - \Brutal
-				I? <=> inline_toggle*em? null - \Ironic
-				U? <=> inline_toggle*ins? null - \Update
-				O? <=> inline_toggle*del? null - \Omit
-				M? <=> inline_toggle*code? null - \Monospace
+		<= Hotkey $mol_hotkey2 action *
+			ctrl_B? <=> inline_toggle*strong? null - \Brutal
+			ctrl_I? <=> inline_toggle*em? null - \Ironic
+			ctrl_U? <=> inline_toggle*ins? null - \Update
+			ctrl_O? <=> inline_toggle*del? null - \Omit
+			ctrl_M? <=> inline_toggle*code? null - \Monospace
+			ctrl_Q? <=> block_more*blockquote? null - \Quote
+			ctrl_shift_Q? <=> block_less*blockquote? null - \Quote
+			tab? <=> block_more*ul? null - \Indent
+			shift_tab? <=> block_less*ul? null - \Indent
 	sub /
 		<= Tools $mol_float sub /
 			<= Inline_format_menu $mol_pick
@@ -1766,12 +1773,14 @@ $giper_baza_rich_edit $mol_view
 				bubble_content /
 					<= Indent_inc_button $mol_button_minor
 						title @ \Increase
-						hint \Ctrl+Shift+L
-						enabled false
+						hint \Tab
+						enabled? <=> selected? false
+						click? <=> block_more*ul?
 					<= Indent_dec_button $mol_button_minor
 						title @ \Decrease
-						hint \Ctrl+L
-						enabled false
+						hint \Shift+Tab
+						enabled? <=> selected? false
+						click? <=> block_less*ul?
 					<= Bullet_button $mol_button_minor
 						title @ \Bullets
 						hint \Ctrl+8
@@ -1787,12 +1796,14 @@ $giper_baza_rich_edit $mol_view
 				bubble_content /
 					<= Quote_inc_button $mol_button_minor
 						title @ \Increase
-						hint \Ctrl+Shift+Q
-						enabled false
+						hint \Ctrl+Q
+						enabled? <=> selected? false
+						click? <=> block_more*blockquote?
 					<= Quote_dec_button $mol_button_minor
 						title @ \Decrease
-						hint \Ctrl+Q
-						enabled false
+						hint \Ctrl+Shift+Q
+						enabled? <=> selected? false
+						click? <=> block_less*blockquote?
 					<= Quote_code_button $mol_button_minor
 						title @ \Code
 						hint \Ctrl+3

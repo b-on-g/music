@@ -643,7 +643,7 @@ declare namespace $ {
      * Gap in CSS
      * @see https://page.hyoo.ru/#!=msdb74_bm7nsq
      */
-    let $mol_gap: Record<"text" | "space" | "block" | "blur" | "page" | "round" | "emoji", $mol_style_func<"var", unknown>>;
+    let $mol_gap: Record<"text" | "block" | "blur" | "page" | "space" | "round" | "emoji", $mol_style_func<"var", unknown>>;
 }
 
 declare namespace $ {
@@ -3034,11 +3034,30 @@ declare namespace $ {
 
 declare namespace $ {
 
-	export class $mol_hotkey extends $mol_plugin {
+	export class $mol_hotkey2 extends $mol_plugin {
 		keydown( next?: any ): any
 		event( ): ({ 
-			keydown( next?: ReturnType< $mol_hotkey['keydown'] > ): ReturnType< $mol_hotkey['keydown'] >,
+			keydown( next?: ReturnType< $mol_hotkey2['keydown'] > ): ReturnType< $mol_hotkey2['keydown'] >,
 		})  & ReturnType< $mol_plugin['event'] >
+		action( ): Record<string, any>
+	}
+	
+}
+
+//# sourceMappingURL=hotkey2.view.tree.d.ts.map
+declare namespace $.$$ {
+    /**
+     * Plugin which adds handlers for keyboard keys.
+     * @see [mol_keyboard_code](../keyboard/code/code.ts)
+     */
+    class $mol_hotkey2 extends $.$mol_hotkey2 {
+        keydown(event?: KeyboardEvent): void;
+    }
+}
+
+declare namespace $ {
+
+	export class $mol_hotkey extends $mol_hotkey2 {
 		key( ): Record<string, any>
 		mod_ctrl( ): boolean
 		mod_alt( ): boolean
@@ -3051,11 +3070,13 @@ declare namespace $ {
 declare namespace $.$$ {
     /**
      * Plugin which adds handlers for keyboard keys.
+     * @deprecated Use $mol_hotkey2
      * @see [mol_keyboard_code](../keyboard/code/code.ts)
      */
     class $mol_hotkey extends $.$mol_hotkey {
-        key(): { [key in keyof typeof $mol_keyboard_code]?: (event: KeyboardEvent) => void; };
-        keydown(event?: KeyboardEvent): void;
+        action(): {
+            [k: string]: any;
+        };
     }
 }
 
@@ -40943,196 +40964,200 @@ declare namespace $ {
 
 declare namespace $ {
 
-	type $mol_hotkey__mod_ctrl_giper_baza_rich_edit_1 = $mol_type_enforce<
-		boolean
-		,
-		ReturnType< $mol_hotkey['mod_ctrl'] >
-	>
-	type $mol_hotkey__key_giper_baza_rich_edit_2 = $mol_type_enforce<
+	type $mol_hotkey2__action_giper_baza_rich_edit_1 = $mol_type_enforce<
 		({ 
-			B( next?: ReturnType< $giper_baza_rich_edit['inline_toggle'] > ): ReturnType< $giper_baza_rich_edit['inline_toggle'] >,
-			I( next?: ReturnType< $giper_baza_rich_edit['inline_toggle'] > ): ReturnType< $giper_baza_rich_edit['inline_toggle'] >,
-			U( next?: ReturnType< $giper_baza_rich_edit['inline_toggle'] > ): ReturnType< $giper_baza_rich_edit['inline_toggle'] >,
-			O( next?: ReturnType< $giper_baza_rich_edit['inline_toggle'] > ): ReturnType< $giper_baza_rich_edit['inline_toggle'] >,
-			M( next?: ReturnType< $giper_baza_rich_edit['inline_toggle'] > ): ReturnType< $giper_baza_rich_edit['inline_toggle'] >,
+			ctrl_B( next?: ReturnType< $giper_baza_rich_edit['inline_toggle'] > ): ReturnType< $giper_baza_rich_edit['inline_toggle'] >,
+			ctrl_I( next?: ReturnType< $giper_baza_rich_edit['inline_toggle'] > ): ReturnType< $giper_baza_rich_edit['inline_toggle'] >,
+			ctrl_U( next?: ReturnType< $giper_baza_rich_edit['inline_toggle'] > ): ReturnType< $giper_baza_rich_edit['inline_toggle'] >,
+			ctrl_O( next?: ReturnType< $giper_baza_rich_edit['inline_toggle'] > ): ReturnType< $giper_baza_rich_edit['inline_toggle'] >,
+			ctrl_M( next?: ReturnType< $giper_baza_rich_edit['inline_toggle'] > ): ReturnType< $giper_baza_rich_edit['inline_toggle'] >,
+			ctrl_Q( next?: ReturnType< $giper_baza_rich_edit['block_more'] > ): ReturnType< $giper_baza_rich_edit['block_more'] >,
+			ctrl_shift_Q( next?: ReturnType< $giper_baza_rich_edit['block_less'] > ): ReturnType< $giper_baza_rich_edit['block_less'] >,
+			tab( next?: ReturnType< $giper_baza_rich_edit['block_more'] > ): ReturnType< $giper_baza_rich_edit['block_more'] >,
+			shift_tab( next?: ReturnType< $giper_baza_rich_edit['block_less'] > ): ReturnType< $giper_baza_rich_edit['block_less'] >,
 		}) 
 		,
-		ReturnType< $mol_hotkey['key'] >
+		ReturnType< $mol_hotkey2['action'] >
 	>
-	type $mol_button_minor__title_giper_baza_rich_edit_3 = $mol_type_enforce<
+	type $mol_button_minor__title_giper_baza_rich_edit_2 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_4 = $mol_type_enforce<
+	type $mol_button_minor__hint_giper_baza_rich_edit_3 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_5 = $mol_type_enforce<
+	type $mol_button_minor__enabled_giper_baza_rich_edit_4 = $mol_type_enforce<
 		ReturnType< $giper_baza_rich_edit['selected'] >
 		,
 		ReturnType< $mol_button_minor['enabled'] >
 	>
-	type $mol_button_minor__click_giper_baza_rich_edit_6 = $mol_type_enforce<
+	type $mol_button_minor__click_giper_baza_rich_edit_5 = $mol_type_enforce<
 		ReturnType< $giper_baza_rich_edit['inline_toggle'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__title_giper_baza_rich_edit_7 = $mol_type_enforce<
+	type $mol_button_minor__title_giper_baza_rich_edit_6 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_8 = $mol_type_enforce<
+	type $mol_button_minor__hint_giper_baza_rich_edit_7 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_9 = $mol_type_enforce<
+	type $mol_button_minor__enabled_giper_baza_rich_edit_8 = $mol_type_enforce<
 		ReturnType< $giper_baza_rich_edit['selected'] >
 		,
 		ReturnType< $mol_button_minor['enabled'] >
 	>
-	type $mol_button_minor__click_giper_baza_rich_edit_10 = $mol_type_enforce<
+	type $mol_button_minor__click_giper_baza_rich_edit_9 = $mol_type_enforce<
 		ReturnType< $giper_baza_rich_edit['inline_toggle'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__title_giper_baza_rich_edit_11 = $mol_type_enforce<
+	type $mol_button_minor__title_giper_baza_rich_edit_10 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_12 = $mol_type_enforce<
+	type $mol_button_minor__hint_giper_baza_rich_edit_11 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_13 = $mol_type_enforce<
+	type $mol_button_minor__enabled_giper_baza_rich_edit_12 = $mol_type_enforce<
 		ReturnType< $giper_baza_rich_edit['selected'] >
 		,
 		ReturnType< $mol_button_minor['enabled'] >
 	>
-	type $mol_button_minor__click_giper_baza_rich_edit_14 = $mol_type_enforce<
+	type $mol_button_minor__click_giper_baza_rich_edit_13 = $mol_type_enforce<
 		ReturnType< $giper_baza_rich_edit['inline_toggle'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__title_giper_baza_rich_edit_15 = $mol_type_enforce<
+	type $mol_button_minor__title_giper_baza_rich_edit_14 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_16 = $mol_type_enforce<
+	type $mol_button_minor__hint_giper_baza_rich_edit_15 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_17 = $mol_type_enforce<
+	type $mol_button_minor__enabled_giper_baza_rich_edit_16 = $mol_type_enforce<
 		ReturnType< $giper_baza_rich_edit['selected'] >
 		,
 		ReturnType< $mol_button_minor['enabled'] >
 	>
-	type $mol_button_minor__click_giper_baza_rich_edit_18 = $mol_type_enforce<
+	type $mol_button_minor__click_giper_baza_rich_edit_17 = $mol_type_enforce<
 		ReturnType< $giper_baza_rich_edit['inline_toggle'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__title_giper_baza_rich_edit_19 = $mol_type_enforce<
+	type $mol_button_minor__title_giper_baza_rich_edit_18 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_20 = $mol_type_enforce<
+	type $mol_button_minor__hint_giper_baza_rich_edit_19 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_21 = $mol_type_enforce<
+	type $mol_button_minor__enabled_giper_baza_rich_edit_20 = $mol_type_enforce<
 		ReturnType< $giper_baza_rich_edit['selected'] >
 		,
 		ReturnType< $mol_button_minor['enabled'] >
 	>
-	type $mol_button_minor__click_giper_baza_rich_edit_22 = $mol_type_enforce<
+	type $mol_button_minor__click_giper_baza_rich_edit_21 = $mol_type_enforce<
 		ReturnType< $giper_baza_rich_edit['inline_toggle'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_pick__hint_giper_baza_rich_edit_23 = $mol_type_enforce<
+	type $mol_pick__hint_giper_baza_rich_edit_22 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_pick['hint'] >
 	>
-	type $mol_pick__trigger_content_giper_baza_rich_edit_24 = $mol_type_enforce<
+	type $mol_pick__trigger_content_giper_baza_rich_edit_23 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_pick['trigger_content'] >
 	>
-	type $mol_pick__bubble_content_giper_baza_rich_edit_25 = $mol_type_enforce<
+	type $mol_pick__bubble_content_giper_baza_rich_edit_24 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_pick['bubble_content'] >
 	>
-	type $mol_button_minor__title_giper_baza_rich_edit_26 = $mol_type_enforce<
+	type $mol_button_minor__title_giper_baza_rich_edit_25 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_27 = $mol_type_enforce<
+	type $mol_button_minor__hint_giper_baza_rich_edit_26 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_28 = $mol_type_enforce<
+	type $mol_button_minor__enabled_giper_baza_rich_edit_27 = $mol_type_enforce<
 		boolean
 		,
 		ReturnType< $mol_button_minor['enabled'] >
 	>
-	type $mol_button_minor__title_giper_baza_rich_edit_29 = $mol_type_enforce<
+	type $mol_button_minor__title_giper_baza_rich_edit_28 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_30 = $mol_type_enforce<
+	type $mol_button_minor__hint_giper_baza_rich_edit_29 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_31 = $mol_type_enforce<
+	type $mol_button_minor__enabled_giper_baza_rich_edit_30 = $mol_type_enforce<
 		boolean
 		,
 		ReturnType< $mol_button_minor['enabled'] >
 	>
-	type $mol_pick__hint_giper_baza_rich_edit_32 = $mol_type_enforce<
+	type $mol_pick__hint_giper_baza_rich_edit_31 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_pick['hint'] >
 	>
-	type $mol_pick__trigger_content_giper_baza_rich_edit_33 = $mol_type_enforce<
+	type $mol_pick__trigger_content_giper_baza_rich_edit_32 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_pick['trigger_content'] >
 	>
-	type $mol_pick__bubble_content_giper_baza_rich_edit_34 = $mol_type_enforce<
+	type $mol_pick__bubble_content_giper_baza_rich_edit_33 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_pick['bubble_content'] >
 	>
-	type $mol_button_minor__title_giper_baza_rich_edit_35 = $mol_type_enforce<
+	type $mol_button_minor__title_giper_baza_rich_edit_34 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_36 = $mol_type_enforce<
+	type $mol_button_minor__hint_giper_baza_rich_edit_35 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_37 = $mol_type_enforce<
-		boolean
+	type $mol_button_minor__enabled_giper_baza_rich_edit_36 = $mol_type_enforce<
+		ReturnType< $giper_baza_rich_edit['selected'] >
 		,
 		ReturnType< $mol_button_minor['enabled'] >
+	>
+	type $mol_button_minor__click_giper_baza_rich_edit_37 = $mol_type_enforce<
+		ReturnType< $giper_baza_rich_edit['block_more'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
 	>
 	type $mol_button_minor__title_giper_baza_rich_edit_38 = $mol_type_enforce<
 		string
@@ -41145,128 +41170,143 @@ declare namespace $ {
 		ReturnType< $mol_button_minor['hint'] >
 	>
 	type $mol_button_minor__enabled_giper_baza_rich_edit_40 = $mol_type_enforce<
-		boolean
+		ReturnType< $giper_baza_rich_edit['selected'] >
 		,
 		ReturnType< $mol_button_minor['enabled'] >
 	>
-	type $mol_button_minor__title_giper_baza_rich_edit_41 = $mol_type_enforce<
+	type $mol_button_minor__click_giper_baza_rich_edit_41 = $mol_type_enforce<
+		ReturnType< $giper_baza_rich_edit['block_less'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__title_giper_baza_rich_edit_42 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_42 = $mol_type_enforce<
+	type $mol_button_minor__hint_giper_baza_rich_edit_43 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_43 = $mol_type_enforce<
+	type $mol_button_minor__enabled_giper_baza_rich_edit_44 = $mol_type_enforce<
 		boolean
 		,
 		ReturnType< $mol_button_minor['enabled'] >
 	>
-	type $mol_button_minor__title_giper_baza_rich_edit_44 = $mol_type_enforce<
+	type $mol_button_minor__title_giper_baza_rich_edit_45 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_45 = $mol_type_enforce<
+	type $mol_button_minor__hint_giper_baza_rich_edit_46 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_46 = $mol_type_enforce<
+	type $mol_button_minor__enabled_giper_baza_rich_edit_47 = $mol_type_enforce<
 		boolean
 		,
 		ReturnType< $mol_button_minor['enabled'] >
 	>
-	type $mol_pick__hint_giper_baza_rich_edit_47 = $mol_type_enforce<
+	type $mol_pick__hint_giper_baza_rich_edit_48 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_pick['hint'] >
 	>
-	type $mol_pick__trigger_content_giper_baza_rich_edit_48 = $mol_type_enforce<
+	type $mol_pick__trigger_content_giper_baza_rich_edit_49 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_pick['trigger_content'] >
 	>
-	type $mol_pick__bubble_content_giper_baza_rich_edit_49 = $mol_type_enforce<
+	type $mol_pick__bubble_content_giper_baza_rich_edit_50 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_pick['bubble_content'] >
 	>
-	type $mol_button_minor__title_giper_baza_rich_edit_50 = $mol_type_enforce<
+	type $mol_button_minor__title_giper_baza_rich_edit_51 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_51 = $mol_type_enforce<
+	type $mol_button_minor__hint_giper_baza_rich_edit_52 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_52 = $mol_type_enforce<
-		boolean
+	type $mol_button_minor__enabled_giper_baza_rich_edit_53 = $mol_type_enforce<
+		ReturnType< $giper_baza_rich_edit['selected'] >
 		,
 		ReturnType< $mol_button_minor['enabled'] >
 	>
-	type $mol_button_minor__title_giper_baza_rich_edit_53 = $mol_type_enforce<
+	type $mol_button_minor__click_giper_baza_rich_edit_54 = $mol_type_enforce<
+		ReturnType< $giper_baza_rich_edit['block_more'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__title_giper_baza_rich_edit_55 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_54 = $mol_type_enforce<
+	type $mol_button_minor__hint_giper_baza_rich_edit_56 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_55 = $mol_type_enforce<
-		boolean
+	type $mol_button_minor__enabled_giper_baza_rich_edit_57 = $mol_type_enforce<
+		ReturnType< $giper_baza_rich_edit['selected'] >
 		,
 		ReturnType< $mol_button_minor['enabled'] >
 	>
-	type $mol_button_minor__title_giper_baza_rich_edit_56 = $mol_type_enforce<
+	type $mol_button_minor__click_giper_baza_rich_edit_58 = $mol_type_enforce<
+		ReturnType< $giper_baza_rich_edit['block_less'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__title_giper_baza_rich_edit_59 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_57 = $mol_type_enforce<
+	type $mol_button_minor__hint_giper_baza_rich_edit_60 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_58 = $mol_type_enforce<
+	type $mol_button_minor__enabled_giper_baza_rich_edit_61 = $mol_type_enforce<
 		boolean
 		,
 		ReturnType< $mol_button_minor['enabled'] >
 	>
-	type $mol_pick__hint_giper_baza_rich_edit_59 = $mol_type_enforce<
+	type $mol_pick__hint_giper_baza_rich_edit_62 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_pick['hint'] >
 	>
-	type $mol_pick__trigger_content_giper_baza_rich_edit_60 = $mol_type_enforce<
+	type $mol_pick__trigger_content_giper_baza_rich_edit_63 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_pick['trigger_content'] >
 	>
-	type $mol_pick__bubble_content_giper_baza_rich_edit_61 = $mol_type_enforce<
+	type $mol_pick__bubble_content_giper_baza_rich_edit_64 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_pick['bubble_content'] >
 	>
-	type $mol_float__sub_giper_baza_rich_edit_62 = $mol_type_enforce<
+	type $mol_float__sub_giper_baza_rich_edit_65 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_float['sub'] >
 	>
-	type $mol_view__attr_giper_baza_rich_edit_63 = $mol_type_enforce<
+	type $mol_view__attr_giper_baza_rich_edit_66 = $mol_type_enforce<
 		({ 
 			'contenteditable': ReturnType< $giper_baza_rich_edit['editable'] >,
 		}) 
 		,
 		ReturnType< $mol_view['attr'] >
 	>
-	type $mol_view__event_giper_baza_rich_edit_64 = $mol_type_enforce<
+	type $mol_view__event_giper_baza_rich_edit_67 = $mol_type_enforce<
 		({ 
 			input( next?: ReturnType< $giper_baza_rich_edit['save'] > ): ReturnType< $giper_baza_rich_edit['save'] >,
 			paste( next?: ReturnType< $giper_baza_rich_edit['paste'] > ): ReturnType< $giper_baza_rich_edit['paste'] >,
@@ -41275,16 +41315,19 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['event'] >
 	>
-	type $mol_view__sub_giper_baza_rich_edit_65 = $mol_type_enforce<
+	type $mol_view__sub_giper_baza_rich_edit_68 = $mol_type_enforce<
 		ReturnType< $giper_baza_rich_edit['content'] >
 		,
 		ReturnType< $mol_view['sub'] >
 	>
 	export class $giper_baza_rich_edit extends $mol_view {
+		enabled( ): boolean
 		selection_load( ): any
 		selection_sync( ): any
 		inline_toggle( id: any, next?: any ): any
-		Inline_toggle( ): $mol_hotkey
+		block_more( id: any, next?: any ): any
+		block_less( id: any, next?: any ): any
+		Hotkey( ): $mol_hotkey2
 		Inline_format_menu_icon( ): $mol_icon_marker
 		selected( next?: boolean ): boolean
 		Strong_button( ): $mol_button_minor
@@ -41316,7 +41359,9 @@ declare namespace $ {
 		content( ): readonly(any)[]
 		Content( ): $mol_view
 		pawn( next?: $giper_baza_rich ): $giper_baza_rich
-		enabled( ): boolean
+		attr( ): ({ 
+			'giper_baza_rich_edit_enabled': ReturnType< $giper_baza_rich_edit['enabled'] >,
+		})  & ReturnType< $mol_view['attr'] >
 		hint( ): string
 		auto( ): readonly(any)[]
 		plugins( ): readonly(any)[]
@@ -41331,6 +41376,7 @@ declare namespace $ {
 declare namespace $.$$ {
     class $giper_baza_rich_edit extends $.$giper_baza_rich_edit {
         editable(next?: string | null): string;
+        sub(): $mol_view[];
         content(): ChildNode[];
         selection(next?: readonly [from: readonly [self: string, x: number, y: number], to: readonly [self: string, x: number, y: number]]): readonly [from: readonly [self: string, x: number, y: number], to: readonly [self: string, x: number, y: number]];
         save(event?: Event): void;
@@ -41338,8 +41384,10 @@ declare namespace $.$$ {
         selected(): boolean;
         selection_save(): void;
         selection_load(): void;
+        block_more(Type: string, event: KeyboardEvent): void;
+        block_less(Type: string, event: KeyboardEvent): void;
         /** Wraps selecion to given element type. */
-        inline_toggle(Type: 'strong' | 'em' | 'ins' | 'del' | 'code', event: KeyboardEvent): void;
+        inline_toggle(Type: string, event: KeyboardEvent): void;
         paste(event?: ClipboardEvent): void;
         hover(event: PointerEvent): void;
     }
