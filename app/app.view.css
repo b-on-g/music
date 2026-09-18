@@ -48,3 +48,17 @@ html:has([bog_music_app][bog_music_font="large"]) {
 html:has([bog_music_app][bog_music_font="huge"]) {
 	font-size: 137.5%;
 }
+
+@media ( max-width: 40rem ) {
+	[bog_music_app_nickname_label],
+	[bog_music_app_version] {
+		display: none;
+	}
+	[bog_music_app_brand_name] {
+		font-size: 1.25rem;
+	}
+	[bog_music_app] > [mol_page_head] {
+		padding-left: 0.25rem;
+		padding-right: 0.25rem;
+	}
+}
