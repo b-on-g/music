@@ -2661,54 +2661,89 @@ var $;
 ;
 "use strict";
 var $;
-(function ($_1) {
-    $mol_test_mocks.push(context => {
-        class $mol_state_arg_mock extends $mol_state_arg {
-            static $ = context;
-            static href(next) { return next || ''; }
-            static go(next) {
-                this.href(this.link(next));
-            }
-        }
-        __decorate([
-            $mol_mem
-        ], $mol_state_arg_mock, "href", null);
-        __decorate([
-            $mol_action
-        ], $mol_state_arg_mock, "go", null);
-        context.$mol_state_arg = $mol_state_arg_mock;
-    });
+(function ($) {
     $mol_test({
-        'args as dictionary'($) {
-            $.$mol_state_arg.href('#!foo=bar/xxx');
-            $mol_assert_equal($.$mol_state_arg.dict(), { foo: 'bar', xxx: '' });
-            $.$mol_state_arg.dict({ foo: null, yyy: '', lol: '123' });
-            $mol_assert_equal($.$mol_state_arg.href().replace(/.*#/, '#'), '#!yyy/lol=123');
+        'Vector limiting'() {
+            let point = new $mol_vector_3d(7, 10, 13);
+            const res = point.limited([[1, 5], [15, 20], [5, 10]]);
+            $mol_assert_equal(res.x, 5);
+            $mol_assert_equal(res.y, 15);
+            $mol_assert_equal(res.z, 10);
         },
-        'one value from args'($) {
-            $.$mol_state_arg.href('#!foo=bar/xxx');
-            $mol_assert_equal($.$mol_state_arg.value('foo'), 'bar');
-            $mol_assert_equal($.$mol_state_arg.value('xxx'), '');
-            $.$mol_state_arg.value('foo', 'lol');
-            $mol_assert_equal($.$mol_state_arg.href().replace(/.*#/, '#'), '#!foo=lol/xxx');
-            $.$mol_state_arg.value('foo', '');
-            $mol_assert_equal($.$mol_state_arg.href().replace(/.*#/, '#'), '#!foo/xxx');
-            $.$mol_state_arg.value('foo', null);
-            $mol_assert_equal($.$mol_state_arg.href().replace(/.*#/, '#'), '#!xxx');
+        'Vector adding scalar'() {
+            let point = new $mol_vector_3d(1, 2, 3);
+            let res = point.added0(5);
+            $mol_assert_equal(res.x, 6);
+            $mol_assert_equal(res.y, 7);
+            $mol_assert_equal(res.z, 8);
         },
-        'nested args'($) {
-            const base = new $.$mol_state_arg('nested.');
-            class Nested extends $mol_state_arg {
-                constructor(prefix) {
-                    super(base.prefix + prefix);
-                }
-                static value = (key, next) => base.value(key, next);
-            }
-            $.$mol_state_arg.href('#!foo=bar/nested.xxx=123');
-            $mol_assert_equal(Nested.value('foo'), null);
-            $mol_assert_equal(Nested.value('xxx'), '123');
-            Nested.value('foo', 'lol');
-            $mol_assert_equal($.$mol_state_arg.href().replace(/.*#/, '#'), '#!foo=bar/nested.xxx=123/nested.foo=lol');
+        'Vector adding vector'() {
+            let point = new $mol_vector_3d(1, 2, 3);
+            let res = point.added1([5, 10, 15]);
+            $mol_assert_equal(res.x, 6);
+            $mol_assert_equal(res.y, 12);
+            $mol_assert_equal(res.z, 18);
+        },
+        'Vector multiplying scalar'() {
+            let point = new $mol_vector_3d(2, 3, 4);
+            let res = point.multed0(-1);
+            $mol_assert_equal(res.x, -2);
+            $mol_assert_equal(res.y, -3);
+            $mol_assert_equal(res.z, -4);
+        },
+        'Vector multiplying vector'() {
+            let point = new $mol_vector_3d(2, 3, 4);
+            let res = point.multed1([5, 2, -2]);
+            $mol_assert_equal(res.x, 10);
+            $mol_assert_equal(res.y, 6);
+            $mol_assert_equal(res.z, -8);
+        },
+        'Matrix adding matrix'() {
+            let matrix = new $mol_vector_matrix(...[[1, 2], [3, 4], [5, 6]]);
+            let res = matrix.added2([[10, 20], [30, 40], [50, 60]]);
+            $mol_assert_equal(res[0][0], 11);
+            $mol_assert_equal(res[0][1], 22);
+            $mol_assert_equal(res[1][0], 33);
+            $mol_assert_equal(res[1][1], 44);
+            $mol_assert_equal(res[2][0], 55);
+            $mol_assert_equal(res[2][1], 66);
+        },
+        'Matrix multiplying matrix'() {
+            let matrix = new $mol_vector_matrix(...[[2, 3], [4, 5], [6, 7]]);
+            let res = matrix.multed2([[2, 3], [4, 5], [6, 7]]);
+            $mol_assert_equal(res[0][0], 4);
+            $mol_assert_equal(res[0][1], 9);
+            $mol_assert_equal(res[1][0], 16);
+            $mol_assert_equal(res[1][1], 25);
+            $mol_assert_equal(res[2][0], 36);
+            $mol_assert_equal(res[2][1], 49);
+        },
+        'Range expanding'() {
+            let range = $mol_vector_range_full.inversed;
+            const expanded = range.expanded0(10).expanded0(5);
+            $mol_assert_like([...expanded], [5, 10]);
+        },
+        'Vector of range expanding by vector'() {
+            let dimensions = new $mol_vector_2d($mol_vector_range_full.inversed, $mol_vector_range_full.inversed);
+            const expanded = dimensions.expanded1([1, 7]).expanded1([3, 5]);
+            $mol_assert_like([...expanded.x], [1, 3]);
+            $mol_assert_like([...expanded.y], [5, 7]);
+        },
+        'Vector of range expanding by vector of range'() {
+            let dimensions = new $mol_vector_2d($mol_vector_range_full.inversed, $mol_vector_range_full.inversed);
+            const expanded = dimensions
+                .expanded2([[1, 3], [7, 9]])
+                .expanded2([[2, 4], [6, 8]]);
+            $mol_assert_like([...expanded.x], [1, 4]);
+            $mol_assert_like([...expanded.y], [6, 9]);
+        },
+        'Vector of infinity range expanding by vector of range'() {
+            let dimensions = new $mol_vector_2d($mol_vector_range_full.inversed, $mol_vector_range_full.inversed);
+            const next = new $mol_vector_2d($mol_vector_range_full.inversed, $mol_vector_range_full.inversed);
+            const expanded = next
+                .expanded2(dimensions);
+            $mol_assert_like([...expanded.x], [Infinity, -Infinity]);
+            $mol_assert_like([...expanded.y], [Infinity, -Infinity]);
         },
     });
 })($ || ($ = {}));
@@ -2744,101 +2779,6 @@ var $;
             $mol_mem_key
         ], $mol_state_local_mock, "value", null);
         context.$mol_state_local = $mol_state_local_mock;
-    });
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    function parse(theme) {
-        if (theme === 'true')
-            return true;
-        if (theme === 'false')
-            return false;
-        return null;
-    }
-    /**
-     * Switcher between light/dark themes (usually for `mol_theme_auto` plugin).
-     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_lights_demo
-     */
-    function $mol_lights(next) {
-        const arg = parse(this.$mol_state_arg.value('mol_lights'));
-        const base = this.$mol_media.match('(prefers-color-scheme: light)');
-        if (next === undefined) {
-            return arg ?? this.$mol_state_local.value('$mol_lights') ?? base;
-        }
-        else {
-            if (arg === null) {
-                this.$mol_state_local.value('$mol_lights', next === base ? null : next);
-            }
-            else {
-                this.$mol_state_arg.value('mol_lights', String(next));
-            }
-            return next;
-        }
-    }
-    $.$mol_lights = $mol_lights;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_test({
-        'null by default'() {
-            const key = String(Math.random());
-            $mol_assert_equal($mol_state_session.value(key), null);
-        },
-        'storing'() {
-            const key = String(Math.random());
-            $mol_state_session.value(key, '$mol_state_session_test');
-            $mol_assert_equal($mol_state_session.value(key), '$mol_state_session_test');
-            $mol_state_session.value(key, null);
-            $mol_assert_equal($mol_state_session.value(key), null);
-        },
-    });
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($_1) {
-    $mol_test({
-        'system mode follows the device, not a light choice stored by another app'($) {
-            const device = (light) => {
-                const context = Object.create($);
-                context.$mol_lights = () => !light;
-                context.$mol_media = class extends $.$mol_media {
-                    static match() {
-                        return light;
-                    }
-                };
-                return $bog_theme_auto.make({ $: context });
-            };
-            const night = device(false);
-            $mol_assert_equal(night.mode(), 'system');
-            $mol_assert_equal(night.theme(), night.theme_dark());
-            $mol_assert_equal(night.is_light_now(), false);
-            const day = device(true);
-            $mol_assert_equal(day.theme(), day.theme_light());
-            $mol_assert_equal(day.is_light_now(), true);
-        },
-    });
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_test({
-        'room is counted from the host center to both edges of the view'() {
-            $mol_assert_like($bog_tooltip_room({ left: 12, width: 40 }, 1280), { left: 32, right: 1248 });
-            $mol_assert_like($bog_tooltip_room({ left: 1228, width: 40 }, 1280), { left: 1248, right: 32 });
-        },
-        'host past the right edge leaves negative room on that side'() {
-            $mol_assert_like($bog_tooltip_room({ left: 1270, width: 40 }, 1280), { left: 1290, right: -10 });
-        },
     });
 })($ || ($ = {}));
 
@@ -3354,6 +3294,272 @@ var $;
             },
         });
     })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($_1) {
+    $mol_test({
+        'skin puts presets on the host node'($) {
+            class Host extends $mol_view {
+                Skin() {
+                    return $bog_builderui_skin.make({ $: this.$, base: () => 'stone' });
+                }
+                plugins() {
+                    return [this.Skin()];
+                }
+            }
+            __decorate([
+                $mol_mem
+            ], Host.prototype, "Skin", null);
+            const host = Host.make({ $ });
+            host.dom_tree();
+            const node = host.dom_node();
+            $mol_assert_equal(node.getAttribute('bog_builderui_base'), 'stone');
+            $mol_assert_equal(node.getAttribute('bog_builderui_lights'), 'system');
+            $mol_assert_equal(node.getAttribute('bog_builderui_theme'), 'sky');
+            $mol_assert_equal(node.getAttribute('bog_builderui_radius'), 'medium');
+            $mol_assert_equal(node.getAttribute('mol_theme'), null);
+            host.destructor();
+        },
+        'skin follows the host'($) {
+            class Host extends $mol_view {
+                lights(next) {
+                    return next ?? 'dark';
+                }
+                Skin() {
+                    return $bog_builderui_skin.make({ $: this.$, lights: () => this.lights() });
+                }
+                plugins() {
+                    return [this.Skin()];
+                }
+            }
+            __decorate([
+                $mol_mem
+            ], Host.prototype, "lights", null);
+            __decorate([
+                $mol_mem
+            ], Host.prototype, "Skin", null);
+            const host = Host.make({ $ });
+            host.dom_tree();
+            $mol_assert_equal(host.dom_node().getAttribute('bog_builderui_lights'), 'dark');
+            host.lights('light');
+            host.dom_tree();
+            $mol_assert_equal(host.dom_node().getAttribute('bog_builderui_lights'), 'light');
+            host.destructor();
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($_1) {
+    $mol_test_mocks.push(context => {
+        class $mol_state_arg_mock extends $mol_state_arg {
+            static $ = context;
+            static href(next) { return next || ''; }
+            static go(next) {
+                this.href(this.link(next));
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_state_arg_mock, "href", null);
+        __decorate([
+            $mol_action
+        ], $mol_state_arg_mock, "go", null);
+        context.$mol_state_arg = $mol_state_arg_mock;
+    });
+    $mol_test({
+        'args as dictionary'($) {
+            $.$mol_state_arg.href('#!foo=bar/xxx');
+            $mol_assert_equal($.$mol_state_arg.dict(), { foo: 'bar', xxx: '' });
+            $.$mol_state_arg.dict({ foo: null, yyy: '', lol: '123' });
+            $mol_assert_equal($.$mol_state_arg.href().replace(/.*#/, '#'), '#!yyy/lol=123');
+        },
+        'one value from args'($) {
+            $.$mol_state_arg.href('#!foo=bar/xxx');
+            $mol_assert_equal($.$mol_state_arg.value('foo'), 'bar');
+            $mol_assert_equal($.$mol_state_arg.value('xxx'), '');
+            $.$mol_state_arg.value('foo', 'lol');
+            $mol_assert_equal($.$mol_state_arg.href().replace(/.*#/, '#'), '#!foo=lol/xxx');
+            $.$mol_state_arg.value('foo', '');
+            $mol_assert_equal($.$mol_state_arg.href().replace(/.*#/, '#'), '#!foo/xxx');
+            $.$mol_state_arg.value('foo', null);
+            $mol_assert_equal($.$mol_state_arg.href().replace(/.*#/, '#'), '#!xxx');
+        },
+        'nested args'($) {
+            const base = new $.$mol_state_arg('nested.');
+            class Nested extends $mol_state_arg {
+                constructor(prefix) {
+                    super(base.prefix + prefix);
+                }
+                static value = (key, next) => base.value(key, next);
+            }
+            $.$mol_state_arg.href('#!foo=bar/nested.xxx=123');
+            $mol_assert_equal(Nested.value('foo'), null);
+            $mol_assert_equal(Nested.value('xxx'), '123');
+            Nested.value('foo', 'lol');
+            $mol_assert_equal($.$mol_state_arg.href().replace(/.*#/, '#'), '#!foo=bar/nested.xxx=123/nested.foo=lol');
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    function parse(theme) {
+        if (theme === 'true')
+            return true;
+        if (theme === 'false')
+            return false;
+        return null;
+    }
+    /**
+     * Switcher between light/dark themes (usually for `mol_theme_auto` plugin).
+     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_lights_demo
+     */
+    function $mol_lights(next) {
+        const arg = parse(this.$mol_state_arg.value('mol_lights'));
+        const base = this.$mol_media.match('(prefers-color-scheme: light)');
+        if (next === undefined) {
+            return arg ?? this.$mol_state_local.value('$mol_lights') ?? base;
+        }
+        else {
+            if (arg === null) {
+                this.$mol_state_local.value('$mol_lights', next === base ? null : next);
+            }
+            else {
+                this.$mol_state_arg.value('mol_lights', String(next));
+            }
+            return next;
+        }
+    }
+    $.$mol_lights = $mol_lights;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_test({
+        'null by default'() {
+            const key = String(Math.random());
+            $mol_assert_equal($mol_state_session.value(key), null);
+        },
+        'storing'() {
+            const key = String(Math.random());
+            $mol_state_session.value(key, '$mol_state_session_test');
+            $mol_assert_equal($mol_state_session.value(key), '$mol_state_session_test');
+            $mol_state_session.value(key, null);
+            $mol_assert_equal($mol_state_session.value(key), null);
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($_1) {
+    $mol_test({
+        'system mode follows the device, not a light choice stored by another app'($) {
+            const device = (light) => {
+                const context = Object.create($);
+                context.$mol_lights = () => !light;
+                context.$mol_media = class extends $.$mol_media {
+                    static match() {
+                        return light;
+                    }
+                };
+                return $bog_theme_auto.make({ $: context });
+            };
+            const night = device(false);
+            $mol_assert_equal(night.mode(), 'system');
+            $mol_assert_equal(night.theme(), night.theme_dark());
+            $mol_assert_equal(night.is_light_now(), false);
+            const day = device(true);
+            $mol_assert_equal(day.theme(), day.theme_light());
+            $mol_assert_equal(day.is_light_now(), true);
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($_1) {
+    function page($) {
+        const dom = $.$mol_dom_context;
+        const root = dom.document.createElement('div');
+        root.innerHTML = `
+			<button ${$bog_tooltip_hush_tip}="Первая"><span id="deep">жми</span></button>
+			<button ${$bog_tooltip_hush_tip}="Вторая"></button>
+			<button id="bare"></button>
+		`;
+        return root;
+    }
+    $mol_test({
+        'the hush marks the host of the node it was given, tip and all'($) {
+            const root = page($);
+            const deep = root.querySelector('#deep');
+            $mol_assert_equal($bog_tooltip_hush(deep), 'Первая');
+            $mol_assert_equal(root.querySelectorAll(`[${$bog_tooltip_hush_mark}]`).length, 1);
+        },
+        'a node with no host above it is left alone'($) {
+            const root = page($);
+            $mol_assert_equal($bog_tooltip_hush(root.querySelector('#bare')), '');
+            $mol_assert_equal($bog_tooltip_hush(null), '');
+            $mol_assert_equal(root.querySelectorAll(`[${$bog_tooltip_hush_mark}]`).length, 0);
+        },
+        'the next focus takes every mark away'($) {
+            const root = page($);
+            $bog_tooltip_hush(root.querySelector('#deep'));
+            $bog_tooltip_hush(root.querySelectorAll('button')[1]);
+            $mol_assert_equal(root.querySelectorAll(`[${$bog_tooltip_hush_mark}]`).length, 2);
+            $mol_assert_equal($bog_tooltip_hush_off(root), 2);
+            $mol_assert_equal(root.querySelectorAll(`[${$bog_tooltip_hush_mark}]`).length, 0);
+            $mol_assert_equal($bog_tooltip_hush_off(root), 0);
+            $mol_assert_equal($bog_tooltip_hush_off(null), 0);
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_test({
+        'room is counted from the host center to both edges of the view'() {
+            $mol_assert_like($bog_tooltip_room({ left: 12, width: 40 }, 1280), { left: 32, right: 1248, flip: false, lift: 0 });
+            $mol_assert_like($bog_tooltip_room({ left: 1228, width: 40 }, 1280), { left: 1248, right: 32, flip: false, lift: 0 });
+        },
+        'host past the right edge leaves negative room on that side'() {
+            $mol_assert_like($bog_tooltip_room({ left: 1270, width: 40 }, 1280), { left: 1290, right: -10, flip: false, lift: 0 });
+        },
+        'a host with room below keeps the tip below it'() {
+            const room = $bog_tooltip_room({ left: 100, width: 40, bottom: 200, height: 40 }, 1280, 800);
+            $mol_assert_equal(room.flip, false);
+            $mol_assert_equal(room.lift, 0);
+        },
+        'a host at the floor flips the tip up over its own height and the gap'() {
+            const room = $bog_tooltip_room({ left: 100, width: 40, bottom: 790, height: 40 }, 1280, 800);
+            $mol_assert_equal(room.flip, true);
+            $mol_assert_equal(room.lift, 40 + $bog_tooltip_room_gap);
+        },
+        'a host with no room on either side keeps the tip below'() {
+            const room = $bog_tooltip_room({ left: 100, width: 40, bottom: 30, height: 30 }, 1280, 40);
+            $mol_assert_equal(room.flip, false);
+        },
+        'the room below is counted up to the need, not to the last pixel'() {
+            const tight = $bog_tooltip_room({ left: 100, width: 40, bottom: 800 - $bog_tooltip_room_need + 1, height: 40 }, 1280, 800);
+            const enough = $bog_tooltip_room({ left: 100, width: 40, bottom: 800 - $bog_tooltip_room_need, height: 40 }, 1280, 800);
+            $mol_assert_equal(tight.flip, true);
+            $mol_assert_equal(enough.flip, false);
+        },
+    });
 })($ || ($ = {}));
 
 ;
@@ -6890,96 +7096,6 @@ var $;
             const list = ['abc', 'ab', 'ac'];
             list.sort($mol_compare_text(str => str.split('').reverse().join('')));
             $mol_assert_equal(`${list}`, 'ab,ac,abc');
-        },
-    });
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_test({
-        'Vector limiting'() {
-            let point = new $mol_vector_3d(7, 10, 13);
-            const res = point.limited([[1, 5], [15, 20], [5, 10]]);
-            $mol_assert_equal(res.x, 5);
-            $mol_assert_equal(res.y, 15);
-            $mol_assert_equal(res.z, 10);
-        },
-        'Vector adding scalar'() {
-            let point = new $mol_vector_3d(1, 2, 3);
-            let res = point.added0(5);
-            $mol_assert_equal(res.x, 6);
-            $mol_assert_equal(res.y, 7);
-            $mol_assert_equal(res.z, 8);
-        },
-        'Vector adding vector'() {
-            let point = new $mol_vector_3d(1, 2, 3);
-            let res = point.added1([5, 10, 15]);
-            $mol_assert_equal(res.x, 6);
-            $mol_assert_equal(res.y, 12);
-            $mol_assert_equal(res.z, 18);
-        },
-        'Vector multiplying scalar'() {
-            let point = new $mol_vector_3d(2, 3, 4);
-            let res = point.multed0(-1);
-            $mol_assert_equal(res.x, -2);
-            $mol_assert_equal(res.y, -3);
-            $mol_assert_equal(res.z, -4);
-        },
-        'Vector multiplying vector'() {
-            let point = new $mol_vector_3d(2, 3, 4);
-            let res = point.multed1([5, 2, -2]);
-            $mol_assert_equal(res.x, 10);
-            $mol_assert_equal(res.y, 6);
-            $mol_assert_equal(res.z, -8);
-        },
-        'Matrix adding matrix'() {
-            let matrix = new $mol_vector_matrix(...[[1, 2], [3, 4], [5, 6]]);
-            let res = matrix.added2([[10, 20], [30, 40], [50, 60]]);
-            $mol_assert_equal(res[0][0], 11);
-            $mol_assert_equal(res[0][1], 22);
-            $mol_assert_equal(res[1][0], 33);
-            $mol_assert_equal(res[1][1], 44);
-            $mol_assert_equal(res[2][0], 55);
-            $mol_assert_equal(res[2][1], 66);
-        },
-        'Matrix multiplying matrix'() {
-            let matrix = new $mol_vector_matrix(...[[2, 3], [4, 5], [6, 7]]);
-            let res = matrix.multed2([[2, 3], [4, 5], [6, 7]]);
-            $mol_assert_equal(res[0][0], 4);
-            $mol_assert_equal(res[0][1], 9);
-            $mol_assert_equal(res[1][0], 16);
-            $mol_assert_equal(res[1][1], 25);
-            $mol_assert_equal(res[2][0], 36);
-            $mol_assert_equal(res[2][1], 49);
-        },
-        'Range expanding'() {
-            let range = $mol_vector_range_full.inversed;
-            const expanded = range.expanded0(10).expanded0(5);
-            $mol_assert_like([...expanded], [5, 10]);
-        },
-        'Vector of range expanding by vector'() {
-            let dimensions = new $mol_vector_2d($mol_vector_range_full.inversed, $mol_vector_range_full.inversed);
-            const expanded = dimensions.expanded1([1, 7]).expanded1([3, 5]);
-            $mol_assert_like([...expanded.x], [1, 3]);
-            $mol_assert_like([...expanded.y], [5, 7]);
-        },
-        'Vector of range expanding by vector of range'() {
-            let dimensions = new $mol_vector_2d($mol_vector_range_full.inversed, $mol_vector_range_full.inversed);
-            const expanded = dimensions
-                .expanded2([[1, 3], [7, 9]])
-                .expanded2([[2, 4], [6, 8]]);
-            $mol_assert_like([...expanded.x], [1, 4]);
-            $mol_assert_like([...expanded.y], [6, 9]);
-        },
-        'Vector of infinity range expanding by vector of range'() {
-            let dimensions = new $mol_vector_2d($mol_vector_range_full.inversed, $mol_vector_range_full.inversed);
-            const next = new $mol_vector_2d($mol_vector_range_full.inversed, $mol_vector_range_full.inversed);
-            const expanded = next
-                .expanded2(dimensions);
-            $mol_assert_like([...expanded.x], [Infinity, -Infinity]);
-            $mol_assert_like([...expanded.y], [Infinity, -Infinity]);
         },
     });
 })($ || ($ = {}));

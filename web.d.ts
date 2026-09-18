@@ -1785,125 +1785,81 @@ declare namespace $.$$ {
 
 declare namespace $ {
     /**
-     * Theme css variables
-     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_textarea_demo
+     * BuilderUI design tokens — CSS variables in --bog_builderui_*.
+     * Used in .view.css.ts via $bog_builderui_tokens.text, $bog_builderui_tokens.back, etc.
      */
-    const $bog_theme: Record<"image" | "line" | "text" | "field" | "current" | "focus" | "hover" | "background" | "back" | "card" | "special" | "control" | "shade" | "spirit", $mol_style_func<"var", unknown>>;
-    /**
-     * Available theme names.
-     * Add new theme to theme.css and add its name here.
-     */
-    const $bog_theme_names: readonly ["$mol_theme_giper_smash_dark", "$mol_theme_giper_smash_light", "$mol_theme_light", "$mol_theme_dark", "$mol_theme_monefro_light", "$mol_theme_monefro_dark", "$mol_theme_homerent_light", "$mol_theme_homerent_dark", "$mol_theme_upwork", "$mol_theme_ainews_light", "$mol_theme_ainews_dark", "$mol_theme_calm_dark", "$mol_theme_calm_light"];
-    /**
-     * Type-safe theme name
-     */
-    type $bog_theme_name = (typeof $bog_theme_names)[number];
+    const $bog_builderui_tokens: Record<"line" | "text" | "field" | "current" | "focus" | "hover" | "back" | "card" | "special" | "control" | "shade" | "font_body" | "font_head" | "radius", $mol_style_func<"var", unknown>>;
 }
 
+declare namespace $ {
+
+	export class $bog_builderui_div extends $mol_view {
+	}
+	
+}
+
+//# sourceMappingURL=div.view.tree.d.ts.map
+/** @see $bog_builderui_tokens */
 declare namespace $ {
 }
 
 declare namespace $ {
-    class $mol_storage extends $mol_object2 {
-        /** Is storage a long term. */
-        static persisted(next?: boolean): boolean;
-        /** Total storage quota in bytes. */
-        static total(): number;
-        /** Total storage usage in bytes. */
-        static used(): number;
-        /** Minimum available free space in bytes. */
-        static free(): number;
-        /** Fulfillness of storage. */
-        static portion(): number;
-        /**
-         * Fulfillness logarithmic level.
-         * `0` - empty
-         * `1` - half free
-         * `2` - quart free
-         * `Infinity` - fulfilled
-         */
-        static level(): number;
+
+	export class $bog_builderui_card extends $bog_builderui_div {
+	}
+	
+}
+
+//# sourceMappingURL=card.view.tree.d.ts.map
+/** @see $bog_builderui_tokens */
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_hotkey2 extends $mol_plugin {
+		keydown( next?: any ): any
+		event( ): ({ 
+			keydown( next?: ReturnType< $mol_hotkey2['keydown'] > ): ReturnType< $mol_hotkey2['keydown'] >,
+		})  & ReturnType< $mol_plugin['event'] >
+		action( ): Record<string, any>
+	}
+	
+}
+
+//# sourceMappingURL=hotkey2.view.tree.d.ts.map
+declare namespace $.$$ {
+    /**
+     * Plugin which adds handlers for keyboard keys.
+     * @see [mol_keyboard_code](../keyboard/code/code.ts)
+     */
+    class $mol_hotkey2 extends $.$mol_hotkey2 {
+        keydown(event?: KeyboardEvent): void;
     }
 }
 
 declare namespace $ {
-    let $mol_mem_persist: typeof $mol_wire_solid;
+
+	export class $mol_hotkey extends $mol_hotkey2 {
+		key( ): Record<string, any>
+		mod_ctrl( ): boolean
+		mod_alt( ): boolean
+		mod_shift( ): boolean
+	}
+	
 }
 
-declare namespace $ {
-    let $mol_mem_cached: typeof $mol_wire_probe;
-}
-
-declare namespace $ {
+//# sourceMappingURL=hotkey.view.tree.d.ts.map
+declare namespace $.$$ {
     /**
-     * Convert asynchronous (promise-based) API to synchronous by wrapping function and method calls in a fiber.
-     * @see https://mol.hyoo.ru/#!section=docs/=1fcpsq_1wh0h2
+     * Plugin which adds handlers for keyboard keys.
+     * @deprecated Use $mol_hotkey2
+     * @see [mol_keyboard_code](../keyboard/code/code.ts)
      */
-    export function $mol_wire_sync<Host extends object>(obj: Host): ObjectOrFunctionResultAwaited<Host>;
-    type FunctionResultAwaited<Some> = Some extends (...args: infer Args) => infer Res ? (...args: Args) => Awaited<Res> : Some;
-    type ConstructorResultAwaited<Some> = Some extends new (...args: infer Args) => infer Res ? new (...args: Args) => Res : {};
-    type MethodsResultAwaited<Host extends Object> = {
-        [K in keyof Host]: FunctionResultAwaited<Host[K]>;
-    };
-    type ObjectOrFunctionResultAwaited<Some> = (Some extends (...args: any) => unknown ? FunctionResultAwaited<Some> : {}) & (Some extends Object ? MethodsResultAwaited<Some> & ConstructorResultAwaited<Some> : Some);
-    export {};
-}
-
-declare namespace $ {
-    function $mol_wait_user_async(this: $): Promise<unknown>;
-    function $mol_wait_user(this: $): unknown;
-}
-
-declare namespace $ {
-    /** State of time moment */
-    class $mol_state_time extends $mol_object {
-        static task(precision: number, reset?: null): $mol_after_timeout | $mol_after_frame;
-        static now(precision: number): number;
-    }
-}
-
-declare namespace $ {
-    class $mol_storage_web extends $mol_storage {
-        static native(): StorageManager;
-        static persisted(next?: boolean, cache?: 'cache'): boolean;
-        static estimate(): StorageEstimate;
-        static total(): number;
-        static used(): number;
-        static free(): number;
-        static portion(): number;
-        static dir(): FileSystemDirectoryHandle;
-    }
-}
-
-declare namespace $ {
-    class $mol_state_local<Value> extends $mol_object {
-        static 'native()': Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
-        static native(): Storage | {
-            getItem(key: string): any;
-            setItem(key: string, value: string): void;
-            removeItem(key: string): void;
+    class $mol_hotkey extends $.$mol_hotkey {
+        action(): {
+            [k: string]: any;
         };
-        static changes(next?: StorageEvent): StorageEvent | undefined;
-        static value<Value>(key: string, next?: Value | null): Value | null;
-        prefix(): string;
-        value(key: string, next?: Value): Value | null;
-    }
-}
-
-declare namespace $ {
-}
-
-declare namespace $ {
-    class $mol_state_session<Value> extends $mol_object {
-        static 'native()': Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
-        static native(): Storage | {
-            getItem(key: string): any;
-            setItem(key: string, value: string): void;
-            removeItem(key: string): void;
-        };
-        static value<Value>(key: string, next?: Value): Value;
-        prefix(): string;
-        value(key: string, next?: Value): Value;
     }
 }
 
@@ -1916,54 +1872,100 @@ declare namespace $ {
 }
 
 declare namespace $ {
-    class $mol_media extends $mol_object2 {
-        static match(query: string, next?: boolean): boolean;
-    }
+    let $mol_mem_cached: typeof $mol_wire_probe;
+}
+
+declare namespace $ {
+    /**
+     * Z-index values for layers
+     * https://page.hyoo.ru/#!=xthcpx_wqmiba
+     */
+    let $mol_layer: Record<"focus" | "hover" | "float" | "speck" | "popup", $mol_style_func<"var", unknown>>;
+}
+
+declare namespace $ {
 }
 
 declare namespace $ {
 
-	export class $bog_theme_auto extends $mol_plugin {
-		themes_default( ): readonly(any)[]
-		theme( ): string
-		themes( ): ReturnType< $bog_theme_auto['themes_default'] >
-		theme_light( ): string
-		theme_dark( ): string
-		mode( next?: string ): string
-		mode_next( next?: any ): any
-		theme_next( next?: any ): any
-		theme_prev( next?: any ): any
-		theme_set( next?: any ): any
-		is_light_now( ): boolean
-		attr( ): ({ 
-			'mol_theme': ReturnType< $bog_theme_auto['theme'] >,
+	type $mol_hotkey__mod_ctrl_mol_string_1 = $mol_type_enforce<
+		ReturnType< $mol_string['submit_with_ctrl'] >
+		,
+		ReturnType< $mol_hotkey['mod_ctrl'] >
+	>
+	type $mol_hotkey__key_mol_string_2 = $mol_type_enforce<
+		({ 
+			enter( next?: ReturnType< $mol_string['submit'] > ): ReturnType< $mol_string['submit'] >,
 		}) 
+		,
+		ReturnType< $mol_hotkey['key'] >
+	>
+	export class $mol_string extends $mol_view {
+		selection_watcher( ): any
+		error_report( ): any
+		disabled( ): boolean
+		value( next?: string ): string
+		value_changed( next?: ReturnType< $mol_string['value'] > ): ReturnType< $mol_string['value'] >
+		hint( ): string
+		hint_visible( ): ReturnType< $mol_string['hint'] >
+		spellcheck( ): boolean
+		autocomplete_native( ): string
+		selection_end( ): number
+		selection_start( ): number
+		keyboard( ): string
+		enter( ): string
+		length_max( ): number
+		type( next?: string ): string
+		event_change( next?: any ): any
+		submit_with_ctrl( ): boolean
+		submit( next?: any ): any
+		Submit( ): $mol_hotkey
+		dom_name( ): string
+		enabled( ): boolean
+		minimal_height( ): number
+		autocomplete( ): boolean
+		selection( next?: readonly(number)[] ): readonly(number)[]
+		auto( ): readonly(any)[]
+		field( ): ({ 
+			'disabled': ReturnType< $mol_string['disabled'] >,
+			'value': ReturnType< $mol_string['value_changed'] >,
+			'placeholder': ReturnType< $mol_string['hint_visible'] >,
+			'spellcheck': ReturnType< $mol_string['spellcheck'] >,
+			'autocomplete': ReturnType< $mol_string['autocomplete_native'] >,
+			'selectionEnd': ReturnType< $mol_string['selection_end'] >,
+			'selectionStart': ReturnType< $mol_string['selection_start'] >,
+			'inputMode': ReturnType< $mol_string['keyboard'] >,
+			'enterkeyhint': ReturnType< $mol_string['enter'] >,
+		})  & ReturnType< $mol_view['field'] >
+		attr( ): ({ 
+			'maxlength': ReturnType< $mol_string['length_max'] >,
+			'type': ReturnType< $mol_string['type'] >,
+		})  & ReturnType< $mol_view['attr'] >
+		event( ): ({ 
+			input( next?: ReturnType< $mol_string['event_change'] > ): ReturnType< $mol_string['event_change'] >,
+		})  & ReturnType< $mol_view['event'] >
+		plugins( ): readonly(any)[]
 	}
 	
 }
 
-//# sourceMappingURL=auto.view.tree.d.ts.map
+//# sourceMappingURL=string.view.tree.d.ts.map
 declare namespace $.$$ {
-    type $bog_theme_mode = 'light' | 'dark' | 'system' | 'custom';
-    class $bog_theme_auto extends $.$bog_theme_auto {
-        themes_default(): readonly $.$bog_theme_name[];
-        /** Stores current mode in localStorage. Defaults to 'system'.
-         *  При записи дёргает класс `.bog_theme_switching` на `<html>` —
-         *  это активирует CSS-transition'ы на цветах темы.
-         */
-        mode(next?: $bog_theme_mode): $bog_theme_mode;
-        click_step(next?: number): number;
-        /** 3-click cycle: opposite → back → system. */
-        mode_next(): void;
-        system_light(): boolean;
-        is_light_now(): any;
-        theme_index(next?: number): number;
-        system_theme_index(): number;
-        theme(): any;
-        theme_next(): void;
-        theme_prev(): void;
-        /** Called by picker. Sets mode to light/dark or custom for themed palettes. */
-        theme_set(index: number): void;
+    /**
+     * An input field for entering single line text.
+     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_string_demo
+     */
+    class $mol_string extends $.$mol_string {
+        event_change(next?: Event): void;
+        value_changed(next?: string): string;
+        error_report(): void;
+        hint_visible(): string;
+        disabled(): boolean;
+        autocomplete_native(): "on" | "off";
+        selection_watcher(): $mol_dom_listener;
+        selection_change(event: Event): void;
+        selection_start(): number;
+        selection_end(): number;
     }
 }
 
@@ -1972,65 +1974,811 @@ declare namespace $ {
 
 declare namespace $ {
 
-	export class $bog_popup_plugin extends $mol_plugin {
-	}
-	
-}
-
-//# sourceMappingURL=popup.view.tree.d.ts.map
-declare namespace $.$$ {
-}
-
-declare namespace $ {
-    function $bog_tooltip_room(box: {
-        readonly left: number;
-        readonly width: number;
-    }, view: number): {
-        left: number;
-        right: number;
-    };
-}
-
-declare namespace $ {
-
-	export class $bog_tooltip_plugin extends $mol_plugin {
-	}
-	
-}
-
-//# sourceMappingURL=tooltip.view.tree.d.ts.map
-declare namespace $.$$ {
-}
-
-declare namespace $ {
-
-	export class $mol_image extends $mol_view {
-		uri( ): string
-		title( ): string
-		loading( ): string
-		decoding( ): string
-		cors( ): any
-		natural_width( ): number
-		natural_height( ): number
-		load( next?: any ): any
-		dom_name( ): string
-		attr( ): Record<string, any> & ReturnType< $mol_view['attr'] >
-		event( ): Record<string, any>
-		minimal_width( ): number
+	export class $bog_builderui_field extends $mol_string {
 		minimal_height( ): number
 	}
 	
 }
 
-//# sourceMappingURL=image.view.tree.d.ts.map
+//# sourceMappingURL=field.view.tree.d.ts.map
+/** @see $bog_builderui_tokens */
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	type $mol_gallery__style_mol_gallery_1 = $mol_type_enforce<
+		({ 
+			'flexGrow': ReturnType< $mol_gallery['side_size'] >,
+		}) 
+		,
+		ReturnType< $mol_gallery['style'] >
+	>
+	type $mol_gallery__items_mol_gallery_2 = $mol_type_enforce<
+		ReturnType< $mol_gallery['side_items'] >
+		,
+		ReturnType< $mol_gallery['items'] >
+	>
+	export class $mol_gallery extends $mol_view {
+		items( ): readonly($mol_view)[]
+		side_size( id: any): string
+		side_items( id: any): readonly($mol_view)[]
+		sub( ): ReturnType< $mol_gallery['items'] >
+		Side( id: any): $mol_gallery
+	}
+	
+}
+
+//# sourceMappingURL=gallery.view.tree.d.ts.map
 declare namespace $.$$ {
-    class $mol_image extends $.$mol_image {
-        natural_width(next?: null): number;
-        natural_height(next?: null): number;
-        load(): void;
+    /**
+     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_gallery_demo
+     */
+    class $mol_gallery extends $.$mol_gallery {
+        sub(): readonly $mol_view[];
+        side_items(id: number): $mol_view[];
+        side_size(id: number): string;
     }
 }
 
+declare namespace $ {
+}
+
+declare namespace $ {
+    /** State of time moment */
+    class $mol_state_time extends $mol_object {
+        static task(precision: number, reset?: null): $mol_after_timeout | $mol_after_frame;
+        static now(precision: number): number;
+    }
+}
+
+declare namespace $ {
+
+	export class $mol_svg extends $mol_view {
+		dom_name( ): string
+		dom_name_space( ): string
+		font_size( ): number
+		font_family( ): string
+		style_size( ): Record<string, any>
+	}
+	
+}
+
+//# sourceMappingURL=svg.view.tree.d.ts.map
+declare namespace $.$$ {
+    /** Base SVG component to display SVG images or icons. */
+    class $mol_svg extends $.$mol_svg {
+        computed_style(): Record<string, any>;
+        font_size(): number;
+        font_family(): any;
+    }
+}
+
+declare namespace $ {
+
+	export class $mol_svg_group extends $mol_svg {
+		dom_name( ): string
+	}
+	
+}
+
+//# sourceMappingURL=group.view.tree.d.ts.map
+declare namespace $ {
+    class $mol_vector<Value, Length extends number> extends Array<Value> {
+        get length(): Length;
+        constructor(...values: Value[] & {
+            length: Length;
+        });
+        map<Res>(convert: (value: Value, index: number, array: this) => Res, self?: any): $mol_vector<Res, Length>;
+        merged<Patch>(patches: readonly Patch[] & {
+            length: Length;
+        }, combine: (value: Value, patch: Patch) => Value): this;
+        limited(this: $mol_vector<number, Length>, limits: readonly (readonly [number, number])[] & {
+            length: Length;
+        }): this;
+        added0(this: $mol_vector<number, Length>, diff: number): this;
+        added1(this: $mol_vector<number, Length>, diff: readonly number[] & {
+            length: Length;
+        }): this;
+        substracted1(this: $mol_vector<number, Length>, diff: readonly number[] & {
+            length: Length;
+        }): this;
+        multed0(this: $mol_vector<number, Length>, mult: number): this;
+        multed1(this: $mol_vector<number, Length>, mults: readonly number[] & {
+            length: Length;
+        }): this;
+        divided1(this: $mol_vector<number, Length>, mults: readonly number[] & {
+            length: Length;
+        }): this;
+        powered0(this: $mol_vector<number, Length>, mult: number): this;
+        expanded1(this: $mol_vector<$mol_vector_range<number>, Length>, point: readonly number[] & {
+            length: Length;
+        }): this;
+        expanded2(this: $mol_vector<$mol_vector_range<number>, Length>, point: readonly (readonly [number, number])[] & {
+            length: Length;
+        }): this;
+        center<Item extends $mol_vector<number, number>>(this: $mol_vector<Item, Length>): Item;
+        distance(this: $mol_vector<$mol_vector<number, number>, Length>): number;
+        transponed(this: $mol_vector<$mol_vector<number, number>, Length>): $mol_vector<$mol_vector<number, Length>, typeof this[0]['length']>;
+        get x(): Value;
+        set x(next: Value);
+        get y(): Value;
+        set y(next: Value);
+        get z(): Value;
+        set z(next: Value);
+    }
+    class $mol_vector_1d<Value> extends $mol_vector<Value, 1> {
+    }
+    class $mol_vector_2d<Value> extends $mol_vector<Value, 2> {
+    }
+    class $mol_vector_3d<Value> extends $mol_vector<Value, 3> {
+    }
+    class $mol_vector_range<Value> extends $mol_vector<Value, 2> {
+        0: Value;
+        1: Value;
+        constructor(min: Value, max?: Value);
+        get min(): Value;
+        set min(next: Value);
+        get max(): Value;
+        set max(next: Value);
+        get inversed(): $mol_vector_range<Value>;
+        expanded0(value: Value): $mol_vector_range<Value>;
+    }
+    let $mol_vector_range_full: $mol_vector_range<number>;
+    class $mol_vector_matrix<Width extends number, Height extends number> extends $mol_vector<readonly number[] & {
+        length: Width;
+    }, Height> {
+        added2(diff: readonly (readonly number[] & {
+            length: Width;
+        })[] & {
+            length: Height;
+        }): this;
+        multed2(diff: readonly (readonly number[] & {
+            length: Width;
+        })[] & {
+            length: Height;
+        }): this;
+    }
+}
+
+declare namespace $ {
+
+	export class $mol_svg_title extends $mol_svg {
+		dom_name( ): string
+		sub( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=title.view.tree.d.ts.map
+declare namespace $ {
+
+	type $mol_vector_range__mol_plot_graph_1 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_range<number> >
+	>
+	type $mol_vector_range__mol_plot_graph_2 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_range<number> >
+	>
+	type $mol_vector_range__mol_plot_graph_3 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_range<number> >
+	>
+	type $mol_vector_range__mol_plot_graph_4 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_range<number> >
+	>
+	type $mol_vector_range__mol_plot_graph_5 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_range<number> >
+	>
+	type $mol_vector_range__mol_plot_graph_6 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_range<number> >
+	>
+	type $mol_vector_range__mol_plot_graph_7 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_range<number> >
+	>
+	type $mol_vector_range__mol_plot_graph_8 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_range<number> >
+	>
+	type $mol_vector_2d__mol_plot_graph_9 = $mol_type_enforce<
+		[ ReturnType< $mol_plot_graph['viewport_x'] >, ReturnType< $mol_plot_graph['viewport_y'] > ]
+		,
+		ConstructorParameters< typeof $mol_vector_2d<$mol_vector_range<number>> >
+	>
+	type $mol_vector_2d__mol_plot_graph_10 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_2d<number> >
+	>
+	type $mol_vector_2d__mol_plot_graph_11 = $mol_type_enforce<
+		[ ReturnType< $mol_plot_graph['dimensions_pane_x'] >, ReturnType< $mol_plot_graph['dimensions_pane_y'] > ]
+		,
+		ConstructorParameters< typeof $mol_vector_2d<$mol_vector_range<number>> >
+	>
+	type $mol_vector_2d__mol_plot_graph_12 = $mol_type_enforce<
+		[ ReturnType< $mol_plot_graph['dimensions_x'] >, ReturnType< $mol_plot_graph['dimensions_y'] > ]
+		,
+		ConstructorParameters< typeof $mol_vector_2d<$mol_vector_range<number>> >
+	>
+	type $mol_vector_2d__mol_plot_graph_13 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_2d<number> >
+	>
+	type $mol_vector_2d__mol_plot_graph_14 = $mol_type_enforce<
+		[ ReturnType< $mol_plot_graph['gap_x'] >, ReturnType< $mol_plot_graph['gap_y'] > ]
+		,
+		ConstructorParameters< typeof $mol_vector_2d<$mol_vector_range<number>> >
+	>
+	type $mol_svg_title__title_mol_plot_graph_15 = $mol_type_enforce<
+		ReturnType< $mol_plot_graph['hint'] >
+		,
+		ReturnType< $mol_svg_title['title'] >
+	>
+	export class $mol_plot_graph extends $mol_svg_group {
+		type( ): string
+		color( ): string
+		viewport_x( ): $mol_vector_range<number>
+		viewport_y( ): $mol_vector_range<number>
+		dimensions_pane_x( ): $mol_vector_range<number>
+		dimensions_pane_y( ): $mol_vector_range<number>
+		dimensions_x( ): $mol_vector_range<number>
+		dimensions_y( ): $mol_vector_range<number>
+		gap_x( ): $mol_vector_range<number>
+		gap_y( ): $mol_vector_range<number>
+		title( ): string
+		hint( ): ReturnType< $mol_plot_graph['title'] >
+		series_x( ): readonly(number)[]
+		series_y( ): readonly(number)[]
+		attr( ): ({ 
+			'mol_plot_graph_type': ReturnType< $mol_plot_graph['type'] >,
+		})  & ReturnType< $mol_svg_group['attr'] >
+		style( ): ({ 
+			'color': ReturnType< $mol_plot_graph['color'] >,
+		})  & ReturnType< $mol_svg_group['style'] >
+		viewport( ): $mol_vector_2d<$mol_vector_range<number>>
+		shift( ): readonly(number)[]
+		scale( ): readonly(number)[]
+		cursor_position( ): $mol_vector_2d<number>
+		dimensions_pane( ): $mol_vector_2d<$mol_vector_range<number>>
+		dimensions( ): $mol_vector_2d<$mol_vector_range<number>>
+		size_real( ): $mol_vector_2d<number>
+		gap( ): $mol_vector_2d<$mol_vector_range<number>>
+		repos_x( id: any): number
+		repos_y( id: any): number
+		indexes( ): readonly(number)[]
+		points( ): readonly(readonly(number)[])[]
+		front( ): readonly($mol_svg)[]
+		back( ): readonly($mol_svg)[]
+		Hint( ): $mol_svg_title
+		hue( next?: number ): number
+		Sample( ): any
+	}
+	
+	export class $mol_plot_graph_sample extends $mol_view {
+		type( ): string
+		color( ): string
+		attr( ): ({ 
+			'mol_plot_graph_type': ReturnType< $mol_plot_graph_sample['type'] >,
+		})  & ReturnType< $mol_view['attr'] >
+		style( ): ({ 
+			'color': ReturnType< $mol_plot_graph_sample['color'] >,
+		})  & ReturnType< $mol_view['style'] >
+	}
+	
+}
+
+//# sourceMappingURL=graph.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_plot_graph extends $.$mol_plot_graph {
+        viewport(): $mol_vector_2d<$mol_vector_range<number>>;
+        indexes(): readonly number[];
+        repos_x(val: number): number;
+        repos_y(val: number): number;
+        points(): readonly (readonly number[])[];
+        series_x(): readonly number[];
+        dimensions(): $mol_vector_2d<$mol_vector_range<number>>;
+        color(): string;
+        front(): readonly $.$mol_svg[];
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	type $mol_gallery__items_mol_chart_legend_1 = $mol_type_enforce<
+		ReturnType< $mol_chart_legend['graph_legends'] >
+		,
+		ReturnType< $mol_gallery['items'] >
+	>
+	type $mol_view__sub_mol_chart_legend_2 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_mol_chart_legend_3 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_mol_chart_legend_4 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	export class $mol_chart_legend extends $mol_scroll {
+		graph_legends( ): readonly($mol_view)[]
+		Gallery( ): $mol_gallery
+		Graph_sample( id: any): any
+		Graph_sample_box( id: any): $mol_view
+		graph_title( id: any): string
+		Graph_title( id: any): $mol_view
+		graphs( ): readonly($mol_plot_graph)[]
+		graphs_front( ): readonly($mol_plot_graph)[]
+		sub( ): readonly(any)[]
+		Graph_legend( id: any): $mol_view
+	}
+	
+}
+
+//# sourceMappingURL=legend.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_chart_legend extends $.$mol_chart_legend {
+        graphs_front(): readonly $mol_plot_graph[];
+        graph_legends(): readonly $mol_view[];
+        graph_title(index: number): string;
+        Graph_sample(index: number): any;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_svg_root extends $mol_svg {
+		view_box( ): string
+		aspect( ): string
+		dom_name( ): string
+		attr( ): ({ 
+			'viewBox': ReturnType< $mol_svg_root['view_box'] >,
+			'preserveAspectRatio': ReturnType< $mol_svg_root['aspect'] >,
+		})  & ReturnType< $mol_svg['attr'] >
+	}
+	
+}
+
+//# sourceMappingURL=root.view.tree.d.ts.map
+declare namespace $ {
+
+	type $mol_vector_2d__mol_touch_1 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_2d<number> >
+	>
+	type $mol_vector_2d__mol_touch_2 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_2d<number> >
+	>
+	type $mol_vector_2d__mol_touch_3 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_2d<number> >
+	>
+	export class $mol_touch extends $mol_plugin {
+		event_start( next?: any ): any
+		event_move( next?: any ): any
+		event_end( next?: any ): any
+		event_leave( next?: any ): any
+		event_wheel( next?: any ): any
+		start_zoom( next?: number ): number
+		start_distance( next?: number ): number
+		zoom( next?: number ): number
+		allow_draw( ): boolean
+		allow_pan( ): boolean
+		allow_zoom( ): boolean
+		action_type( next?: string ): string
+		action_point( next?: $mol_vector_2d<number> ): $mol_vector_2d<number>
+		start_pan( next?: readonly(any)[] ): readonly(any)[]
+		pan( next?: $mol_vector_2d<number> ): $mol_vector_2d<number>
+		pointer_center( ): $mol_vector_2d<number>
+		start_pos( next?: any ): any
+		swipe_precision( ): number
+		swipe_right( next?: any ): any
+		swipe_bottom( next?: any ): any
+		swipe_left( next?: any ): any
+		swipe_top( next?: any ): any
+		swipe_from_right( next?: any ): any
+		swipe_from_bottom( next?: any ): any
+		swipe_from_left( next?: any ): any
+		swipe_from_top( next?: any ): any
+		swipe_to_right( next?: any ): any
+		swipe_to_bottom( next?: any ): any
+		swipe_to_left( next?: any ): any
+		swipe_to_top( next?: any ): any
+		draw_start( next?: any ): any
+		draw( next?: any ): any
+		draw_end( next?: any ): any
+		style( ): ({ 
+			'touch-action': string,
+			'overscroll-behavior': string,
+		})  & ReturnType< $mol_plugin['style'] >
+		event( ): ({ 
+			pointerdown( next?: ReturnType< $mol_touch['event_start'] > ): ReturnType< $mol_touch['event_start'] >,
+			pointermove( next?: ReturnType< $mol_touch['event_move'] > ): ReturnType< $mol_touch['event_move'] >,
+			pointerup( next?: ReturnType< $mol_touch['event_end'] > ): ReturnType< $mol_touch['event_end'] >,
+			pointerleave( next?: ReturnType< $mol_touch['event_leave'] > ): ReturnType< $mol_touch['event_leave'] >,
+			wheel( next?: ReturnType< $mol_touch['event_wheel'] > ): ReturnType< $mol_touch['event_wheel'] >,
+		})  & ReturnType< $mol_plugin['event'] >
+	}
+	
+}
+
+//# sourceMappingURL=touch.view.tree.d.ts.map
+declare namespace $.$$ {
+    /**
+     * Plugin for touch gestures.
+     * @see [mol_plugin](../plugin/readme.md)
+     */
+    class $mol_touch extends $.$mol_touch {
+        auto(): void;
+        pointer_events(next?: readonly PointerEvent[]): readonly PointerEvent[];
+        pointer_coords(): $mol_vector<$mol_vector_2d<number>, number>;
+        pointer_center(): $mol_vector_2d<number>;
+        event_coords(event: PointerEvent | WheelEvent): $mol_vector_2d<number>;
+        action_point(): $mol_vector_2d<number>;
+        event_eat(event: PointerEvent | WheelEvent): string;
+        event_start(event: PointerEvent): void;
+        event_move(event: PointerEvent): void;
+        event_end(event: PointerEvent): void;
+        event_leave(event: PointerEvent): void;
+        swipe_left(event: PointerEvent): void;
+        swipe_right(event: PointerEvent): void;
+        swipe_top(event: PointerEvent): void;
+        swipe_bottom(event: PointerEvent): void;
+        event_wheel(event: WheelEvent): void;
+    }
+}
+
+declare namespace $ {
+
+	type $mol_vector_range__mol_plot_pane_1 = $mol_type_enforce<
+		[ ReturnType< $mol_plot_pane['gap_left'] >, ReturnType< $mol_plot_pane['gap_right'] > ]
+		,
+		ConstructorParameters< typeof $mol_vector_range<number> >
+	>
+	type $mol_vector_range__mol_plot_pane_2 = $mol_type_enforce<
+		[ ReturnType< $mol_plot_pane['gap_bottom'] >, ReturnType< $mol_plot_pane['gap_top'] > ]
+		,
+		ConstructorParameters< typeof $mol_vector_range<number> >
+	>
+	type $mol_vector_range__mol_plot_pane_3 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_range<number> >
+	>
+	type $mol_vector_range__mol_plot_pane_4 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_range<number> >
+	>
+	type $mol_vector_range__mol_plot_pane_5 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_range<number> >
+	>
+	type $mol_vector_range__mol_plot_pane_6 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_range<number> >
+	>
+	type $mol_vector_range__mol_plot_pane_7 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_range<number> >
+	>
+	type $mol_vector_range__mol_plot_pane_8 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_range<number> >
+	>
+	type $mol_vector_range__mol_plot_pane_9 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_range<number> >
+	>
+	type $mol_vector_range__mol_plot_pane_10 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_range<number> >
+	>
+	type $mol_touch__zoom_mol_plot_pane_11 = $mol_type_enforce<
+		ReturnType< $mol_plot_pane['zoom'] >
+		,
+		ReturnType< $mol_touch['zoom'] >
+	>
+	type $mol_touch__pan_mol_plot_pane_12 = $mol_type_enforce<
+		ReturnType< $mol_plot_pane['shift'] >
+		,
+		ReturnType< $mol_touch['pan'] >
+	>
+	type $mol_touch__allow_draw_mol_plot_pane_13 = $mol_type_enforce<
+		ReturnType< $mol_plot_pane['allow_draw'] >
+		,
+		ReturnType< $mol_touch['allow_draw'] >
+	>
+	type $mol_touch__allow_pan_mol_plot_pane_14 = $mol_type_enforce<
+		ReturnType< $mol_plot_pane['allow_pan'] >
+		,
+		ReturnType< $mol_touch['allow_pan'] >
+	>
+	type $mol_touch__allow_zoom_mol_plot_pane_15 = $mol_type_enforce<
+		ReturnType< $mol_plot_pane['allow_zoom'] >
+		,
+		ReturnType< $mol_touch['allow_zoom'] >
+	>
+	type $mol_touch__draw_start_mol_plot_pane_16 = $mol_type_enforce<
+		ReturnType< $mol_plot_pane['draw_start'] >
+		,
+		ReturnType< $mol_touch['draw_start'] >
+	>
+	type $mol_touch__draw_mol_plot_pane_17 = $mol_type_enforce<
+		ReturnType< $mol_plot_pane['draw'] >
+		,
+		ReturnType< $mol_touch['draw'] >
+	>
+	type $mol_touch__draw_end_mol_plot_pane_18 = $mol_type_enforce<
+		ReturnType< $mol_plot_pane['draw_end'] >
+		,
+		ReturnType< $mol_touch['draw_end'] >
+	>
+	type $mol_vector_2d__mol_plot_pane_19 = $mol_type_enforce<
+		[ ReturnType< $mol_plot_pane['gap_x'] >, ReturnType< $mol_plot_pane['gap_y'] > ]
+		,
+		ConstructorParameters< typeof $mol_vector_2d<$mol_vector_range<number>> >
+	>
+	type $mol_vector_2d__mol_plot_pane_20 = $mol_type_enforce<
+		[ ReturnType< $mol_plot_pane['shift_limit_x'] >, ReturnType< $mol_plot_pane['shift_limit_y'] > ]
+		,
+		ConstructorParameters< typeof $mol_vector_2d<$mol_vector_range<number>> >
+	>
+	type $mol_vector_2d__mol_plot_pane_21 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_2d<number> >
+	>
+	type $mol_vector_2d__mol_plot_pane_22 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_2d<number> >
+	>
+	type $mol_vector_2d__mol_plot_pane_23 = $mol_type_enforce<
+		[ ReturnType< $mol_plot_pane['scale_limit_x'] >, ReturnType< $mol_plot_pane['scale_limit_y'] > ]
+		,
+		ConstructorParameters< typeof $mol_vector_2d<$mol_vector_range<number>> >
+	>
+	type $mol_vector_2d__mol_plot_pane_24 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_2d<number> >
+	>
+	type $mol_vector_2d__mol_plot_pane_25 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_2d<number> >
+	>
+	type $mol_vector_2d__mol_plot_pane_26 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_2d<number> >
+	>
+	type $mol_vector_2d__mol_plot_pane_27 = $mol_type_enforce<
+		[ number, number ]
+		,
+		ConstructorParameters< typeof $mol_vector_2d<number> >
+	>
+	type $mol_vector_2d__mol_plot_pane_28 = $mol_type_enforce<
+		[ ReturnType< $mol_plot_pane['dimensions_x'] >, ReturnType< $mol_plot_pane['dimensions_y'] > ]
+		,
+		ConstructorParameters< typeof $mol_vector_2d<$mol_vector_range<number>> >
+	>
+	type $mol_vector_2d__mol_plot_pane_29 = $mol_type_enforce<
+		[ ReturnType< $mol_plot_pane['dimensions_viewport_x'] >, ReturnType< $mol_plot_pane['dimensions_viewport_y'] > ]
+		,
+		ConstructorParameters< typeof $mol_vector_2d<$mol_vector_range<number>> >
+	>
+	export class $mol_plot_pane extends $mol_svg_root {
+		gap_x( ): $mol_vector_range<number>
+		gap_y( ): $mol_vector_range<number>
+		shift_limit_x( ): $mol_vector_range<number>
+		shift_limit_y( ): $mol_vector_range<number>
+		scale_limit_x( ): $mol_vector_range<number>
+		scale_limit_y( ): $mol_vector_range<number>
+		dimensions_x( ): $mol_vector_range<number>
+		dimensions_y( ): $mol_vector_range<number>
+		dimensions_viewport_x( ): $mol_vector_range<number>
+		dimensions_viewport_y( ): $mol_vector_range<number>
+		graphs_sorted( ): readonly($mol_svg)[]
+		graphs( ): readonly($mol_plot_graph)[]
+		graphs_positioned( ): ReturnType< $mol_plot_pane['graphs'] >
+		graphs_visible( ): ReturnType< $mol_plot_pane['graphs_positioned'] >
+		zoom( next?: number ): number
+		cursor_position( ): ReturnType< ReturnType< $mol_plot_pane['Touch'] >['pointer_center'] >
+		allow_draw( ): boolean
+		allow_pan( ): boolean
+		allow_zoom( ): boolean
+		action_type( ): ReturnType< ReturnType< $mol_plot_pane['Touch'] >['action_type'] >
+		action_point( ): ReturnType< ReturnType< $mol_plot_pane['Touch'] >['action_point'] >
+		draw_start( next?: any ): any
+		draw( next?: any ): any
+		draw_end( next?: any ): any
+		Touch( ): $mol_touch
+		aspect( ): string
+		hue_base( next?: number ): number
+		hue_shift( next?: number ): number
+		gap_hor( ): number
+		gap_vert( ): number
+		gap_left( ): ReturnType< $mol_plot_pane['gap_hor'] >
+		gap_right( ): ReturnType< $mol_plot_pane['gap_hor'] >
+		gap_top( ): ReturnType< $mol_plot_pane['gap_vert'] >
+		gap_bottom( ): ReturnType< $mol_plot_pane['gap_vert'] >
+		gap( ): $mol_vector_2d<$mol_vector_range<number>>
+		shift_limit( ): $mol_vector_2d<$mol_vector_range<number>>
+		shift_default( ): $mol_vector_2d<number>
+		shift( next?: $mol_vector_2d<number> ): $mol_vector_2d<number>
+		scale_limit( ): $mol_vector_2d<$mol_vector_range<number>>
+		scale_default( ): $mol_vector_2d<number>
+		scale( next?: $mol_vector_2d<number> ): $mol_vector_2d<number>
+		scale_x( next?: number ): number
+		scale_y( next?: number ): number
+		size( ): $mol_vector_2d<number>
+		size_real( ): $mol_vector_2d<number>
+		dimensions( ): $mol_vector_2d<$mol_vector_range<number>>
+		dimensions_viewport( ): $mol_vector_2d<$mol_vector_range<number>>
+		sub( ): ReturnType< $mol_plot_pane['graphs_sorted'] >
+		graphs_colored( ): ReturnType< $mol_plot_pane['graphs_visible'] >
+		plugins( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=pane.view.tree.d.ts.map
+declare namespace $.$$ {
+    /**
+     * Fastest plot lib for vector graphics.
+     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_plot_demo
+     */
+    class $mol_plot_pane extends $.$mol_plot_pane {
+        dimensions(): $mol_vector_2d<$mol_vector_range<number>>;
+        size(): $mol_vector_2d<number>;
+        graph_hue(index: number): number;
+        graphs_colored(): $.$mol_plot_graph[];
+        size_real(): $mol_vector_2d<number>;
+        view_box(): string;
+        scale_limit(): $mol_vector_2d<$mol_vector_range<number>>;
+        scale_default(): $mol_vector_2d<number>;
+        scale(next?: $mol_vector_2d<number>): $mol_vector_2d<number>;
+        scale_x(next?: number): number;
+        scale_y(next?: number): number;
+        shift_limit(): $mol_vector_2d<$mol_vector_range<number>>;
+        shift_default(): $mol_vector_2d<number>;
+        graph_touched: boolean;
+        shift(next?: $mol_vector_2d<number>): $mol_vector_2d<number>;
+        reset(event?: Event): void;
+        graphs_visible(): $.$mol_plot_graph[];
+        graphs_positioned(): readonly $.$mol_plot_graph[];
+        dimensions_viewport(): $mol_vector<$mol_vector_range<number>, 2>;
+        viewport(): $mol_vector_2d<$mol_vector_range<number>>;
+        graphs_sorted(): $.$mol_svg[];
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	type $mol_chart_legend__graphs_mol_chart_1 = $mol_type_enforce<
+		ReturnType< $mol_chart['graphs_colored'] >
+		,
+		ReturnType< $mol_chart_legend['graphs'] >
+	>
+	type __mol_chart_2 = $mol_type_enforce<
+		Parameters< $mol_chart['zoom'] >[0]
+		,
+		Parameters< ReturnType< $mol_chart['Plot'] >['scale_x'] >[0]
+	>
+	type $mol_plot_pane__zoom_mol_chart_3 = $mol_type_enforce<
+		ReturnType< $mol_chart['zoom'] >
+		,
+		ReturnType< $mol_plot_pane['zoom'] >
+	>
+	type $mol_plot_pane__gap_left_mol_chart_4 = $mol_type_enforce<
+		ReturnType< $mol_chart['gap_left'] >
+		,
+		ReturnType< $mol_plot_pane['gap_left'] >
+	>
+	type $mol_plot_pane__gap_right_mol_chart_5 = $mol_type_enforce<
+		ReturnType< $mol_chart['gap_right'] >
+		,
+		ReturnType< $mol_plot_pane['gap_right'] >
+	>
+	type $mol_plot_pane__gap_bottom_mol_chart_6 = $mol_type_enforce<
+		ReturnType< $mol_chart['gap_bottom'] >
+		,
+		ReturnType< $mol_plot_pane['gap_bottom'] >
+	>
+	type $mol_plot_pane__gap_top_mol_chart_7 = $mol_type_enforce<
+		ReturnType< $mol_chart['gap_top'] >
+		,
+		ReturnType< $mol_plot_pane['gap_top'] >
+	>
+	type $mol_plot_pane__graphs_mol_chart_8 = $mol_type_enforce<
+		ReturnType< $mol_chart['graphs'] >
+		,
+		ReturnType< $mol_plot_pane['graphs'] >
+	>
+	type $mol_plot_pane__hue_base_mol_chart_9 = $mol_type_enforce<
+		ReturnType< $mol_chart['hue_base'] >
+		,
+		ReturnType< $mol_plot_pane['hue_base'] >
+	>
+	type $mol_plot_pane__hue_shift_mol_chart_10 = $mol_type_enforce<
+		ReturnType< $mol_chart['hue_shift'] >
+		,
+		ReturnType< $mol_plot_pane['hue_shift'] >
+	>
+	export class $mol_chart extends $mol_view {
+		Legend( ): $mol_chart_legend
+		zoom( next?: ReturnType< ReturnType< $mol_chart['Plot'] >['scale_x'] > ): ReturnType< ReturnType< $mol_chart['Plot'] >['scale_x'] >
+		graphs_colored( ): ReturnType< ReturnType< $mol_chart['Plot'] >['graphs_colored'] >
+		hue_base( ): number
+		hue_shift( ): number
+		Plot( ): $mol_plot_pane
+		gap_hor( ): number
+		gap_vert( ): number
+		gap_left( ): ReturnType< $mol_chart['gap_hor'] >
+		gap_right( ): ReturnType< $mol_chart['gap_hor'] >
+		gap_bottom( ): ReturnType< $mol_chart['gap_vert'] >
+		gap_top( ): ReturnType< $mol_chart['gap_vert'] >
+		graphs( ): readonly($mol_plot_graph)[]
+		sub( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=chart.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $bog_builderui_chart extends $mol_chart {
+	}
+	
+}
+
+//# sourceMappingURL=chart.view.tree.d.ts.map
+/** @see $bog_builderui_tokens */
 declare namespace $ {
 }
 
@@ -2082,6 +2830,84 @@ declare namespace $.$$ {
             top: number;
         } | null;
         transform(): string;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+    class $mol_storage extends $mol_object2 {
+        /** Is storage a long term. */
+        static persisted(next?: boolean): boolean;
+        /** Total storage quota in bytes. */
+        static total(): number;
+        /** Total storage usage in bytes. */
+        static used(): number;
+        /** Minimum available free space in bytes. */
+        static free(): number;
+        /** Fulfillness of storage. */
+        static portion(): number;
+        /**
+         * Fulfillness logarithmic level.
+         * `0` - empty
+         * `1` - half free
+         * `2` - quart free
+         * `Infinity` - fulfilled
+         */
+        static level(): number;
+    }
+}
+
+declare namespace $ {
+    let $mol_mem_persist: typeof $mol_wire_solid;
+}
+
+declare namespace $ {
+    /**
+     * Convert asynchronous (promise-based) API to synchronous by wrapping function and method calls in a fiber.
+     * @see https://mol.hyoo.ru/#!section=docs/=1fcpsq_1wh0h2
+     */
+    export function $mol_wire_sync<Host extends object>(obj: Host): ObjectOrFunctionResultAwaited<Host>;
+    type FunctionResultAwaited<Some> = Some extends (...args: infer Args) => infer Res ? (...args: Args) => Awaited<Res> : Some;
+    type ConstructorResultAwaited<Some> = Some extends new (...args: infer Args) => infer Res ? new (...args: Args) => Res : {};
+    type MethodsResultAwaited<Host extends Object> = {
+        [K in keyof Host]: FunctionResultAwaited<Host[K]>;
+    };
+    type ObjectOrFunctionResultAwaited<Some> = (Some extends (...args: any) => unknown ? FunctionResultAwaited<Some> : {}) & (Some extends Object ? MethodsResultAwaited<Some> & ConstructorResultAwaited<Some> : Some);
+    export {};
+}
+
+declare namespace $ {
+    function $mol_wait_user_async(this: $): Promise<unknown>;
+    function $mol_wait_user(this: $): unknown;
+}
+
+declare namespace $ {
+    class $mol_storage_web extends $mol_storage {
+        static native(): StorageManager;
+        static persisted(next?: boolean, cache?: 'cache'): boolean;
+        static estimate(): StorageEstimate;
+        static total(): number;
+        static used(): number;
+        static free(): number;
+        static portion(): number;
+        static dir(): FileSystemDirectoryHandle;
+    }
+}
+
+declare namespace $ {
+    class $mol_state_local<Value> extends $mol_object {
+        static 'native()': Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
+        static native(): Storage | {
+            getItem(key: string): any;
+            setItem(key: string, value: string): void;
+            removeItem(key: string): void;
+        };
+        static changes(next?: StorageEvent): StorageEvent | undefined;
+        static value<Value>(key: string, next?: Value | null): Value | null;
+        prefix(): string;
+        value(key: string, next?: Value): Value | null;
     }
 }
 
@@ -2396,17 +3222,6 @@ declare namespace $ {
         static text(key: string): string;
         static warn(key: string): null;
     }
-}
-
-declare namespace $ {
-    /**
-     * Z-index values for layers
-     * https://page.hyoo.ru/#!=xthcpx_wqmiba
-     */
-    let $mol_layer: Record<"focus" | "hover" | "float" | "speck" | "popup", $mol_style_func<"var", unknown>>;
-}
-
-declare namespace $ {
 }
 
 declare namespace $ {
@@ -3034,180 +3849,6 @@ declare namespace $ {
 
 declare namespace $ {
 
-	export class $mol_hotkey2 extends $mol_plugin {
-		keydown( next?: any ): any
-		event( ): ({ 
-			keydown( next?: ReturnType< $mol_hotkey2['keydown'] > ): ReturnType< $mol_hotkey2['keydown'] >,
-		})  & ReturnType< $mol_plugin['event'] >
-		action( ): Record<string, any>
-	}
-	
-}
-
-//# sourceMappingURL=hotkey2.view.tree.d.ts.map
-declare namespace $.$$ {
-    /**
-     * Plugin which adds handlers for keyboard keys.
-     * @see [mol_keyboard_code](../keyboard/code/code.ts)
-     */
-    class $mol_hotkey2 extends $.$mol_hotkey2 {
-        keydown(event?: KeyboardEvent): void;
-    }
-}
-
-declare namespace $ {
-
-	export class $mol_hotkey extends $mol_hotkey2 {
-		key( ): Record<string, any>
-		mod_ctrl( ): boolean
-		mod_alt( ): boolean
-		mod_shift( ): boolean
-	}
-	
-}
-
-//# sourceMappingURL=hotkey.view.tree.d.ts.map
-declare namespace $.$$ {
-    /**
-     * Plugin which adds handlers for keyboard keys.
-     * @deprecated Use $mol_hotkey2
-     * @see [mol_keyboard_code](../keyboard/code/code.ts)
-     */
-    class $mol_hotkey extends $.$mol_hotkey {
-        action(): {
-            [k: string]: any;
-        };
-    }
-}
-
-declare namespace $ {
-
-	type $mol_hotkey__mod_ctrl_mol_string_1 = $mol_type_enforce<
-		ReturnType< $mol_string['submit_with_ctrl'] >
-		,
-		ReturnType< $mol_hotkey['mod_ctrl'] >
-	>
-	type $mol_hotkey__key_mol_string_2 = $mol_type_enforce<
-		({ 
-			enter( next?: ReturnType< $mol_string['submit'] > ): ReturnType< $mol_string['submit'] >,
-		}) 
-		,
-		ReturnType< $mol_hotkey['key'] >
-	>
-	export class $mol_string extends $mol_view {
-		selection_watcher( ): any
-		error_report( ): any
-		disabled( ): boolean
-		value( next?: string ): string
-		value_changed( next?: ReturnType< $mol_string['value'] > ): ReturnType< $mol_string['value'] >
-		hint( ): string
-		hint_visible( ): ReturnType< $mol_string['hint'] >
-		spellcheck( ): boolean
-		autocomplete_native( ): string
-		selection_end( ): number
-		selection_start( ): number
-		keyboard( ): string
-		enter( ): string
-		length_max( ): number
-		type( next?: string ): string
-		event_change( next?: any ): any
-		submit_with_ctrl( ): boolean
-		submit( next?: any ): any
-		Submit( ): $mol_hotkey
-		dom_name( ): string
-		enabled( ): boolean
-		minimal_height( ): number
-		autocomplete( ): boolean
-		selection( next?: readonly(number)[] ): readonly(number)[]
-		auto( ): readonly(any)[]
-		field( ): ({ 
-			'disabled': ReturnType< $mol_string['disabled'] >,
-			'value': ReturnType< $mol_string['value_changed'] >,
-			'placeholder': ReturnType< $mol_string['hint_visible'] >,
-			'spellcheck': ReturnType< $mol_string['spellcheck'] >,
-			'autocomplete': ReturnType< $mol_string['autocomplete_native'] >,
-			'selectionEnd': ReturnType< $mol_string['selection_end'] >,
-			'selectionStart': ReturnType< $mol_string['selection_start'] >,
-			'inputMode': ReturnType< $mol_string['keyboard'] >,
-			'enterkeyhint': ReturnType< $mol_string['enter'] >,
-		})  & ReturnType< $mol_view['field'] >
-		attr( ): ({ 
-			'maxlength': ReturnType< $mol_string['length_max'] >,
-			'type': ReturnType< $mol_string['type'] >,
-		})  & ReturnType< $mol_view['attr'] >
-		event( ): ({ 
-			input( next?: ReturnType< $mol_string['event_change'] > ): ReturnType< $mol_string['event_change'] >,
-		})  & ReturnType< $mol_view['event'] >
-		plugins( ): readonly(any)[]
-	}
-	
-}
-
-//# sourceMappingURL=string.view.tree.d.ts.map
-declare namespace $.$$ {
-    /**
-     * An input field for entering single line text.
-     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_string_demo
-     */
-    class $mol_string extends $.$mol_string {
-        event_change(next?: Event): void;
-        value_changed(next?: string): string;
-        error_report(): void;
-        hint_visible(): string;
-        disabled(): boolean;
-        autocomplete_native(): "on" | "off";
-        selection_watcher(): $mol_dom_listener;
-        selection_change(event: Event): void;
-        selection_start(): number;
-        selection_end(): number;
-    }
-}
-
-declare namespace $ {
-}
-
-declare namespace $ {
-
-	export class $mol_svg extends $mol_view {
-		dom_name( ): string
-		dom_name_space( ): string
-		font_size( ): number
-		font_family( ): string
-		style_size( ): Record<string, any>
-	}
-	
-}
-
-//# sourceMappingURL=svg.view.tree.d.ts.map
-declare namespace $.$$ {
-    /** Base SVG component to display SVG images or icons. */
-    class $mol_svg extends $.$mol_svg {
-        computed_style(): Record<string, any>;
-        font_size(): number;
-        font_family(): any;
-    }
-}
-
-declare namespace $ {
-}
-
-declare namespace $ {
-
-	export class $mol_svg_root extends $mol_svg {
-		view_box( ): string
-		aspect( ): string
-		dom_name( ): string
-		attr( ): ({ 
-			'viewBox': ReturnType< $mol_svg_root['view_box'] >,
-			'preserveAspectRatio': ReturnType< $mol_svg_root['aspect'] >,
-		})  & ReturnType< $mol_svg['attr'] >
-	}
-	
-}
-
-//# sourceMappingURL=root.view.tree.d.ts.map
-declare namespace $ {
-
 	export class $mol_svg_path extends $mol_svg {
 		geometry( ): string
 		dom_name( ): string
@@ -3402,10 +4043,10 @@ declare namespace $.$$ {
      * @see https://mol.hyoo.ru/#!section=demos/demo=mol_search_demo
      */
     class $mol_search extends $.$mol_search {
-        anchor_content(): ($mol_button_minor | $.$mol_string)[];
+        anchor_content(): ($.$mol_string | $mol_button_minor)[];
         suggests_showed(next?: boolean): boolean;
         suggest_selected(next?: string): void;
-        nav_components(): ($mol_button_minor | $.$mol_string)[];
+        nav_components(): ($.$mol_string | $mol_button_minor)[];
         nav_focused(component?: $mol_view): $mol_view | $.$mol_string | null;
         suggest_label(key: string): string;
         menu_items(): $mol_button_minor[];
@@ -3565,6 +4206,254 @@ declare namespace $.$$ {
         nav_components(): ($mol_button_minor | $.$mol_search)[];
         trigger_content(): readonly $mol_view_content[];
         menu_content(): $mol_view[];
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $bog_builderui_select extends $mol_select {
+	}
+	
+}
+
+//# sourceMappingURL=select.view.tree.d.ts.map
+/** @see $bog_builderui_tokens */
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_pop_over extends $mol_pop {
+		hovered( next?: boolean ): boolean
+		event_show( next?: any ): any
+		event_hide( next?: any ): any
+		showed( ): ReturnType< $mol_pop_over['hovered'] >
+		attr( ): ({ 
+			'tabindex': number,
+		})  & ReturnType< $mol_pop['attr'] >
+		event( ): ({ 
+			mouseenter( next?: ReturnType< $mol_pop_over['event_show'] > ): ReturnType< $mol_pop_over['event_show'] >,
+			mouseleave( next?: ReturnType< $mol_pop_over['event_hide'] > ): ReturnType< $mol_pop_over['event_hide'] >,
+		})  & ReturnType< $mol_pop['event'] >
+	}
+	
+}
+
+//# sourceMappingURL=over.view.tree.d.ts.map
+declare namespace $.$$ {
+    /**
+     * Bubble that can be shown anchored to Anchor element.
+     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_pop_over_demo
+     */
+    class $mol_pop_over extends $.$mol_pop_over {
+        event_show(event?: MouseEvent): void;
+        event_hide(event?: MouseEvent): void;
+        showed(): boolean;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $bog_builderui_tooltip extends $mol_pop_over {
+	}
+	
+}
+
+//# sourceMappingURL=tooltip.view.tree.d.ts.map
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $bog_builderui_skin extends $mol_plugin {
+		lights( ): string
+		base( ): string
+		accent( ): string
+		chart( ): string
+		radius( ): string
+		font_body( ): string
+		font_head( ): string
+		attr( ): ({ 
+			'bog_builderui_lights': ReturnType< $bog_builderui_skin['lights'] >,
+			'bog_builderui_base': ReturnType< $bog_builderui_skin['base'] >,
+			'bog_builderui_theme': ReturnType< $bog_builderui_skin['accent'] >,
+			'bog_builderui_chart': ReturnType< $bog_builderui_skin['chart'] >,
+			'bog_builderui_radius': ReturnType< $bog_builderui_skin['radius'] >,
+			'bog_builderui_font_body': ReturnType< $bog_builderui_skin['font_body'] >,
+			'bog_builderui_font_head': ReturnType< $bog_builderui_skin['font_head'] >,
+		}) 
+	}
+	
+}
+
+//# sourceMappingURL=skin.view.tree.d.ts.map
+declare namespace $ {
+    /**
+     * Theme css variables
+     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_textarea_demo
+     */
+    const $bog_theme: Record<"image" | "line" | "text" | "field" | "current" | "focus" | "hover" | "background" | "back" | "card" | "special" | "control" | "shade" | "spirit", $mol_style_func<"var", unknown>>;
+    /**
+     * Available theme names.
+     * Add new theme to theme.css and add its name here.
+     */
+    const $bog_theme_names: readonly ["$mol_theme_giper_smash_dark", "$mol_theme_giper_smash_light", "$mol_theme_light", "$mol_theme_dark", "$mol_theme_monefro_light", "$mol_theme_monefro_dark", "$mol_theme_homerent_light", "$mol_theme_homerent_dark", "$mol_theme_upwork", "$mol_theme_ainews_light", "$mol_theme_ainews_dark", "$mol_theme_calm_dark", "$mol_theme_calm_light"];
+    /**
+     * Type-safe theme name
+     */
+    type $bog_theme_name = (typeof $bog_theme_names)[number];
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+    class $mol_state_session<Value> extends $mol_object {
+        static 'native()': Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
+        static native(): Storage | {
+            getItem(key: string): any;
+            setItem(key: string, value: string): void;
+            removeItem(key: string): void;
+        };
+        static value<Value>(key: string, next?: Value): Value;
+        prefix(): string;
+        value(key: string, next?: Value): Value;
+    }
+}
+
+declare namespace $ {
+    class $mol_media extends $mol_object2 {
+        static match(query: string, next?: boolean): boolean;
+    }
+}
+
+declare namespace $ {
+
+	export class $bog_theme_auto extends $mol_plugin {
+		themes_default( ): readonly(any)[]
+		theme( ): string
+		themes( ): ReturnType< $bog_theme_auto['themes_default'] >
+		theme_light( ): string
+		theme_dark( ): string
+		mode( next?: string ): string
+		mode_next( next?: any ): any
+		theme_next( next?: any ): any
+		theme_prev( next?: any ): any
+		theme_set( next?: any ): any
+		is_light_now( ): boolean
+		attr( ): ({ 
+			'mol_theme': ReturnType< $bog_theme_auto['theme'] >,
+		}) 
+	}
+	
+}
+
+//# sourceMappingURL=auto.view.tree.d.ts.map
+declare namespace $.$$ {
+    type $bog_theme_mode = 'light' | 'dark' | 'system' | 'custom';
+    class $bog_theme_auto extends $.$bog_theme_auto {
+        themes_default(): readonly $.$bog_theme_name[];
+        /** Stores current mode in localStorage. Defaults to 'system'.
+         *  При записи дёргает класс `.bog_theme_switching` на `<html>` —
+         *  это активирует CSS-transition'ы на цветах темы.
+         */
+        mode(next?: $bog_theme_mode): $bog_theme_mode;
+        click_step(next?: number): number;
+        /** 3-click cycle: opposite → back → system. */
+        mode_next(): void;
+        system_light(): boolean;
+        is_light_now(): any;
+        theme_index(next?: number): number;
+        system_theme_index(): number;
+        theme(): any;
+        theme_next(): void;
+        theme_prev(): void;
+        /** Called by picker. Sets mode to light/dark or custom for themed palettes. */
+        theme_set(index: number): void;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $bog_popup_plugin extends $mol_plugin {
+	}
+	
+}
+
+//# sourceMappingURL=popup.view.tree.d.ts.map
+declare namespace $.$$ {
+}
+
+declare namespace $ {
+    const $bog_tooltip_hush_mark = "data-mol-tip-off";
+    const $bog_tooltip_hush_tip = "data-mol-tip";
+    function $bog_tooltip_hush(node: Element | null): string;
+    function $bog_tooltip_hush_off(root: ParentNode | null): number;
+}
+
+declare namespace $ {
+    const $bog_tooltip_room_gap = 8;
+    const $bog_tooltip_room_need = 45;
+    type $bog_tooltip_room_box = {
+        readonly left: number;
+        readonly width: number;
+        readonly bottom?: number;
+        readonly height?: number;
+    };
+    function $bog_tooltip_room(box: $bog_tooltip_room_box, view: number, view_height?: number): {
+        flip: boolean;
+        lift: number;
+        left: number;
+        right: number;
+    };
+}
+
+declare namespace $ {
+
+	export class $bog_tooltip_plugin extends $mol_plugin {
+	}
+	
+}
+
+//# sourceMappingURL=tooltip.view.tree.d.ts.map
+declare namespace $.$$ {
+}
+
+declare namespace $ {
+
+	export class $mol_image extends $mol_view {
+		uri( ): string
+		title( ): string
+		loading( ): string
+		decoding( ): string
+		cors( ): any
+		natural_width( ): number
+		natural_height( ): number
+		load( next?: any ): any
+		dom_name( ): string
+		attr( ): Record<string, any> & ReturnType< $mol_view['attr'] >
+		event( ): Record<string, any>
+		minimal_width( ): number
+		minimal_height( ): number
+	}
+	
+}
+
+//# sourceMappingURL=image.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_image extends $.$mol_image {
+        natural_width(next?: null): number;
+        natural_height(next?: null): number;
+        load(): void;
     }
 }
 
@@ -38802,6 +39691,15 @@ declare namespace $ {
 
 declare namespace $ {
 
+	export class $mol_icon_magnify extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=magnify.view.tree.d.ts.map
+declare namespace $ {
+
 	type $mol_view__sub_bog_music_nav_item_1 = $mol_type_enforce<
 		readonly(any)[]
 		,
@@ -38830,13 +39728,31 @@ declare namespace $ {
 
 declare namespace $ {
 
-	export class $mol_icon_magnify extends $mol_icon {
+	export class $mol_icon_playlist_music extends $mol_icon {
 		path( ): string
 	}
 	
 }
 
-//# sourceMappingURL=magnify.view.tree.d.ts.map
+//# sourceMappingURL=music.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_play_circle extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=circle.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_play_circle_outline extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=outline.view.tree.d.ts.map
 declare namespace $ {
 
 	export class $mol_icon_account extends $mol_icon {
@@ -38884,32 +39800,23 @@ declare namespace $ {
 //# sourceMappingURL=outline.view.tree.d.ts.map
 declare namespace $ {
 
-	export class $mol_icon_chat extends $mol_icon {
-		path( ): string
-	}
-	
-}
-
-//# sourceMappingURL=chat.view.tree.d.ts.map
-declare namespace $ {
-
 	type $bog_music_nav_item__label_bog_music_nav_1 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $bog_music_nav_item['label'] >
 	>
 	type $bog_music_nav_item__active_bog_music_nav_2 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['music_active'] >
+		ReturnType< $bog_music_nav['search_active'] >
 		,
 		ReturnType< $bog_music_nav_item['active'] >
 	>
 	type $bog_music_nav_item__Icon_bog_music_nav_3 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['Music_icon'] >
+		ReturnType< $bog_music_nav['Search_icon'] >
 		,
 		ReturnType< $bog_music_nav_item['Icon'] >
 	>
 	type $bog_music_nav_item__click_bog_music_nav_4 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['music_click'] >
+		ReturnType< $bog_music_nav['search_click'] >
 		,
 		ReturnType< $bog_music_nav_item['click'] >
 	>
@@ -38919,17 +39826,17 @@ declare namespace $ {
 		ReturnType< $bog_music_nav_item['label'] >
 	>
 	type $bog_music_nav_item__active_bog_music_nav_6 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['search_active'] >
+		ReturnType< $bog_music_nav['music_active'] >
 		,
 		ReturnType< $bog_music_nav_item['active'] >
 	>
 	type $bog_music_nav_item__Icon_bog_music_nav_7 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['Search_icon'] >
+		ReturnType< $bog_music_nav['Music_icon'] >
 		,
 		ReturnType< $bog_music_nav_item['Icon'] >
 	>
 	type $bog_music_nav_item__click_bog_music_nav_8 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['search_click'] >
+		ReturnType< $bog_music_nav['music_click'] >
 		,
 		ReturnType< $bog_music_nav_item['click'] >
 	>
@@ -38939,17 +39846,17 @@ declare namespace $ {
 		ReturnType< $bog_music_nav_item['label'] >
 	>
 	type $bog_music_nav_item__active_bog_music_nav_10 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['account_active'] >
+		ReturnType< $bog_music_nav['player_active'] >
 		,
 		ReturnType< $bog_music_nav_item['active'] >
 	>
 	type $bog_music_nav_item__Icon_bog_music_nav_11 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['Account_icon'] >
+		ReturnType< $bog_music_nav['Player_icon'] >
 		,
 		ReturnType< $bog_music_nav_item['Icon'] >
 	>
 	type $bog_music_nav_item__click_bog_music_nav_12 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['account_click'] >
+		ReturnType< $bog_music_nav['player_click'] >
 		,
 		ReturnType< $bog_music_nav_item['click'] >
 	>
@@ -38959,17 +39866,17 @@ declare namespace $ {
 		ReturnType< $bog_music_nav_item['label'] >
 	>
 	type $bog_music_nav_item__active_bog_music_nav_14 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['logs_active'] >
+		ReturnType< $bog_music_nav['account_active'] >
 		,
 		ReturnType< $bog_music_nav_item['active'] >
 	>
 	type $bog_music_nav_item__Icon_bog_music_nav_15 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['Logs_icon'] >
+		ReturnType< $bog_music_nav['Account_icon'] >
 		,
 		ReturnType< $bog_music_nav_item['Icon'] >
 	>
 	type $bog_music_nav_item__click_bog_music_nav_16 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['logs_click'] >
+		ReturnType< $bog_music_nav['account_click'] >
 		,
 		ReturnType< $bog_music_nav_item['click'] >
 	>
@@ -38979,29 +39886,33 @@ declare namespace $ {
 		ReturnType< $bog_music_nav_item['label'] >
 	>
 	type $bog_music_nav_item__active_bog_music_nav_18 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['feedback_active'] >
+		ReturnType< $bog_music_nav['logs_active'] >
 		,
 		ReturnType< $bog_music_nav_item['active'] >
 	>
 	type $bog_music_nav_item__Icon_bog_music_nav_19 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['Feedback_icon'] >
+		ReturnType< $bog_music_nav['Logs_icon'] >
 		,
 		ReturnType< $bog_music_nav_item['Icon'] >
 	>
 	type $bog_music_nav_item__click_bog_music_nav_20 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['feedback_click'] >
+		ReturnType< $bog_music_nav['logs_click'] >
 		,
 		ReturnType< $bog_music_nav_item['click'] >
 	>
 	export class $bog_music_nav extends $mol_view {
-		music_active( ): string
-		Music_icon( ): $mol_icon_music
-		music_click( next?: any ): any
-		Tab_music( ): $bog_music_nav_item
 		search_active( ): string
 		Search_icon( ): $mol_icon_magnify
 		search_click( next?: any ): any
 		Tab_search( ): $bog_music_nav_item
+		music_active( ): string
+		Music_icon( ): $mol_icon_playlist_music
+		music_click( next?: any ): any
+		Tab_music( ): $bog_music_nav_item
+		player_active( ): string
+		Player_icon( ): $mol_icon_play_circle_outline
+		player_click( next?: any ): any
+		Tab_player( ): $bog_music_nav_item
 		account_active( ): string
 		Account_icon( ): $mol_icon_account_circle
 		account_click( next?: any ): any
@@ -39010,10 +39921,6 @@ declare namespace $ {
 		Logs_icon( ): $mol_icon_text_box_outline
 		logs_click( next?: any ): any
 		Tab_logs( ): $bog_music_nav_item
-		feedback_active( ): string
-		Feedback_icon( ): $mol_icon_chat
-		feedback_click( next?: any ): any
-		Tab_feedback( ): $bog_music_nav_item
 		section( next?: string ): string
 		sub( ): readonly(any)[]
 	}
@@ -39025,12 +39932,13 @@ declare namespace $.$$ {
     class $bog_music_nav extends $.$bog_music_nav {
         music_active(): "on" | "off";
         search_active(): "on" | "off";
+        player_active(): "on" | "off";
         account_active(): "on" | "off";
-        feedback_active(): "on" | "off";
+        logs_active(): "on" | "off";
         music_click(e?: Event): null;
         search_click(e?: Event): null;
+        player_click(e?: Event): null;
         account_click(e?: Event): null;
-        logs_active(): "on" | "off";
         /**
          * Вкладка журнала — только для владельца приложения. Сравнивается
          * публичный идентификатор личности, а не ключ: ключ в коде держать
@@ -39039,7 +39947,6 @@ declare namespace $.$$ {
         static owner_lords: string[];
         Tab_logs(): any;
         logs_click(e?: Event): null;
-        feedback_click(e?: Event): null;
     }
 }
 
@@ -39526,7 +40433,7 @@ declare namespace $ {
 //# sourceMappingURL=field.view.tree.d.ts.map
 declare namespace $.$$ {
     class $mol_bigint_field extends $.$mol_bigint_field {
-        sub(): ($mol_button_minor | $.$mol_string)[];
+        sub(): ($.$mol_string | $mol_button_minor)[];
         value_string(next?: string): string;
         shift(diff: bigint): void;
         shift_boost(diff: bigint): void;
@@ -39662,7 +40569,7 @@ declare namespace $.$$ {
      * @see https://mol.hyoo.ru/#!section=demos/demo=mol_number_demo
      */
     class $mol_number extends $.$mol_number {
-        sub(): ($mol_button_minor | $.$mol_string)[];
+        sub(): ($.$mol_string | $mol_button_minor)[];
         value_limited(val?: number): number;
         event_dec(next?: Event): void;
         precision_change(): number;
@@ -40685,7 +41592,7 @@ declare namespace $.$$ {
         text(next?: string): string;
         list(next?: readonly unknown[]): readonly unknown[];
         tupl(next?: [readonly string[], readonly unknown[]]): [readonly string[], readonly unknown[]];
-        head(): ($mol_button_minor | $.$mol_string | $.$mol_textarea | $.$mol_bigint_field | $.$mol_number | $.$mol_date)[];
+        head(): ($.$mol_string | $mol_button_minor | $.$mol_textarea | $.$mol_bigint_field | $.$mol_number | $.$mol_date)[];
         body(): $mol_bar[];
         item_key(index: number): string | number;
         item_val(index: number, next?: unknown): unknown;
@@ -40837,6 +41744,24 @@ declare namespace $ {
 //# sourceMappingURL=size.view.tree.d.ts.map
 declare namespace $ {
 
+	export class $mol_icon_order_bool_ascending extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=ascending.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_order_numeric_ascending extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=ascending.view.tree.d.ts.map
+declare namespace $ {
+
 	export class $mol_icon_comment extends $mol_icon {
 		path( ): string
 	}
@@ -40862,6 +41787,33 @@ declare namespace $ {
 }
 
 //# sourceMappingURL=outline.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_xml extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=xml.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_arrow_collapse extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=collapse.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_arrow_collapse_left extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=left.view.tree.d.ts.map
 declare namespace $ {
     function $mol_jsx_attach<Result>(next: typeof $mol_jsx_document, action: () => Result): Result;
 }
@@ -40966,15 +41918,18 @@ declare namespace $ {
 
 	type $mol_hotkey2__action_giper_baza_rich_edit_1 = $mol_type_enforce<
 		({ 
-			ctrl_B( next?: ReturnType< $giper_baza_rich_edit['inline_toggle'] > ): ReturnType< $giper_baza_rich_edit['inline_toggle'] >,
-			ctrl_I( next?: ReturnType< $giper_baza_rich_edit['inline_toggle'] > ): ReturnType< $giper_baza_rich_edit['inline_toggle'] >,
-			ctrl_U( next?: ReturnType< $giper_baza_rich_edit['inline_toggle'] > ): ReturnType< $giper_baza_rich_edit['inline_toggle'] >,
-			ctrl_O( next?: ReturnType< $giper_baza_rich_edit['inline_toggle'] > ): ReturnType< $giper_baza_rich_edit['inline_toggle'] >,
-			ctrl_M( next?: ReturnType< $giper_baza_rich_edit['inline_toggle'] > ): ReturnType< $giper_baza_rich_edit['inline_toggle'] >,
-			ctrl_Q( next?: ReturnType< $giper_baza_rich_edit['block_more'] > ): ReturnType< $giper_baza_rich_edit['block_more'] >,
-			ctrl_shift_Q( next?: ReturnType< $giper_baza_rich_edit['block_less'] > ): ReturnType< $giper_baza_rich_edit['block_less'] >,
-			tab( next?: ReturnType< $giper_baza_rich_edit['block_more'] > ): ReturnType< $giper_baza_rich_edit['block_more'] >,
-			shift_tab( next?: ReturnType< $giper_baza_rich_edit['block_less'] > ): ReturnType< $giper_baza_rich_edit['block_less'] >,
+			alt_S( next?: ReturnType< $giper_baza_rich_edit['inline_toggle'] > ): ReturnType< $giper_baza_rich_edit['inline_toggle'] >,
+			alt_E( next?: ReturnType< $giper_baza_rich_edit['inline_toggle'] > ): ReturnType< $giper_baza_rich_edit['inline_toggle'] >,
+			alt_I( next?: ReturnType< $giper_baza_rich_edit['inline_toggle'] > ): ReturnType< $giper_baza_rich_edit['inline_toggle'] >,
+			alt_R( next?: ReturnType< $giper_baza_rich_edit['inline_toggle'] > ): ReturnType< $giper_baza_rich_edit['inline_toggle'] >,
+			alt_C( next?: ReturnType< $giper_baza_rich_edit['inline_toggle'] > ): ReturnType< $giper_baza_rich_edit['inline_toggle'] >,
+			alt_T( next?: ReturnType< $giper_baza_rich_edit['block_wrap'] > ): ReturnType< $giper_baza_rich_edit['block_wrap'] >,
+			alt_Q( next?: ReturnType< $giper_baza_rich_edit['block_wrap'] > ): ReturnType< $giper_baza_rich_edit['block_wrap'] >,
+			alt_U( next?: ReturnType< $giper_baza_rich_edit['block_wrap'] > ): ReturnType< $giper_baza_rich_edit['block_wrap'] >,
+			alt_O( next?: ReturnType< $giper_baza_rich_edit['block_wrap'] > ): ReturnType< $giper_baza_rich_edit['block_wrap'] >,
+			alt_P( next?: ReturnType< $giper_baza_rich_edit['block_wrap'] > ): ReturnType< $giper_baza_rich_edit['block_wrap'] >,
+			tab( next?: ReturnType< $giper_baza_rich_edit['block_rewrap'] > ): ReturnType< $giper_baza_rich_edit['block_rewrap'] >,
+			shift_tab( next?: ReturnType< $giper_baza_rich_edit['block_unwrap'] > ): ReturnType< $giper_baza_rich_edit['block_unwrap'] >,
 		}) 
 		,
 		ReturnType< $mol_hotkey2['action'] >
@@ -41094,25 +42049,25 @@ declare namespace $ {
 		,
 		ReturnType< $mol_pick['bubble_content'] >
 	>
-	type $mol_button_minor__title_giper_baza_rich_edit_25 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_button_minor['title'] >
-	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_26 = $mol_type_enforce<
+	type $mol_button_minor__hint_giper_baza_rich_edit_25 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_27 = $mol_type_enforce<
-		boolean
+	type $mol_button_minor__enabled_giper_baza_rich_edit_26 = $mol_type_enforce<
+		ReturnType< $giper_baza_rich_edit['selected'] >
 		,
 		ReturnType< $mol_button_minor['enabled'] >
 	>
-	type $mol_button_minor__title_giper_baza_rich_edit_28 = $mol_type_enforce<
-		string
+	type $mol_button_minor__click_giper_baza_rich_edit_27 = $mol_type_enforce<
+		ReturnType< $giper_baza_rich_edit['block_wrap'] >
 		,
-		ReturnType< $mol_button_minor['title'] >
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub_giper_baza_rich_edit_28 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
 	>
 	type $mol_button_minor__hint_giper_baza_rich_edit_29 = $mol_type_enforce<
 		string
@@ -41120,193 +42075,113 @@ declare namespace $ {
 		ReturnType< $mol_button_minor['hint'] >
 	>
 	type $mol_button_minor__enabled_giper_baza_rich_edit_30 = $mol_type_enforce<
-		boolean
-		,
-		ReturnType< $mol_button_minor['enabled'] >
-	>
-	type $mol_pick__hint_giper_baza_rich_edit_31 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_pick['hint'] >
-	>
-	type $mol_pick__trigger_content_giper_baza_rich_edit_32 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_pick['trigger_content'] >
-	>
-	type $mol_pick__bubble_content_giper_baza_rich_edit_33 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_pick['bubble_content'] >
-	>
-	type $mol_button_minor__title_giper_baza_rich_edit_34 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_button_minor['title'] >
-	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_35 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_button_minor['hint'] >
-	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_36 = $mol_type_enforce<
 		ReturnType< $giper_baza_rich_edit['selected'] >
 		,
 		ReturnType< $mol_button_minor['enabled'] >
 	>
-	type $mol_button_minor__click_giper_baza_rich_edit_37 = $mol_type_enforce<
-		ReturnType< $giper_baza_rich_edit['block_more'] >
+	type $mol_button_minor__click_giper_baza_rich_edit_31 = $mol_type_enforce<
+		ReturnType< $giper_baza_rich_edit['block_wrap'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__title_giper_baza_rich_edit_38 = $mol_type_enforce<
-		string
+	type $mol_button_minor__sub_giper_baza_rich_edit_32 = $mol_type_enforce<
+		readonly(any)[]
 		,
-		ReturnType< $mol_button_minor['title'] >
+		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_39 = $mol_type_enforce<
+	type $mol_button_minor__hint_giper_baza_rich_edit_33 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_40 = $mol_type_enforce<
+	type $mol_button_minor__enabled_giper_baza_rich_edit_34 = $mol_type_enforce<
 		ReturnType< $giper_baza_rich_edit['selected'] >
 		,
 		ReturnType< $mol_button_minor['enabled'] >
 	>
-	type $mol_button_minor__click_giper_baza_rich_edit_41 = $mol_type_enforce<
-		ReturnType< $giper_baza_rich_edit['block_less'] >
+	type $mol_button_minor__click_giper_baza_rich_edit_35 = $mol_type_enforce<
+		ReturnType< $giper_baza_rich_edit['block_wrap'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__title_giper_baza_rich_edit_42 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_button_minor['title'] >
-	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_43 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_button_minor['hint'] >
-	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_44 = $mol_type_enforce<
-		boolean
-		,
-		ReturnType< $mol_button_minor['enabled'] >
-	>
-	type $mol_button_minor__title_giper_baza_rich_edit_45 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_button_minor['title'] >
-	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_46 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_button_minor['hint'] >
-	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_47 = $mol_type_enforce<
-		boolean
-		,
-		ReturnType< $mol_button_minor['enabled'] >
-	>
-	type $mol_pick__hint_giper_baza_rich_edit_48 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_pick['hint'] >
-	>
-	type $mol_pick__trigger_content_giper_baza_rich_edit_49 = $mol_type_enforce<
+	type $mol_button_minor__sub_giper_baza_rich_edit_36 = $mol_type_enforce<
 		readonly(any)[]
 		,
-		ReturnType< $mol_pick['trigger_content'] >
+		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_pick__bubble_content_giper_baza_rich_edit_50 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_pick['bubble_content'] >
-	>
-	type $mol_button_minor__title_giper_baza_rich_edit_51 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_button_minor['title'] >
-	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_52 = $mol_type_enforce<
+	type $mol_button_minor__hint_giper_baza_rich_edit_37 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_53 = $mol_type_enforce<
+	type $mol_button_minor__enabled_giper_baza_rich_edit_38 = $mol_type_enforce<
 		ReturnType< $giper_baza_rich_edit['selected'] >
 		,
 		ReturnType< $mol_button_minor['enabled'] >
 	>
-	type $mol_button_minor__click_giper_baza_rich_edit_54 = $mol_type_enforce<
-		ReturnType< $giper_baza_rich_edit['block_more'] >
+	type $mol_button_minor__click_giper_baza_rich_edit_39 = $mol_type_enforce<
+		ReturnType< $giper_baza_rich_edit['block_wrap'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__title_giper_baza_rich_edit_55 = $mol_type_enforce<
-		string
+	type $mol_button_minor__sub_giper_baza_rich_edit_40 = $mol_type_enforce<
+		readonly(any)[]
 		,
-		ReturnType< $mol_button_minor['title'] >
+		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_56 = $mol_type_enforce<
+	type $mol_button_minor__hint_giper_baza_rich_edit_41 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_57 = $mol_type_enforce<
+	type $mol_button_minor__enabled_giper_baza_rich_edit_42 = $mol_type_enforce<
 		ReturnType< $giper_baza_rich_edit['selected'] >
 		,
 		ReturnType< $mol_button_minor['enabled'] >
 	>
-	type $mol_button_minor__click_giper_baza_rich_edit_58 = $mol_type_enforce<
-		ReturnType< $giper_baza_rich_edit['block_less'] >
+	type $mol_button_minor__click_giper_baza_rich_edit_43 = $mol_type_enforce<
+		ReturnType< $giper_baza_rich_edit['block_wrap'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__title_giper_baza_rich_edit_59 = $mol_type_enforce<
-		string
+	type $mol_button_minor__sub_giper_baza_rich_edit_44 = $mol_type_enforce<
+		readonly(any)[]
 		,
-		ReturnType< $mol_button_minor['title'] >
+		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_button_minor__hint_giper_baza_rich_edit_60 = $mol_type_enforce<
+	type $mol_button_minor__hint_giper_baza_rich_edit_45 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__enabled_giper_baza_rich_edit_61 = $mol_type_enforce<
-		boolean
+	type $mol_button_minor__enabled_giper_baza_rich_edit_46 = $mol_type_enforce<
+		ReturnType< $giper_baza_rich_edit['selected'] >
 		,
 		ReturnType< $mol_button_minor['enabled'] >
 	>
-	type $mol_pick__hint_giper_baza_rich_edit_62 = $mol_type_enforce<
-		string
+	type $mol_button_minor__click_giper_baza_rich_edit_47 = $mol_type_enforce<
+		ReturnType< $giper_baza_rich_edit['block_unwrap'] >
 		,
-		ReturnType< $mol_pick['hint'] >
+		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_pick__trigger_content_giper_baza_rich_edit_63 = $mol_type_enforce<
+	type $mol_button_minor__sub_giper_baza_rich_edit_48 = $mol_type_enforce<
 		readonly(any)[]
 		,
-		ReturnType< $mol_pick['trigger_content'] >
+		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_pick__bubble_content_giper_baza_rich_edit_64 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_pick['bubble_content'] >
-	>
-	type $mol_float__sub_giper_baza_rich_edit_65 = $mol_type_enforce<
+	type $mol_float__sub_giper_baza_rich_edit_49 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_float['sub'] >
 	>
-	type $mol_view__attr_giper_baza_rich_edit_66 = $mol_type_enforce<
+	type $mol_view__attr_giper_baza_rich_edit_50 = $mol_type_enforce<
 		({ 
 			'contenteditable': ReturnType< $giper_baza_rich_edit['editable'] >,
 		}) 
 		,
 		ReturnType< $mol_view['attr'] >
 	>
-	type $mol_view__event_giper_baza_rich_edit_67 = $mol_type_enforce<
+	type $mol_view__event_giper_baza_rich_edit_51 = $mol_type_enforce<
 		({ 
 			input( next?: ReturnType< $giper_baza_rich_edit['save'] > ): ReturnType< $giper_baza_rich_edit['save'] >,
 			paste( next?: ReturnType< $giper_baza_rich_edit['paste'] > ): ReturnType< $giper_baza_rich_edit['paste'] >,
@@ -41315,7 +42190,7 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['event'] >
 	>
-	type $mol_view__sub_giper_baza_rich_edit_68 = $mol_type_enforce<
+	type $mol_view__sub_giper_baza_rich_edit_52 = $mol_type_enforce<
 		ReturnType< $giper_baza_rich_edit['content'] >
 		,
 		ReturnType< $mol_view['sub'] >
@@ -41325,8 +42200,9 @@ declare namespace $ {
 		selection_load( ): any
 		selection_sync( ): any
 		inline_toggle( id: any, next?: any ): any
-		block_more( id: any, next?: any ): any
-		block_less( id: any, next?: any ): any
+		block_wrap( id: any, next?: any ): any
+		block_rewrap( next?: any ): any
+		block_unwrap( next?: any ): any
 		Hotkey( ): $mol_hotkey2
 		Inline_format_menu_icon( ): $mol_icon_marker
 		selected( next?: boolean ): boolean
@@ -41336,21 +42212,18 @@ declare namespace $ {
 		Del_button( ): $mol_button_minor
 		Code_button( ): $mol_button_minor
 		Inline_format_menu( ): $mol_pick
-		Heading_menu_icon( ): $mol_icon_format_size
-		Header_inc_button( ): $mol_button_minor
-		Header_dec_button( ): $mol_button_minor
-		Heading_menu( ): $mol_pick
-		Indent_menu_icon( ): $mol_icon_format_list_bulleted
-		Indent_inc_button( ): $mol_button_minor
-		Indent_dec_button( ): $mol_button_minor
-		Bullet_button( ): $mol_button_minor
-		Number_button( ): $mol_button_minor
-		Indent_menu( ): $mol_pick
-		Quote_menu_icon( ): $mol_icon_comment_quote_outline
-		Quote_inc_button( ): $mol_button_minor
-		Quote_dec_button( ): $mol_button_minor
-		Quote_code_button( ): $mol_button_minor
-		Quote_menu( ): $mol_pick
+		Section_icon( ): $mol_icon_format_size
+		Section_button( ): $mol_button_minor
+		List_bullet_icon( ): $mol_icon_order_bool_ascending
+		List_bullet_button( ): $mol_button_minor
+		List_number_icon( ): $mol_icon_order_numeric_ascending
+		List_number_button( ): $mol_button_minor
+		Quote_icon( ): $mol_icon_comment_quote_outline
+		Quote_button( ): $mol_button_minor
+		Preformat_icon( ): $mol_icon_xml
+		Preformat_button( ): $mol_button_minor
+		Decrease_icon( ): $mol_icon_arrow_collapse_left
+		Unwrap_button( ): $mol_button_minor
 		Tools( ): $mol_float
 		editable( next?: string ): string
 		save( next?: any ): any
@@ -41384,8 +42257,8 @@ declare namespace $.$$ {
         selected(): boolean;
         selection_save(): void;
         selection_load(): void;
-        block_more(Type: string, event: KeyboardEvent): void;
-        block_less(Type: string, event: KeyboardEvent): void;
+        block_wrap(Type: string, event: KeyboardEvent): void;
+        block_unwrap(event: KeyboardEvent): void;
         /** Wraps selecion to given element type. */
         inline_toggle(Type: string, event: KeyboardEvent): void;
         paste(event?: ClipboardEvent): void;
@@ -42840,251 +43713,6 @@ declare namespace $.$$ {
 
 declare namespace $ {
 
-	export class $mol_svg_group extends $mol_svg {
-		dom_name( ): string
-	}
-	
-}
-
-//# sourceMappingURL=group.view.tree.d.ts.map
-declare namespace $ {
-    class $mol_vector<Value, Length extends number> extends Array<Value> {
-        get length(): Length;
-        constructor(...values: Value[] & {
-            length: Length;
-        });
-        map<Res>(convert: (value: Value, index: number, array: this) => Res, self?: any): $mol_vector<Res, Length>;
-        merged<Patch>(patches: readonly Patch[] & {
-            length: Length;
-        }, combine: (value: Value, patch: Patch) => Value): this;
-        limited(this: $mol_vector<number, Length>, limits: readonly (readonly [number, number])[] & {
-            length: Length;
-        }): this;
-        added0(this: $mol_vector<number, Length>, diff: number): this;
-        added1(this: $mol_vector<number, Length>, diff: readonly number[] & {
-            length: Length;
-        }): this;
-        substracted1(this: $mol_vector<number, Length>, diff: readonly number[] & {
-            length: Length;
-        }): this;
-        multed0(this: $mol_vector<number, Length>, mult: number): this;
-        multed1(this: $mol_vector<number, Length>, mults: readonly number[] & {
-            length: Length;
-        }): this;
-        divided1(this: $mol_vector<number, Length>, mults: readonly number[] & {
-            length: Length;
-        }): this;
-        powered0(this: $mol_vector<number, Length>, mult: number): this;
-        expanded1(this: $mol_vector<$mol_vector_range<number>, Length>, point: readonly number[] & {
-            length: Length;
-        }): this;
-        expanded2(this: $mol_vector<$mol_vector_range<number>, Length>, point: readonly (readonly [number, number])[] & {
-            length: Length;
-        }): this;
-        center<Item extends $mol_vector<number, number>>(this: $mol_vector<Item, Length>): Item;
-        distance(this: $mol_vector<$mol_vector<number, number>, Length>): number;
-        transponed(this: $mol_vector<$mol_vector<number, number>, Length>): $mol_vector<$mol_vector<number, Length>, typeof this[0]['length']>;
-        get x(): Value;
-        set x(next: Value);
-        get y(): Value;
-        set y(next: Value);
-        get z(): Value;
-        set z(next: Value);
-    }
-    class $mol_vector_1d<Value> extends $mol_vector<Value, 1> {
-    }
-    class $mol_vector_2d<Value> extends $mol_vector<Value, 2> {
-    }
-    class $mol_vector_3d<Value> extends $mol_vector<Value, 3> {
-    }
-    class $mol_vector_range<Value> extends $mol_vector<Value, 2> {
-        0: Value;
-        1: Value;
-        constructor(min: Value, max?: Value);
-        get min(): Value;
-        set min(next: Value);
-        get max(): Value;
-        set max(next: Value);
-        get inversed(): $mol_vector_range<Value>;
-        expanded0(value: Value): $mol_vector_range<Value>;
-    }
-    let $mol_vector_range_full: $mol_vector_range<number>;
-    class $mol_vector_matrix<Width extends number, Height extends number> extends $mol_vector<readonly number[] & {
-        length: Width;
-    }, Height> {
-        added2(diff: readonly (readonly number[] & {
-            length: Width;
-        })[] & {
-            length: Height;
-        }): this;
-        multed2(diff: readonly (readonly number[] & {
-            length: Width;
-        })[] & {
-            length: Height;
-        }): this;
-    }
-}
-
-declare namespace $ {
-
-	export class $mol_svg_title extends $mol_svg {
-		dom_name( ): string
-		sub( ): readonly(any)[]
-	}
-	
-}
-
-//# sourceMappingURL=title.view.tree.d.ts.map
-declare namespace $ {
-
-	type $mol_vector_range__mol_plot_graph_1 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_range<number> >
-	>
-	type $mol_vector_range__mol_plot_graph_2 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_range<number> >
-	>
-	type $mol_vector_range__mol_plot_graph_3 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_range<number> >
-	>
-	type $mol_vector_range__mol_plot_graph_4 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_range<number> >
-	>
-	type $mol_vector_range__mol_plot_graph_5 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_range<number> >
-	>
-	type $mol_vector_range__mol_plot_graph_6 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_range<number> >
-	>
-	type $mol_vector_range__mol_plot_graph_7 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_range<number> >
-	>
-	type $mol_vector_range__mol_plot_graph_8 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_range<number> >
-	>
-	type $mol_vector_2d__mol_plot_graph_9 = $mol_type_enforce<
-		[ ReturnType< $mol_plot_graph['viewport_x'] >, ReturnType< $mol_plot_graph['viewport_y'] > ]
-		,
-		ConstructorParameters< typeof $mol_vector_2d<$mol_vector_range<number>> >
-	>
-	type $mol_vector_2d__mol_plot_graph_10 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_2d<number> >
-	>
-	type $mol_vector_2d__mol_plot_graph_11 = $mol_type_enforce<
-		[ ReturnType< $mol_plot_graph['dimensions_pane_x'] >, ReturnType< $mol_plot_graph['dimensions_pane_y'] > ]
-		,
-		ConstructorParameters< typeof $mol_vector_2d<$mol_vector_range<number>> >
-	>
-	type $mol_vector_2d__mol_plot_graph_12 = $mol_type_enforce<
-		[ ReturnType< $mol_plot_graph['dimensions_x'] >, ReturnType< $mol_plot_graph['dimensions_y'] > ]
-		,
-		ConstructorParameters< typeof $mol_vector_2d<$mol_vector_range<number>> >
-	>
-	type $mol_vector_2d__mol_plot_graph_13 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_2d<number> >
-	>
-	type $mol_vector_2d__mol_plot_graph_14 = $mol_type_enforce<
-		[ ReturnType< $mol_plot_graph['gap_x'] >, ReturnType< $mol_plot_graph['gap_y'] > ]
-		,
-		ConstructorParameters< typeof $mol_vector_2d<$mol_vector_range<number>> >
-	>
-	type $mol_svg_title__title_mol_plot_graph_15 = $mol_type_enforce<
-		ReturnType< $mol_plot_graph['hint'] >
-		,
-		ReturnType< $mol_svg_title['title'] >
-	>
-	export class $mol_plot_graph extends $mol_svg_group {
-		type( ): string
-		color( ): string
-		viewport_x( ): $mol_vector_range<number>
-		viewport_y( ): $mol_vector_range<number>
-		dimensions_pane_x( ): $mol_vector_range<number>
-		dimensions_pane_y( ): $mol_vector_range<number>
-		dimensions_x( ): $mol_vector_range<number>
-		dimensions_y( ): $mol_vector_range<number>
-		gap_x( ): $mol_vector_range<number>
-		gap_y( ): $mol_vector_range<number>
-		title( ): string
-		hint( ): ReturnType< $mol_plot_graph['title'] >
-		series_x( ): readonly(number)[]
-		series_y( ): readonly(number)[]
-		attr( ): ({ 
-			'mol_plot_graph_type': ReturnType< $mol_plot_graph['type'] >,
-		})  & ReturnType< $mol_svg_group['attr'] >
-		style( ): ({ 
-			'color': ReturnType< $mol_plot_graph['color'] >,
-		})  & ReturnType< $mol_svg_group['style'] >
-		viewport( ): $mol_vector_2d<$mol_vector_range<number>>
-		shift( ): readonly(number)[]
-		scale( ): readonly(number)[]
-		cursor_position( ): $mol_vector_2d<number>
-		dimensions_pane( ): $mol_vector_2d<$mol_vector_range<number>>
-		dimensions( ): $mol_vector_2d<$mol_vector_range<number>>
-		size_real( ): $mol_vector_2d<number>
-		gap( ): $mol_vector_2d<$mol_vector_range<number>>
-		repos_x( id: any): number
-		repos_y( id: any): number
-		indexes( ): readonly(number)[]
-		points( ): readonly(readonly(number)[])[]
-		front( ): readonly($mol_svg)[]
-		back( ): readonly($mol_svg)[]
-		Hint( ): $mol_svg_title
-		hue( next?: number ): number
-		Sample( ): any
-	}
-	
-	export class $mol_plot_graph_sample extends $mol_view {
-		type( ): string
-		color( ): string
-		attr( ): ({ 
-			'mol_plot_graph_type': ReturnType< $mol_plot_graph_sample['type'] >,
-		})  & ReturnType< $mol_view['attr'] >
-		style( ): ({ 
-			'color': ReturnType< $mol_plot_graph_sample['color'] >,
-		})  & ReturnType< $mol_view['style'] >
-	}
-	
-}
-
-//# sourceMappingURL=graph.view.tree.d.ts.map
-declare namespace $.$$ {
-    class $mol_plot_graph extends $.$mol_plot_graph {
-        viewport(): $mol_vector_2d<$mol_vector_range<number>>;
-        indexes(): readonly number[];
-        repos_x(val: number): number;
-        repos_y(val: number): number;
-        points(): readonly (readonly number[])[];
-        series_x(): readonly number[];
-        dimensions(): $mol_vector_2d<$mol_vector_range<number>>;
-        color(): string;
-        front(): readonly $.$mol_svg[];
-    }
-}
-
-declare namespace $ {
-}
-
-declare namespace $ {
-
 	type $mol_plot_graph_sample__color_mol_plot_line_1 = $mol_type_enforce<
 		ReturnType< $mol_plot_line['color'] >
 		,
@@ -43507,498 +44135,6 @@ declare namespace $.$$ {
 declare namespace $ {
 }
 
-declare namespace $ {
-
-	type $mol_gallery__style_mol_gallery_1 = $mol_type_enforce<
-		({ 
-			'flexGrow': ReturnType< $mol_gallery['side_size'] >,
-		}) 
-		,
-		ReturnType< $mol_gallery['style'] >
-	>
-	type $mol_gallery__items_mol_gallery_2 = $mol_type_enforce<
-		ReturnType< $mol_gallery['side_items'] >
-		,
-		ReturnType< $mol_gallery['items'] >
-	>
-	export class $mol_gallery extends $mol_view {
-		items( ): readonly($mol_view)[]
-		side_size( id: any): string
-		side_items( id: any): readonly($mol_view)[]
-		sub( ): ReturnType< $mol_gallery['items'] >
-		Side( id: any): $mol_gallery
-	}
-	
-}
-
-//# sourceMappingURL=gallery.view.tree.d.ts.map
-declare namespace $.$$ {
-    /**
-     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_gallery_demo
-     */
-    class $mol_gallery extends $.$mol_gallery {
-        sub(): readonly $mol_view[];
-        side_items(id: number): $mol_view[];
-        side_size(id: number): string;
-    }
-}
-
-declare namespace $ {
-}
-
-declare namespace $ {
-
-	type $mol_gallery__items_mol_chart_legend_1 = $mol_type_enforce<
-		ReturnType< $mol_chart_legend['graph_legends'] >
-		,
-		ReturnType< $mol_gallery['items'] >
-	>
-	type $mol_view__sub_mol_chart_legend_2 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_view['sub'] >
-	>
-	type $mol_view__sub_mol_chart_legend_3 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_view['sub'] >
-	>
-	type $mol_view__sub_mol_chart_legend_4 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_view['sub'] >
-	>
-	export class $mol_chart_legend extends $mol_scroll {
-		graph_legends( ): readonly($mol_view)[]
-		Gallery( ): $mol_gallery
-		Graph_sample( id: any): any
-		Graph_sample_box( id: any): $mol_view
-		graph_title( id: any): string
-		Graph_title( id: any): $mol_view
-		graphs( ): readonly($mol_plot_graph)[]
-		graphs_front( ): readonly($mol_plot_graph)[]
-		sub( ): readonly(any)[]
-		Graph_legend( id: any): $mol_view
-	}
-	
-}
-
-//# sourceMappingURL=legend.view.tree.d.ts.map
-declare namespace $.$$ {
-    class $mol_chart_legend extends $.$mol_chart_legend {
-        graphs_front(): readonly $mol_plot_graph[];
-        graph_legends(): readonly $mol_view[];
-        graph_title(index: number): string;
-        Graph_sample(index: number): any;
-    }
-}
-
-declare namespace $ {
-}
-
-declare namespace $ {
-
-	type $mol_vector_2d__mol_touch_1 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_2d<number> >
-	>
-	type $mol_vector_2d__mol_touch_2 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_2d<number> >
-	>
-	type $mol_vector_2d__mol_touch_3 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_2d<number> >
-	>
-	export class $mol_touch extends $mol_plugin {
-		event_start( next?: any ): any
-		event_move( next?: any ): any
-		event_end( next?: any ): any
-		event_leave( next?: any ): any
-		event_wheel( next?: any ): any
-		start_zoom( next?: number ): number
-		start_distance( next?: number ): number
-		zoom( next?: number ): number
-		allow_draw( ): boolean
-		allow_pan( ): boolean
-		allow_zoom( ): boolean
-		action_type( next?: string ): string
-		action_point( next?: $mol_vector_2d<number> ): $mol_vector_2d<number>
-		start_pan( next?: readonly(any)[] ): readonly(any)[]
-		pan( next?: $mol_vector_2d<number> ): $mol_vector_2d<number>
-		pointer_center( ): $mol_vector_2d<number>
-		start_pos( next?: any ): any
-		swipe_precision( ): number
-		swipe_right( next?: any ): any
-		swipe_bottom( next?: any ): any
-		swipe_left( next?: any ): any
-		swipe_top( next?: any ): any
-		swipe_from_right( next?: any ): any
-		swipe_from_bottom( next?: any ): any
-		swipe_from_left( next?: any ): any
-		swipe_from_top( next?: any ): any
-		swipe_to_right( next?: any ): any
-		swipe_to_bottom( next?: any ): any
-		swipe_to_left( next?: any ): any
-		swipe_to_top( next?: any ): any
-		draw_start( next?: any ): any
-		draw( next?: any ): any
-		draw_end( next?: any ): any
-		style( ): ({ 
-			'touch-action': string,
-			'overscroll-behavior': string,
-		})  & ReturnType< $mol_plugin['style'] >
-		event( ): ({ 
-			pointerdown( next?: ReturnType< $mol_touch['event_start'] > ): ReturnType< $mol_touch['event_start'] >,
-			pointermove( next?: ReturnType< $mol_touch['event_move'] > ): ReturnType< $mol_touch['event_move'] >,
-			pointerup( next?: ReturnType< $mol_touch['event_end'] > ): ReturnType< $mol_touch['event_end'] >,
-			pointerleave( next?: ReturnType< $mol_touch['event_leave'] > ): ReturnType< $mol_touch['event_leave'] >,
-			wheel( next?: ReturnType< $mol_touch['event_wheel'] > ): ReturnType< $mol_touch['event_wheel'] >,
-		})  & ReturnType< $mol_plugin['event'] >
-	}
-	
-}
-
-//# sourceMappingURL=touch.view.tree.d.ts.map
-declare namespace $.$$ {
-    /**
-     * Plugin for touch gestures.
-     * @see [mol_plugin](../plugin/readme.md)
-     */
-    class $mol_touch extends $.$mol_touch {
-        auto(): void;
-        pointer_events(next?: readonly PointerEvent[]): readonly PointerEvent[];
-        pointer_coords(): $mol_vector<$mol_vector_2d<number>, number>;
-        pointer_center(): $mol_vector_2d<number>;
-        event_coords(event: PointerEvent | WheelEvent): $mol_vector_2d<number>;
-        action_point(): $mol_vector_2d<number>;
-        event_eat(event: PointerEvent | WheelEvent): string;
-        event_start(event: PointerEvent): void;
-        event_move(event: PointerEvent): void;
-        event_end(event: PointerEvent): void;
-        event_leave(event: PointerEvent): void;
-        swipe_left(event: PointerEvent): void;
-        swipe_right(event: PointerEvent): void;
-        swipe_top(event: PointerEvent): void;
-        swipe_bottom(event: PointerEvent): void;
-        event_wheel(event: WheelEvent): void;
-    }
-}
-
-declare namespace $ {
-
-	type $mol_vector_range__mol_plot_pane_1 = $mol_type_enforce<
-		[ ReturnType< $mol_plot_pane['gap_left'] >, ReturnType< $mol_plot_pane['gap_right'] > ]
-		,
-		ConstructorParameters< typeof $mol_vector_range<number> >
-	>
-	type $mol_vector_range__mol_plot_pane_2 = $mol_type_enforce<
-		[ ReturnType< $mol_plot_pane['gap_bottom'] >, ReturnType< $mol_plot_pane['gap_top'] > ]
-		,
-		ConstructorParameters< typeof $mol_vector_range<number> >
-	>
-	type $mol_vector_range__mol_plot_pane_3 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_range<number> >
-	>
-	type $mol_vector_range__mol_plot_pane_4 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_range<number> >
-	>
-	type $mol_vector_range__mol_plot_pane_5 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_range<number> >
-	>
-	type $mol_vector_range__mol_plot_pane_6 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_range<number> >
-	>
-	type $mol_vector_range__mol_plot_pane_7 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_range<number> >
-	>
-	type $mol_vector_range__mol_plot_pane_8 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_range<number> >
-	>
-	type $mol_vector_range__mol_plot_pane_9 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_range<number> >
-	>
-	type $mol_vector_range__mol_plot_pane_10 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_range<number> >
-	>
-	type $mol_touch__zoom_mol_plot_pane_11 = $mol_type_enforce<
-		ReturnType< $mol_plot_pane['zoom'] >
-		,
-		ReturnType< $mol_touch['zoom'] >
-	>
-	type $mol_touch__pan_mol_plot_pane_12 = $mol_type_enforce<
-		ReturnType< $mol_plot_pane['shift'] >
-		,
-		ReturnType< $mol_touch['pan'] >
-	>
-	type $mol_touch__allow_draw_mol_plot_pane_13 = $mol_type_enforce<
-		ReturnType< $mol_plot_pane['allow_draw'] >
-		,
-		ReturnType< $mol_touch['allow_draw'] >
-	>
-	type $mol_touch__allow_pan_mol_plot_pane_14 = $mol_type_enforce<
-		ReturnType< $mol_plot_pane['allow_pan'] >
-		,
-		ReturnType< $mol_touch['allow_pan'] >
-	>
-	type $mol_touch__allow_zoom_mol_plot_pane_15 = $mol_type_enforce<
-		ReturnType< $mol_plot_pane['allow_zoom'] >
-		,
-		ReturnType< $mol_touch['allow_zoom'] >
-	>
-	type $mol_touch__draw_start_mol_plot_pane_16 = $mol_type_enforce<
-		ReturnType< $mol_plot_pane['draw_start'] >
-		,
-		ReturnType< $mol_touch['draw_start'] >
-	>
-	type $mol_touch__draw_mol_plot_pane_17 = $mol_type_enforce<
-		ReturnType< $mol_plot_pane['draw'] >
-		,
-		ReturnType< $mol_touch['draw'] >
-	>
-	type $mol_touch__draw_end_mol_plot_pane_18 = $mol_type_enforce<
-		ReturnType< $mol_plot_pane['draw_end'] >
-		,
-		ReturnType< $mol_touch['draw_end'] >
-	>
-	type $mol_vector_2d__mol_plot_pane_19 = $mol_type_enforce<
-		[ ReturnType< $mol_plot_pane['gap_x'] >, ReturnType< $mol_plot_pane['gap_y'] > ]
-		,
-		ConstructorParameters< typeof $mol_vector_2d<$mol_vector_range<number>> >
-	>
-	type $mol_vector_2d__mol_plot_pane_20 = $mol_type_enforce<
-		[ ReturnType< $mol_plot_pane['shift_limit_x'] >, ReturnType< $mol_plot_pane['shift_limit_y'] > ]
-		,
-		ConstructorParameters< typeof $mol_vector_2d<$mol_vector_range<number>> >
-	>
-	type $mol_vector_2d__mol_plot_pane_21 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_2d<number> >
-	>
-	type $mol_vector_2d__mol_plot_pane_22 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_2d<number> >
-	>
-	type $mol_vector_2d__mol_plot_pane_23 = $mol_type_enforce<
-		[ ReturnType< $mol_plot_pane['scale_limit_x'] >, ReturnType< $mol_plot_pane['scale_limit_y'] > ]
-		,
-		ConstructorParameters< typeof $mol_vector_2d<$mol_vector_range<number>> >
-	>
-	type $mol_vector_2d__mol_plot_pane_24 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_2d<number> >
-	>
-	type $mol_vector_2d__mol_plot_pane_25 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_2d<number> >
-	>
-	type $mol_vector_2d__mol_plot_pane_26 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_2d<number> >
-	>
-	type $mol_vector_2d__mol_plot_pane_27 = $mol_type_enforce<
-		[ number, number ]
-		,
-		ConstructorParameters< typeof $mol_vector_2d<number> >
-	>
-	type $mol_vector_2d__mol_plot_pane_28 = $mol_type_enforce<
-		[ ReturnType< $mol_plot_pane['dimensions_x'] >, ReturnType< $mol_plot_pane['dimensions_y'] > ]
-		,
-		ConstructorParameters< typeof $mol_vector_2d<$mol_vector_range<number>> >
-	>
-	type $mol_vector_2d__mol_plot_pane_29 = $mol_type_enforce<
-		[ ReturnType< $mol_plot_pane['dimensions_viewport_x'] >, ReturnType< $mol_plot_pane['dimensions_viewport_y'] > ]
-		,
-		ConstructorParameters< typeof $mol_vector_2d<$mol_vector_range<number>> >
-	>
-	export class $mol_plot_pane extends $mol_svg_root {
-		gap_x( ): $mol_vector_range<number>
-		gap_y( ): $mol_vector_range<number>
-		shift_limit_x( ): $mol_vector_range<number>
-		shift_limit_y( ): $mol_vector_range<number>
-		scale_limit_x( ): $mol_vector_range<number>
-		scale_limit_y( ): $mol_vector_range<number>
-		dimensions_x( ): $mol_vector_range<number>
-		dimensions_y( ): $mol_vector_range<number>
-		dimensions_viewport_x( ): $mol_vector_range<number>
-		dimensions_viewport_y( ): $mol_vector_range<number>
-		graphs_sorted( ): readonly($mol_svg)[]
-		graphs( ): readonly($mol_plot_graph)[]
-		graphs_positioned( ): ReturnType< $mol_plot_pane['graphs'] >
-		graphs_visible( ): ReturnType< $mol_plot_pane['graphs_positioned'] >
-		zoom( next?: number ): number
-		cursor_position( ): ReturnType< ReturnType< $mol_plot_pane['Touch'] >['pointer_center'] >
-		allow_draw( ): boolean
-		allow_pan( ): boolean
-		allow_zoom( ): boolean
-		action_type( ): ReturnType< ReturnType< $mol_plot_pane['Touch'] >['action_type'] >
-		action_point( ): ReturnType< ReturnType< $mol_plot_pane['Touch'] >['action_point'] >
-		draw_start( next?: any ): any
-		draw( next?: any ): any
-		draw_end( next?: any ): any
-		Touch( ): $mol_touch
-		aspect( ): string
-		hue_base( next?: number ): number
-		hue_shift( next?: number ): number
-		gap_hor( ): number
-		gap_vert( ): number
-		gap_left( ): ReturnType< $mol_plot_pane['gap_hor'] >
-		gap_right( ): ReturnType< $mol_plot_pane['gap_hor'] >
-		gap_top( ): ReturnType< $mol_plot_pane['gap_vert'] >
-		gap_bottom( ): ReturnType< $mol_plot_pane['gap_vert'] >
-		gap( ): $mol_vector_2d<$mol_vector_range<number>>
-		shift_limit( ): $mol_vector_2d<$mol_vector_range<number>>
-		shift_default( ): $mol_vector_2d<number>
-		shift( next?: $mol_vector_2d<number> ): $mol_vector_2d<number>
-		scale_limit( ): $mol_vector_2d<$mol_vector_range<number>>
-		scale_default( ): $mol_vector_2d<number>
-		scale( next?: $mol_vector_2d<number> ): $mol_vector_2d<number>
-		scale_x( next?: number ): number
-		scale_y( next?: number ): number
-		size( ): $mol_vector_2d<number>
-		size_real( ): $mol_vector_2d<number>
-		dimensions( ): $mol_vector_2d<$mol_vector_range<number>>
-		dimensions_viewport( ): $mol_vector_2d<$mol_vector_range<number>>
-		sub( ): ReturnType< $mol_plot_pane['graphs_sorted'] >
-		graphs_colored( ): ReturnType< $mol_plot_pane['graphs_visible'] >
-		plugins( ): readonly(any)[]
-	}
-	
-}
-
-//# sourceMappingURL=pane.view.tree.d.ts.map
-declare namespace $.$$ {
-    /**
-     * Fastest plot lib for vector graphics.
-     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_plot_demo
-     */
-    class $mol_plot_pane extends $.$mol_plot_pane {
-        dimensions(): $mol_vector_2d<$mol_vector_range<number>>;
-        size(): $mol_vector_2d<number>;
-        graph_hue(index: number): number;
-        graphs_colored(): $.$mol_plot_graph[];
-        size_real(): $mol_vector_2d<number>;
-        view_box(): string;
-        scale_limit(): $mol_vector_2d<$mol_vector_range<number>>;
-        scale_default(): $mol_vector_2d<number>;
-        scale(next?: $mol_vector_2d<number>): $mol_vector_2d<number>;
-        scale_x(next?: number): number;
-        scale_y(next?: number): number;
-        shift_limit(): $mol_vector_2d<$mol_vector_range<number>>;
-        shift_default(): $mol_vector_2d<number>;
-        graph_touched: boolean;
-        shift(next?: $mol_vector_2d<number>): $mol_vector_2d<number>;
-        reset(event?: Event): void;
-        graphs_visible(): $.$mol_plot_graph[];
-        graphs_positioned(): readonly $.$mol_plot_graph[];
-        dimensions_viewport(): $mol_vector<$mol_vector_range<number>, 2>;
-        viewport(): $mol_vector_2d<$mol_vector_range<number>>;
-        graphs_sorted(): $.$mol_svg[];
-    }
-}
-
-declare namespace $ {
-}
-
-declare namespace $ {
-}
-
-declare namespace $ {
-
-	type $mol_chart_legend__graphs_mol_chart_1 = $mol_type_enforce<
-		ReturnType< $mol_chart['graphs_colored'] >
-		,
-		ReturnType< $mol_chart_legend['graphs'] >
-	>
-	type __mol_chart_2 = $mol_type_enforce<
-		Parameters< $mol_chart['zoom'] >[0]
-		,
-		Parameters< ReturnType< $mol_chart['Plot'] >['scale_x'] >[0]
-	>
-	type $mol_plot_pane__zoom_mol_chart_3 = $mol_type_enforce<
-		ReturnType< $mol_chart['zoom'] >
-		,
-		ReturnType< $mol_plot_pane['zoom'] >
-	>
-	type $mol_plot_pane__gap_left_mol_chart_4 = $mol_type_enforce<
-		ReturnType< $mol_chart['gap_left'] >
-		,
-		ReturnType< $mol_plot_pane['gap_left'] >
-	>
-	type $mol_plot_pane__gap_right_mol_chart_5 = $mol_type_enforce<
-		ReturnType< $mol_chart['gap_right'] >
-		,
-		ReturnType< $mol_plot_pane['gap_right'] >
-	>
-	type $mol_plot_pane__gap_bottom_mol_chart_6 = $mol_type_enforce<
-		ReturnType< $mol_chart['gap_bottom'] >
-		,
-		ReturnType< $mol_plot_pane['gap_bottom'] >
-	>
-	type $mol_plot_pane__gap_top_mol_chart_7 = $mol_type_enforce<
-		ReturnType< $mol_chart['gap_top'] >
-		,
-		ReturnType< $mol_plot_pane['gap_top'] >
-	>
-	type $mol_plot_pane__graphs_mol_chart_8 = $mol_type_enforce<
-		ReturnType< $mol_chart['graphs'] >
-		,
-		ReturnType< $mol_plot_pane['graphs'] >
-	>
-	type $mol_plot_pane__hue_base_mol_chart_9 = $mol_type_enforce<
-		ReturnType< $mol_chart['hue_base'] >
-		,
-		ReturnType< $mol_plot_pane['hue_base'] >
-	>
-	type $mol_plot_pane__hue_shift_mol_chart_10 = $mol_type_enforce<
-		ReturnType< $mol_chart['hue_shift'] >
-		,
-		ReturnType< $mol_plot_pane['hue_shift'] >
-	>
-	export class $mol_chart extends $mol_view {
-		Legend( ): $mol_chart_legend
-		zoom( next?: ReturnType< ReturnType< $mol_chart['Plot'] >['scale_x'] > ): ReturnType< ReturnType< $mol_chart['Plot'] >['scale_x'] >
-		graphs_colored( ): ReturnType< ReturnType< $mol_chart['Plot'] >['graphs_colored'] >
-		hue_base( ): number
-		hue_shift( ): number
-		Plot( ): $mol_plot_pane
-		gap_hor( ): number
-		gap_vert( ): number
-		gap_left( ): ReturnType< $mol_chart['gap_hor'] >
-		gap_right( ): ReturnType< $mol_chart['gap_hor'] >
-		gap_bottom( ): ReturnType< $mol_chart['gap_vert'] >
-		gap_top( ): ReturnType< $mol_chart['gap_vert'] >
-		graphs( ): readonly($mol_plot_graph)[]
-		sub( ): readonly(any)[]
-	}
-	
-}
-
-//# sourceMappingURL=chart.view.tree.d.ts.map
 declare namespace $ {
 
 	type $giper_baza_link_chip__link_giper_baza_app_stat_page_1 = $mol_type_enforce<
@@ -53755,276 +53891,319 @@ declare namespace $ {
 
 declare namespace $ {
 
-	type $mol_image__uri_bog_music_app_1 = $mol_type_enforce<
+	type $bog_builderui_skin__lights_bog_music_app_1 = $mol_type_enforce<
+		ReturnType< $bog_music_app['lights'] >
+		,
+		ReturnType< $bog_builderui_skin['lights'] >
+	>
+	type $bog_builderui_skin__base_bog_music_app_2 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $bog_builderui_skin['base'] >
+	>
+	type $bog_builderui_skin__font_head_bog_music_app_3 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $bog_builderui_skin['font_head'] >
+	>
+	type $mol_image__uri_bog_music_app_4 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_image['uri'] >
 	>
-	type $mol_image__title_bog_music_app_2 = $mol_type_enforce<
+	type $mol_image__title_bog_music_app_5 = $mol_type_enforce<
 		ReturnType< $bog_music_app['title'] >
 		,
 		ReturnType< $mol_image['title'] >
 	>
-	type $mol_view__sub_bog_music_app_3 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_app_6 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_app_4 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_app_7 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_check_icon__hint_bog_music_app_5 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_app_8 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_music_app_9 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_check_icon__hint_bog_music_app_10 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_check_icon['hint'] >
 	>
-	type $mol_check_icon__Icon_bog_music_app_6 = $mol_type_enforce<
+	type $mol_check_icon__Icon_bog_music_app_11 = $mol_type_enforce<
 		ReturnType< $bog_music_app['Wave_icon'] >
 		,
 		ReturnType< $mol_check_icon['Icon'] >
 	>
-	type $mol_check_icon__checked_bog_music_app_7 = $mol_type_enforce<
+	type $mol_check_icon__checked_bog_music_app_12 = $mol_type_enforce<
 		ReturnType< $bog_music_app['wave_mode'] >
 		,
 		ReturnType< $mol_check_icon['checked'] >
 	>
-	type $mol_button_open__hint_bog_music_app_8 = $mol_type_enforce<
+	type $mol_button_open__hint_bog_music_app_13 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_open['hint'] >
 	>
-	type $mol_button_open__accept_bog_music_app_9 = $mol_type_enforce<
+	type $mol_button_open__accept_bog_music_app_14 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_open['accept'] >
 	>
-	type $mol_button_open__files_bog_music_app_10 = $mol_type_enforce<
+	type $mol_button_open__files_bog_music_app_15 = $mol_type_enforce<
 		ReturnType< $bog_music_app['upload_files'] >
 		,
 		ReturnType< $mol_button_open['files'] >
 	>
-	type $bog_theme_toggle__theme_auto_bog_music_app_11 = $mol_type_enforce<
+	type $bog_theme_toggle__theme_auto_bog_music_app_16 = $mol_type_enforce<
 		ReturnType< $bog_music_app['Theme'] >
 		,
 		ReturnType< $bog_theme_toggle['theme_auto'] >
 	>
-	type $bog_music_account__download_playlist_bog_music_app_12 = $mol_type_enforce<
+	type $bog_music_account__font_size_bog_music_app_17 = $mol_type_enforce<
+		ReturnType< $bog_music_app['font_size'] >
+		,
+		ReturnType< $bog_music_account['font_size'] >
+	>
+	type $bog_music_account__download_playlist_bog_music_app_18 = $mol_type_enforce<
 		ReturnType< $bog_music_app['download_playlist'] >
 		,
 		ReturnType< $bog_music_account['download_playlist'] >
 	>
-	type $bog_music_account__download_playlist_status_bog_music_app_13 = $mol_type_enforce<
+	type $bog_music_account__download_playlist_status_bog_music_app_19 = $mol_type_enforce<
 		ReturnType< $bog_music_app['download_playlist_status'] >
 		,
 		ReturnType< $bog_music_account['download_playlist_status'] >
 	>
-	type $bog_music_account__tg_hint_bog_music_app_14 = $mol_type_enforce<
+	type $bog_music_account__tg_hint_bog_music_app_20 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tg_hint'] >
 		,
 		ReturnType< $bog_music_account['tg_hint'] >
 	>
-	type $bog_music_account__tg_button_bog_music_app_15 = $mol_type_enforce<
+	type $bog_music_account__tg_button_bog_music_app_21 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tg_button'] >
 		,
 		ReturnType< $bog_music_account['tg_button'] >
 	>
-	type $bog_music_account__tg_status_bog_music_app_16 = $mol_type_enforce<
+	type $bog_music_account__tg_status_bog_music_app_22 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tg_status'] >
 		,
 		ReturnType< $bog_music_account['tg_status'] >
 	>
-	type $bog_music_account__tg_link_bog_music_app_17 = $mol_type_enforce<
+	type $bog_music_account__tg_link_bog_music_app_23 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tg_link'] >
 		,
 		ReturnType< $bog_music_account['tg_link'] >
 	>
-	type $bog_music_account__fm_hint_bog_music_app_18 = $mol_type_enforce<
+	type $bog_music_account__fm_hint_bog_music_app_24 = $mol_type_enforce<
 		ReturnType< $bog_music_app['fm_hint'] >
 		,
 		ReturnType< $bog_music_account['fm_hint'] >
 	>
-	type $bog_music_account__fm_button_bog_music_app_19 = $mol_type_enforce<
+	type $bog_music_account__fm_button_bog_music_app_25 = $mol_type_enforce<
 		ReturnType< $bog_music_app['fm_button'] >
 		,
 		ReturnType< $bog_music_account['fm_button'] >
 	>
-	type $bog_music_account__fm_status_bog_music_app_20 = $mol_type_enforce<
+	type $bog_music_account__fm_status_bog_music_app_26 = $mol_type_enforce<
 		ReturnType< $bog_music_app['fm_status'] >
 		,
 		ReturnType< $bog_music_account['fm_status'] >
 	>
-	type $bog_music_account__fm_link_bog_music_app_21 = $mol_type_enforce<
+	type $bog_music_account__fm_link_bog_music_app_27 = $mol_type_enforce<
 		ReturnType< $bog_music_app['fm_link'] >
 		,
 		ReturnType< $bog_music_account['fm_link'] >
 	>
-	type $bog_feedback2_form__feedback_id_bog_music_app_22 = $mol_type_enforce<
+	type $bog_feedback2_form__feedback_id_bog_music_app_28 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $bog_feedback2_form['feedback_id'] >
 	>
-	type $mol_view__sub_bog_music_app_23 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_app_29 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_switch__value_bog_music_app_24 = $mol_type_enforce<
+	type $mol_switch__value_bog_music_app_30 = $mol_type_enforce<
 		ReturnType< $bog_music_app['page'] >
 		,
 		ReturnType< $mol_switch['value'] >
 	>
-	type $mol_switch__options_bog_music_app_25 = $mol_type_enforce<
+	type $mol_switch__options_bog_music_app_31 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tab_options'] >
 		,
 		ReturnType< $mol_switch['options'] >
 	>
-	type $bog_music_tracks__track_keys_bog_music_app_26 = $mol_type_enforce<
+	type $bog_music_tracks__track_keys_bog_music_app_32 = $mol_type_enforce<
 		ReturnType< $bog_music_app['visible_keys'] >
 		,
 		ReturnType< $bog_music_tracks['track_keys'] >
 	>
-	type $bog_music_tracks__current_key_bog_music_app_27 = $mol_type_enforce<
+	type $bog_music_tracks__current_key_bog_music_app_33 = $mol_type_enforce<
 		ReturnType< $bog_music_app['current_key'] >
 		,
 		ReturnType< $bog_music_tracks['current_key'] >
 	>
-	type $bog_music_tracks__play_key_bog_music_app_28 = $mol_type_enforce<
+	type $bog_music_tracks__play_key_bog_music_app_34 = $mol_type_enforce<
 		ReturnType< $bog_music_app['play_key'] >
 		,
 		ReturnType< $bog_music_tracks['play_key'] >
 	>
-	type $bog_music_tracks__archive_mode_bog_music_app_29 = $mol_type_enforce<
+	type $bog_music_tracks__archive_mode_bog_music_app_35 = $mol_type_enforce<
 		ReturnType< $bog_music_app['archive_mode'] >
 		,
 		ReturnType< $bog_music_tracks['archive_mode'] >
 	>
-	type $bog_music_tracks__reorder_to_bog_music_app_30 = $mol_type_enforce<
+	type $bog_music_tracks__reorder_to_bog_music_app_36 = $mol_type_enforce<
 		ReturnType< $bog_music_app['reorder_to'] >
 		,
 		ReturnType< $bog_music_tracks['reorder_to'] >
 	>
-	type $bog_music_tracks__archive_key_bog_music_app_31 = $mol_type_enforce<
+	type $bog_music_tracks__archive_key_bog_music_app_37 = $mol_type_enforce<
 		ReturnType< $bog_music_app['archive_key'] >
 		,
 		ReturnType< $bog_music_tracks['archive_key'] >
 	>
-	type $bog_music_tracks__restore_key_bog_music_app_32 = $mol_type_enforce<
+	type $bog_music_tracks__restore_key_bog_music_app_38 = $mol_type_enforce<
 		ReturnType< $bog_music_app['restore_key'] >
 		,
 		ReturnType< $bog_music_tracks['restore_key'] >
 	>
-	type $bog_music_tracks__delete_key_bog_music_app_33 = $mol_type_enforce<
+	type $bog_music_tracks__delete_key_bog_music_app_39 = $mol_type_enforce<
 		ReturnType< $bog_music_app['delete_key'] >
 		,
 		ReturnType< $bog_music_tracks['delete_key'] >
 	>
-	type $bog_music_tracks__demote_key_bog_music_app_34 = $mol_type_enforce<
+	type $bog_music_tracks__demote_key_bog_music_app_40 = $mol_type_enforce<
 		ReturnType< $bog_music_app['demote_key'] >
 		,
 		ReturnType< $bog_music_tracks['demote_key'] >
 	>
-	type $mol_string__hint_bog_music_app_35 = $mol_type_enforce<
+	type $mol_string__hint_bog_music_app_41 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_string['hint'] >
 	>
-	type $mol_string__value_bog_music_app_36 = $mol_type_enforce<
+	type $mol_string__value_bog_music_app_42 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_query'] >
 		,
 		ReturnType< $mol_string['value'] >
 	>
-	type $mol_string__submit_bog_music_app_37 = $mol_type_enforce<
+	type $mol_string__submit_bog_music_app_43 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_find'] >
 		,
 		ReturnType< $mol_string['submit'] >
 	>
-	type $mol_string__keyboard_bog_music_app_38 = $mol_type_enforce<
+	type $mol_string__keyboard_bog_music_app_44 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_string['keyboard'] >
 	>
-	type $mol_string__enter_bog_music_app_39 = $mol_type_enforce<
+	type $mol_string__enter_bog_music_app_45 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_string['enter'] >
 	>
-	type $mol_button_major__title_bog_music_app_40 = $mol_type_enforce<
+	type $mol_button_major__title_bog_music_app_46 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_major['title'] >
 	>
-	type $mol_button_major__click_bog_music_app_41 = $mol_type_enforce<
+	type $mol_button_major__click_bog_music_app_47 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_find'] >
 		,
 		ReturnType< $mol_button_major['click'] >
 	>
-	type $mol_view__sub_bog_music_app_42 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_app_48 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_list__rows_bog_music_app_43 = $mol_type_enforce<
+	type $mol_list__rows_bog_music_app_49 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_rows'] >
 		,
 		ReturnType< $mol_list['rows'] >
 	>
-	type $bog_music_tube_row__title_bog_music_app_44 = $mol_type_enforce<
+	type $bog_music_tube_row__title_bog_music_app_50 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_title'] >
 		,
 		ReturnType< $bog_music_tube_row['title'] >
 	>
-	type $bog_music_tube_row__subtitle_bog_music_app_45 = $mol_type_enforce<
+	type $bog_music_tube_row__subtitle_bog_music_app_51 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_meta'] >
 		,
 		ReturnType< $bog_music_tube_row['subtitle'] >
 	>
-	type $bog_music_tube_row__status_bog_music_app_46 = $mol_type_enforce<
+	type $bog_music_tube_row__status_bog_music_app_52 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_status_text'] >
 		,
 		ReturnType< $bog_music_tube_row['status'] >
 	>
-	type $bog_music_tube_row__cover_bog_music_app_47 = $mol_type_enforce<
+	type $bog_music_tube_row__cover_bog_music_app_53 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_cover'] >
 		,
 		ReturnType< $bog_music_tube_row['cover'] >
 	>
-	type $bog_music_tube_row__busy_bog_music_app_48 = $mol_type_enforce<
+	type $bog_music_tube_row__busy_bog_music_app_54 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_busy'] >
 		,
 		ReturnType< $bog_music_tube_row['busy'] >
 	>
-	type $bog_music_tube_row__play_bog_music_app_49 = $mol_type_enforce<
+	type $bog_music_tube_row__play_bog_music_app_55 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_play'] >
 		,
 		ReturnType< $bog_music_tube_row['play'] >
 	>
-	type $bog_music_tube_row__get_bog_music_app_50 = $mol_type_enforce<
+	type $bog_music_tube_row__get_bog_music_app_56 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_get'] >
 		,
 		ReturnType< $bog_music_tube_row['get'] >
 	>
-	type $bog_music_player__queue_keys_bog_music_app_51 = $mol_type_enforce<
+	type $bog_music_player__full_bog_music_app_57 = $mol_type_enforce<
+		ReturnType< $bog_music_app['player_full'] >
+		,
+		ReturnType< $bog_music_player['full'] >
+	>
+	type $bog_music_player__open_bog_music_app_58 = $mol_type_enforce<
+		ReturnType< $bog_music_app['player_open'] >
+		,
+		ReturnType< $bog_music_player['open'] >
+	>
+	type $bog_music_player__queue_keys_bog_music_app_59 = $mol_type_enforce<
 		ReturnType< $bog_music_app['visible_keys'] >
 		,
 		ReturnType< $bog_music_player['queue_keys'] >
 	>
-	type $bog_music_player__current_key_bog_music_app_52 = $mol_type_enforce<
+	type $bog_music_player__current_key_bog_music_app_60 = $mol_type_enforce<
 		ReturnType< $bog_music_app['current_key'] >
 		,
 		ReturnType< $bog_music_player['current_key'] >
 	>
-	type $bog_music_nav__section_bog_music_app_53 = $mol_type_enforce<
+	type $bog_music_nav__section_bog_music_app_61 = $mol_type_enforce<
 		ReturnType< $bog_music_app['section'] >
 		,
 		ReturnType< $bog_music_nav['section'] >
 	>
 	export class $bog_music_app extends $mol_page {
+		Skin( ): $bog_builderui_skin
 		Theme( ): $bog_theme_auto
 		Popup_fix( ): $bog_popup_plugin
 		Tooltip( ): $bog_tooltip_plugin
-		Brand( ): $mol_image
+		Brand_image( ): $mol_image
+		Brand_name( ): $mol_view
+		Brand( ): $mol_view
 		Sync_status( ): $giper_baza_status
 		nickname_label( ): string
 		Nickname_label( ): $mol_view
@@ -54084,10 +54263,17 @@ declare namespace $ {
 		tube_play( id: any, next?: any ): any
 		tube_get( id: any, next?: any ): any
 		Tube_row( id: any): $bog_music_tube_row
+		player_full( ): boolean
+		player_open( next?: any ): any
 		Player( ): $bog_music_player
 		section( next?: string ): string
 		Nav( ): $bog_music_nav
 		plugins( ): readonly(any)[]
+		lights( ): string
+		font_size( next?: string ): string
+		attr( ): ({ 
+			'bog_music_font': ReturnType< $bog_music_app['font_size'] >,
+		})  & ReturnType< $mol_page['attr'] >
 		title( ): string
 		Title( ): ReturnType< $bog_music_app['Brand'] >
 		tools( ): readonly(any)[]
@@ -54186,9 +54372,14 @@ declare namespace $.$$ {
         /** PWA-путь: локально засинканные блобы → zip → браузерный download. */
         download_zip_async(): Promise<void>;
         version_label(): string;
-        /** Нижняя навигация: music / account / feedback. */
+        lights(): "light" | "dark" | "system";
+        font_size(next?: string): string;
+        /** Нижняя навигация: search / music / player / account / logs. */
         section(next?: string): string;
+        player_full(): boolean;
+        player_open(event?: Event): void;
         body(): any[];
+        foot(): ($.$bog_music_nav | $.$bog_music_player)[];
         /**
          * Поле ввода. Дефолт — из committed (URL), чтобы при возврате на
          * секцию/заходе по ссылке в поле был текущий запрос, а не пусто.
@@ -54288,6 +54479,9 @@ declare namespace $.$$ {
         import_share(token: string): Promise<void>;
         auto(): any;
     }
+}
+
+declare namespace $ {
 }
 
 declare namespace $.$$ {
@@ -63925,212 +64119,239 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_button_minor__hint_bog_music_account_2 = $mol_type_enforce<
-		ReturnType< $bog_music_account['download_playlist_hint'] >
+	type $mol_switch__value_bog_music_account_2 = $mol_type_enforce<
+		ReturnType< $bog_music_account['font_size'] >
 		,
-		ReturnType< $mol_button_minor['hint'] >
+		ReturnType< $mol_switch['value'] >
 	>
-	type $mol_button_minor__click_bog_music_account_3 = $mol_type_enforce<
-		ReturnType< $bog_music_account['download_playlist'] >
+	type $mol_switch__options_bog_music_account_3 = $mol_type_enforce<
+		({ 
+			'normal': string,
+			'large': string,
+			'huge': string,
+		}) 
 		,
-		ReturnType< $mol_button_minor['click'] >
+		ReturnType< $mol_switch['options'] >
 	>
-	type $mol_button_minor__sub_bog_music_account_4 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_account_4 = $mol_type_enforce<
 		readonly(any)[]
 		,
-		ReturnType< $mol_button_minor['sub'] >
+		ReturnType< $mol_view['sub'] >
 	>
 	type $mol_view__sub_bog_music_account_5 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_account_6 = $mol_type_enforce<
+	type $mol_button_minor__hint_bog_music_account_6 = $mol_type_enforce<
+		ReturnType< $bog_music_account['download_playlist_hint'] >
+		,
+		ReturnType< $mol_button_minor['hint'] >
+	>
+	type $mol_button_minor__click_bog_music_account_7 = $mol_type_enforce<
+		ReturnType< $bog_music_account['download_playlist'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub_bog_music_account_8 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_view__sub_bog_music_account_9 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_string__value_bog_music_account_7 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_account_10 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_string__value_bog_music_account_11 = $mol_type_enforce<
 		ReturnType< $bog_music_account['nickname'] >
 		,
 		ReturnType< $mol_string['value'] >
 	>
-	type $mol_string__hint_bog_music_account_8 = $mol_type_enforce<
+	type $mol_string__hint_bog_music_account_12 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_string['hint'] >
 	>
-	type $mol_form_field__name_bog_music_account_9 = $mol_type_enforce<
+	type $mol_form_field__name_bog_music_account_13 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_form_field['name'] >
 	>
-	type $mol_form_field__Content_bog_music_account_10 = $mol_type_enforce<
+	type $mol_form_field__Content_bog_music_account_14 = $mol_type_enforce<
 		ReturnType< $bog_music_account['Nickname_input'] >
 		,
 		ReturnType< $mol_form_field['Content'] >
 	>
-	type $mol_view__sub_bog_music_account_11 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_account_15 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_account_12 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_account_16 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_account_13 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_account_17 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_paragraph__title_bog_music_account_14 = $mol_type_enforce<
+	type $mol_paragraph__title_bog_music_account_18 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_paragraph__title_bog_music_account_15 = $mol_type_enforce<
+	type $mol_paragraph__title_bog_music_account_19 = $mol_type_enforce<
 		ReturnType< $bog_music_account['tg_hint'] >
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_button_minor__title_bog_music_account_16 = $mol_type_enforce<
+	type $mol_button_minor__title_bog_music_account_20 = $mol_type_enforce<
 		ReturnType< $bog_music_account['tg_button'] >
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__click_bog_music_account_17 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_account_21 = $mol_type_enforce<
 		ReturnType< $bog_music_account['tg_link'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_view__sub_bog_music_account_18 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_account_22 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_account_19 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_account_23 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_paragraph__title_bog_music_account_20 = $mol_type_enforce<
+	type $mol_paragraph__title_bog_music_account_24 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_paragraph__title_bog_music_account_21 = $mol_type_enforce<
+	type $mol_paragraph__title_bog_music_account_25 = $mol_type_enforce<
 		ReturnType< $bog_music_account['fm_hint'] >
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_button_minor__title_bog_music_account_22 = $mol_type_enforce<
+	type $mol_button_minor__title_bog_music_account_26 = $mol_type_enforce<
 		ReturnType< $bog_music_account['fm_button'] >
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__click_bog_music_account_23 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_account_27 = $mol_type_enforce<
 		ReturnType< $bog_music_account['fm_link'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_view__sub_bog_music_account_24 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_account_28 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
-	>
-	type $mol_view__sub_bog_music_account_25 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_view['sub'] >
-	>
-	type $mol_paragraph__title_bog_music_account_26 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_paragraph['title'] >
-	>
-	type $mol_button_minor__title_bog_music_account_27 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_button_minor['title'] >
-	>
-	type $mol_button_minor__click_bog_music_account_28 = $mol_type_enforce<
-		ReturnType< $bog_music_account['copy'] >
-		,
-		ReturnType< $mol_button_minor['click'] >
 	>
 	type $mol_view__sub_bog_music_account_29 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_account_30 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_view['sub'] >
-	>
-	type $mol_paragraph__title_bog_music_account_31 = $mol_type_enforce<
+	type $mol_paragraph__title_bog_music_account_30 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_string__hint_bog_music_account_32 = $mol_type_enforce<
+	type $mol_button_minor__title_bog_music_account_31 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['title'] >
+	>
+	type $mol_button_minor__click_bog_music_account_32 = $mol_type_enforce<
+		ReturnType< $bog_music_account['copy'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_view__sub_bog_music_account_33 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_music_account_34 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_paragraph__title_bog_music_account_35 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_string__hint_bog_music_account_36 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_string['hint'] >
 	>
-	type $mol_string__value_bog_music_account_33 = $mol_type_enforce<
+	type $mol_string__value_bog_music_account_37 = $mol_type_enforce<
 		ReturnType< $bog_music_account['import_link'] >
 		,
 		ReturnType< $mol_string['value'] >
 	>
-	type $mol_button_minor__title_bog_music_account_34 = $mol_type_enforce<
+	type $mol_button_minor__title_bog_music_account_38 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__click_bog_music_account_35 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_account_39 = $mol_type_enforce<
 		ReturnType< $bog_music_account['apply_import'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_view__sub_bog_music_account_36 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_account_40 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
-	>
-	type $mol_view__sub_bog_music_account_37 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_view['sub'] >
-	>
-	type $mol_paragraph__title_bog_music_account_38 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_paragraph['title'] >
-	>
-	type $mol_button_minor__title_bog_music_account_39 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_button_minor['title'] >
-	>
-	type $mol_button_minor__click_bog_music_account_40 = $mol_type_enforce<
-		ReturnType< $bog_music_account['reset_account'] >
-		,
-		ReturnType< $mol_button_minor['click'] >
 	>
 	type $mol_view__sub_bog_music_account_41 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_account_42 = $mol_type_enforce<
+	type $mol_paragraph__title_bog_music_account_42 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_button_minor__title_bog_music_account_43 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['title'] >
+	>
+	type $mol_button_minor__click_bog_music_account_44 = $mol_type_enforce<
+		ReturnType< $bog_music_account['reset_account'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_view__sub_bog_music_account_45 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_music_account_46 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
 	export class $bog_music_account extends $mol_view {
+		Font_label( ): $mol_view
+		Font_size( ): $mol_switch
+		Font_row( ): $mol_view
 		download_playlist_hint( ): string
 		download_playlist( next?: any ): any
 		Download_playlist_icon( ): $mol_icon_download
@@ -64184,6 +64405,7 @@ declare namespace $ {
 		Reset_button( ): $mol_button_minor
 		Reset( ): $mol_view
 		Cards( ): $mol_view
+		font_size( next?: string ): string
 		sub( ): readonly(any)[]
 		ext_label( ): string
 		ext_hint( ): string
@@ -67931,53 +68153,24 @@ declare namespace $ {
 
 declare namespace $ {
 
-	export class $mol_pop_over extends $mol_pop {
-		hovered( next?: boolean ): boolean
-		event_show( next?: any ): any
-		event_hide( next?: any ): any
-		showed( ): ReturnType< $mol_pop_over['hovered'] >
-		attr( ): ({ 
-			'tabindex': number,
-		})  & ReturnType< $mol_pop['attr'] >
-		event( ): ({ 
-			mouseenter( next?: ReturnType< $mol_pop_over['event_show'] > ): ReturnType< $mol_pop_over['event_show'] >,
-			mouseleave( next?: ReturnType< $mol_pop_over['event_hide'] > ): ReturnType< $mol_pop_over['event_hide'] >,
-		})  & ReturnType< $mol_pop['event'] >
-	}
-	
-}
-
-//# sourceMappingURL=over.view.tree.d.ts.map
-declare namespace $.$$ {
-    /**
-     * Bubble that can be shown anchored to Anchor element.
-     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_pop_over_demo
-     */
-    class $mol_pop_over extends $.$mol_pop_over {
-        event_show(event?: MouseEvent): void;
-        event_hide(event?: MouseEvent): void;
-        showed(): boolean;
-    }
-}
-
-declare namespace $ {
-}
-
-declare namespace $ {
-
-	type $mol_paragraph__title_bog_music_player_1 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_1 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_paragraph__title_bog_music_player_2 = $mol_type_enforce<
 		ReturnType< $bog_music_player['time_current_text'] >
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_view__style_bog_music_player_2 = $mol_type_enforce<
+	type $mol_view__style_bog_music_player_3 = $mol_type_enforce<
 		({ 
 			'width': ReturnType< $bog_music_player['progress_width'] >,
 		}) 
 		,
 		ReturnType< $mol_view['style'] >
 	>
-	type $mol_view__event_bog_music_player_3 = $mol_type_enforce<
+	type $mol_view__event_bog_music_player_4 = $mol_type_enforce<
 		({ 
 			pointerdown( next?: ReturnType< $bog_music_player['trim_start_pointer_down'] > ): ReturnType< $bog_music_player['trim_start_pointer_down'] >,
 			pointermove( next?: ReturnType< $bog_music_player['trim_start_pointer_move'] > ): ReturnType< $bog_music_player['trim_start_pointer_move'] >,
@@ -67987,14 +68180,14 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['event'] >
 	>
-	type $mol_view__style_bog_music_player_4 = $mol_type_enforce<
+	type $mol_view__style_bog_music_player_5 = $mol_type_enforce<
 		({ 
 			'left': ReturnType< $bog_music_player['trim_start_left'] >,
 		}) 
 		,
 		ReturnType< $mol_view['style'] >
 	>
-	type $mol_view__event_bog_music_player_5 = $mol_type_enforce<
+	type $mol_view__event_bog_music_player_6 = $mol_type_enforce<
 		({ 
 			pointerdown( next?: ReturnType< $bog_music_player['trim_end_pointer_down'] > ): ReturnType< $bog_music_player['trim_end_pointer_down'] >,
 			pointermove( next?: ReturnType< $bog_music_player['trim_end_pointer_move'] > ): ReturnType< $bog_music_player['trim_end_pointer_move'] >,
@@ -68004,180 +68197,177 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['event'] >
 	>
-	type $mol_view__style_bog_music_player_6 = $mol_type_enforce<
+	type $mol_view__style_bog_music_player_7 = $mol_type_enforce<
 		({ 
 			'left': ReturnType< $bog_music_player['trim_end_left'] >,
 		}) 
 		,
 		ReturnType< $mol_view['style'] >
 	>
-	type $mol_view__sub_bog_music_player_7 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_8 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_paragraph__title_bog_music_player_8 = $mol_type_enforce<
+	type $mol_paragraph__title_bog_music_player_9 = $mol_type_enforce<
 		ReturnType< $bog_music_player['time_total_text'] >
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_button_minor__hint_bog_music_player_9 = $mol_type_enforce<
+	type $mol_button_minor__hint_bog_music_player_10 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__click_bog_music_player_10 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_player_11 = $mol_type_enforce<
 		ReturnType< $bog_music_player['eq_pop_toggle'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_music_player_11 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_music_player_12 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $bog_music_eq_curve__gains_bog_music_player_12 = $mol_type_enforce<
+	type $bog_music_eq_curve__gains_bog_music_player_13 = $mol_type_enforce<
 		ReturnType< $bog_music_player['eq_gains'] >
 		,
 		ReturnType< $bog_music_eq_curve['gains'] >
 	>
-	type $bog_music_eq_curve__pointer_down_bog_music_player_13 = $mol_type_enforce<
+	type $bog_music_eq_curve__pointer_down_bog_music_player_14 = $mol_type_enforce<
 		ReturnType< $bog_music_player['eq_pointer_down'] >
 		,
 		ReturnType< $bog_music_eq_curve['pointer_down'] >
 	>
-	type $bog_music_eq_curve__pointer_move_bog_music_player_14 = $mol_type_enforce<
+	type $bog_music_eq_curve__pointer_move_bog_music_player_15 = $mol_type_enforce<
 		ReturnType< $bog_music_player['eq_pointer_move'] >
 		,
 		ReturnType< $bog_music_eq_curve['pointer_move'] >
 	>
-	type $bog_music_eq_curve__pointer_up_bog_music_player_15 = $mol_type_enforce<
+	type $bog_music_eq_curve__pointer_up_bog_music_player_16 = $mol_type_enforce<
 		ReturnType< $bog_music_player['eq_pointer_up'] >
 		,
 		ReturnType< $bog_music_eq_curve['pointer_up'] >
 	>
-	type $mol_check_icon__title_bog_music_player_16 = $mol_type_enforce<
+	type $mol_check_icon__title_bog_music_player_17 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_check_icon['title'] >
 	>
-	type $mol_check_icon__hint_bog_music_player_17 = $mol_type_enforce<
+	type $mol_check_icon__hint_bog_music_player_18 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_check_icon['hint'] >
 	>
-	type $mol_check_icon__Icon_bog_music_player_18 = $mol_type_enforce<
+	type $mol_check_icon__Icon_bog_music_player_19 = $mol_type_enforce<
 		ReturnType< $bog_music_player['Eq_power_icon'] >
 		,
 		ReturnType< $mol_check_icon['Icon'] >
 	>
-	type $mol_check_icon__checked_bog_music_player_19 = $mol_type_enforce<
+	type $mol_check_icon__checked_bog_music_player_20 = $mol_type_enforce<
 		ReturnType< $bog_music_player['eq_on'] >
 		,
 		ReturnType< $mol_check_icon['checked'] >
 	>
-	type $mol_check__title_bog_music_player_20 = $mol_type_enforce<
+	type $mol_check__title_bog_music_player_21 = $mol_type_enforce<
 		ReturnType< $bog_music_player['eq_preset_title'] >
 		,
 		ReturnType< $mol_check['title'] >
 	>
-	type $mol_check__checked_bog_music_player_21 = $mol_type_enforce<
+	type $mol_check__checked_bog_music_player_22 = $mol_type_enforce<
 		ReturnType< $bog_music_player['eq_preset_checked'] >
 		,
 		ReturnType< $mol_check['checked'] >
 	>
-	type $mol_view__sub_bog_music_player_22 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_23 = $mol_type_enforce<
 		ReturnType< $bog_music_player['eq_preset_rows'] >
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_player_23 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_24 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_pop__Anchor_bog_music_player_24 = $mol_type_enforce<
+	type $mol_pop__Anchor_bog_music_player_25 = $mol_type_enforce<
 		ReturnType< $bog_music_player['Eq_anchor'] >
 		,
 		ReturnType< $mol_pop['Anchor'] >
 	>
-	type $mol_pop__bubble_content_bog_music_player_25 = $mol_type_enforce<
+	type $mol_pop__bubble_content_bog_music_player_26 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_pop['bubble_content'] >
 	>
-	type $mol_view__sub_bog_music_player_26 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_27 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_paragraph__title_bog_music_player_27 = $mol_type_enforce<
+	type $mol_image__uri_bog_music_player_28 = $mol_type_enforce<
+		ReturnType< $bog_music_player['cover'] >
+		,
+		ReturnType< $mol_image['uri'] >
+	>
+	type $mol_paragraph__title_bog_music_player_29 = $mol_type_enforce<
 		ReturnType< $bog_music_player['title'] >
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_paragraph__title_bog_music_player_28 = $mol_type_enforce<
+	type $mol_paragraph__title_bog_music_player_30 = $mol_type_enforce<
 		ReturnType< $bog_music_player['artist'] >
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_view__sub_bog_music_player_29 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_31 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_player_30 = $mol_type_enforce<
+	type $mol_view__event_bog_music_player_32 = $mol_type_enforce<
+		({ 
+			click( next?: ReturnType< $bog_music_player['open'] > ): ReturnType< $bog_music_player['open'] >,
+		}) 
+		,
+		ReturnType< $mol_view['event'] >
+	>
+	type $mol_view__sub_bog_music_player_33 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_button_minor__click_bog_music_player_31 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_player_34 = $mol_type_enforce<
 		ReturnType< $bog_music_player['prev'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_music_player_32 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_music_player_35 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_button_minor__click_bog_music_player_33 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_player_36 = $mol_type_enforce<
 		ReturnType< $bog_music_player['toggle'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_music_player_34 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_music_player_37 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_button_minor__click_bog_music_player_35 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_player_38 = $mol_type_enforce<
 		ReturnType< $bog_music_player['toggle'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_music_player_36 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_music_player_39 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
-	>
-	type $mol_button_minor__click_bog_music_player_37 = $mol_type_enforce<
-		ReturnType< $bog_music_player['next'] >
-		,
-		ReturnType< $mol_button_minor['click'] >
-	>
-	type $mol_button_minor__sub_bog_music_player_38 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_button_minor['sub'] >
-	>
-	type $mol_button_minor__hint_bog_music_player_39 = $mol_type_enforce<
-		ReturnType< $bog_music_player['repeat_hint'] >
-		,
-		ReturnType< $mol_button_minor['hint'] >
 	>
 	type $mol_button_minor__click_bog_music_player_40 = $mol_type_enforce<
-		ReturnType< $bog_music_player['repeat_cycle'] >
+		ReturnType< $bog_music_player['next'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
@@ -68186,49 +68376,64 @@ declare namespace $ {
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_view__sub_bog_music_player_42 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_view['sub'] >
-	>
-	type $mol_button_minor__hint_bog_music_player_43 = $mol_type_enforce<
-		string
+	type $mol_button_minor__hint_bog_music_player_42 = $mol_type_enforce<
+		ReturnType< $bog_music_player['repeat_hint'] >
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__click_bog_music_player_44 = $mol_type_enforce<
-		ReturnType< $bog_music_player['volume_toggle'] >
+	type $mol_button_minor__click_bog_music_player_43 = $mol_type_enforce<
+		ReturnType< $bog_music_player['repeat_cycle'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_music_player_45 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_music_player_44 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_check_icon__hint_bog_music_player_46 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_45 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_button_minor__hint_bog_music_player_46 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['hint'] >
+	>
+	type $mol_button_minor__click_bog_music_player_47 = $mol_type_enforce<
+		ReturnType< $bog_music_player['volume_toggle'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub_bog_music_player_48 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_check_icon__hint_bog_music_player_49 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_check_icon['hint'] >
 	>
-	type $mol_check_icon__Icon_bog_music_player_47 = $mol_type_enforce<
+	type $mol_check_icon__Icon_bog_music_player_50 = $mol_type_enforce<
 		ReturnType< $bog_music_player['Norm_icon'] >
 		,
 		ReturnType< $mol_check_icon['Icon'] >
 	>
-	type $mol_check_icon__checked_bog_music_player_48 = $mol_type_enforce<
+	type $mol_check_icon__checked_bog_music_player_51 = $mol_type_enforce<
 		ReturnType< $bog_music_player['normalize'] >
 		,
 		ReturnType< $mol_check_icon['checked'] >
 	>
-	type $mol_view__style_bog_music_player_49 = $mol_type_enforce<
+	type $mol_view__style_bog_music_player_52 = $mol_type_enforce<
 		({ 
 			'height': ReturnType< $bog_music_player['volume_fill_height'] >,
 		}) 
 		,
 		ReturnType< $mol_view['style'] >
 	>
-	type $mol_view__event_bog_music_player_50 = $mol_type_enforce<
+	type $mol_view__event_bog_music_player_53 = $mol_type_enforce<
 		({ 
 			pointerdown( next?: ReturnType< $bog_music_player['volume_pointer_down'] > ): ReturnType< $bog_music_player['volume_pointer_down'] >,
 			pointermove( next?: ReturnType< $bog_music_player['volume_pointer_move'] > ): ReturnType< $bog_music_player['volume_pointer_move'] >,
@@ -68238,52 +68443,59 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['event'] >
 	>
-	type $mol_view__sub_bog_music_player_51 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_54 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_player_52 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_55 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_pop__align_bog_music_player_53 = $mol_type_enforce<
+	type $mol_pop__align_bog_music_player_56 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_pop['align'] >
 	>
-	type $mol_pop__Anchor_bog_music_player_54 = $mol_type_enforce<
+	type $mol_pop__Anchor_bog_music_player_57 = $mol_type_enforce<
 		ReturnType< $bog_music_player['Volume_anchor'] >
 		,
 		ReturnType< $mol_pop['Anchor'] >
 	>
-	type $mol_pop__bubble_content_bog_music_player_55 = $mol_type_enforce<
+	type $mol_pop__bubble_content_bog_music_player_58 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_pop['bubble_content'] >
 	>
-	type $mol_button_minor__hint_bog_music_player_56 = $mol_type_enforce<
+	type $mol_button_minor__hint_bog_music_player_59 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__click_bog_music_player_57 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_player_60 = $mol_type_enforce<
 		ReturnType< $bog_music_player['close'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_music_player_58 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_music_player_61 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_view__sub_bog_music_player_59 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_62 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_music_player_63 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
 	export class $bog_music_player extends $mol_view {
+		Empty_icon( ): $mol_icon_music
+		Empty_text( ): $mol_view
 		time_current_text( ): string
 		Time_current( ): $mol_paragraph
 		progress_width( ): string
@@ -68319,6 +68531,8 @@ declare namespace $ {
 		Eq_panel( ): $mol_view
 		Eq( ): $mol_pop
 		Progress_row( ): $mol_view
+		open( next?: any ): any
+		Cover( ): $mol_image
 		Cover_placeholder( ): $mol_icon_music
 		title( ): string
 		Title( ): $mol_paragraph
@@ -68366,6 +68580,12 @@ declare namespace $ {
 		queue_keys( ): readonly(any)[]
 		queue_index( next?: number ): number
 		play_track( next?: any ): any
+		full( ): boolean
+		cover( ): string
+		attr( ): ({ 
+			'bog_music_player_full': ReturnType< $bog_music_player['full'] >,
+		})  & ReturnType< $mol_view['attr'] >
+		Empty( ): $mol_view
 		sub( ): readonly(any)[]
 	}
 	
@@ -68388,7 +68608,7 @@ declare namespace $.$$ {
         current_audio(): $bog_music_api_audio | null;
         private _ext;
         /** Прослушать по прямому URL, не сохраняя трек (tube-превью). */
-        play_external(url: string, title: string, artist: string): void;
+        play_external(url: string, title: string, artist: string, cover?: string): void;
         private is_extension;
         private _channel?;
         private channel;
@@ -68525,6 +68745,9 @@ declare namespace $.$$ {
         private gain_push;
         title(): string;
         artist(): string;
+        cover(): string;
+        Cover(): any;
+        Cover_placeholder(): any;
         time_current_text(): string;
         time_total_text(): string;
         format_time(seconds: number): string;
@@ -68736,6 +68959,9 @@ declare namespace $.$$ {
         private setup_pagehide_save;
         auto(): void;
     }
+}
+
+declare namespace $ {
 }
 
 declare namespace $.$$ {
