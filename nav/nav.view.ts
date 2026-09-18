@@ -4,8 +4,9 @@ namespace $.$$ {
 
 		music_active() { return this.section() === 'music' ? 'on' : 'off' }
 		search_active() { return this.section() === 'search' ? 'on' : 'off' }
+		player_active() { return this.section() === 'player' ? 'on' : 'off' }
 		account_active() { return this.section() === 'account' ? 'on' : 'off' }
-		feedback_active() { return this.section() === 'feedback' ? 'on' : 'off' }
+		logs_active() { return this.section() === 'logs' ? 'on' : 'off' }
 
 		@$mol_action
 		music_click(e?: Event) {
@@ -22,13 +23,18 @@ namespace $.$$ {
 		}
 
 		@$mol_action
+		player_click(e?: Event) {
+			if (e) e.preventDefault()
+			this.section('player')
+			return null
+		}
+
+		@$mol_action
 		account_click(e?: Event) {
 			if (e) e.preventDefault()
 			this.section('account')
 			return null
 		}
-
-		logs_active() { return this.section() === 'logs' ? 'on' : 'off' }
 
 		/**
 		 * Вкладка журнала — только для владельца приложения. Сравнивается
@@ -55,13 +61,6 @@ namespace $.$$ {
 		logs_click(e?: Event) {
 			if (e) e.preventDefault()
 			this.section('logs')
-			return null
-		}
-
-		@$mol_action
-		feedback_click(e?: Event) {
-			if (e) e.preventDefault()
-			this.section('feedback')
 			return null
 		}
 

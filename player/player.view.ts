@@ -28,16 +28,16 @@ namespace $.$$ {
 
 		// Внешний источник (стрим tube-превью), играющий без записи в baza.
 		// Пока задан — плеер работает по url, а не по ключу из baza.
-		private _ext: { url: string, title: string, artist: string } | null = null
+		private _ext: { url: string, title: string, artist: string, cover: string } | null = null
 
 		/** Прослушать по прямому URL, не сохраняя трек (tube-превью). */
-		play_external(url: string, title: string, artist: string) {
+		play_external(url: string, title: string, artist: string, cover = '') {
 			if (this.is_extension()) {
 				// В extension нет прямого <audio>; превью работает только в PWA/сайте.
 				return
 			}
 			$bog_music_log.act(`внешний стрим: ${artist} — ${title}`)
-			this._ext = { url, title, artist }
+			this._ext = { url, title, artist, cover }
 			this.current_key('')
 			this.current_time(0)
 			this.duration(0)
@@ -794,6 +794,18 @@ namespace $.$$ {
 
 		artist() {
 			return this.current_audio()?.artist ?? ''
+		}
+
+		cover() {
+			return this._ext?.cover ?? ''
+		}
+
+		Cover() {
+			return this.cover() ? super.Cover() : null as any
+		}
+
+		Cover_placeholder() {
+			return this.cover() ? null as any : super.Cover_placeholder()
 		}
 
 		time_current_text() {
@@ -1729,7 +1741,7 @@ namespace $.$$ {
 		}
 
 		sub() {
-			if (!this.current_key() && !this._ext) return []
+			if (!this.current_key() && !this._ext) return this.full() ? [ this.Empty() ] : []
 			return super.sub()
 		}
 

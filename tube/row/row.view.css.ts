@@ -17,8 +17,8 @@ namespace $ {
 
 		Cover_box: {
 			flex: { shrink: 0, grow: 0 },
-			width: '2.5rem',
-			height: '2.5rem',
+			width: '3rem',
+			height: '3rem',
 			borderRadius: '0.25rem',
 			overflow: { x: 'hidden', y: 'hidden' },
 			cursor: 'pointer',
@@ -34,8 +34,8 @@ namespace $ {
 		},
 
 		Cover_placeholder: {
-			width: '1.5rem',
-			height: '1.5rem',
+			width: '1.75rem',
+			height: '1.75rem',
 			color: $mol_theme.shade,
 		},
 
@@ -52,7 +52,7 @@ namespace $ {
 		},
 
 		Subtitle: {
-			font: { size: '0.8125rem' },
+			font: { size: '0.875rem' },
 			color: $mol_theme.shade,
 			whiteSpace: 'nowrap',
 			overflow: { x: 'hidden', y: 'hidden' },
@@ -61,7 +61,7 @@ namespace $ {
 
 		Status: {
 			flex: { shrink: 0 },
-			font: { size: '0.8125rem' },
+			font: { size: '0.875rem' },
 			color: $mol_theme.shade,
 			whiteSpace: 'nowrap',
 		},

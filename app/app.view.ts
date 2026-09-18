@@ -140,6 +140,7 @@ namespace $.$$ {
 			const idx = keys.indexOf(key)
 			this.Player().queue_index(idx >= 0 ? idx : 0)
 			this.Player().play_track(key)
+			this.section('player')
 
 			const item = this.recsys_item(key)
 			if (item) {
@@ -416,24 +417,51 @@ namespace $.$$ {
 			return $bog_music_version
 		}
 
-		/** Нижняя навигация: music / account / feedback. */
+		lights() {
+			const theme = this.Theme()
+			if( theme.mode() === 'system' ) return 'system'
+			return theme.is_light_now() ? 'light' : 'dark'
+		}
+
+		@$mol_mem
+		font_size( next?: string ) {
+			return this.$.$mol_state_local.value( 'bog_music_font_size', next ) ?? 'normal'
+		}
+
+		/** Нижняя навигация: search / music / player / account / logs. */
 		@$mol_mem
 		section(next?: string): string {
 			if (next !== undefined) $bog_music_log.act(`раздел: ${next}`)
 			return next ?? 'music'
 		}
 
+		player_full() {
+			return this.section() === 'player'
+		}
+
+		@$mol_action
+		player_open( event?: Event ) {
+			this.section( 'player' )
+		}
+
 		body() {
 			switch (this.section()) {
 				case 'logs': return [this.Mem(), this.Logs()]
-				case 'account': return [this.Account()]
-				case 'feedback': return [this.Feedback()]
+				case 'account': return [this.Account(), this.Feedback()]
+				case 'player': return [this.Player()]
 				case 'search': return [this.Tube_bar(), this.Tube_list()]
 			}
 			return [
 				this.Share_toast(),
 				this.Tabs(),
 				this.Tracks(),
+			]
+		}
+
+		foot() {
+			return [
+				... this.player_full() ? [] : [ this.Player() ],
+				this.Nav(),
 			]
 		}
 
@@ -543,7 +571,9 @@ namespace $.$$ {
 				$bog_music_tube.audio_url(item.id),
 				item.title,
 				item.channel,
+				$bog_music_tube.cover_url(item.id),
 			)
+			this.section('player')
 		}
 
 		@$mol_mem_key

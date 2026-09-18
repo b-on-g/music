@@ -1,5 +1,16 @@
 $bog_music_account $mol_view
+	font_size? \normal
 	sub /
+		<= Font_row $mol_view
+			sub /
+				<= Font_label $mol_view
+					sub / \Размер шрифта
+				<= Font_size $mol_switch
+					value? <=> font_size?
+					options *
+						normal \Обычный
+						large \Крупный
+						huge \Огромный
 		<= Sync_row $mol_view
 			sub /
 				<= Download_playlist $mol_button_minor

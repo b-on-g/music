@@ -11,6 +11,21 @@ namespace $.$$ {
 		},
 		gap: '0.75rem',
 
+		Font_row: {
+			alignItems: 'center',
+			flex: { wrap: 'wrap' },
+			gap: '0.5rem',
+			padding: { left: '0.25rem', right: '0.25rem' },
+		},
+
+		Font_label: {
+			color: $mol_theme.shade,
+		},
+
+		Font_size: {
+			flex: { direction: 'row', wrap: 'wrap' },
+		},
+
 		Sync_row: {
 			alignItems: 'center',
 			flex: { wrap: 'wrap' },

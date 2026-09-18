@@ -58,7 +58,7 @@ namespace $.$$ {
 		Title: {
 			font: {
 				weight: 500,
-				size: '0.8125rem',
+				size: '1rem',
 			},
 			whiteSpace: 'normal',
 			wordBreak: 'break-word',
@@ -66,7 +66,7 @@ namespace $.$$ {
 
 		Artist: {
 			font: {
-				size: '0.75rem',
+				size: '0.875rem',
 			},
 			color: $mol_theme.shade,
 			whiteSpace: 'normal',
@@ -111,8 +111,8 @@ namespace $.$$ {
 		},
 
 		Share_icon: {
-			width: '1rem',
-			height: '1rem',
+			width: '1.5rem',
+			height: '1.5rem',
 		},
 
 		'@': {

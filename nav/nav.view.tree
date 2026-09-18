@@ -1,16 +1,21 @@
 $bog_music_nav $mol_view
 	section? \music
 	sub /
-		<= Tab_music $bog_music_nav_item
-			label \Музыка
-			active <= music_active \off
-			Icon <= Music_icon $mol_icon_music
-			click? <=> music_click? null
 		<= Tab_search $bog_music_nav_item
 			label \Поиск
 			active <= search_active \off
 			Icon <= Search_icon $mol_icon_magnify
 			click? <=> search_click? null
+		<= Tab_music $bog_music_nav_item
+			label \Музыка
+			active <= music_active \off
+			Icon <= Music_icon $mol_icon_playlist_music
+			click? <=> music_click? null
+		<= Tab_player $bog_music_nav_item
+			label \Плеер
+			active <= player_active \off
+			Icon <= Player_icon $mol_icon_play_circle_outline
+			click? <=> player_click? null
 		<= Tab_account $bog_music_nav_item
 			label \Аккаунт
 			active <= account_active \off
@@ -21,8 +26,3 @@ $bog_music_nav $mol_view
 			active <= logs_active \off
 			Icon <= Logs_icon $mol_icon_text_box_outline
 			click? <=> logs_click? null
-		<= Tab_feedback $bog_music_nav_item
-			label \Отзывы
-			active <= feedback_active \off
-			Icon <= Feedback_icon $mol_icon_chat
-			click? <=> feedback_click? null

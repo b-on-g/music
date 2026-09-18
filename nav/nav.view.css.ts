@@ -9,8 +9,8 @@ namespace $ {
 			right: '0.5rem',
 		},
 		gap: '0.25rem',
-		background: { color: $mol_theme.card },
-		border: { top: { width: '1px', style: 'solid', color: $mol_theme.line } },
+		background: { color: $bog_builderui_tokens.card },
+		border: { top: { width: '1px', style: 'solid', color: $bog_builderui_tokens.line } },
 	})
 
 }

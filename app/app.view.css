@@ -1,0 +1,50 @@
+[bog_music_app][bog_builderui_base][bog_builderui_lights="light"] {
+	--bog_builderui_control: hsl( 210, 68%, 42% );
+	--bog_builderui_focus: hsl( 210, 72%, 36% );
+	--bog_builderui_current: hsl( 26, 82%, 44% );
+	--bog_builderui_special: hsl( 26, 82%, 44% );
+	--bog_builderui_back: #faf9f7;
+	--bog_builderui_card: #ffffff;
+}
+[bog_music_app][bog_builderui_base][bog_builderui_lights="dark"],
+[bog_music_app][bog_builderui_base][bog_builderui_lights="system"] {
+	--bog_builderui_control: hsl( 210, 72%, 64% );
+	--bog_builderui_focus: hsl( 210, 76%, 72% );
+	--bog_builderui_current: hsl( 30, 85%, 60% );
+	--bog_builderui_special: hsl( 30, 85%, 60% );
+	--bog_builderui_text: #d4d4d8;
+	--bog_builderui_back: #18181b;
+	--bog_builderui_card: #09090b;
+}
+@media ( prefers-color-scheme: light ) {
+	[bog_music_app][bog_builderui_base][bog_builderui_lights="system"] {
+		--bog_builderui_control: hsl( 210, 68%, 42% );
+		--bog_builderui_focus: hsl( 210, 72%, 36% );
+		--bog_builderui_current: hsl( 26, 82%, 44% );
+		--bog_builderui_special: hsl( 26, 82%, 44% );
+		--bog_builderui_text: #09090b;
+		--bog_builderui_back: #faf9f7;
+		--bog_builderui_card: #ffffff;
+	}
+}
+
+[bog_music_app][bog_builderui_lights] {
+	--mol_theme_back: var(--bog_builderui_back);
+	--mol_theme_card: var(--bog_builderui_card);
+	--mol_theme_field: var(--bog_builderui_field);
+	--mol_theme_hover: var(--bog_builderui_hover);
+	--mol_theme_text: var(--bog_builderui_text);
+	--mol_theme_shade: var(--bog_builderui_shade);
+	--mol_theme_line: var(--bog_builderui_line);
+	--mol_theme_focus: var(--bog_builderui_focus);
+	--mol_theme_control: var(--bog_builderui_control);
+	--mol_theme_current: var(--bog_builderui_current);
+	--mol_theme_special: var(--bog_builderui_special);
+}
+
+html:has([bog_music_app][bog_music_font="large"]) {
+	font-size: 118.75%;
+}
+html:has([bog_music_app][bog_music_font="huge"]) {
+	font-size: 137.5%;
+}

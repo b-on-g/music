@@ -1,12 +1,25 @@
 $bog_music_app $mol_page
 	plugins /
+		<= Skin $bog_builderui_skin
+			lights <= lights
+			base \zinc
+			font_head \eb-garamond
 		<= Theme $bog_theme_auto
 		<= Popup_fix $bog_popup_plugin
 		<= Tooltip $bog_tooltip_plugin
+	lights \system
+	font_size? \normal
+	attr *
+		^
+		bog_music_font <= font_size
 	title \Bog Music
-	Title <= Brand $mol_image
-		uri \bog/music/app/favicon.svg
-		title <= title
+	Title <= Brand $mol_view
+		sub /
+			<= Brand_image $mol_image
+				uri \bog/music/app/favicon.svg
+				title <= title
+			<= Brand_name $mol_view
+				sub / <= title
 	tools /
 		<= Sync_status $giper_baza_status
 		<= Nickname_label $mol_view
@@ -26,6 +39,7 @@ $bog_music_app $mol_page
 	body_scroll_top? <=> scroll? 0
 	body /
 		<= Account $bog_music_account
+			font_size? <=> font_size?
 			download_playlist? <=> download_playlist? null
 			download_playlist_status <= download_playlist_status \
 			tg_hint <= tg_hint \
@@ -80,6 +94,8 @@ $bog_music_app $mol_page
 			get? <=> tube_get*? null
 	foot /
 		<= Player $bog_music_player
+			full <= player_full false
+			open?event <=> player_open?event null
 			queue_keys <= visible_keys /
 			current_key? <=> current_key? \
 		<= Nav $bog_music_nav

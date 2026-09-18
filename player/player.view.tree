@@ -3,6 +3,16 @@ $bog_music_player $mol_view
 	queue_keys /
 	queue_index? 0
 	play_track? null
+	full false
+	cover \
+	attr *
+		^
+		bog_music_player_full <= full
+	Empty $mol_view
+		sub /
+			<= Empty_icon $mol_icon_music
+			<= Empty_text $mol_view
+				sub / \Ничего не играет
 	sub /
 		<= Progress_row $mol_view
 			sub /
@@ -57,7 +67,11 @@ $bog_music_player $mol_view
 		<= Controls $mol_view
 			sub /
 				<= Left $mol_view
+					event *
+						click?event <=> open?event null
 					sub /
+						<= Cover $mol_image
+							uri <= cover
 						<= Cover_placeholder $mol_icon_music
 						<= Track_info $mol_view
 							sub /

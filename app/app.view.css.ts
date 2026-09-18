@@ -1,4 +1,7 @@
 namespace $.$$ {
+
+	const { rem } = $mol_style_unit
+
 	$mol_style_define($bog_music_app, {
 		minWidth: '20rem',
 		maxWidth: '50rem',
@@ -6,8 +9,27 @@ namespace $.$$ {
 			left: 'auto',
 			right: 'auto',
 		},
+		font: { family: $bog_builderui_tokens.font_body },
+		background: { color: $bog_builderui_tokens.back },
+		color: $bog_builderui_tokens.text,
+
+		$mol_icon: {
+			width: '1.5em',
+		},
+
+		$mol_button_major: {
+			background: { color: $bog_builderui_tokens.control },
+			color: $bog_builderui_tokens.back,
+		},
+
 		Head: {
-			justifyContent: 'space-between'
+			justifyContent: 'space-between',
+			background: { color: $bog_builderui_tokens.back },
+			border: {
+				radius: 0,
+				bottom: { width: '1px', style: 'solid', color: $bog_builderui_tokens.line },
+			},
+			box: { shadow: 'none' },
 		},
 
 		Tabs: {
@@ -23,18 +45,30 @@ namespace $.$$ {
 			},
 		},
 
-
 		Tools: {
 			alignItems: 'center',
 		},
 
 		Brand: {
+			align: { items: 'center' },
+			gap: $mol_gap.text,
+			padding: { left: '0.5rem' },
+		},
+
+		Brand_image: {
 			width: '2rem',
 			height: '2rem',
 			flex: { shrink: 0, grow: 0 },
 			objectFit: 'contain',
-			alignSelf: 'center',
-			margin: { left: '0.5rem', right: '0.25rem' },
+		},
+
+		Brand_name: {
+			font: {
+				family: $bog_builderui_tokens.font_head,
+				size: rem(1.5),
+				weight: 500,
+			},
+			whiteSpace: 'nowrap',
 		},
 
 		Version: {
@@ -42,7 +76,7 @@ namespace $.$$ {
 				size: '0.6875rem',
 				family: 'monospace',
 			},
-			color: $mol_theme.shade,
+			color: $bog_builderui_tokens.shade,
 			alignSelf: 'center',
 			padding: {
 				left: '0.25rem',
@@ -78,7 +112,7 @@ namespace $.$$ {
 
 		Nickname_label: {
 			font: { size: '0.875rem' },
-			color: $mol_theme.shade,
+			color: $bog_builderui_tokens.shade,
 			padding: {
 				left: '0.5rem',
 				right: '0.5rem',
@@ -87,11 +121,6 @@ namespace $.$$ {
 			overflow: { x: 'hidden', y: 'hidden' },
 			textOverflow: 'ellipsis',
 			whiteSpace: 'nowrap',
-		},
-
-		Player: {
-			position: 'sticky',
-			bottom: 0,
 		},
 
 		Share_toast: {
@@ -106,10 +135,11 @@ namespace $.$$ {
 				left: '0.75rem',
 				right: '0.75rem',
 			},
-			background: { color: $mol_theme.focus },
-			color: $mol_theme.card,
-			borderRadius: '0.375rem',
-			font: { size: '0.8125rem' },
+			background: { color: $bog_builderui_tokens.control },
+			color: $bog_builderui_tokens.back,
+			border: { radius: $bog_builderui_tokens.radius },
+			font: { size: '0.875rem' },
 		},
 	})
+
 }
