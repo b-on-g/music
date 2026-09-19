@@ -43752,6 +43752,26 @@ declare namespace $ {
 
 declare namespace $ {
 
+	export class $mol_plot_fill extends $mol_plot_line {
+		threshold( ): number
+	}
+	
+}
+
+//# sourceMappingURL=fill.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_plot_fill extends $.$mol_plot_fill {
+        curve(): string;
+        front(): never[];
+        back(): this[];
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
 	export class $mol_svg_rect extends $mol_svg {
 		width( ): string
 		height( ): string
@@ -44137,6 +44157,55 @@ declare namespace $ {
 
 declare namespace $ {
 
+	type $mol_plot_fill__Sample_giper_baza_app_stat_chart_1 = $mol_type_enforce<
+		any
+		,
+		ReturnType< $mol_plot_fill['Sample'] >
+	>
+	type $mol_plot_fill__series_x_giper_baza_app_stat_chart_2 = $mol_type_enforce<
+		ReturnType< $giper_baza_app_stat_chart['zones_x'] >
+		,
+		ReturnType< $mol_plot_fill['series_x'] >
+	>
+	type $mol_plot_fill__series_y_giper_baza_app_stat_chart_3 = $mol_type_enforce<
+		ReturnType< $giper_baza_app_stat_chart['zones_y'] >
+		,
+		ReturnType< $mol_plot_fill['series_y'] >
+	>
+	type $mol_plot_mark_cross__labels_giper_baza_app_stat_chart_4 = $mol_type_enforce<
+		ReturnType< $giper_baza_app_stat_chart['times'] >
+		,
+		ReturnType< $mol_plot_mark_cross['labels'] >
+	>
+	type $mol_plot_mark_cross__graphs_giper_baza_app_stat_chart_5 = $mol_type_enforce<
+		ReturnType< $giper_baza_app_stat_chart['metrics'] >
+		,
+		ReturnType< $mol_plot_mark_cross['graphs'] >
+	>
+	export class $giper_baza_app_stat_chart extends $mol_chart {
+		metrics( ): readonly($mol_plot_graph)[]
+		zones_x( ): readonly(any)[]
+		zones_y( ): readonly(any)[]
+		Zones( ): $mol_plot_fill
+		Ruler_vert( ): $mol_plot_ruler_vert
+		times( ): readonly(any)[]
+		Marks( ): $mol_plot_mark_cross
+		graphs( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=chart.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $giper_baza_app_stat_chart extends $.$giper_baza_app_stat_chart {
+        times(): string[];
+        zones_x(): number[];
+        zones_y(): number[];
+    }
+}
+
+declare namespace $ {
+
 	type $giper_baza_link_chip__link_giper_baza_app_stat_page_1 = $mol_type_enforce<
 		ReturnType< $giper_baza_app_stat_page['home_link'] >
 		,
@@ -44179,20 +44248,20 @@ declare namespace $ {
 		,
 		ReturnType< $mol_plot_line['series_y'] >
 	>
-	type $mol_plot_mark_cross__labels_giper_baza_app_stat_page_9 = $mol_type_enforce<
-		ReturnType< $giper_baza_app_stat_page['times'] >
-		,
-		ReturnType< $mol_plot_mark_cross['labels'] >
-	>
-	type $mol_plot_mark_cross__graphs_giper_baza_app_stat_page_10 = $mol_type_enforce<
+	type $giper_baza_app_stat_chart__metrics_giper_baza_app_stat_page_9 = $mol_type_enforce<
 		readonly(any)[]
 		,
-		ReturnType< $mol_plot_mark_cross['graphs'] >
+		ReturnType< $giper_baza_app_stat_chart['metrics'] >
 	>
-	type $mol_chart__graphs_giper_baza_app_stat_page_11 = $mol_type_enforce<
-		readonly(any)[]
+	type $mol_plot_line__title_giper_baza_app_stat_page_10 = $mol_type_enforce<
+		string
 		,
-		ReturnType< $mol_chart['graphs'] >
+		ReturnType< $mol_plot_line['title'] >
+	>
+	type $mol_plot_line__series_y_giper_baza_app_stat_page_11 = $mol_type_enforce<
+		ReturnType< $giper_baza_app_stat_page['mem_free'] >
+		,
+		ReturnType< $mol_plot_line['series_y'] >
 	>
 	type $mol_plot_line__title_giper_baza_app_stat_page_12 = $mol_type_enforce<
 		string
@@ -44200,114 +44269,114 @@ declare namespace $ {
 		ReturnType< $mol_plot_line['title'] >
 	>
 	type $mol_plot_line__series_y_giper_baza_app_stat_page_13 = $mol_type_enforce<
-		ReturnType< $giper_baza_app_stat_page['mem_free'] >
-		,
-		ReturnType< $mol_plot_line['series_y'] >
-	>
-	type $mol_plot_line__title_giper_baza_app_stat_page_14 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_plot_line['title'] >
-	>
-	type $mol_plot_line__series_y_giper_baza_app_stat_page_15 = $mol_type_enforce<
 		ReturnType< $giper_baza_app_stat_page['mem_used'] >
 		,
 		ReturnType< $mol_plot_line['series_y'] >
 	>
-	type $mol_plot_mark_cross__labels_giper_baza_app_stat_page_16 = $mol_type_enforce<
-		ReturnType< $giper_baza_app_stat_page['times'] >
-		,
-		ReturnType< $mol_plot_mark_cross['labels'] >
-	>
-	type $mol_plot_mark_cross__graphs_giper_baza_app_stat_page_17 = $mol_type_enforce<
+	type $giper_baza_app_stat_chart__metrics_giper_baza_app_stat_page_14 = $mol_type_enforce<
 		readonly(any)[]
 		,
-		ReturnType< $mol_plot_mark_cross['graphs'] >
+		ReturnType< $giper_baza_app_stat_chart['metrics'] >
 	>
-	type $mol_chart__graphs_giper_baza_app_stat_page_18 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_chart['graphs'] >
-	>
-	type $mol_plot_line__title_giper_baza_app_stat_page_19 = $mol_type_enforce<
+	type $mol_plot_line__title_giper_baza_app_stat_page_15 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_plot_line['title'] >
 	>
-	type $mol_plot_line__series_y_giper_baza_app_stat_page_20 = $mol_type_enforce<
+	type $mol_plot_line__series_y_giper_baza_app_stat_page_16 = $mol_type_enforce<
 		ReturnType< $giper_baza_app_stat_page['fs_free'] >
 		,
 		ReturnType< $mol_plot_line['series_y'] >
 	>
-	type $mol_plot_line__title_giper_baza_app_stat_page_21 = $mol_type_enforce<
+	type $mol_plot_line__title_giper_baza_app_stat_page_17 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_plot_line['title'] >
 	>
-	type $mol_plot_line__series_y_giper_baza_app_stat_page_22 = $mol_type_enforce<
+	type $mol_plot_line__series_y_giper_baza_app_stat_page_18 = $mol_type_enforce<
 		ReturnType< $giper_baza_app_stat_page['fs_used'] >
 		,
 		ReturnType< $mol_plot_line['series_y'] >
 	>
-	type $mol_plot_mark_cross__labels_giper_baza_app_stat_page_23 = $mol_type_enforce<
-		ReturnType< $giper_baza_app_stat_page['times'] >
-		,
-		ReturnType< $mol_plot_mark_cross['labels'] >
-	>
-	type $mol_plot_mark_cross__graphs_giper_baza_app_stat_page_24 = $mol_type_enforce<
+	type $giper_baza_app_stat_chart__metrics_giper_baza_app_stat_page_19 = $mol_type_enforce<
 		readonly(any)[]
 		,
-		ReturnType< $mol_plot_mark_cross['graphs'] >
+		ReturnType< $giper_baza_app_stat_chart['metrics'] >
 	>
-	type $mol_chart__graphs_giper_baza_app_stat_page_25 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_chart['graphs'] >
-	>
-	type $mol_plot_line__title_giper_baza_app_stat_page_26 = $mol_type_enforce<
+	type $mol_plot_line__title_giper_baza_app_stat_page_20 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_plot_line['title'] >
 	>
-	type $mol_plot_line__series_y_giper_baza_app_stat_page_27 = $mol_type_enforce<
+	type $mol_plot_line__series_y_giper_baza_app_stat_page_21 = $mol_type_enforce<
 		ReturnType< $giper_baza_app_stat_page['fs_reads'] >
 		,
 		ReturnType< $mol_plot_line['series_y'] >
 	>
-	type $mol_plot_line__title_giper_baza_app_stat_page_28 = $mol_type_enforce<
+	type $mol_plot_line__title_giper_baza_app_stat_page_22 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_plot_line['title'] >
 	>
-	type $mol_plot_line__series_y_giper_baza_app_stat_page_29 = $mol_type_enforce<
+	type $mol_plot_line__series_y_giper_baza_app_stat_page_23 = $mol_type_enforce<
 		ReturnType< $giper_baza_app_stat_page['fs_writes'] >
 		,
 		ReturnType< $mol_plot_line['series_y'] >
 	>
-	type $mol_plot_mark_cross__labels_giper_baza_app_stat_page_30 = $mol_type_enforce<
-		ReturnType< $giper_baza_app_stat_page['times'] >
-		,
-		ReturnType< $mol_plot_mark_cross['labels'] >
-	>
-	type $mol_plot_mark_cross__graphs_giper_baza_app_stat_page_31 = $mol_type_enforce<
+	type $giper_baza_app_stat_chart__metrics_giper_baza_app_stat_page_24 = $mol_type_enforce<
 		readonly(any)[]
 		,
-		ReturnType< $mol_plot_mark_cross['graphs'] >
+		ReturnType< $giper_baza_app_stat_chart['metrics'] >
 	>
-	type $mol_chart__graphs_giper_baza_app_stat_page_32 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_chart['graphs'] >
-	>
-	type $mol_plot_line__title_giper_baza_app_stat_page_33 = $mol_type_enforce<
+	type $mol_plot_line__title_giper_baza_app_stat_page_25 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_plot_line['title'] >
 	>
-	type $mol_plot_line__series_y_giper_baza_app_stat_page_34 = $mol_type_enforce<
+	type $mol_plot_line__series_y_giper_baza_app_stat_page_26 = $mol_type_enforce<
 		ReturnType< $giper_baza_app_stat_page['port_slaves'] >
 		,
 		ReturnType< $mol_plot_line['series_y'] >
+	>
+	type $mol_plot_line__title_giper_baza_app_stat_page_27 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_plot_line['title'] >
+	>
+	type $mol_plot_line__series_y_giper_baza_app_stat_page_28 = $mol_type_enforce<
+		ReturnType< $giper_baza_app_stat_page['port_masters'] >
+		,
+		ReturnType< $mol_plot_line['series_y'] >
+	>
+	type $giper_baza_app_stat_chart__metrics_giper_baza_app_stat_page_29 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $giper_baza_app_stat_chart['metrics'] >
+	>
+	type $mol_plot_line__title_giper_baza_app_stat_page_30 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_plot_line['title'] >
+	>
+	type $mol_plot_line__series_y_giper_baza_app_stat_page_31 = $mol_type_enforce<
+		ReturnType< $giper_baza_app_stat_page['land_alive'] >
+		,
+		ReturnType< $mol_plot_line['series_y'] >
+	>
+	type $mol_plot_line__title_giper_baza_app_stat_page_32 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_plot_line['title'] >
+	>
+	type $mol_plot_line__series_y_giper_baza_app_stat_page_33 = $mol_type_enforce<
+		ReturnType< $giper_baza_app_stat_page['land_ghost'] >
+		,
+		ReturnType< $mol_plot_line['series_y'] >
+	>
+	type $giper_baza_app_stat_chart__metrics_giper_baza_app_stat_page_34 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $giper_baza_app_stat_chart['metrics'] >
 	>
 	type $mol_plot_line__title_giper_baza_app_stat_page_35 = $mol_type_enforce<
 		string
@@ -44315,86 +44384,16 @@ declare namespace $ {
 		ReturnType< $mol_plot_line['title'] >
 	>
 	type $mol_plot_line__series_y_giper_baza_app_stat_page_36 = $mol_type_enforce<
-		ReturnType< $giper_baza_app_stat_page['port_masters'] >
-		,
-		ReturnType< $mol_plot_line['series_y'] >
-	>
-	type $mol_plot_mark_cross__labels_giper_baza_app_stat_page_37 = $mol_type_enforce<
-		ReturnType< $giper_baza_app_stat_page['times'] >
-		,
-		ReturnType< $mol_plot_mark_cross['labels'] >
-	>
-	type $mol_plot_mark_cross__graphs_giper_baza_app_stat_page_38 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_plot_mark_cross['graphs'] >
-	>
-	type $mol_chart__graphs_giper_baza_app_stat_page_39 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_chart['graphs'] >
-	>
-	type $mol_plot_line__title_giper_baza_app_stat_page_40 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_plot_line['title'] >
-	>
-	type $mol_plot_line__series_y_giper_baza_app_stat_page_41 = $mol_type_enforce<
-		ReturnType< $giper_baza_app_stat_page['land_alive'] >
-		,
-		ReturnType< $mol_plot_line['series_y'] >
-	>
-	type $mol_plot_line__title_giper_baza_app_stat_page_42 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_plot_line['title'] >
-	>
-	type $mol_plot_line__series_y_giper_baza_app_stat_page_43 = $mol_type_enforce<
-		ReturnType< $giper_baza_app_stat_page['land_ghost'] >
-		,
-		ReturnType< $mol_plot_line['series_y'] >
-	>
-	type $mol_plot_mark_cross__labels_giper_baza_app_stat_page_44 = $mol_type_enforce<
-		ReturnType< $giper_baza_app_stat_page['times'] >
-		,
-		ReturnType< $mol_plot_mark_cross['labels'] >
-	>
-	type $mol_plot_mark_cross__graphs_giper_baza_app_stat_page_45 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_plot_mark_cross['graphs'] >
-	>
-	type $mol_chart__graphs_giper_baza_app_stat_page_46 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_chart['graphs'] >
-	>
-	type $mol_plot_line__title_giper_baza_app_stat_page_47 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_plot_line['title'] >
-	>
-	type $mol_plot_line__series_y_giper_baza_app_stat_page_48 = $mol_type_enforce<
 		ReturnType< $giper_baza_app_stat_page['errors'] >
 		,
 		ReturnType< $mol_plot_line['series_y'] >
 	>
-	type $mol_plot_mark_cross__labels_giper_baza_app_stat_page_49 = $mol_type_enforce<
-		ReturnType< $giper_baza_app_stat_page['times'] >
-		,
-		ReturnType< $mol_plot_mark_cross['labels'] >
-	>
-	type $mol_plot_mark_cross__graphs_giper_baza_app_stat_page_50 = $mol_type_enforce<
+	type $giper_baza_app_stat_chart__metrics_giper_baza_app_stat_page_37 = $mol_type_enforce<
 		readonly(any)[]
 		,
-		ReturnType< $mol_plot_mark_cross['graphs'] >
+		ReturnType< $giper_baza_app_stat_chart['metrics'] >
 	>
-	type $mol_chart__graphs_giper_baza_app_stat_page_51 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_chart['graphs'] >
-	>
-	type $mol_gallery__items_giper_baza_app_stat_page_52 = $mol_type_enforce<
+	type $mol_gallery__items_giper_baza_app_stat_page_38 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_gallery['items'] >
@@ -44410,50 +44409,35 @@ declare namespace $ {
 		Cpu_user( ): $mol_plot_line
 		cpu_system( ): readonly(any)[]
 		Cpu_system( ): $mol_plot_line
-		Cpu_ruler_sec( ): $mol_plot_ruler_vert
-		times( ): readonly(any)[]
-		Cpu_mark( ): $mol_plot_mark_cross
-		Cpu( ): $mol_chart
+		Cpu( ): $giper_baza_app_stat_chart
 		mem_free( ): readonly(any)[]
 		Mem_free( ): $mol_plot_line
 		mem_used( ): readonly(any)[]
 		Mem_used( ): $mol_plot_line
-		Mem_ruler( ): $mol_plot_ruler_vert
-		Mem_mark( ): $mol_plot_mark_cross
-		Mem( ): $mol_chart
+		Mem( ): $giper_baza_app_stat_chart
 		fs_free( ): readonly(any)[]
 		Fs_free( ): $mol_plot_line
 		fs_used( ): readonly(any)[]
 		Fs_used( ): $mol_plot_line
-		Fs_usage_ruler( ): $mol_plot_ruler_vert
-		Fs_usage_mark( ): $mol_plot_mark_cross
-		Fs_usage( ): $mol_chart
+		Fs_usage( ): $giper_baza_app_stat_chart
 		fs_reads( ): readonly(any)[]
 		Fs_reads( ): $mol_plot_line
 		fs_writes( ): readonly(any)[]
 		Fs_writes( ): $mol_plot_line
-		Fs_acting_ruler( ): $mol_plot_ruler_vert
-		Fs_acting_mark( ): $mol_plot_mark_cross
-		Fs_acting( ): $mol_chart
+		Fs_acting( ): $giper_baza_app_stat_chart
 		port_slaves( ): readonly(any)[]
 		Port_slaves( ): $mol_plot_line
 		port_masters( ): readonly(any)[]
 		Port_masters( ): $mol_plot_line
-		Port_ruler_pct( ): $mol_plot_ruler_vert
-		Port_mark( ): $mol_plot_mark_cross
-		Ports( ): $mol_chart
+		Ports( ): $giper_baza_app_stat_chart
 		land_alive( ): readonly(any)[]
 		Land_alive( ): $mol_plot_line
 		land_ghost( ): readonly(any)[]
 		Land_ghost( ): $mol_plot_line
-		Land_count_ruler( ): $mol_plot_ruler_vert
-		Land_count_mark( ): $mol_plot_mark_cross
-		Land_count( ): $mol_chart
+		Land_count( ): $giper_baza_app_stat_chart
 		errors( ): readonly(any)[]
 		Errors( ): $mol_plot_line
-		Error_count_ruler( ): $mol_plot_ruler_vert
-		Error_count_mark( ): $mol_plot_mark_cross
-		Error_count( ): $mol_chart
+		Error_count( ): $giper_baza_app_stat_chart
 		Charts( ): $mol_gallery
 		home( ): $giper_baza_app_home
 		head( ): readonly(any)[]
@@ -44480,7 +44464,6 @@ declare namespace $.$$ {
         port_slaves(): number[];
         port_masters(): number[];
         errors(): number[];
-        times(): string[];
     }
 }
 

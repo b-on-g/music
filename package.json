@@ -326,7 +326,6 @@
     "$mol_rest_resource",
     "$mol_rest_server",
     "$mol_rest_port_http",
-    "$mol_crypto_hash",
     "$mol_file_extensions",
     "$giper_baza_file",
     "$hyoo_harp_scheme",

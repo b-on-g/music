@@ -11066,6 +11066,7 @@ var $;
         ol: {},
         li: {},
         details: {},
+        section: {},
         summary: {},
         hr: {},
         table: {},
@@ -18741,13 +18742,11 @@ var $;
                 clearInterval(interval);
                 setTimeout(() => this.reconnects(null), 1000);
             };
-            Object.assign(socket, {
-                destructor: () => {
-                    socket.onclose = () => { };
-                    clearInterval(interval);
-                    socket.close();
-                }
-            });
+            port.destructor = () => {
+                socket.onclose = () => { };
+                clearInterval(interval);
+                socket.close();
+            };
             return new Promise((done, fail) => {
                 socket.onopen = () => {
                     this.$.$mol_log3_come({
@@ -33751,6 +33750,51 @@ var $;
 })($ || ($ = {}));
 
 ;
+	($.$mol_plot_fill) = class $mol_plot_fill extends ($.$mol_plot_line) {
+		threshold(){
+			return 4;
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $mol_plot_fill extends $.$mol_plot_fill {
+            curve() {
+                const points = this.points();
+                if (points.length === 0)
+                    return '';
+                const [, shift_y] = this.shift();
+                const main = points.map(point => point.join(',')).join(' ');
+                return `M ${points[0].join(' ')} L ${main} V ${shift_y} H ${points[0][0]}`;
+            }
+            front() {
+                return [];
+            }
+            back() {
+                return [this];
+            }
+        }
+        $$.$mol_plot_fill = $mol_plot_fill;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/plot/fill/fill.view.css", "[mol_plot_fill] {\n\tstroke: none;\n\tstroke-width: 0;\n\topacity: .1;\n\tfill: currentColor;\n\tpointer-events: none;\n}\n\n[mol_plot_fill_sample] {\n\topacity: .1;\n\tbackground: currentColor;\n\tposition: absolute;\n\tbottom: 0;\n\ttop: .75em;\n\tleft: 0;\n\tright: 0;\n}\n");
+})($ || ($ = {}));
+
+;
 	($.$mol_svg_rect) = class $mol_svg_rect extends ($.$mol_svg) {
 		width(){
 			return "0";
@@ -34499,6 +34543,106 @@ var $;
 })($ || ($ = {}));
 
 ;
+	($.$giper_baza_app_stat_chart) = class $giper_baza_app_stat_chart extends ($.$mol_chart) {
+		metrics(){
+			return [];
+		}
+		zones_x(){
+			return [];
+		}
+		zones_y(){
+			return [
+				0, 
+				100, 
+				100, 
+				0
+			];
+		}
+		Zones(){
+			const obj = new this.$.$mol_plot_fill();
+			(obj.Sample) = () => (null);
+			(obj.series_x) = () => ((this.zones_x()));
+			(obj.series_y) = () => ((this.zones_y()));
+			return obj;
+		}
+		Ruler_vert(){
+			const obj = new this.$.$mol_plot_ruler_vert();
+			return obj;
+		}
+		times(){
+			return [];
+		}
+		Marks(){
+			const obj = new this.$.$mol_plot_mark_cross();
+			(obj.labels) = () => ((this.times()));
+			(obj.graphs) = () => ((this.metrics()));
+			return obj;
+		}
+		graphs(){
+			return [
+				...(this.metrics()), 
+				(this.Zones()), 
+				(this.Ruler_vert()), 
+				(this.Marks())
+			];
+		}
+	};
+	($mol_mem(($.$giper_baza_app_stat_chart.prototype), "Zones"));
+	($mol_mem(($.$giper_baza_app_stat_chart.prototype), "Ruler_vert"));
+	($mol_mem(($.$giper_baza_app_stat_chart.prototype), "Marks"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $giper_baza_app_stat_chart extends $.$giper_baza_app_stat_chart {
+            times() {
+                const times = [];
+                for (let i = 1; i < 59; ++i)
+                    times.push(`${i} secs ago`);
+                for (let i = 1; i < 59; ++i)
+                    times.push(`${i} mins ago`);
+                for (let i = 1; i < 23; ++i)
+                    times.push(`${i} hours ago`);
+                for (let i = 1; i < 31; ++i)
+                    times.push(`${i} days ago`);
+                for (let i = 1; i < 12; ++i)
+                    times.push(`${i} months ago`);
+                return times;
+            }
+            zones_x() {
+                return [58, 116, 138, 168].flatMap(x => [x, x]);
+            }
+            zones_y() {
+                let max = 0;
+                for (const metric of this.metrics())
+                    for (const y of metric.series_y())
+                        if (y > max)
+                            max = y;
+                return Array.from({ length: 2 }, _ => [0, max, max, 0]).flatMap(x => x);
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $giper_baza_app_stat_chart.prototype, "times", null);
+        __decorate([
+            $mol_mem
+        ], $giper_baza_app_stat_chart.prototype, "zones_x", null);
+        __decorate([
+            $mol_mem
+        ], $giper_baza_app_stat_chart.prototype, "zones_y", null);
+        $$.$giper_baza_app_stat_chart = $giper_baza_app_stat_chart;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
 	($.$giper_baza_app_stat_page) = class $giper_baza_app_stat_page extends ($.$mol_page) {
 		home_link(){
 			return (this.home().link());
@@ -34543,27 +34687,9 @@ var $;
 			(obj.series_y) = () => ((this.cpu_system()));
 			return obj;
 		}
-		Cpu_ruler_sec(){
-			const obj = new this.$.$mol_plot_ruler_vert();
-			return obj;
-		}
-		times(){
-			return [];
-		}
-		Cpu_mark(){
-			const obj = new this.$.$mol_plot_mark_cross();
-			(obj.labels) = () => ((this.times()));
-			(obj.graphs) = () => ([(this.Cpu_user()), (this.Cpu_system())]);
-			return obj;
-		}
 		Cpu(){
-			const obj = new this.$.$mol_chart();
-			(obj.graphs) = () => ([
-				(this.Cpu_user()), 
-				(this.Cpu_system()), 
-				(this.Cpu_ruler_sec()), 
-				(this.Cpu_mark())
-			]);
+			const obj = new this.$.$giper_baza_app_stat_chart();
+			(obj.metrics) = () => ([(this.Cpu_user()), (this.Cpu_system())]);
 			return obj;
 		}
 		mem_free(){
@@ -34584,24 +34710,9 @@ var $;
 			(obj.series_y) = () => ((this.mem_used()));
 			return obj;
 		}
-		Mem_ruler(){
-			const obj = new this.$.$mol_plot_ruler_vert();
-			return obj;
-		}
-		Mem_mark(){
-			const obj = new this.$.$mol_plot_mark_cross();
-			(obj.labels) = () => ((this.times()));
-			(obj.graphs) = () => ([(this.Mem_used()), (this.Mem_free())]);
-			return obj;
-		}
 		Mem(){
-			const obj = new this.$.$mol_chart();
-			(obj.graphs) = () => ([
-				(this.Mem_free()), 
-				(this.Mem_used()), 
-				(this.Mem_ruler()), 
-				(this.Mem_mark())
-			]);
+			const obj = new this.$.$giper_baza_app_stat_chart();
+			(obj.metrics) = () => ([(this.Mem_free()), (this.Mem_used())]);
 			return obj;
 		}
 		fs_free(){
@@ -34622,24 +34733,9 @@ var $;
 			(obj.series_y) = () => ((this.fs_used()));
 			return obj;
 		}
-		Fs_usage_ruler(){
-			const obj = new this.$.$mol_plot_ruler_vert();
-			return obj;
-		}
-		Fs_usage_mark(){
-			const obj = new this.$.$mol_plot_mark_cross();
-			(obj.labels) = () => ((this.times()));
-			(obj.graphs) = () => ([(this.Fs_used()), (this.Fs_free())]);
-			return obj;
-		}
 		Fs_usage(){
-			const obj = new this.$.$mol_chart();
-			(obj.graphs) = () => ([
-				(this.Fs_free()), 
-				(this.Fs_used()), 
-				(this.Fs_usage_ruler()), 
-				(this.Fs_usage_mark())
-			]);
+			const obj = new this.$.$giper_baza_app_stat_chart();
+			(obj.metrics) = () => ([(this.Fs_free()), (this.Fs_used())]);
 			return obj;
 		}
 		fs_reads(){
@@ -34660,24 +34756,9 @@ var $;
 			(obj.series_y) = () => ((this.fs_writes()));
 			return obj;
 		}
-		Fs_acting_ruler(){
-			const obj = new this.$.$mol_plot_ruler_vert();
-			return obj;
-		}
-		Fs_acting_mark(){
-			const obj = new this.$.$mol_plot_mark_cross();
-			(obj.labels) = () => ((this.times()));
-			(obj.graphs) = () => ([(this.Fs_reads()), (this.Fs_writes())]);
-			return obj;
-		}
 		Fs_acting(){
-			const obj = new this.$.$mol_chart();
-			(obj.graphs) = () => ([
-				(this.Fs_reads()), 
-				(this.Fs_writes()), 
-				(this.Fs_acting_ruler()), 
-				(this.Fs_acting_mark())
-			]);
+			const obj = new this.$.$giper_baza_app_stat_chart();
+			(obj.metrics) = () => ([(this.Fs_reads()), (this.Fs_writes())]);
 			return obj;
 		}
 		port_slaves(){
@@ -34698,24 +34779,9 @@ var $;
 			(obj.series_y) = () => ((this.port_masters()));
 			return obj;
 		}
-		Port_ruler_pct(){
-			const obj = new this.$.$mol_plot_ruler_vert();
-			return obj;
-		}
-		Port_mark(){
-			const obj = new this.$.$mol_plot_mark_cross();
-			(obj.labels) = () => ((this.times()));
-			(obj.graphs) = () => ([(this.Port_slaves()), (this.Port_masters())]);
-			return obj;
-		}
 		Ports(){
-			const obj = new this.$.$mol_chart();
-			(obj.graphs) = () => ([
-				(this.Port_slaves()), 
-				(this.Port_masters()), 
-				(this.Port_ruler_pct()), 
-				(this.Port_mark())
-			]);
+			const obj = new this.$.$giper_baza_app_stat_chart();
+			(obj.metrics) = () => ([(this.Port_slaves()), (this.Port_masters())]);
 			return obj;
 		}
 		land_alive(){
@@ -34736,24 +34802,9 @@ var $;
 			(obj.series_y) = () => ((this.land_ghost()));
 			return obj;
 		}
-		Land_count_ruler(){
-			const obj = new this.$.$mol_plot_ruler_vert();
-			return obj;
-		}
-		Land_count_mark(){
-			const obj = new this.$.$mol_plot_mark_cross();
-			(obj.labels) = () => ((this.times()));
-			(obj.graphs) = () => ([(this.Land_alive()), (this.Land_ghost())]);
-			return obj;
-		}
 		Land_count(){
-			const obj = new this.$.$mol_chart();
-			(obj.graphs) = () => ([
-				(this.Land_alive()), 
-				(this.Land_ghost()), 
-				(this.Land_count_ruler()), 
-				(this.Land_count_mark())
-			]);
+			const obj = new this.$.$giper_baza_app_stat_chart();
+			(obj.metrics) = () => ([(this.Land_alive()), (this.Land_ghost())]);
 			return obj;
 		}
 		errors(){
@@ -34765,23 +34816,9 @@ var $;
 			(obj.series_y) = () => ((this.errors()));
 			return obj;
 		}
-		Error_count_ruler(){
-			const obj = new this.$.$mol_plot_ruler_vert();
-			return obj;
-		}
-		Error_count_mark(){
-			const obj = new this.$.$mol_plot_mark_cross();
-			(obj.labels) = () => ((this.times()));
-			(obj.graphs) = () => ([(this.Errors())]);
-			return obj;
-		}
 		Error_count(){
-			const obj = new this.$.$mol_chart();
-			(obj.graphs) = () => ([
-				(this.Errors()), 
-				(this.Error_count_ruler()), 
-				(this.Error_count_mark())
-			]);
+			const obj = new this.$.$giper_baza_app_stat_chart();
+			(obj.metrics) = () => ([(this.Errors())]);
 			return obj;
 		}
 		Charts(){
@@ -34813,37 +34850,23 @@ var $;
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Main"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Cpu_user"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Cpu_system"));
-	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Cpu_ruler_sec"));
-	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Cpu_mark"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Cpu"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Mem_free"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Mem_used"));
-	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Mem_ruler"));
-	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Mem_mark"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Mem"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Fs_free"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Fs_used"));
-	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Fs_usage_ruler"));
-	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Fs_usage_mark"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Fs_usage"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Fs_reads"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Fs_writes"));
-	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Fs_acting_ruler"));
-	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Fs_acting_mark"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Fs_acting"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Port_slaves"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Port_masters"));
-	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Port_ruler_pct"));
-	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Port_mark"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Ports"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Land_alive"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Land_ghost"));
-	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Land_count_ruler"));
-	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Land_count_mark"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Land_count"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Errors"));
-	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Error_count_ruler"));
-	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Error_count_mark"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Error_count"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "Charts"));
 	($mol_mem(($.$giper_baza_app_stat_page.prototype), "home"));
@@ -34922,20 +34945,6 @@ var $;
             errors() {
                 return this.stat()?.Errors()?.series() ?? [];
             }
-            times() {
-                const times = [];
-                for (let i = 1; i < 59; ++i)
-                    times.push(`${i} secs ago`);
-                for (let i = 1; i < 59; ++i)
-                    times.push(`${i} mins ago`);
-                for (let i = 1; i < 23; ++i)
-                    times.push(`${i} hours ago`);
-                for (let i = 1; i < 31; ++i)
-                    times.push(`${i} days ago`);
-                for (let i = 1; i < 12; ++i)
-                    times.push(`${i} months ago`);
-                return times;
-            }
         }
         __decorate([
             $mol_mem
@@ -34982,9 +34991,6 @@ var $;
         __decorate([
             $mol_mem
         ], $giper_baza_app_stat_page.prototype, "errors", null);
-        __decorate([
-            $mol_mem
-        ], $giper_baza_app_stat_page.prototype, "times", null);
         $$.$giper_baza_app_stat_page = $giper_baza_app_stat_page;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));

@@ -2499,6 +2499,9 @@ $mol_plot_line $mol_plot_graph
 		color <= color
 		type <= type
 
+$mol_plot_fill $mol_plot_line
+	threshold 4
+
 $mol_svg_rect $mol_svg
 	dom_name \rect
 	pos /
@@ -2607,6 +2610,22 @@ $mol_plot_mark_cross $mol_plot_graph
 			pos_y <= title_y_pos_y \0
 			text <= title_y \
 
+$giper_baza_app_stat_chart $mol_chart
+	graphs /
+		^ metrics /$mol_plot_graph
+		<= Zones $mol_plot_fill
+			Sample null
+			series_x <= zones_x /
+			series_y <= zones_y /
+				0
+				100
+				100
+				0
+		<= Ruler_vert $mol_plot_ruler_vert
+		<= Marks $mol_plot_mark_cross
+			labels <= times /
+			graphs <= metrics
+
 $giper_baza_app_stat_page $mol_page
 	home $giper_baza_app_home
 		link => home_link
@@ -2622,100 +2641,52 @@ $giper_baza_app_stat_page $mol_page
 		<= Tools
 	body_content /
 		<= Charts $mol_gallery items /
-			<= Cpu $mol_chart
-				graphs /
-					<= Cpu_user $mol_plot_line
-						title \CPU User (%)
-						series_y <= cpu_user /
-					<= Cpu_system $mol_plot_line
-						title \CPU System (%)
-						series_y <= cpu_system /
-					<= Cpu_ruler_sec $mol_plot_ruler_vert
-					<= Cpu_mark $mol_plot_mark_cross
-						labels <= times /
-						graphs /
-							<= Cpu_user
-							<= Cpu_system
-			<= Mem $mol_chart
-				graphs /
-					<= Mem_free $mol_plot_line
-						title \Mem Free (MB)
-						series_y <= mem_free /
-					<= Mem_used $mol_plot_line
-						title \Mem Used (MB)
-						series_y <= mem_used /
-					<= Mem_ruler $mol_plot_ruler_vert
-					<= Mem_mark $mol_plot_mark_cross
-						labels <= times /
-						graphs /
-							<= Mem_used
-							<= Mem_free
-			<= Fs_usage $mol_chart
-				graphs /
-					<= Fs_free $mol_plot_line
-						title \FS Free (MB)
-						series_y <= fs_free /
-					<= Fs_used $mol_plot_line
-						title \FS Used (MB)
-						series_y <= fs_used /
-					<= Fs_usage_ruler $mol_plot_ruler_vert
-					<= Fs_usage_mark $mol_plot_mark_cross
-						labels <= times /
-						graphs /
-							<= Fs_used
-							<= Fs_free
-			<= Fs_acting $mol_chart
-				graphs /
-					<= Fs_reads $mol_plot_line
-						title \FS Reads / sec
-						series_y <= fs_reads /
-					<= Fs_writes $mol_plot_line
-						title \FS Writes / sec
-						series_y <= fs_writes /
-					<= Fs_acting_ruler $mol_plot_ruler_vert
-					<= Fs_acting_mark $mol_plot_mark_cross
-						labels <= times /
-						graphs /
-							<= Fs_reads
-							<= Fs_writes
-			<= Ports $mol_chart
-				graphs /
-					<= Port_slaves $mol_plot_line
-						title \Slave Ports
-						series_y <= port_slaves /
-					<= Port_masters $mol_plot_line
-						title \Master Ports
-						series_y <= port_masters /
-					<= Port_ruler_pct $mol_plot_ruler_vert
-					<= Port_mark $mol_plot_mark_cross
-						labels <= times /
-						graphs /
-							<= Port_slaves
-							<= Port_masters
-			<= Land_count $mol_chart
-				graphs /
-					<= Land_alive $mol_plot_line
-						title \Alive Lands
-						series_y <= land_alive /
-					<= Land_ghost $mol_plot_line
-						title \Ghost Lands
-						series_y <= land_ghost /
-					<= Land_count_ruler $mol_plot_ruler_vert
-					<= Land_count_mark $mol_plot_mark_cross
-						labels <= times /
-						graphs /
-							<= Land_alive
-							<= Land_ghost
-			<= Error_count $mol_chart
-				graphs /
-					<= Errors $mol_plot_line
-						title \Errors
-						series_y <= errors /
-					<= Error_count_ruler $mol_plot_ruler_vert
-					<= Error_count_mark $mol_plot_mark_cross
-						labels <= times /
-						graphs /
-							<= Errors
+			<= Cpu $giper_baza_app_stat_chart metrics /
+				<= Cpu_user $mol_plot_line
+					title \CPU User (%)
+					series_y <= cpu_user /
+				<= Cpu_system $mol_plot_line
+					title \CPU System (%)
+					series_y <= cpu_system /
+			<= Mem $giper_baza_app_stat_chart metrics /
+				<= Mem_free $mol_plot_line
+					title \Mem Free (MB)
+					series_y <= mem_free /
+				<= Mem_used $mol_plot_line
+					title \Mem Used (MB)
+					series_y <= mem_used /
+			<= Fs_usage $giper_baza_app_stat_chart metrics /
+				<= Fs_free $mol_plot_line
+					title \FS Free (MB)
+					series_y <= fs_free /
+				<= Fs_used $mol_plot_line
+					title \FS Used (MB)
+					series_y <= fs_used /
+			<= Fs_acting $giper_baza_app_stat_chart metrics /
+				<= Fs_reads $mol_plot_line
+					title \FS Reads / sec
+					series_y <= fs_reads /
+				<= Fs_writes $mol_plot_line
+					title \FS Writes / sec
+					series_y <= fs_writes /
+			<= Ports $giper_baza_app_stat_chart metrics /
+				<= Port_slaves $mol_plot_line
+					title \Slave Ports
+					series_y <= port_slaves /
+				<= Port_masters $mol_plot_line
+					title \Master Ports
+					series_y <= port_masters /
+			<= Land_count $giper_baza_app_stat_chart metrics /
+				<= Land_alive $mol_plot_line
+					title \Alive Lands
+					series_y <= land_alive /
+				<= Land_ghost $mol_plot_line
+					title \Ghost Lands
+					series_y <= land_ghost /
+			<= Error_count $giper_baza_app_stat_chart metrics /
+				<= Errors $mol_plot_line
+					title \Errors
+					series_y <= errors /
 
 $giper_baza_app_stat_list $mol_book2_catalog
 	menu_title \📊 Network Monitoring
