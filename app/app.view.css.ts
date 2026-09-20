@@ -3,7 +3,9 @@ namespace $.$$ {
 	const { rem } = $mol_style_unit
 
 	$mol_style_define($bog_music_app, {
-		minWidth: '20rem',
+		// В px, не в rem: на Огромном шрифте 20rem шире экрана телефона,
+		// и навигация уезжала за край.
+		minWidth: '320px',
 		maxWidth: '50rem',
 		margin: {
 			left: 'auto',

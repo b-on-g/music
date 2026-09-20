@@ -444,6 +444,8 @@ namespace $.$$ {
 					if (el.currentTime >= this._await_seek - 1.5) this._await_seek = 0
 					else return
 				}
+				// Палец на полоске — позицию рисует драг, элемент не перебивает.
+				if (this._seek_drag) return
 				this.current_time(el.currentTime)
 				this.scrobble_watch(el.currentTime)
 			})
@@ -546,7 +548,7 @@ namespace $.$$ {
 							navigator.mediaSession.playbackState = msg.playing ? 'playing' : 'paused'
 						}
 					}
-					if (typeof msg.current_time === 'number') this.current_time(msg.current_time)
+					if (typeof msg.current_time === 'number' && !this._seek_drag) this.current_time(msg.current_time)
 					if (typeof msg.duration === 'number' && isFinite(msg.duration)) this.duration(msg.duration)
 					if (msg.current_audio) {
 						this.current_key($bog_music_account_baza.key_of(msg.current_audio))
@@ -797,7 +799,8 @@ namespace $.$$ {
 		}
 
 		cover() {
-			return this._ext?.cover ?? ''
+			if (this._ext) return this._ext.cover
+			return this.current_track()?.cover() ?? ''
 		}
 
 		Cover() {
@@ -844,24 +847,8 @@ namespace $.$$ {
 			return null
 		}
 
-		private _dismiss_pops = new Set<$.$mol_pop>()
-
-		/**
-		 * Тап мимо панели закрывает её. Сам $mol_pop закрывается, только когда
-		 * фокус уезжает на другой фокусируемый элемент, а тап по пустому месту
-		 * фокус никуда не переносит — панель висела бы на экране.
-		 */
 		private setup_pop_dismiss(pop: $.$mol_pop) {
-			if (this._dismiss_pops.has(pop)) return
-			this._dismiss_pops.add(pop)
-			window.addEventListener('pointerdown', event => {
-				if (!pop.showed()) return
-				const target = event.target as Node | null
-				if (!target) return
-				if (pop.dom_node().contains(target)) return
-				if (pop.Bubble().dom_node().contains(target)) return
-				pop.showed(false)
-			}, true)
+			$bog_music_pop_dismiss(pop)
 		}
 
 		private _vol_dragging = false
@@ -1440,9 +1427,53 @@ namespace $.$$ {
 		private seek_to(time: number) {
 			if (this.is_extension()) {
 				this.send('seek', { time })
+			} else if (this._silent) {
+				// На iOS-паузе в элементе крутится тишина: мотать нечего, позиция
+				// применится при resume.
+				this._paused_pos = time
 			} else if (this._audio_el) {
 				try { this._audio_el.currentTime = time } catch {}
 			}
+		}
+
+		// ---------- перемотка (тап и драг по полоске) ----------
+
+		private _seek_drag = false
+
+		private seek_time_of(event: PointerEvent) {
+			const rect = (this.Progress().dom_node() as HTMLElement).getBoundingClientRect()
+			const pct = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width))
+			return pct * this.duration()
+		}
+
+		seek_pointer_down(event?: Event) {
+			if (!event || !this.duration()) return null
+			const e = event as PointerEvent
+			e.preventDefault()
+			try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId) } catch {}
+			this._seek_drag = true
+			this.current_time(this.seek_time_of(e))
+			return null
+		}
+
+		seek_pointer_move(event?: Event) {
+			if (!event || !this._seek_drag) return null
+			this.current_time(this.seek_time_of(event as PointerEvent))
+			return null
+		}
+
+		seek_pointer_up(event?: Event) {
+			if (!event) return null
+			const e = event as PointerEvent
+			try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId) } catch {}
+			if (!this._seek_drag) return null
+			this._seek_drag = false
+			const time = this.seek_time_of(e)
+			this._await_seek = 0
+			this.current_time(time)
+			this.seek_to(time)
+			$bog_music_log.act(`перемотка: ${this.format_time(time)}`)
+			return null
 		}
 
 		// Гонки fast-click'ов: пока blob трека A грузится, пользователь кликает B.
@@ -1756,6 +1787,36 @@ namespace $.$$ {
 		}
 
 		// ---------- обрез трека (trim handles на прогресс-баре) ----------
+
+		/**
+		 * Ручки обреза показываем только по кнопке «ножницы» в полном плеере:
+		 * на общей полоске их принимали за перемотку, а второй ползунок «в
+		 * конце» вообще не понимали.
+		 */
+		progress_parts() {
+			const parts = [ this.Progress_line(), this.Progress_bar(), this.Progress_knob() ]
+			if (!this.trim_editing()) return parts
+			return [ ... parts, this.Trim_start_handle(), this.Trim_end_handle() ]
+		}
+
+		trim_editing() {
+			return this.full() && this.trim_mode() && !!this.current_track()
+		}
+
+		Trim_toggle() {
+			if (!this.full() || !this.current_key()) return null as any
+			return super.Trim_toggle()
+		}
+
+		trim_hint() {
+			const track = this.current_track()
+			const dur = this.duration()
+			if (!track || !dur) return ''
+			const start = track.trim_start()
+			const end = track.trim_end(dur)
+			if (start <= 0 && end >= dur) return this.trim_editing() ? 'тяни ручки обреза' : ''
+			return `обрез ${this.format_time(start)} – ${this.format_time(end)}`
+		}
 
 		private _trim_end_skip = ''
 		private _trim_start_done = ''

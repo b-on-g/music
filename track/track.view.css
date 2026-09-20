@@ -1,0 +1,35 @@
+/* Заголовок и исполнитель: не больше трёх и двух строк, дальше многоточие.
+   $mol_style_define не знает -webkit-box-orient, поэтому обычный CSS. */
+[bog_music_track_title],
+[bog_music_track_artist] {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+[bog_music_track_title] {
+	-webkit-line-clamp: 3;
+}
+[bog_music_track_artist] {
+	-webkit-line-clamp: 2;
+}
+[bog_music_track_confirm_text] {
+	display: block;
+}
+
+/* Огромный шрифт: отступы не растут вместе с буквами, иначе на телефоне
+   тексту не остаётся места. */
+html:has([bog_music_app][bog_music_font="huge"]) [bog_music_track] {
+	padding: 0.25rem 0 0.25rem 0.125rem;
+	gap: 0.25rem;
+}
+html:has([bog_music_app][bog_music_font="huge"]) [bog_music_app_body_content] {
+	padding-left: 0.25rem;
+	padding-right: 0.25rem;
+}
+html:has([bog_music_app][bog_music_font="huge"]) [bog_music_track_cover_box] {
+	width: 2.5rem;
+	height: 2.5rem;
+}
+html:has([bog_music_app][bog_music_font="huge"]) [bog_music_track_share] {
+	width: 1.75rem;
+}

@@ -21,15 +21,39 @@ jobs:
     - uses: hyoo-ru/mam_build@master2
       with:
         package: 'bog/music'
-        modules: 'app'
+        # `landing` — отдельный лёгкий бандл: страница «что это» для поиска,
+        # без плеера и baza внутри.
+        modules: 'app landing'
 
-    # Прод. `clean-exclude: branch` обязателен: без него rsync --delete в корне
-    # снёс бы все превьюшки.
+    # Прод. `clean-exclude` обязателен: без него rsync --delete в корне снёс бы
+    # все превьюшки и лендинг.
     - uses: hyoo-ru/gh-deploy@v4.4.1
       if: github.ref == 'refs/heads/master'
       with:
         folder: 'bog/music/app/-'
-        clean-exclude: branch
+        clean-exclude: |
+          branch
+          landing
+
+    # SEO: лендинг пререндерится в статичный HTML, иначе поисковик видит пустой
+    # <div>. Пустой пререндер не роняет деплой — уедет SPA как есть.
+    - name: Prerender landing
+      if: github.ref == 'refs/heads/master'
+      continue-on-error: true
+      uses: b-on-g/mol-prerender-action@main
+      with:
+        folder: 'bog/music/landing/-'
+        base-url: 'https://b-on-g.github.io/music/landing/'
+
+    # Лендинг — отдельным деплоем в свою папку: `target-folder` уводит
+    # rsync --delete внутрь неё, прод и превьюшки не трогает.
+    - name: Deploy landing
+      if: github.ref == 'refs/heads/master'
+      uses: hyoo-ru/gh-deploy@v4.4.1
+      with:
+        folder: 'bog/music/landing/-'
+        target-folder: landing
+        commit-message: 'landing'
 
     # Имя ветки в имя папки. Считаем в шаге, а не в выражении: у GitHub Actions
     # нет replace(), а слэши в `mem/lazy-blobs` дали бы лишний уровень вложенности.

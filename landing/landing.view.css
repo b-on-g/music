@@ -1,0 +1,51 @@
+/* Та же палитра, что у приложения (app/app.view.css), чтобы лендинг и плеер
+   выглядели одним продуктом. */
+[bog_music_landing][bog_builderui_base][bog_builderui_lights="light"] {
+	--bog_builderui_control: hsl( 210, 68%, 42% );
+	--bog_builderui_focus: hsl( 210, 72%, 36% );
+	--bog_builderui_current: hsl( 26, 82%, 44% );
+	--bog_builderui_special: hsl( 26, 82%, 44% );
+	--bog_builderui_back: #faf9f7;
+	--bog_builderui_card: #ffffff;
+}
+[bog_music_landing][bog_builderui_base][bog_builderui_lights="dark"],
+[bog_music_landing][bog_builderui_base][bog_builderui_lights="system"] {
+	--bog_builderui_control: hsl( 210, 72%, 64% );
+	--bog_builderui_focus: hsl( 210, 76%, 72% );
+	--bog_builderui_current: hsl( 30, 85%, 60% );
+	--bog_builderui_special: hsl( 30, 85%, 60% );
+	--bog_builderui_text: #d4d4d8;
+	--bog_builderui_back: #18181b;
+	--bog_builderui_card: #09090b;
+}
+@media ( prefers-color-scheme: light ) {
+	[bog_music_landing][bog_builderui_base][bog_builderui_lights="system"] {
+		--bog_builderui_control: hsl( 210, 68%, 42% );
+		--bog_builderui_focus: hsl( 210, 72%, 36% );
+		--bog_builderui_current: hsl( 26, 82%, 44% );
+		--bog_builderui_special: hsl( 26, 82%, 44% );
+		--bog_builderui_text: #09090b;
+		--bog_builderui_back: #faf9f7;
+		--bog_builderui_card: #ffffff;
+	}
+}
+html:has([bog_music_landing]) {
+	background: var(--bog_builderui_back);
+}
+
+/* Страница длиннее экрана: корню mol достаётся height:100%, поэтому фон
+   красим на html, а корень отпускаем в высоту по содержимому. */
+html:has([bog_music_landing]),
+body:has([bog_music_landing]) {
+	background: #faf9f7;
+}
+@media ( prefers-color-scheme: dark ) {
+	html:has([bog_music_landing]),
+	body:has([bog_music_landing]) {
+		background: #18181b;
+	}
+}
+[bog_music_landing][mol_view_root] {
+	height: auto;
+	min-height: 100%;
+}

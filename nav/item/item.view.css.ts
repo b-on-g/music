@@ -1,7 +1,9 @@
 namespace $ {
 
 	$mol_style_define($bog_music_nav_item, {
-		flex: { direction: 'column', grow: 1, basis: '0%' },
+		// shrink явно: у $mol_view по умолчанию flex-shrink: 0, и на крупном
+		// шрифте четыре nowrap-подписи распирали приложение шире экрана.
+		flex: { direction: 'column', grow: 1, shrink: 1, basis: '0%' },
 		align: { items: 'center' },
 		justify: { content: 'center' },
 		gap: '0.125rem',
@@ -30,6 +32,9 @@ namespace $ {
 			font: { size: '0.8125rem', weight: 500 },
 			color: 'inherit',
 			whiteSpace: 'nowrap',
+			maxWidth: '100%',
+			overflow: { x: 'hidden', y: 'hidden' },
+			textOverflow: 'ellipsis',
 		},
 
 		':hover': {

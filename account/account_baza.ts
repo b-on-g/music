@@ -206,6 +206,8 @@ namespace $ {
 			const dur = Number(audio.duration ?? 0)
 			if (track.Duration()?.val() !== dur) track.Duration('auto')!.val(dur)
 			if (audio.url && track.Url()?.val() !== audio.url) track.Url('auto')!.val(audio.url)
+			const cover = audio.cover || audio.album?.thumb?.photo_300 || ''
+			if (cover && track.Cover()?.val() !== cover) track.Cover('auto')!.val(cover)
 			if (track.Added()?.val() == null) track.Added('auto')!.val(Date.now())
 			// Новый трек — наверх списка (order по возрастанию, верх = минимум).
 			if (track.Order()?.val() == null) track.Order('auto')!.val(this.min_order() - 1)

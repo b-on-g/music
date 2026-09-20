@@ -1,0 +1,118 @@
+$bog_music_landing $mol_view
+	plugins /
+		<= Skin $bog_builderui_skin
+			lights \system
+			base \zinc
+			font_head \eb-garamond
+	app_uri \https://b-on-g.github.io/music/
+	sub /
+		<= Hero $mol_view
+			sub /
+				<= Hero_image $mol_image
+					uri \bog/music/app/favicon.svg
+					title \Bog Music
+				<= Hero_title $mol_view
+					dom_name \h1
+					sub / \Bog Music
+				<= Hero_subtitle $mol_view
+					dom_name \p
+					sub / \Своя музыка на всех устройствах. Бесплатно, без рекламы, играет офлайн.
+				<= Hero_actions $mol_view
+					sub /
+						<= Open $mol_link
+							uri <= app_uri
+							sub /
+								<= Open_icon $mol_icon_play
+								<= Open_label $mol_view
+									sub / \Открыть приложение
+						<= Extension $mol_link
+							uri \https://github.com/b-on-g/music/releases/latest
+							sub /
+								<= Extension_icon $mol_icon_puzzle
+								<= Extension_label $mol_view
+									sub / \Расширение для Chrome
+		<= Features $mol_view
+			sub /
+				<= Features_title $mol_view
+					dom_name \h2
+					sub / \Что умеет
+				<= Features_list $mol_view
+					sub /
+						<= Feature_vk $bog_music_landing_feature
+							Icon <= Feature_vk_icon $mol_icon_download
+							title \Сохраняет из VK
+							text \Одна кнопка прямо в списке аудио на vk.com — трек уезжает в твою фонотеку.
+						<= Feature_tube $bog_music_landing_feature
+							Icon <= Feature_tube_icon $mol_icon_magnify
+							title \Ищет на YouTube
+							text \Поиск, прослушивание превью и скачивание звука одной кнопкой.
+						<= Feature_tg $bog_music_landing_feature
+							Icon <= Feature_tg_icon $mol_icon_send
+							title \Принимает из Телеграма
+							text \Перешли песню боту — она появится в «Моей музыке» на всех устройствах.
+						<= Feature_offline $bog_music_landing_feature
+							Icon <= Feature_offline_icon $mol_icon_cloud_off_outline
+							title \Играет офлайн
+							text \Треки лежат на устройстве. Метро, самолёт, дача — музыка есть.
+						<= Feature_sync $bog_music_landing_feature
+							Icon <= Feature_sync_icon $mol_icon_sync
+							title \Синхронизирует между устройствами
+							text \Телефон и компьютер видят одну фонотеку. Перенос аккаунта — одной ссылкой.
+						<= Feature_loud $bog_music_landing_feature
+							Icon <= Feature_loud_icon $mol_icon_equalizer
+							title \Выравнивает громкость
+							text \Тихие и громкие записи звучат одинаково. Эквалайзер и обрез трека — в комплекте.
+						<= Feature_share $bog_music_landing_feature
+							Icon <= Feature_share_icon $mol_icon_share
+							title \Делится ссылкой
+							text \Трек шифруется, ключ живёт только в ссылке. Получатель откроет — и заиграет.
+						<= Feature_font $bog_music_landing_feature
+							Icon <= Feature_font_icon $mol_icon_format_size
+							title \Крупный шрифт
+							text \Три размера текста в настройках — удобно читать без очков.
+		<= Install $mol_view
+			sub /
+				<= Install_title $mol_view
+					dom_name \h2
+					sub / \Как поставить на телефон
+				<= Install_text $mol_view
+					dom_name \p
+					sub / \Магазин приложений не нужен: открой ссылку в браузере и добавь ярлык на экран.
+				<= Install_list $mol_view
+					sub /
+						<= Install_android $bog_music_landing_feature
+							Icon <= Install_android_icon $mol_icon_android
+							title \Android, Chrome
+							text \Меню ⋮ → «Установить приложение» или «Добавить на главный экран».
+						<= Install_ios $bog_music_landing_feature
+							Icon <= Install_ios_icon $mol_icon_apple
+							title \iPhone, Safari
+							text \Кнопка «Поделиться» → «На экран Домой».
+				<= Install_open $mol_link
+					uri <= app_uri
+					sub /
+						<= Install_open_label $mol_view
+							sub / \Открыть Bog Music
+		<= Foot $mol_view
+			sub /
+				<= Source $mol_link
+					uri \https://github.com/b-on-g/music
+					sub / \Открытый код на GitHub
+				<= Baza $mol_link
+					uri \https://github.com/giper-dev/baza
+					sub / \Синхронизация — Giper Baza
+
+$bog_music_landing_feature $mol_view
+	title \
+	text \
+	Icon $mol_view
+	sub /
+		<= Icon
+		<= Body $mol_view
+			sub /
+				<= Title $mol_view
+					dom_name \h3
+					sub / <= title
+				<= Text $mol_view
+					dom_name \p
+					sub / <= text
