@@ -26014,7 +26014,9 @@ var $;
 var $;
 (function ($) {
     $mol_style_define($bog_music_nav_item, {
-        flex: { direction: 'column', grow: 1, basis: '0%' },
+        // shrink явно: у $mol_view по умолчанию flex-shrink: 0, и на крупном
+        // шрифте четыре nowrap-подписи распирали приложение шире экрана.
+        flex: { direction: 'column', grow: 1, shrink: 1, basis: '0%' },
         align: { items: 'center' },
         justify: { content: 'center' },
         gap: '0.125rem',
@@ -26041,6 +26043,9 @@ var $;
             font: { size: '0.8125rem', weight: 500 },
             color: 'inherit',
             whiteSpace: 'nowrap',
+            maxWidth: '100%',
+            overflow: { x: 'hidden', y: 'hidden' },
+            textOverflow: 'ellipsis',
         },
         ':hover': {
             background: { color: $bog_builderui_tokens.hover },
@@ -36873,6 +36878,7 @@ var $;
                         mime: blob.type || 'audio/mpeg',
                         owner_id: audio.owner_id,
                         id: audio.id,
+                        cover: audio.cover ?? '',
                     });
                     const meta_cipher = await this.encrypt(key, $mol_charset_encode(meta_json));
                     const blob_cipher = await this.encrypt(key, new Uint8Array(await blob.arrayBuffer()));
@@ -37031,6 +37037,7 @@ var $;
                             title: String(meta.title ?? ''),
                             duration: Number(meta.duration ?? 0),
                             url: '',
+                            cover: String(meta.cover ?? ''),
                         };
                         const mime = String(meta.mime || td.file_mime || 'audio/mpeg');
                         await $mol_wire_async(this.account()).import_audio(audio, buf, mime, playlist);
@@ -37694,7 +37701,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.63';
+    $.$bog_music_version = 'v1.64';
 })($ || ($ = {}));
 
 ;
@@ -38252,6 +38259,7 @@ var $;
                         title: item.title,
                         duration: item.duration,
                         url: '',
+                        cover: $bog_music_tube.cover_url(item.id),
                     };
                     await $mol_wire_async(this.account()).import_audio(audio, bytes, 'audio/mp4');
                     $bog_music_log.act(`скачано с YouTube: ${item.title} (${bytes.length} байт)`);
@@ -38637,7 +38645,7 @@ var $node = $node || {} ; $node[ "/bog/music/app/favicon.svg" ] = "data:image/sv
 "use strict";
 var $;
 (function ($) {
-    $mol_style_attach("bog/music/app/app.view.css", "[bog_music_app][bog_builderui_base][bog_builderui_lights=\"light\"] {\n\t--bog_builderui_control: hsl( 210, 68%, 42% );\n\t--bog_builderui_focus: hsl( 210, 72%, 36% );\n\t--bog_builderui_current: hsl( 26, 82%, 44% );\n\t--bog_builderui_special: hsl( 26, 82%, 44% );\n\t--bog_builderui_back: #faf9f7;\n\t--bog_builderui_card: #ffffff;\n}\n[bog_music_app][bog_builderui_base][bog_builderui_lights=\"dark\"],\n[bog_music_app][bog_builderui_base][bog_builderui_lights=\"system\"] {\n\t--bog_builderui_control: hsl( 210, 72%, 64% );\n\t--bog_builderui_focus: hsl( 210, 76%, 72% );\n\t--bog_builderui_current: hsl( 30, 85%, 60% );\n\t--bog_builderui_special: hsl( 30, 85%, 60% );\n\t--bog_builderui_text: #d4d4d8;\n\t--bog_builderui_back: #18181b;\n\t--bog_builderui_card: #09090b;\n}\n@media ( prefers-color-scheme: light ) {\n\t[bog_music_app][bog_builderui_base][bog_builderui_lights=\"system\"] {\n\t\t--bog_builderui_control: hsl( 210, 68%, 42% );\n\t\t--bog_builderui_focus: hsl( 210, 72%, 36% );\n\t\t--bog_builderui_current: hsl( 26, 82%, 44% );\n\t\t--bog_builderui_special: hsl( 26, 82%, 44% );\n\t\t--bog_builderui_text: #09090b;\n\t\t--bog_builderui_back: #faf9f7;\n\t\t--bog_builderui_card: #ffffff;\n\t}\n}\n\n[bog_music_app][bog_builderui_lights] {\n\t--mol_theme_back: var(--bog_builderui_back);\n\t--mol_theme_card: var(--bog_builderui_card);\n\t--mol_theme_field: var(--bog_builderui_field);\n\t--mol_theme_hover: var(--bog_builderui_hover);\n\t--mol_theme_text: var(--bog_builderui_text);\n\t--mol_theme_shade: var(--bog_builderui_shade);\n\t--mol_theme_line: var(--bog_builderui_line);\n\t--mol_theme_focus: var(--bog_builderui_focus);\n\t--mol_theme_control: var(--bog_builderui_control);\n\t--mol_theme_current: var(--bog_builderui_current);\n\t--mol_theme_special: var(--bog_builderui_special);\n}\n\nhtml:has([bog_music_app][bog_music_font=\"large\"]) {\n\tfont-size: 118.75%;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) {\n\tfont-size: 137.5%;\n}\n\n@media ( max-width: 40rem ) {\n\t[bog_music_app_nickname_label],\n\t[bog_music_app_version] {\n\t\tdisplay: none;\n\t}\n\t[bog_music_app_brand_name] {\n\t\tfont-size: 1.25rem;\n\t}\n\t[bog_music_app] > [mol_page_head] {\n\t\tpadding-left: 0.25rem;\n\t\tpadding-right: 0.25rem;\n\t}\n}\n");
+    $mol_style_attach("bog/music/app/app.view.css", "[bog_music_app][bog_builderui_base][bog_builderui_lights=\"light\"] {\n\t--bog_builderui_control: hsl( 210, 68%, 42% );\n\t--bog_builderui_focus: hsl( 210, 72%, 36% );\n\t--bog_builderui_current: hsl( 26, 82%, 44% );\n\t--bog_builderui_special: hsl( 26, 82%, 44% );\n\t--bog_builderui_back: #faf9f7;\n\t--bog_builderui_card: #ffffff;\n}\n[bog_music_app][bog_builderui_base][bog_builderui_lights=\"dark\"],\n[bog_music_app][bog_builderui_base][bog_builderui_lights=\"system\"] {\n\t--bog_builderui_control: hsl( 210, 72%, 64% );\n\t--bog_builderui_focus: hsl( 210, 76%, 72% );\n\t--bog_builderui_current: hsl( 30, 85%, 60% );\n\t--bog_builderui_special: hsl( 30, 85%, 60% );\n\t--bog_builderui_text: #d4d4d8;\n\t--bog_builderui_back: #18181b;\n\t--bog_builderui_card: #09090b;\n}\n@media ( prefers-color-scheme: light ) {\n\t[bog_music_app][bog_builderui_base][bog_builderui_lights=\"system\"] {\n\t\t--bog_builderui_control: hsl( 210, 68%, 42% );\n\t\t--bog_builderui_focus: hsl( 210, 72%, 36% );\n\t\t--bog_builderui_current: hsl( 26, 82%, 44% );\n\t\t--bog_builderui_special: hsl( 26, 82%, 44% );\n\t\t--bog_builderui_text: #09090b;\n\t\t--bog_builderui_back: #faf9f7;\n\t\t--bog_builderui_card: #ffffff;\n\t}\n}\n\n[bog_music_app][bog_builderui_lights] {\n\t--mol_theme_back: var(--bog_builderui_back);\n\t--mol_theme_card: var(--bog_builderui_card);\n\t--mol_theme_field: var(--bog_builderui_field);\n\t--mol_theme_hover: var(--bog_builderui_hover);\n\t--mol_theme_text: var(--bog_builderui_text);\n\t--mol_theme_shade: var(--bog_builderui_shade);\n\t--mol_theme_line: var(--bog_builderui_line);\n\t--mol_theme_focus: var(--bog_builderui_focus);\n\t--mol_theme_control: var(--bog_builderui_control);\n\t--mol_theme_current: var(--bog_builderui_current);\n\t--mol_theme_special: var(--bog_builderui_special);\n}\n\n/* $bog_popup распирает html и body до min-width: 20rem (иначе попап\n   расширения схлопывается). Размер шрифта тоже на html, и на Огромном этот\n   минимум вырастал до 440px — шире экрана телефона. Те же 20rem, но в px. */\nhtml:has([bog_music_app]),\nbody:has([bog_music_app]) {\n\tmin-width: 320px;\n}\nhtml:has([bog_music_app][bog_music_font=\"large\"]) {\n\tfont-size: 118.75%;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) {\n\tfont-size: 137.5%;\n}\n\n@media ( max-width: 40rem ) {\n\t[bog_music_app_nickname_label],\n\t[bog_music_app_version] {\n\t\tdisplay: none;\n\t}\n\t[bog_music_app_brand_name] {\n\t\tfont-size: 1.25rem;\n\t}\n\t[bog_music_app] > [mol_page_head] {\n\t\tpadding-left: 0.25rem;\n\t\tpadding-right: 0.25rem;\n\t\t/* Шапка всегда в одну строку: инструменты не переносятся вниз, а\n\t\t   название при нехватке места режется многоточием. */\n\t\tflex-wrap: nowrap;\n\t\tgap: 0.25rem;\n\t}\n\t[bog_music_app_brand] {\n\t\tmin-width: 0;\n\t\tflex-shrink: 1;\n\t\tpadding-right: 0;\n\t}\n\t[bog_music_app_brand_name] {\n\t\tmin-width: 0;\n\t\toverflow: hidden;\n\t\ttext-overflow: ellipsis;\n\t}\n\t[bog_music_app_tools] {\n\t\tflex-shrink: 0;\n\t\tgap: 0;\n\t}\n}\n\n/* Огромный шрифт на телефоне: иконки шапки чуть меньше и без лишних полей,\n   иначе пять инструментов плюс название не влезают в 390px. */\n@media ( max-width: 40rem ) {\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tools] > * {\n\t\tpadding-left: 0.2rem;\n\t\tpadding-right: 0.2rem;\n\t\tmin-width: 0;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tools] [mol_icon] {\n\t\twidth: 1.25rem;\n\t\theight: 1.25rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_brand_image] {\n\t\twidth: 1.75rem;\n\t\theight: 1.75rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_brand_name] {\n\t\tfont-size: 1.1rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app] > [mol_page_head] {\n\t\tpadding-top: 0.25rem;\n\t\tpadding-bottom: 0.25rem;\n\t}\n}\n\n/* Огромный шрифт: контролы и навигация не раздуваются вместе с текстом. */\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_controls] {\n\tpadding: 0.125rem 0.5rem;\n\tgap: 0.25rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_center] {\n\tgap: 0;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_nav_item] {\n\tmin-height: 3rem;\n\tpadding: 0.25rem 0.125rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tabs] {\n\tpadding: 0.25rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] {\n\tgap: 0.5rem;\n\tpadding: 0.5rem 0.75rem 0.75rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_cover],\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_cover_placeholder] {\n\twidth: 45vw;\n\theight: 45vw;\n\tpadding: 2rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_left] {\n\tgap: 0.5rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_title] {\n\tfont-size: 1.25rem;\n}\n");
 })($ || ($ = {}));
 
 ;
@@ -38648,7 +38656,9 @@ var $;
     (function ($$) {
         const { rem } = $mol_style_unit;
         $mol_style_define($bog_music_app, {
-            minWidth: '20rem',
+            // В px, не в rem: на Огромном шрифте 20rem шире экрана телефона,
+            // и навигация уезжала за край.
+            minWidth: '320px',
             maxWidth: '50rem',
             margin: {
                 left: 'auto',
@@ -39511,9 +39521,9 @@ var $;
 })($ || ($ = {}));
 
 ;
-	($.$mol_icon_format_vertical_align_bottom) = class $mol_icon_format_vertical_align_bottom extends ($.$mol_icon) {
+	($.$mol_icon_share) = class $mol_icon_share extends ($.$mol_icon) {
 		path(){
-			return "M16,13H13V3H11V13H8L12,17L16,13M4,19V21H20V19H4Z";
+			return "M21,12L14,5V9C7,10 4,15 3,20C5.5,16.5 9,14.9 14,14.9V19L21,12Z";
 		}
 	};
 
@@ -39523,9 +39533,9 @@ var $;
 
 
 ;
-	($.$mol_icon_share) = class $mol_icon_share extends ($.$mol_icon) {
+	($.$mol_icon_format_vertical_align_bottom) = class $mol_icon_format_vertical_align_bottom extends ($.$mol_icon) {
 		path(){
-			return "M21,12L14,5V9C7,10 4,15 3,20C5.5,16.5 9,14.9 14,14.9V19L21,12Z";
+			return "M16,13H13V3H11V13H8L12,17L16,13M4,19V21H20V19H4Z";
 		}
 	};
 
@@ -39579,6 +39589,11 @@ var $;
 			if(next !== undefined) return next;
 			return null;
 		}
+		Cover(){
+			const obj = new this.$.$mol_image();
+			(obj.uri) = () => ((this.cover()));
+			return obj;
+		}
 		Cover_placeholder(){
 			const obj = new this.$.$mol_icon_music();
 			return obj;
@@ -39586,7 +39601,7 @@ var $;
 		Cover_box(){
 			const obj = new this.$.$mol_view();
 			(obj.event) = () => ({"click": (next) => (this.on_play_click(next))});
-			(obj.sub) = () => ([(this.Cover_placeholder())]);
+			(obj.sub) = () => ([(this.Cover()), (this.Cover_placeholder())]);
 			return obj;
 		}
 		title(){
@@ -39609,21 +39624,6 @@ var $;
 			const obj = new this.$.$mol_view();
 			(obj.event) = () => ({"click": (next) => (this.on_play_click(next))});
 			(obj.sub) = () => ([(this.Title()), (this.Artist())]);
-			return obj;
-		}
-		demote(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Demote_icon(){
-			const obj = new this.$.$mol_icon_format_vertical_align_bottom();
-			return obj;
-		}
-		Demote(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.hint) = () => ("В конец списка");
-			(obj.click) = (next) => ((this.demote(next)));
-			(obj.sub) = () => ([(this.Demote_icon())]);
 			return obj;
 		}
 		share_pointer_down(next){
@@ -39658,6 +39658,40 @@ var $;
 			(obj.sub) = () => ([(this.Share_icon())]);
 			return obj;
 		}
+		menu_toggle(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Menu_icon(){
+			const obj = new this.$.$mol_icon_dots_vertical();
+			return obj;
+		}
+		Menu_anchor(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.hint) = () => ("Действия");
+			(obj.click) = (next) => ((this.menu_toggle(next)));
+			(obj.sub) = () => ([(this.Menu_icon())]);
+			return obj;
+		}
+		demote_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Demote_icon(){
+			const obj = new this.$.$mol_icon_format_vertical_align_bottom();
+			return obj;
+		}
+		Demote_label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => (["В конец списка"]);
+			return obj;
+		}
+		Demote(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.click) = (next) => ((this.demote_click(next)));
+			(obj.sub) = () => ([(this.Demote_icon()), (this.Demote_label())]);
+			return obj;
+		}
 		delete_cached(next){
 			if(next !== undefined) return next;
 			return null;
@@ -39666,13 +39700,18 @@ var $;
 			const obj = new this.$.$mol_icon_delete();
 			return obj;
 		}
+		Delete_label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => (["Убрать с устройства"]);
+			return obj;
+		}
 		Delete(){
 			const obj = new this.$.$mol_button_minor();
 			(obj.click) = (next) => ((this.delete_cached(next)));
-			(obj.sub) = () => ([(this.Delete_icon())]);
+			(obj.sub) = () => ([(this.Delete_icon()), (this.Delete_label())]);
 			return obj;
 		}
-		archive(next){
+		archive_click(next){
 			if(next !== undefined) return next;
 			return null;
 		}
@@ -39680,14 +39719,18 @@ var $;
 			const obj = new this.$.$mol_icon_archive();
 			return obj;
 		}
-		Archive(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.hint) = () => ("В архив");
-			(obj.click) = (next) => ((this.archive(next)));
-			(obj.sub) = () => ([(this.Archive_icon())]);
+		Archive_label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => (["В архив"]);
 			return obj;
 		}
-		restore(next){
+		Archive(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.click) = (next) => ((this.archive_click(next)));
+			(obj.sub) = () => ([(this.Archive_icon()), (this.Archive_label())]);
+			return obj;
+		}
+		restore_click(next){
 			if(next !== undefined) return next;
 			return null;
 		}
@@ -39695,14 +39738,18 @@ var $;
 			const obj = new this.$.$mol_icon_restore();
 			return obj;
 		}
-		Restore(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.hint) = () => ("Восстановить");
-			(obj.click) = (next) => ((this.restore(next)));
-			(obj.sub) = () => ([(this.Restore_icon())]);
+		Restore_label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => (["Восстановить"]);
 			return obj;
 		}
-		delete_forever(next){
+		Restore(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.click) = (next) => ((this.restore_click(next)));
+			(obj.sub) = () => ([(this.Restore_icon()), (this.Restore_label())]);
+			return obj;
+		}
+		delete_ask(next){
 			if(next !== undefined) return next;
 			return null;
 		}
@@ -39710,11 +39757,76 @@ var $;
 			const obj = new this.$.$mol_icon_delete_forever();
 			return obj;
 		}
+		Delete_forever_label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => (["Удалить навсегда"]);
+			return obj;
+		}
 		Delete_forever(){
 			const obj = new this.$.$mol_button_minor();
-			(obj.hint) = () => ("Удалить навсегда");
-			(obj.click) = (next) => ((this.delete_forever(next)));
-			(obj.sub) = () => ([(this.Delete_forever_icon())]);
+			(obj.click) = (next) => ((this.delete_ask(next)));
+			(obj.sub) = () => ([(this.Delete_forever_icon()), (this.Delete_forever_label())]);
+			return obj;
+		}
+		menu_items(){
+			return [
+				(this.Demote()), 
+				(this.Delete()), 
+				(this.Archive()), 
+				(this.Restore()), 
+				(this.Delete_forever())
+			];
+		}
+		Menu_panel(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ((this.menu_items()));
+			return obj;
+		}
+		Menu(){
+			const obj = new this.$.$mol_pop();
+			(obj.Anchor) = () => ((this.Menu_anchor()));
+			(obj.bubble_content) = () => ([(this.Menu_panel())]);
+			return obj;
+		}
+		content(){
+			return [
+				(this.Cover_box()), 
+				(this.Info()), 
+				(this.Share()), 
+				(this.Menu())
+			];
+		}
+		confirm_text(){
+			return "";
+		}
+		Confirm_text(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.confirm_text()));
+			return obj;
+		}
+		delete_cancel(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Confirm_no(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ("Отмена");
+			(obj.click) = (next) => ((this.delete_cancel(next)));
+			return obj;
+		}
+		delete_confirm(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Confirm_yes(){
+			const obj = new this.$.$mol_button_major();
+			(obj.title) = () => ("Удалить");
+			(obj.click) = (next) => ((this.delete_confirm(next)));
+			return obj;
+		}
+		Confirm_actions(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Confirm_no()), (this.Confirm_yes())]);
 			return obj;
 		}
 		key(){
@@ -39741,8 +39853,27 @@ var $;
 			if(next !== undefined) return next;
 			return null;
 		}
+		archive(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		restore(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		delete_forever(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		demote(next){
+			if(next !== undefined) return next;
+			return null;
+		}
 		share_selected(){
 			return false;
+		}
+		cover(){
+			return "";
 		}
 		attr(){
 			return {
@@ -39760,52 +39891,113 @@ var $;
 			};
 		}
 		sub(){
-			return [
-				(this.Cover_box()), 
-				(this.Info()), 
-				(this.Demote()), 
-				(this.Share()), 
-				(this.Delete()), 
-				(this.Archive()), 
-				(this.Restore()), 
-				(this.Delete_forever())
-			];
+			return (this.content());
+		}
+		Confirm(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Confirm_text()), (this.Confirm_actions())]);
+			return obj;
 		}
 	};
 	($mol_mem(($.$bog_music_track.prototype), "event_drag_start"));
 	($mol_mem(($.$bog_music_track.prototype), "event_drag_over"));
 	($mol_mem(($.$bog_music_track.prototype), "event_drop"));
 	($mol_mem(($.$bog_music_track.prototype), "on_play_click"));
+	($mol_mem(($.$bog_music_track.prototype), "Cover"));
 	($mol_mem(($.$bog_music_track.prototype), "Cover_placeholder"));
 	($mol_mem(($.$bog_music_track.prototype), "Cover_box"));
 	($mol_mem(($.$bog_music_track.prototype), "Title"));
 	($mol_mem(($.$bog_music_track.prototype), "Artist"));
 	($mol_mem(($.$bog_music_track.prototype), "Info"));
-	($mol_mem(($.$bog_music_track.prototype), "demote"));
-	($mol_mem(($.$bog_music_track.prototype), "Demote_icon"));
-	($mol_mem(($.$bog_music_track.prototype), "Demote"));
 	($mol_mem(($.$bog_music_track.prototype), "share_pointer_down"));
 	($mol_mem(($.$bog_music_track.prototype), "share_pointer_up"));
 	($mol_mem(($.$bog_music_track.prototype), "share_pointer_cancel"));
 	($mol_mem(($.$bog_music_track.prototype), "share_pointer_leave"));
 	($mol_mem(($.$bog_music_track.prototype), "Share_icon"));
 	($mol_mem(($.$bog_music_track.prototype), "Share"));
+	($mol_mem(($.$bog_music_track.prototype), "menu_toggle"));
+	($mol_mem(($.$bog_music_track.prototype), "Menu_icon"));
+	($mol_mem(($.$bog_music_track.prototype), "Menu_anchor"));
+	($mol_mem(($.$bog_music_track.prototype), "demote_click"));
+	($mol_mem(($.$bog_music_track.prototype), "Demote_icon"));
+	($mol_mem(($.$bog_music_track.prototype), "Demote_label"));
+	($mol_mem(($.$bog_music_track.prototype), "Demote"));
 	($mol_mem(($.$bog_music_track.prototype), "delete_cached"));
 	($mol_mem(($.$bog_music_track.prototype), "Delete_icon"));
+	($mol_mem(($.$bog_music_track.prototype), "Delete_label"));
 	($mol_mem(($.$bog_music_track.prototype), "Delete"));
-	($mol_mem(($.$bog_music_track.prototype), "archive"));
+	($mol_mem(($.$bog_music_track.prototype), "archive_click"));
 	($mol_mem(($.$bog_music_track.prototype), "Archive_icon"));
+	($mol_mem(($.$bog_music_track.prototype), "Archive_label"));
 	($mol_mem(($.$bog_music_track.prototype), "Archive"));
-	($mol_mem(($.$bog_music_track.prototype), "restore"));
+	($mol_mem(($.$bog_music_track.prototype), "restore_click"));
 	($mol_mem(($.$bog_music_track.prototype), "Restore_icon"));
+	($mol_mem(($.$bog_music_track.prototype), "Restore_label"));
 	($mol_mem(($.$bog_music_track.prototype), "Restore"));
-	($mol_mem(($.$bog_music_track.prototype), "delete_forever"));
+	($mol_mem(($.$bog_music_track.prototype), "delete_ask"));
 	($mol_mem(($.$bog_music_track.prototype), "Delete_forever_icon"));
+	($mol_mem(($.$bog_music_track.prototype), "Delete_forever_label"));
 	($mol_mem(($.$bog_music_track.prototype), "Delete_forever"));
+	($mol_mem(($.$bog_music_track.prototype), "Menu_panel"));
+	($mol_mem(($.$bog_music_track.prototype), "Menu"));
+	($mol_mem(($.$bog_music_track.prototype), "Confirm_text"));
+	($mol_mem(($.$bog_music_track.prototype), "delete_cancel"));
+	($mol_mem(($.$bog_music_track.prototype), "Confirm_no"));
+	($mol_mem(($.$bog_music_track.prototype), "delete_confirm"));
+	($mol_mem(($.$bog_music_track.prototype), "Confirm_yes"));
+	($mol_mem(($.$bog_music_track.prototype), "Confirm_actions"));
 	($mol_mem(($.$bog_music_track.prototype), "play"));
 	($mol_mem(($.$bog_music_track.prototype), "drag_start"));
 	($mol_mem(($.$bog_music_track.prototype), "drop_here"));
+	($mol_mem(($.$bog_music_track.prototype), "archive"));
+	($mol_mem(($.$bog_music_track.prototype), "restore"));
+	($mol_mem(($.$bog_music_track.prototype), "delete_forever"));
+	($mol_mem(($.$bog_music_track.prototype), "demote"));
+	($mol_mem(($.$bog_music_track.prototype), "Confirm"));
 
+
+;
+"use strict";
+var $;
+(function ($) {
+    const dismissed = new WeakSet();
+    /**
+     * Тап мимо панели закрывает её. Сам $mol_pop закрывается, только когда
+     * фокус уезжает на другой фокусируемый элемент, а тап по пустому месту
+     * на телефоне фокус никуда не переносит — панель висела бы на экране.
+     */
+    function $bog_music_pop_dismiss(pop) {
+        if (dismissed.has(pop))
+            return;
+        dismissed.add(pop);
+        window.addEventListener('pointerdown', event => {
+            if (!pop.showed())
+                return;
+            const target = event.target;
+            if (!target)
+                return;
+            if (pop.dom_node().contains(target))
+                return;
+            if (pop.Bubble().dom_node().contains(target))
+                return;
+            pop.showed(false);
+        }, true);
+    }
+    $.$bog_music_pop_dismiss = $bog_music_pop_dismiss;
+    /**
+     * Тап по якорю открывает и закрывает панель. $mol_pop_over для этого не
+     * годится: он показан, пока «в фокусе ИЛИ под курсором», а на телефоне
+     * фокус остаётся на кнопке, и повторный тап ничего не закрывает.
+     */
+    function $bog_music_pop_toggle(pop) {
+        const showed = pop.showed();
+        pop.showed(!showed);
+        if (!showed)
+            $bog_music_pop_dismiss(pop);
+        return !showed;
+    }
+    $.$bog_music_pop_toggle = $bog_music_pop_toggle;
+})($ || ($ = {}));
 
 ;
 "use strict";
@@ -39828,6 +40020,15 @@ var $;
             artist() {
                 return this.track()?.Artist()?.val() ?? '';
             }
+            cover() {
+                return this.track()?.cover() ?? '';
+            }
+            Cover() {
+                return this.cover() ? super.Cover() : null;
+            }
+            Cover_placeholder() {
+                return this.cover() ? null : super.Cover_placeholder();
+            }
             cached() {
                 // Неблокирующая проверка: НЕ триггерит sync (иначе рендер списка поднял
                 // бы загрузку всех blob-лендов разом). blob догоняет фоновый prefetch.
@@ -39843,35 +40044,53 @@ var $;
             can_drag() {
                 return !this.archive_mode();
             }
-            Archive() {
-                if (this.archive_mode())
-                    return null;
-                return super.Archive();
+            // =====================================================================
+            // Меню действий: одна кнопка «⋯» вместо ряда иконок, чтобы тексту
+            // доставалась вся ширина строки (на крупном шрифте иконки распирали
+            // строку до одной буквы в линии).
+            // =====================================================================
+            menu_toggle() {
+                $bog_music_pop_toggle(this.Menu());
+                return null;
             }
-            Restore() {
-                if (!this.archive_mode())
-                    return null;
-                return super.Restore();
+            menu_items() {
+                return this.archive_mode()
+                    ? [this.Restore(), this.Delete_forever()]
+                    : [
+                        this.Demote(),
+                        ...this.can_drop_cache() ? [this.Delete()] : [],
+                        this.Archive(),
+                    ];
             }
-            Delete_forever() {
-                if (!this.archive_mode())
-                    return null;
-                return super.Delete_forever();
+            /** Локальный файл с устройства больше взять неоткуда — кеш не сбрасываем. */
+            can_drop_cache() {
+                return !this.is_local() && this.cached();
             }
-            /** В архиве порядок не важен и перетаскивание там тоже выключено. */
-            Demote() {
-                if (this.archive_mode())
-                    return null;
-                return super.Demote();
+            // =====================================================================
+            // Удаление навсегда — только через подтверждение прямо в строке.
+            // =====================================================================
+            delete_asked(next) {
+                return next ?? false;
             }
-            Delete() {
-                if (this.archive_mode())
-                    return null;
-                if (this.is_local())
-                    return null;
-                if (!this.cached())
-                    return null;
-                return super.Delete();
+            content() {
+                return this.delete_asked() ? [this.Confirm()] : super.content();
+            }
+            confirm_text() {
+                return `Удалить «${this.title()}» навсегда?`;
+            }
+            delete_ask() {
+                this.Menu().showed(false);
+                this.delete_asked(true);
+                return null;
+            }
+            delete_cancel() {
+                this.delete_asked(false);
+                return null;
+            }
+            delete_confirm() {
+                this.delete_asked(false);
+                this.delete_forever();
+                return null;
             }
             on_play_click() {
                 // Клик играет всегда: если blob ещё докачивается, плеер сам дождётся
@@ -39906,6 +40125,7 @@ var $;
                 this.drop_here();
             }
             delete_cached() {
+                this.Menu().showed(false);
                 $bog_music_account_baza.home().drop_blob(this.key());
             }
             // =====================================================================
@@ -39962,10 +40182,51 @@ var $;
             share_pointer_leave(event) {
                 return this.share_pointer_cancel(event);
             }
+            // Пункты меню: закрыть панель и дёрнуть действие, которое привязал
+            // список ($bog_music_tracks через <=>).
+            demote_click() {
+                this.Menu().showed(false);
+                this.demote(null);
+                return null;
+            }
+            archive_click() {
+                this.Menu().showed(false);
+                this.archive(null);
+                return null;
+            }
+            restore_click() {
+                this.Menu().showed(false);
+                this.restore(null);
+                return null;
+            }
         }
         __decorate([
             $mol_action
+        ], $bog_music_track.prototype, "menu_toggle", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_track.prototype, "delete_asked", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_track.prototype, "delete_ask", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_track.prototype, "delete_cancel", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_track.prototype, "delete_confirm", null);
+        __decorate([
+            $mol_action
         ], $bog_music_track.prototype, "delete_cached", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_track.prototype, "demote_click", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_track.prototype, "archive_click", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_track.prototype, "restore_click", null);
         $$.$bog_music_track = $bog_music_track;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
@@ -40002,6 +40263,8 @@ var $;
         // при первом проигрывании — для выравнивания треков между собой
         // ($bog_music_gain).
         Lufs: $giper_baza_atom.of($mol_schema_float),
+        // URL обложки (превью YouTube, альбом VK). Пусто — заглушка-нота.
+        Cover: $giper_baza_atom.of($mol_schema_string),
     }) {
         /** Метаданные в форме VK-audio. null если Vk_id не парсится. */
         audio() {
@@ -40018,7 +40281,12 @@ var $;
                 title: this.Title()?.val() ?? '',
                 duration: this.Duration()?.val() ?? 0,
                 url: this.Url()?.val() ?? '',
+                cover: this.cover(),
             };
+        }
+        /** URL обложки. '' — обложки нет. */
+        cover() {
+            return String(this.Cover()?.val() ?? '');
         }
         playlist() {
             return this.Playlist()?.val() ?? '';
@@ -40234,6 +40502,13 @@ var $;
 "use strict";
 var $;
 (function ($) {
+    $mol_style_attach("bog/music/track/track.view.css", "/* Заголовок и исполнитель: не больше трёх и двух строк, дальше многоточие.\n   $mol_style_define не знает -webkit-box-orient, поэтому обычный CSS. */\n[bog_music_track_title],\n[bog_music_track_artist] {\n\tdisplay: -webkit-box;\n\t-webkit-box-orient: vertical;\n\toverflow: hidden;\n}\n[bog_music_track_title] {\n\t-webkit-line-clamp: 3;\n}\n[bog_music_track_artist] {\n\t-webkit-line-clamp: 2;\n}\n[bog_music_track_confirm_text] {\n\tdisplay: block;\n}\n\n/* Огромный шрифт: отступы не растут вместе с буквами, иначе на телефоне\n   тексту не остаётся места. */\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_track] {\n\tpadding: 0.25rem 0 0.25rem 0.125rem;\n\tgap: 0.25rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_body_content] {\n\tpadding-left: 0.25rem;\n\tpadding-right: 0.25rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_track_cover_box] {\n\twidth: 2.5rem;\n\theight: 2.5rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_track_share] {\n\twidth: 1.75rem;\n}\n");
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
     var $$;
     (function ($$) {
         $mol_style_define($bog_music_track, {
@@ -40245,10 +40520,10 @@ var $;
             },
             gap: $mol_gap.text,
             padding: {
-                top: '0.5rem',
-                bottom: '0.5rem',
+                top: '0.375rem',
+                bottom: '0.375rem',
                 left: '0.5rem',
-                right: '0.5rem',
+                right: '0.25rem',
             },
             borderRadius: '0.5rem',
             Cover_box: {
@@ -40263,20 +40538,19 @@ var $;
                 cursor: 'pointer',
                 justify: { content: 'center' },
                 align: { items: 'center' },
-            },
-            Cover_placeholder: {
-                width: '100%',
-                height: '100%',
                 background: {
                     color: $mol_theme.line,
                 },
+            },
+            Cover: {
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+            },
+            Cover_placeholder: {
+                width: '1.75rem',
+                height: '1.75rem',
                 color: $mol_theme.shade,
-                justify: {
-                    content: 'center',
-                },
-                align: {
-                    items: 'center',
-                },
             },
             Info: {
                 flex: {
@@ -40293,6 +40567,7 @@ var $;
                     weight: 500,
                     size: '1rem',
                 },
+                lineHeight: '1.25',
                 whiteSpace: 'normal',
                 wordBreak: 'break-word',
             },
@@ -40300,33 +40575,18 @@ var $;
                 font: {
                     size: '0.875rem',
                 },
+                lineHeight: '1.25',
                 color: $mol_theme.shade,
                 whiteSpace: 'normal',
                 wordBreak: 'break-word',
-            },
-            Delete: {
-                flex: { shrink: 0 },
-                justify: { content: 'flex-end' },
-            },
-            Archive: {
-                flex: { shrink: 0 },
-                justify: { content: 'flex-end' },
-            },
-            Restore: {
-                flex: { shrink: 0 },
-                justify: { content: 'flex-end' },
-            },
-            Delete_forever: {
-                flex: { shrink: 0 },
-                justify: { content: 'flex-end' },
             },
             Share: {
                 flex: {
                     shrink: 0,
                     grow: 0,
                 },
-                width: '2rem',
-                height: '2rem',
+                width: '2.25rem',
+                height: '2.25rem',
                 justify: { content: 'center' },
                 align: { items: 'center' },
                 borderRadius: '4px',
@@ -40339,6 +40599,50 @@ var $;
             Share_icon: {
                 width: '1.5rem',
                 height: '1.5rem',
+            },
+            Menu: {
+                flex: { shrink: 0 },
+            },
+            Menu_anchor: {
+                color: $mol_theme.shade,
+                padding: { left: '0.25rem', right: '0.25rem' },
+            },
+            Menu_panel: {
+                flex: { direction: 'column' },
+                align: { items: 'stretch' },
+                padding: {
+                    top: '0.25rem',
+                    bottom: '0.25rem',
+                    left: '0.25rem',
+                    right: '0.25rem',
+                },
+                minWidth: '13rem',
+            },
+            // Пункт меню: иконка + подпись в одну строку, прижаты влево.
+            Demote: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
+            Delete: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
+            Archive: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
+            Restore: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
+            Delete_forever: { justify: { content: 'flex-start' }, gap: $mol_gap.text, color: $mol_theme.special },
+            Confirm: {
+                flex: { direction: 'column', grow: 1, shrink: 1 },
+                minWidth: 0,
+                gap: $mol_gap.text,
+                padding: {
+                    top: '0.25rem',
+                    bottom: '0.25rem',
+                    left: '0.25rem',
+                    right: '0.25rem',
+                },
+            },
+            Confirm_text: {
+                whiteSpace: 'normal',
+                wordBreak: 'break-word',
+            },
+            Confirm_actions: {
+                flex: { direction: 'row', wrap: 'wrap' },
+                justify: { content: 'flex-end' },
+                gap: $mol_gap.text,
             },
             '@': {
                 bog_music_track_current: {
@@ -40718,6 +41022,9 @@ var $;
                 track.Duration('auto').val(dur);
             if (audio.url && track.Url()?.val() !== audio.url)
                 track.Url('auto').val(audio.url);
+            const cover = audio.cover || audio.album?.thumb?.photo_300 || '';
+            if (cover && track.Cover()?.val() !== cover)
+                track.Cover('auto').val(cover);
             if (track.Added()?.val() == null)
                 track.Added('auto').val(Date.now());
             // Новый трек — наверх списка (order по возрастанию, верх = минимум).
@@ -41451,6 +41758,90 @@ var $;
 })($ || ($ = {}));
 
 ;
+	($.$mol_icon_skip_previous) = class $mol_icon_skip_previous extends ($.$mol_icon) {
+		path(){
+			return "M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_pause) = class $mol_icon_pause extends ($.$mol_icon) {
+		path(){
+			return "M14,19H18V5H14M6,19H10V5H6V19Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_skip_next) = class $mol_icon_skip_next extends ($.$mol_icon) {
+		path(){
+			return "M16,18H18V6H16M6,18L14.5,12L6,6V18Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_repeat) = class $mol_icon_repeat extends ($.$mol_icon) {
+		path(){
+			return "M17,17H7V14L3,18L7,22V19H19V13H17M7,7H17V10L21,6L17,2V5H5V11H7V7Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_repeat_once) = class $mol_icon_repeat_once extends ($.$mol_icon) {
+		path(){
+			return "M13,15V9H12L10,10V11H11.5V15M17,17H7V14L3,18L7,22V19H19V13H17M7,7H17V10L21,6L17,2V5H5V11H7V7Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_shuffle) = class $mol_icon_shuffle extends ($.$mol_icon) {
+		path(){
+			return "M14.83,13.41L13.42,14.82L16.55,17.95L14.5,20H20V14.5L17.96,16.54L14.83,13.41M14.5,4L16.54,6.04L4,18.59L5.41,20L17.96,7.46L20,9.5V4M10.59,9.17L5.41,4L4,5.41L9.17,10.58L10.59,9.17Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_content_cut) = class $mol_icon_content_cut extends ($.$mol_icon) {
+		path(){
+			return "M19,3L13,9L15,11L22,4V3M12,12.5A0.5,0.5 0 0,1 11.5,12A0.5,0.5 0 0,1 12,11.5A0.5,0.5 0 0,1 12.5,12A0.5,0.5 0 0,1 12,12.5M6,20A2,2 0 0,1 4,18C4,16.89 4.9,16 6,16A2,2 0 0,1 8,18C8,19.11 7.1,20 6,20M6,8A2,2 0 0,1 4,6C4,4.89 4.9,4 6,4A2,2 0 0,1 8,6C8,7.11 7.1,8 6,8M9.64,7.64C9.87,7.14 10,6.59 10,6A4,4 0 0,0 6,2A4,4 0 0,0 2,6A4,4 0 0,0 6,10C6.59,10 7.14,9.87 7.64,9.64L10,12L7.64,14.36C7.14,14.13 6.59,14 6,14A4,4 0 0,0 2,18A4,4 0 0,0 6,22A4,4 0 0,0 10,18C10,17.41 9.87,16.86 9.64,16.36L12,14L19,21H22V20L9.64,7.64Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
 	($.$mol_icon_tune) = class $mol_icon_tune extends ($.$mol_icon) {
 		path(){
 			return "M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z";
@@ -42015,78 +42406,6 @@ var $;
 })($ || ($ = {}));
 
 ;
-	($.$mol_icon_skip_previous) = class $mol_icon_skip_previous extends ($.$mol_icon) {
-		path(){
-			return "M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_pause) = class $mol_icon_pause extends ($.$mol_icon) {
-		path(){
-			return "M14,19H18V5H14M6,19H10V5H6V19Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_skip_next) = class $mol_icon_skip_next extends ($.$mol_icon) {
-		path(){
-			return "M16,18H18V6H16M6,18L14.5,12L6,6V18Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_repeat) = class $mol_icon_repeat extends ($.$mol_icon) {
-		path(){
-			return "M17,17H7V14L3,18L7,22V19H19V13H17M7,7H17V10L21,6L17,2V5H5V11H7V7Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_repeat_once) = class $mol_icon_repeat_once extends ($.$mol_icon) {
-		path(){
-			return "M13,15V9H12L10,10V11H11.5V15M17,17H7V14L3,18L7,22V19H19V13H17M7,7H17V10L21,6L17,2V5H5V11H7V7Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_shuffle) = class $mol_icon_shuffle extends ($.$mol_icon) {
-		path(){
-			return "M14.83,13.41L13.42,14.82L16.55,17.95L14.5,20H20V14.5L17.96,16.54L14.83,13.41M14.5,4L16.54,6.04L4,18.59L5.41,20L17.96,7.46L20,9.5V4M10.59,9.17L5.41,4L4,5.41L9.17,10.58L10.59,9.17Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
 	($.$mol_icon_volume_high) = class $mol_icon_volume_high extends ($.$mol_icon) {
 		path(){
 			return "M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z";
@@ -42121,12 +42440,20 @@ var $;
 			(obj.sub) = () => (["Ничего не играет"]);
 			return obj;
 		}
-		time_current_text(){
-			return "";
+		seek_pointer_down(next){
+			if(next !== undefined) return next;
+			return null;
 		}
-		Time_current(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ((this.time_current_text()));
+		seek_pointer_move(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		seek_pointer_up(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Progress_line(){
+			const obj = new this.$.$mol_view();
 			return obj;
 		}
 		progress_width(){
@@ -42135,6 +42462,11 @@ var $;
 		Progress_bar(){
 			const obj = new this.$.$mol_view();
 			(obj.style) = () => ({"width": (this.progress_width())});
+			return obj;
+		}
+		Progress_knob(){
+			const obj = new this.$.$mol_view();
+			(obj.style) = () => ({"left": (this.progress_width())});
 			return obj;
 		}
 		trim_start_pointer_down(next){
@@ -42185,13 +42517,45 @@ var $;
 			(obj.style) = () => ({"left": (this.trim_end_left())});
 			return obj;
 		}
-		Progress(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([
+		progress_parts(){
+			return [
+				(this.Progress_line()), 
 				(this.Progress_bar()), 
+				(this.Progress_knob()), 
 				(this.Trim_start_handle()), 
 				(this.Trim_end_handle())
-			]);
+			];
+		}
+		Progress(){
+			const obj = new this.$.$mol_view();
+			(obj.event) = () => ({
+				"pointerdown": (next) => (this.seek_pointer_down(next)), 
+				"pointermove": (next) => (this.seek_pointer_move(next)), 
+				"pointerup": (next) => (this.seek_pointer_up(next)), 
+				"pointercancel": (next) => (this.seek_pointer_up(next))
+			});
+			(obj.sub) = () => ((this.progress_parts()));
+			return obj;
+		}
+		Progress_row(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Progress())]);
+			return obj;
+		}
+		time_current_text(){
+			return "";
+		}
+		Time_current(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.time_current_text()));
+			return obj;
+		}
+		trim_hint(){
+			return "";
+		}
+		Trim_hint(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.trim_hint())]);
 			return obj;
 		}
 		time_total_text(){
@@ -42202,103 +42566,12 @@ var $;
 			(obj.title) = () => ((this.time_total_text()));
 			return obj;
 		}
-		eq_pop_toggle(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Eq_icon(){
-			const obj = new this.$.$mol_icon_tune_vertical();
-			return obj;
-		}
-		Eq_anchor(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.hint) = () => ("Эквалайзер");
-			(obj.click) = (next) => ((this.eq_pop_toggle(next)));
-			(obj.sub) = () => ([(this.Eq_icon())]);
-			return obj;
-		}
-		eq_gains(){
-			return [];
-		}
-		eq_pointer_down(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		eq_pointer_move(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		eq_pointer_up(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Eq_curve(){
-			const obj = new this.$.$bog_music_eq_curve();
-			(obj.gains) = () => ((this.eq_gains()));
-			(obj.pointer_down) = (next) => ((this.eq_pointer_down(next)));
-			(obj.pointer_move) = (next) => ((this.eq_pointer_move(next)));
-			(obj.pointer_up) = (next) => ((this.eq_pointer_up(next)));
-			return obj;
-		}
-		Eq_power_icon(){
-			const obj = new this.$.$mol_icon_tune_vertical();
-			return obj;
-		}
-		eq_on(next){
-			if(next !== undefined) return next;
-			return false;
-		}
-		Eq_power(){
-			const obj = new this.$.$mol_check_icon();
-			(obj.title) = () => ("Эквалайзер");
-			(obj.hint) = () => ("Включить эквалайзер");
-			(obj.Icon) = () => ((this.Eq_power_icon()));
-			(obj.checked) = (next) => ((this.eq_on(next)));
-			return obj;
-		}
-		eq_preset_title(id){
-			return "";
-		}
-		eq_preset_checked(id, next){
-			if(next !== undefined) return next;
-			return false;
-		}
-		Eq_preset_row(id){
-			const obj = new this.$.$mol_check();
-			(obj.title) = () => ((this.eq_preset_title(id)));
-			(obj.checked) = (next) => ((this.eq_preset_checked(id, next)));
-			return obj;
-		}
-		eq_preset_rows(){
-			return [(this.Eq_preset_row("0"))];
-		}
-		Eq_presets(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ((this.eq_preset_rows()));
-			return obj;
-		}
-		Eq_panel(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([
-				(this.Eq_curve()), 
-				(this.Eq_power()), 
-				(this.Eq_presets())
-			]);
-			return obj;
-		}
-		Eq(){
-			const obj = new this.$.$mol_pop();
-			(obj.Anchor) = () => ((this.Eq_anchor()));
-			(obj.bubble_content) = () => ([(this.Eq_panel())]);
-			return obj;
-		}
-		Progress_row(){
+		Time_row(){
 			const obj = new this.$.$mol_view();
 			(obj.sub) = () => ([
 				(this.Time_current()), 
-				(this.Progress()), 
-				(this.Time_total()), 
-				(this.Eq())
+				(this.Trim_hint()), 
+				(this.Time_total())
 			]);
 			return obj;
 		}
@@ -42428,6 +42701,21 @@ var $;
 			]);
 			return obj;
 		}
+		Trim_icon(){
+			const obj = new this.$.$mol_icon_content_cut();
+			return obj;
+		}
+		trim_mode(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		Trim_toggle(){
+			const obj = new this.$.$mol_check_icon();
+			(obj.hint) = () => ("Обрезать начало и конец");
+			(obj.Icon) = () => ((this.Trim_icon()));
+			(obj.checked) = (next) => ((this.trim_mode(next)));
+			return obj;
+		}
 		Center(){
 			const obj = new this.$.$mol_view();
 			(obj.sub) = () => ([
@@ -42435,8 +42723,99 @@ var $;
 				(this.Play()), 
 				(this.Pause()), 
 				(this.Next()), 
-				(this.Repeat())
+				(this.Repeat()), 
+				(this.Trim_toggle())
 			]);
+			return obj;
+		}
+		eq_pop_toggle(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Eq_icon(){
+			const obj = new this.$.$mol_icon_tune_vertical();
+			return obj;
+		}
+		Eq_anchor(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.hint) = () => ("Эквалайзер");
+			(obj.click) = (next) => ((this.eq_pop_toggle(next)));
+			(obj.sub) = () => ([(this.Eq_icon())]);
+			return obj;
+		}
+		eq_gains(){
+			return [];
+		}
+		eq_pointer_down(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		eq_pointer_move(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		eq_pointer_up(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Eq_curve(){
+			const obj = new this.$.$bog_music_eq_curve();
+			(obj.gains) = () => ((this.eq_gains()));
+			(obj.pointer_down) = (next) => ((this.eq_pointer_down(next)));
+			(obj.pointer_move) = (next) => ((this.eq_pointer_move(next)));
+			(obj.pointer_up) = (next) => ((this.eq_pointer_up(next)));
+			return obj;
+		}
+		Eq_power_icon(){
+			const obj = new this.$.$mol_icon_tune_vertical();
+			return obj;
+		}
+		eq_on(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		Eq_power(){
+			const obj = new this.$.$mol_check_icon();
+			(obj.title) = () => ("Эквалайзер");
+			(obj.hint) = () => ("Включить эквалайзер");
+			(obj.Icon) = () => ((this.Eq_power_icon()));
+			(obj.checked) = (next) => ((this.eq_on(next)));
+			return obj;
+		}
+		eq_preset_title(id){
+			return "";
+		}
+		eq_preset_checked(id, next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		Eq_preset_row(id){
+			const obj = new this.$.$mol_check();
+			(obj.title) = () => ((this.eq_preset_title(id)));
+			(obj.checked) = (next) => ((this.eq_preset_checked(id, next)));
+			return obj;
+		}
+		eq_preset_rows(){
+			return [(this.Eq_preset_row("0"))];
+		}
+		Eq_presets(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ((this.eq_preset_rows()));
+			return obj;
+		}
+		Eq_panel(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([
+				(this.Eq_curve()), 
+				(this.Eq_power()), 
+				(this.Eq_presets())
+			]);
+			return obj;
+		}
+		Eq(){
+			const obj = new this.$.$mol_pop();
+			(obj.Anchor) = () => ((this.Eq_anchor()));
+			(obj.bubble_content) = () => ([(this.Eq_panel())]);
 			return obj;
 		}
 		volume_toggle(next){
@@ -42532,6 +42911,7 @@ var $;
 			(obj.sub) = () => ([
 				(this.Left()), 
 				(this.Center()), 
+				(this.Eq()), 
 				(this.Volume()), 
 				(this.Close())
 			]);
@@ -42567,13 +42947,21 @@ var $;
 			return obj;
 		}
 		sub(){
-			return [(this.Progress_row()), (this.Controls())];
+			return [
+				(this.Progress_row()), 
+				(this.Time_row()), 
+				(this.Controls())
+			];
 		}
 	};
 	($mol_mem(($.$bog_music_player.prototype), "Empty_icon"));
 	($mol_mem(($.$bog_music_player.prototype), "Empty_text"));
-	($mol_mem(($.$bog_music_player.prototype), "Time_current"));
+	($mol_mem(($.$bog_music_player.prototype), "seek_pointer_down"));
+	($mol_mem(($.$bog_music_player.prototype), "seek_pointer_move"));
+	($mol_mem(($.$bog_music_player.prototype), "seek_pointer_up"));
+	($mol_mem(($.$bog_music_player.prototype), "Progress_line"));
 	($mol_mem(($.$bog_music_player.prototype), "Progress_bar"));
+	($mol_mem(($.$bog_music_player.prototype), "Progress_knob"));
 	($mol_mem(($.$bog_music_player.prototype), "trim_start_pointer_down"));
 	($mol_mem(($.$bog_music_player.prototype), "trim_start_pointer_move"));
 	($mol_mem(($.$bog_music_player.prototype), "trim_pointer_up"));
@@ -42582,23 +42970,11 @@ var $;
 	($mol_mem(($.$bog_music_player.prototype), "trim_end_pointer_move"));
 	($mol_mem(($.$bog_music_player.prototype), "Trim_end_handle"));
 	($mol_mem(($.$bog_music_player.prototype), "Progress"));
-	($mol_mem(($.$bog_music_player.prototype), "Time_total"));
-	($mol_mem(($.$bog_music_player.prototype), "eq_pop_toggle"));
-	($mol_mem(($.$bog_music_player.prototype), "Eq_icon"));
-	($mol_mem(($.$bog_music_player.prototype), "Eq_anchor"));
-	($mol_mem(($.$bog_music_player.prototype), "eq_pointer_down"));
-	($mol_mem(($.$bog_music_player.prototype), "eq_pointer_move"));
-	($mol_mem(($.$bog_music_player.prototype), "eq_pointer_up"));
-	($mol_mem(($.$bog_music_player.prototype), "Eq_curve"));
-	($mol_mem(($.$bog_music_player.prototype), "Eq_power_icon"));
-	($mol_mem(($.$bog_music_player.prototype), "eq_on"));
-	($mol_mem(($.$bog_music_player.prototype), "Eq_power"));
-	($mol_mem_key(($.$bog_music_player.prototype), "eq_preset_checked"));
-	($mol_mem_key(($.$bog_music_player.prototype), "Eq_preset_row"));
-	($mol_mem(($.$bog_music_player.prototype), "Eq_presets"));
-	($mol_mem(($.$bog_music_player.prototype), "Eq_panel"));
-	($mol_mem(($.$bog_music_player.prototype), "Eq"));
 	($mol_mem(($.$bog_music_player.prototype), "Progress_row"));
+	($mol_mem(($.$bog_music_player.prototype), "Time_current"));
+	($mol_mem(($.$bog_music_player.prototype), "Trim_hint"));
+	($mol_mem(($.$bog_music_player.prototype), "Time_total"));
+	($mol_mem(($.$bog_music_player.prototype), "Time_row"));
 	($mol_mem(($.$bog_music_player.prototype), "open"));
 	($mol_mem(($.$bog_music_player.prototype), "Cover"));
 	($mol_mem(($.$bog_music_player.prototype), "Cover_placeholder"));
@@ -42622,7 +42998,25 @@ var $;
 	($mol_mem(($.$bog_music_player.prototype), "Repeat_one_icon"));
 	($mol_mem(($.$bog_music_player.prototype), "Shuffle_icon"));
 	($mol_mem(($.$bog_music_player.prototype), "Repeat"));
+	($mol_mem(($.$bog_music_player.prototype), "Trim_icon"));
+	($mol_mem(($.$bog_music_player.prototype), "trim_mode"));
+	($mol_mem(($.$bog_music_player.prototype), "Trim_toggle"));
 	($mol_mem(($.$bog_music_player.prototype), "Center"));
+	($mol_mem(($.$bog_music_player.prototype), "eq_pop_toggle"));
+	($mol_mem(($.$bog_music_player.prototype), "Eq_icon"));
+	($mol_mem(($.$bog_music_player.prototype), "Eq_anchor"));
+	($mol_mem(($.$bog_music_player.prototype), "eq_pointer_down"));
+	($mol_mem(($.$bog_music_player.prototype), "eq_pointer_move"));
+	($mol_mem(($.$bog_music_player.prototype), "eq_pointer_up"));
+	($mol_mem(($.$bog_music_player.prototype), "Eq_curve"));
+	($mol_mem(($.$bog_music_player.prototype), "Eq_power_icon"));
+	($mol_mem(($.$bog_music_player.prototype), "eq_on"));
+	($mol_mem(($.$bog_music_player.prototype), "Eq_power"));
+	($mol_mem_key(($.$bog_music_player.prototype), "eq_preset_checked"));
+	($mol_mem_key(($.$bog_music_player.prototype), "Eq_preset_row"));
+	($mol_mem(($.$bog_music_player.prototype), "Eq_presets"));
+	($mol_mem(($.$bog_music_player.prototype), "Eq_panel"));
+	($mol_mem(($.$bog_music_player.prototype), "Eq"));
 	($mol_mem(($.$bog_music_player.prototype), "volume_toggle"));
 	($mol_mem(($.$bog_music_player.prototype), "Volume_icon"));
 	($mol_mem(($.$bog_music_player.prototype), "Volume_anchor"));
@@ -43264,6 +43658,9 @@ var $;
                         else
                             return;
                     }
+                    // Палец на полоске — позицию рисует драг, элемент не перебивает.
+                    if (this._seek_drag)
+                        return;
                     this.current_time(el.currentTime);
                     this.scrobble_watch(el.currentTime);
                 });
@@ -43382,7 +43779,7 @@ var $;
                                 navigator.mediaSession.playbackState = msg.playing ? 'playing' : 'paused';
                             }
                         }
-                        if (typeof msg.current_time === 'number')
+                        if (typeof msg.current_time === 'number' && !this._seek_drag)
                             this.current_time(msg.current_time);
                         if (typeof msg.duration === 'number' && isFinite(msg.duration))
                             this.duration(msg.duration);
@@ -43640,7 +44037,9 @@ var $;
                 return this.current_audio()?.artist ?? '';
             }
             cover() {
-                return this._ext?.cover ?? '';
+                if (this._ext)
+                    return this._ext.cover;
+                return this.current_track()?.cover() ?? '';
             }
             Cover() {
                 return this.cover() ? super.Cover() : null;
@@ -43680,28 +44079,8 @@ var $;
                     this.setup_pop_dismiss(pop);
                 return null;
             }
-            _dismiss_pops = new Set();
-            /**
-             * Тап мимо панели закрывает её. Сам $mol_pop закрывается, только когда
-             * фокус уезжает на другой фокусируемый элемент, а тап по пустому месту
-             * фокус никуда не переносит — панель висела бы на экране.
-             */
             setup_pop_dismiss(pop) {
-                if (this._dismiss_pops.has(pop))
-                    return;
-                this._dismiss_pops.add(pop);
-                window.addEventListener('pointerdown', event => {
-                    if (!pop.showed())
-                        return;
-                    const target = event.target;
-                    if (!target)
-                        return;
-                    if (pop.dom_node().contains(target))
-                        return;
-                    if (pop.Bubble().dom_node().contains(target))
-                        return;
-                    pop.showed(false);
-                }, true);
+                $bog_music_pop_dismiss(pop);
             }
             _vol_dragging = false;
             volume_set_from_event(event) {
@@ -44279,12 +44658,61 @@ var $;
                 if (this.is_extension()) {
                     this.send('seek', { time });
                 }
+                else if (this._silent) {
+                    // На iOS-паузе в элементе крутится тишина: мотать нечего, позиция
+                    // применится при resume.
+                    this._paused_pos = time;
+                }
                 else if (this._audio_el) {
                     try {
                         this._audio_el.currentTime = time;
                     }
                     catch { }
                 }
+            }
+            // ---------- перемотка (тап и драг по полоске) ----------
+            _seek_drag = false;
+            seek_time_of(event) {
+                const rect = this.Progress().dom_node().getBoundingClientRect();
+                const pct = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+                return pct * this.duration();
+            }
+            seek_pointer_down(event) {
+                if (!event || !this.duration())
+                    return null;
+                const e = event;
+                e.preventDefault();
+                try {
+                    e.currentTarget.setPointerCapture(e.pointerId);
+                }
+                catch { }
+                this._seek_drag = true;
+                this.current_time(this.seek_time_of(e));
+                return null;
+            }
+            seek_pointer_move(event) {
+                if (!event || !this._seek_drag)
+                    return null;
+                this.current_time(this.seek_time_of(event));
+                return null;
+            }
+            seek_pointer_up(event) {
+                if (!event)
+                    return null;
+                const e = event;
+                try {
+                    e.currentTarget.releasePointerCapture(e.pointerId);
+                }
+                catch { }
+                if (!this._seek_drag)
+                    return null;
+                this._seek_drag = false;
+                const time = this.seek_time_of(e);
+                this._await_seek = 0;
+                this.current_time(time);
+                this.seek_to(time);
+                $bog_music_log.act(`перемотка: ${this.format_time(time)}`);
+                return null;
             }
             // Гонки fast-click'ов: пока blob трека A грузится, пользователь кликает B.
             // Токен инвалидирует устаревшие dispatch'и.
@@ -44611,6 +45039,36 @@ var $;
                 return super.Pause();
             }
             // ---------- обрез трека (trim handles на прогресс-баре) ----------
+            /**
+             * Ручки обреза показываем только по кнопке «ножницы» в полном плеере:
+             * на общей полоске их принимали за перемотку, а второй ползунок «в
+             * конце» вообще не понимали.
+             */
+            progress_parts() {
+                const parts = [this.Progress_line(), this.Progress_bar(), this.Progress_knob()];
+                if (!this.trim_editing())
+                    return parts;
+                return [...parts, this.Trim_start_handle(), this.Trim_end_handle()];
+            }
+            trim_editing() {
+                return this.full() && this.trim_mode() && !!this.current_track();
+            }
+            Trim_toggle() {
+                if (!this.full() || !this.current_key())
+                    return null;
+                return super.Trim_toggle();
+            }
+            trim_hint() {
+                const track = this.current_track();
+                const dur = this.duration();
+                if (!track || !dur)
+                    return '';
+                const start = track.trim_start();
+                const end = track.trim_end(dur);
+                if (start <= 0 && end >= dur)
+                    return this.trim_editing() ? 'тяни ручки обреза' : '';
+                return `обрез ${this.format_time(start)} – ${this.format_time(end)}`;
+            }
             _trim_end_skip = '';
             _trim_start_done = '';
             _trim_drag = null;
@@ -44897,45 +45355,70 @@ var $;
                     direction: 'row',
                     shrink: 0,
                 },
-                align: {
-                    items: 'center',
-                },
                 padding: {
-                    top: '0.25rem',
-                    bottom: '0.25rem',
+                    top: 0,
+                    bottom: 0,
                     left: '0.75rem',
                     right: '0.75rem',
                 },
-                gap: $mol_gap.text,
             },
+            // Зона касания выше самой полоски: палец попадает, полоска остаётся тонкой.
             Progress: {
-                height: '3px',
-                background: {
-                    color: $mol_theme.line,
-                },
+                height: '1.75rem',
                 cursor: 'pointer',
                 flex: {
                     grow: 1,
                     shrink: 1,
                 },
                 position: 'relative',
+                touchAction: 'none',
+                userSelect: 'none',
+            },
+            Progress_line: {
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                top: $mol_style_func.calc('50% - 0.125rem'),
+                height: '0.25rem',
+                borderRadius: '0.125rem',
+                background: {
+                    color: $mol_theme.line,
+                },
+                pointerEvents: 'none',
             },
             Progress_bar: {
-                height: '3px',
+                position: 'absolute',
+                left: 0,
+                top: $mol_style_func.calc('50% - 0.125rem'),
+                height: '0.25rem',
+                borderRadius: '0.125rem',
                 background: {
                     color: $mol_theme.focus,
                 },
                 width: 0,
                 pointerEvents: 'none',
             },
+            // Ползунок в rem: растёт вместе с размером шрифта из настроек.
+            Progress_knob: {
+                position: 'absolute',
+                top: $mol_style_func.calc('50% - 0.625rem'),
+                width: '1.25rem',
+                height: '1.25rem',
+                margin: { left: '-0.625rem' },
+                borderRadius: '50%',
+                background: { color: $mol_theme.focus },
+                box: { shadow: [[0, '0.0625rem', '0.25rem', 0, '#00000060']] },
+                pointerEvents: 'none',
+                zIndex: 1,
+            },
             Trim_start_handle: {
                 position: 'absolute',
-                top: '-3px',
-                width: '8px',
-                height: '9px',
-                margin: { left: '-4px' },
+                top: $mol_style_func.calc('50% - 0.75rem'),
+                width: '0.75rem',
+                height: '1.5rem',
+                margin: { left: '-0.375rem' },
                 background: { color: $mol_theme.text },
-                borderRadius: '1px',
+                borderRadius: '0.1875rem',
                 cursor: 'ew-resize',
                 touchAction: 'none',
                 userSelect: 'none',
@@ -44943,32 +45426,53 @@ var $;
             },
             Trim_end_handle: {
                 position: 'absolute',
-                top: '-3px',
-                width: '8px',
-                height: '9px',
-                margin: { left: '-4px' },
+                top: $mol_style_func.calc('50% - 0.75rem'),
+                width: '0.75rem',
+                height: '1.5rem',
+                margin: { left: '-0.375rem' },
                 background: { color: $mol_theme.text },
-                borderRadius: '1px',
+                borderRadius: '0.1875rem',
                 cursor: 'ew-resize',
                 touchAction: 'none',
                 userSelect: 'none',
                 zIndex: 2,
+            },
+            Time_row: {
+                flex: {
+                    direction: 'row',
+                    shrink: 0,
+                },
+                justify: { content: 'space-between' },
+                align: { items: 'center' },
+                padding: {
+                    top: 0,
+                    bottom: 0,
+                    left: '0.75rem',
+                    right: '0.75rem',
+                },
+                margin: { top: '-0.375rem' },
+                gap: $mol_gap.text,
             },
             Time_current: {
                 font: { size: '0.75rem' },
                 color: $mol_theme.shade,
                 whiteSpace: 'nowrap',
                 flex: { shrink: 0 },
-                minWidth: '2.5rem',
-                textAlign: 'right',
                 fontVariantNumeric: 'tabular-nums',
+            },
+            Trim_hint: {
+                font: { size: '0.75rem' },
+                color: $mol_theme.shade,
+                whiteSpace: 'nowrap',
+                overflow: { x: 'hidden' },
+                textOverflow: 'ellipsis',
+                minWidth: 0,
             },
             Time_total: {
                 font: { size: '0.75rem' },
                 color: $mol_theme.shade,
                 whiteSpace: 'nowrap',
                 flex: { shrink: 0 },
-                minWidth: '2.5rem',
                 fontVariantNumeric: 'tabular-nums',
             },
             Controls: {
@@ -45171,6 +45675,7 @@ var $;
                 Repeat: { display: 'none' },
                 Volume: { display: 'none' },
                 Eq: { display: 'none' },
+                Trim_toggle: { display: 'none' },
             },
             '@': {
                 bog_music_player_full: {
@@ -45233,14 +45738,52 @@ var $;
                         },
                         Progress_row: {
                             flex: { basis: '100%' },
+                            padding: { left: 0, right: 0 },
+                        },
+                        Time_row: {
+                            flex: { basis: '100%' },
+                            padding: { left: 0, right: 0 },
+                            margin: { top: '-1rem' },
                         },
                         Progress: {
-                            height: '6px',
-                            borderRadius: '3px',
+                            height: '2.5rem',
+                        },
+                        Progress_line: {
+                            top: $mol_style_func.calc('50% - 0.1875rem'),
+                            height: '0.375rem',
+                            borderRadius: '0.1875rem',
                         },
                         Progress_bar: {
-                            height: '6px',
-                            borderRadius: '3px',
+                            top: $mol_style_func.calc('50% - 0.1875rem'),
+                            height: '0.375rem',
+                            borderRadius: '0.1875rem',
+                        },
+                        Progress_knob: {
+                            top: $mol_style_func.calc('50% - 0.75rem'),
+                            width: '1.5rem',
+                            height: '1.5rem',
+                            margin: { left: '-0.75rem' },
+                        },
+                        Trim_start_handle: {
+                            top: $mol_style_func.calc('50% - 1rem'),
+                            height: '2rem',
+                        },
+                        Trim_end_handle: {
+                            top: $mol_style_func.calc('50% - 1rem'),
+                            height: '2rem',
+                        },
+                        Time_current: {
+                            font: { size: '0.875rem' },
+                        },
+                        Trim_hint: {
+                            font: { size: '0.875rem' },
+                        },
+                        Time_total: {
+                            font: { size: '0.875rem' },
+                        },
+                        Center: {
+                            flex: { wrap: 'wrap' },
+                            justify: { content: 'center' },
                         },
                         Close: {
                             position: 'absolute',

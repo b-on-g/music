@@ -1796,9 +1796,9 @@ $bog_music_account $mol_view
 	pwa_label @ \Скачать плейлист zip-архивом
 	pwa_hint @ \Упаковать локально засинканные треки в zip и скачать на устройство
 
-$mol_icon_format_vertical_align_bottom $mol_icon path \M16,13H13V3H11V13H8L12,17L16,13M4,19V21H20V19H4Z
-
 $mol_icon_share $mol_icon path \M21,12L14,5V9C7,10 4,15 3,20C5.5,16.5 9,14.9 14,14.9V19L21,12Z
+
+$mol_icon_format_vertical_align_bottom $mol_icon path \M16,13H13V3H11V13H8L12,17L16,13M4,19V21H20V19H4Z
 
 $mol_icon_delete $mol_icon path \M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z
 
@@ -1821,6 +1821,7 @@ $bog_music_track $mol_view
 	delete_forever? null
 	demote? null
 	share_selected false
+	cover \
 	attr *
 		bog_music_track_current <= current
 		bog_music_track_share_selected <= share_selected
@@ -1830,11 +1831,13 @@ $bog_music_track $mol_view
 		dragstart?event <=> event_drag_start?event null
 		dragover?event <=> event_drag_over?event null
 		drop?event <=> event_drop?event null
-	sub /
+	sub <= content /
 		<= Cover_box $mol_view
 			event *
 				click?event <=> on_play_click? null
 			sub /
+				<= Cover $mol_image
+					uri <= cover
 				<= Cover_placeholder $mol_icon_music
 		<= Info $mol_view
 			event *
@@ -1844,11 +1847,6 @@ $bog_music_track $mol_view
 					title <= title \
 				<= Artist $mol_paragraph
 					title <= artist \
-		<= Demote $mol_button_minor
-			hint \В конец списка
-			click? <=> demote? null
-			sub /
-				<= Demote_icon $mol_icon_format_vertical_align_bottom
 		<= Share $mol_view
 			attr *
 				bog_music_track_share_button true
@@ -1860,25 +1858,71 @@ $bog_music_track $mol_view
 				pointerleave?event <=> share_pointer_leave?event null
 			sub /
 				<= Share_icon $mol_icon_share
-		<= Delete $mol_button_minor
-			click? <=> delete_cached? null
-			sub /
-				<= Delete_icon $mol_icon_delete
-		<= Archive $mol_button_minor
-			hint \В архив
-			click? <=> archive? null
-			sub /
-				<= Archive_icon $mol_icon_archive
-		<= Restore $mol_button_minor
-			hint \Восстановить
-			click? <=> restore? null
-			sub /
-				<= Restore_icon $mol_icon_restore
-		<= Delete_forever $mol_button_minor
-			hint \Удалить навсегда
-			click? <=> delete_forever? null
-			sub /
-				<= Delete_forever_icon $mol_icon_delete_forever
+		<= Menu $mol_pop
+			Anchor <= Menu_anchor $mol_button_minor
+				hint \Действия
+				click? <=> menu_toggle? null
+				sub /
+					<= Menu_icon $mol_icon_dots_vertical
+			bubble_content /
+				<= Menu_panel $mol_view
+					sub <= menu_items /
+						<= Demote $mol_button_minor
+							click? <=> demote_click? null
+							sub /
+								<= Demote_icon $mol_icon_format_vertical_align_bottom
+								<= Demote_label $mol_view
+									sub / \В конец списка
+						<= Delete $mol_button_minor
+							click? <=> delete_cached? null
+							sub /
+								<= Delete_icon $mol_icon_delete
+								<= Delete_label $mol_view
+									sub / \Убрать с устройства
+						<= Archive $mol_button_minor
+							click? <=> archive_click? null
+							sub /
+								<= Archive_icon $mol_icon_archive
+								<= Archive_label $mol_view
+									sub / \В архив
+						<= Restore $mol_button_minor
+							click? <=> restore_click? null
+							sub /
+								<= Restore_icon $mol_icon_restore
+								<= Restore_label $mol_view
+									sub / \Восстановить
+						<= Delete_forever $mol_button_minor
+							click? <=> delete_ask? null
+							sub /
+								<= Delete_forever_icon $mol_icon_delete_forever
+								<= Delete_forever_label $mol_view
+									sub / \Удалить навсегда
+	Confirm $mol_view
+		sub /
+			<= Confirm_text $mol_paragraph
+				title <= confirm_text \
+			<= Confirm_actions $mol_view
+				sub /
+					<= Confirm_no $mol_button_minor
+						title \Отмена
+						click? <=> delete_cancel? null
+					<= Confirm_yes $mol_button_major
+						title \Удалить
+						click? <=> delete_confirm? null
+
+$mol_icon_skip_previous $mol_icon path \M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z
+
+$mol_icon_pause $mol_icon path \M14,19H18V5H14M6,19H10V5H6V19Z
+
+$mol_icon_skip_next $mol_icon path \M16,18H18V6H16M6,18L14.5,12L6,6V18Z
+
+$mol_icon_repeat $mol_icon path \M17,17H7V14L3,18L7,22V19H19V13H17M7,7H17V10L21,6L17,2V5H5V11H7V7Z
+
+$mol_icon_repeat_once $mol_icon path \M13,15V9H12L10,10V11H11.5V15M17,17H7V14L3,18L7,22V19H19V13H17M7,7H17V10L21,6L17,2V5H5V11H7V7Z
+
+$mol_icon_shuffle $mol_icon path \M14.83,13.41L13.42,14.82L16.55,17.95L14.5,20H20V14.5L17.96,16.54L14.83,13.41M14.5,4L16.54,6.04L4,18.59L5.41,20L17.96,7.46L20,9.5V4M10.59,9.17L5.41,4L4,5.41L9.17,10.58L10.59,9.17Z
+
+$mol_icon_content_cut $mol_icon path \M19,3L13,9L15,11L22,4V3M12,12.5A0.5,0.5 0 0,1 11.5,12A0.5,0.5 0 0,1 12,11.5A0.5,0.5 0 0,1 12.5,12A0.5,0.5 0 0,1 12,12.5M6,20A2,2 0 0,1 4,18C4,16.89 4.9,16 6,16A2,2 0 0,1 8,18C8,19.11 7.1,20 6,20M6,8A2,2 0 0,1 4,6C4,4.89 4.9,4 6,4A2,2 0 0,1 8,6C8,7.11 7.1,8 6,8M9.64,7.64C9.87,7.14 10,6.59 10,6A4,4 0 0,0 6,2A4,4 0 0,0 2,6A4,4 0 0,0 6,10C6.59,10 7.14,9.87 7.64,9.64L10,12L7.64,14.36C7.14,14.13 6.59,14 6,14A4,4 0 0,0 2,18A4,4 0 0,0 6,22A4,4 0 0,0 10,18C10,17.41 9.87,16.86 9.64,16.36L12,14L19,21H22V20L9.64,7.64Z
 
 $mol_icon_tune $mol_icon path \M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z
 
@@ -1967,18 +2011,6 @@ $bog_music_eq_curve $mol_view
 				<= Freq*0 $mol_paragraph
 					title <= freq_text* \
 
-$mol_icon_skip_previous $mol_icon path \M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z
-
-$mol_icon_pause $mol_icon path \M14,19H18V5H14M6,19H10V5H6V19Z
-
-$mol_icon_skip_next $mol_icon path \M16,18H18V6H16M6,18L14.5,12L6,6V18Z
-
-$mol_icon_repeat $mol_icon path \M17,17H7V14L3,18L7,22V19H19V13H17M7,7H17V10L21,6L17,2V5H5V11H7V7Z
-
-$mol_icon_repeat_once $mol_icon path \M13,15V9H12L10,10V11H11.5V15M17,17H7V14L3,18L7,22V19H19V13H17M7,7H17V10L21,6L17,2V5H5V11H7V7Z
-
-$mol_icon_shuffle $mol_icon path \M14.83,13.41L13.42,14.82L16.55,17.95L14.5,20H20V14.5L17.96,16.54L14.83,13.41M14.5,4L16.54,6.04L4,18.59L5.41,20L17.96,7.46L20,9.5V4M10.59,9.17L5.41,4L4,5.41L9.17,10.58L10.59,9.17Z
-
 $mol_icon_volume_high $mol_icon path \M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z
 
 $mol_icon_equalizer $mol_icon path \M10,20H14V4H10V20M4,20H8V12H4V20M16,9V20H20V9H16Z
@@ -2001,13 +2033,20 @@ $bog_music_player $mol_view
 	sub /
 		<= Progress_row $mol_view
 			sub /
-				<= Time_current $mol_paragraph
-					title <= time_current_text \
 				<= Progress $mol_view
-					sub /
+					event *
+						pointerdown?event <=> seek_pointer_down?event null
+						pointermove?event <=> seek_pointer_move?event null
+						pointerup?event <=> seek_pointer_up?event null
+						pointercancel?event <=> seek_pointer_up?event null
+					sub <= progress_parts /
+						<= Progress_line $mol_view
 						<= Progress_bar $mol_view
 							style *
 								width <= progress_width \
+						<= Progress_knob $mol_view
+							style *
+								left <= progress_width \
 						<= Trim_start_handle $mol_view
 							event *
 								pointerdown?event <=> trim_start_pointer_down?event null
@@ -2024,31 +2063,14 @@ $bog_music_player $mol_view
 								pointercancel?event <=> trim_pointer_up?event null
 							style *
 								left <= trim_end_left \
+		<= Time_row $mol_view
+			sub /
+				<= Time_current $mol_paragraph
+					title <= time_current_text \
+				<= Trim_hint $mol_view
+					sub / <= trim_hint \
 				<= Time_total $mol_paragraph
 					title <= time_total_text \
-				<= Eq $mol_pop
-					Anchor <= Eq_anchor $mol_button_minor
-						hint \Эквалайзер
-						click? <=> eq_pop_toggle? null
-						sub / <= Eq_icon $mol_icon_tune_vertical
-					bubble_content /
-						<= Eq_panel $mol_view
-							sub /
-								<= Eq_curve $bog_music_eq_curve
-									gains <= eq_gains /number
-									pointer_down?event <=> eq_pointer_down?event null
-									pointer_move?event <=> eq_pointer_move?event null
-									pointer_up?event <=> eq_pointer_up?event null
-								<= Eq_power $mol_check_icon
-									title \Эквалайзер
-									hint \Включить эквалайзер
-									Icon <= Eq_power_icon $mol_icon_tune_vertical
-									checked? <=> eq_on? false
-								<= Eq_presets $mol_view
-									sub <= eq_preset_rows /
-										<= Eq_preset_row*0 $mol_check
-											title <= eq_preset_title* \
-											checked? <=> eq_preset_checked*? false
 		<= Controls $mol_view
 			sub /
 				<= Left $mol_view
@@ -2085,6 +2107,33 @@ $bog_music_player $mol_view
 								<= Repeat_all_icon $mol_icon_repeat
 								<= Repeat_one_icon $mol_icon_repeat_once
 								<= Shuffle_icon $mol_icon_shuffle
+						<= Trim_toggle $mol_check_icon
+							hint \Обрезать начало и конец
+							Icon <= Trim_icon $mol_icon_content_cut
+							checked? <=> trim_mode? false
+				<= Eq $mol_pop
+					Anchor <= Eq_anchor $mol_button_minor
+						hint \Эквалайзер
+						click? <=> eq_pop_toggle? null
+						sub / <= Eq_icon $mol_icon_tune_vertical
+					bubble_content /
+						<= Eq_panel $mol_view
+							sub /
+								<= Eq_curve $bog_music_eq_curve
+									gains <= eq_gains /number
+									pointer_down?event <=> eq_pointer_down?event null
+									pointer_move?event <=> eq_pointer_move?event null
+									pointer_up?event <=> eq_pointer_up?event null
+								<= Eq_power $mol_check_icon
+									title \Эквалайзер
+									hint \Включить эквалайзер
+									Icon <= Eq_power_icon $mol_icon_tune_vertical
+									checked? <=> eq_on? false
+								<= Eq_presets $mol_view
+									sub <= eq_preset_rows /
+										<= Eq_preset_row*0 $mol_check
+											title <= eq_preset_title* \
+											checked? <=> eq_preset_checked*? false
 				<= Volume $mol_pop
 					align \top_right
 					Anchor <= Volume_anchor $mol_button_minor
