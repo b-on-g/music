@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://b-on-g.github.io/music/landing/sitemap.xml

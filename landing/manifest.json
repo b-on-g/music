@@ -1,0 +1,10 @@
+{
+	"name": "bog_music_landing",
+	"short_name": "bog_music_landing",
+	"description": "",
+	"id": "bog_music_landing",
+	"start_url": ".",
+	"display": "standalone",
+	"background_color": "#000000",
+	"theme_color": "#000000"
+}

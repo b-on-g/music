@@ -1,0 +1,1424 @@
+<!DOCTYPE html><html lang="ru" mol_view_root=""><head><base href="/music/landing/">
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="theme-color" content="#1a1a2e">
+		<link rel="icon" href="bog/music/app/favicon.svg" type="image/svg+xml">
+		<title>Root</title>
+		<meta name="description" content="Бесплатный музыкальный плеер без рекламы: сохраняет треки из VK, YouTube и Телеграма, играет офлайн и синхронизирует фонотеку между телефоном и компьютером.">
+		<link rel="canonical" href="https://b-on-g.github.io/music/landing/">
+		<meta property="og:title" content="Bog Music — своя музыка на всех устройствах">
+		<meta property="og:type" content="website">
+		<meta property="og:description" content="Бесплатный музыкальный плеер без рекламы: сохраняет треки из VK, YouTube и Телеграма, играет офлайн и синхронизирует фонотеку между телефоном и компьютером.">
+		<meta property="og:site_name" content="Bog Music">
+		<meta property="og:url" content="https://b-on-g.github.io/music/landing/">
+		<meta property="og:locale" content="ru_RU">
+		<meta name="twitter:card" content="summary">
+		<meta name="twitter:title" content="Bog Music — своя музыка на всех устройствах">
+		<meta name="twitter:description" content="Бесплатный музыкальный плеер без рекламы: сохраняет треки из VK, YouTube и Телеграма, играет офлайн и синхронизирует фонотеку между телефоном и компьютером.">
+	<style id="$mol_style_attach:mol/theme/theme.css">:root {
+	--mol_theme_hue: 240deg;
+	--mol_theme_hue_spread: 90deg;
+	color-scheme: dark light;
+}
+
+body, :where([mol_theme]) {
+	color: var(--mol_theme_text);
+	fill: var(--mol_theme_text);
+	background-color: var(--mol_theme_back);
+}
+	
+:root, [mol_theme="$mol_theme_dark"], :where([mol_theme="$mol_theme_dark"]) [mol_theme]  {
+
+	--mol_theme_luma: -1;
+	--mol_theme_image: invert(1) hue-rotate( 180deg );
+	--mol_theme_spirit: hsl( 0deg, 0%, 0%, .75 );
+
+	--mol_theme_back: hsl( var(--mol_theme_hue), 20%, 10% );
+	--mol_theme_card: hsl( var(--mol_theme_hue), 50%, 20%, .25 );
+	--mol_theme_field: hsl( var(--mol_theme_hue), 50%, 8%, .25 );
+	--mol_theme_hover: hsl( var(--mol_theme_hue), 0%, 50%, .1 );
+	
+	--mol_theme_text: hsl( var(--mol_theme_hue), 0%, 80% );
+	--mol_theme_shade: hsl( var(--mol_theme_hue), 0%, 60%, 1 );
+	--mol_theme_line: hsl( var(--mol_theme_hue), 0%, 50%, .25 );
+	--mol_theme_focus: hsl( calc( var(--mol_theme_hue) + 180deg ), 100%, 65% );
+	
+	--mol_theme_control: hsl( var(--mol_theme_hue), 60%, 65% );
+	--mol_theme_current: hsl( calc( var(--mol_theme_hue) - var(--mol_theme_hue_spread) ), 60%, 65% );
+	--mol_theme_special: hsl( calc( var(--mol_theme_hue) + var(--mol_theme_hue_spread) ), 60%, 65% );
+
+} @supports( color: oklch( 0% 0 0deg ) ) {
+:root, [mol_theme="$mol_theme_dark"], :where([mol_theme="$mol_theme_dark"]) [mol_theme]  {
+	
+	--mol_theme_back: oklch( 20% .03 var(--mol_theme_hue) );
+	--mol_theme_card: oklch( 30% .05 var(--mol_theme_hue) / .25 );
+	--mol_theme_field: oklch( 15% 0 var(--mol_theme_hue) / .25 );
+	--mol_theme_hover: oklch( 70% 0 var(--mol_theme_hue) / .1 );
+	
+	--mol_theme_text: oklch( 80% 0 var(--mol_theme_hue) );
+	--mol_theme_shade: oklch( 60% 0 var(--mol_theme_hue) );
+	--mol_theme_line: oklch( 60% 0 var(--mol_theme_hue) / .25 );
+	--mol_theme_focus: oklch( 80% .2 calc( var(--mol_theme_hue) + 180deg ) );
+	
+	--mol_theme_control: oklch( 70% .1 var(--mol_theme_hue) );
+	--mol_theme_current: oklch( 70% .2 calc( var(--mol_theme_hue) - var(--mol_theme_hue_spread) ) );
+	--mol_theme_special: oklch( 70% .2 calc( var(--mol_theme_hue) + var(--mol_theme_hue_spread) ) );
+
+} }
+
+[mol_theme="$mol_theme_light"], :where([mol_theme="$mol_theme_light"]) [mol_theme] {
+	
+	--mol_theme_luma: 1;
+	--mol_theme_image: none;
+	--mol_theme_spirit: hsl( 0deg, 0%, 100%, .75 );
+	
+	--mol_theme_back: hsl( var(--mol_theme_hue), 20%, 92% );
+	--mol_theme_card: hsl( var(--mol_theme_hue), 50%, 100%, .5 );
+	--mol_theme_field: hsl( var(--mol_theme_hue), 50%, 100%, .75 );
+	--mol_theme_hover: hsl( var(--mol_theme_hue), 0%, 50%, .1 );
+	
+	--mol_theme_text: hsl( var(--mol_theme_hue), 0%, 0% );
+	--mol_theme_shade: hsl( var(--mol_theme_hue), 0%, 40%, 1 );
+	--mol_theme_line: hsl( var(--mol_theme_hue), 0%, 50%, .25 );
+	--mol_theme_focus: hsl( calc( var(--mol_theme_hue) + 180deg ), 100%, 40% );
+	
+	--mol_theme_control: hsl( var(--mol_theme_hue), 80%, 30% );
+	--mol_theme_current: hsl( calc( var(--mol_theme_hue) - var(--mol_theme_hue_spread) ), 80%, 30% );
+	--mol_theme_special: hsl( calc( var(--mol_theme_hue) + var(--mol_theme_hue_spread) ), 80%, 30% );
+
+} @supports( color: oklch( 0% 0 0deg ) ) {
+[mol_theme="$mol_theme_light"], :where([mol_theme="$mol_theme_light"]) [mol_theme] {
+	--mol_theme_back: oklch( 92% .01 var(--mol_theme_hue) );
+	--mol_theme_card: oklch( 99% .01 var(--mol_theme_hue) / .5 );
+	--mol_theme_field: oklch( 100% 0 var(--mol_theme_hue) / .5 );
+	--mol_theme_hover: oklch( 50% 0 var(--mol_theme_hue) / .1 );
+	
+	--mol_theme_text: oklch( 20% 0 var(--mol_theme_hue) );
+	--mol_theme_shade: oklch( 60% 0 var(--mol_theme_hue) );
+	--mol_theme_line: oklch( 50% 0 var(--mol_theme_hue) / .25 );
+	--mol_theme_focus: oklch( 60% .2 calc( var(--mol_theme_hue) + 180deg ) );
+	
+	--mol_theme_control: oklch( 40% .15 var(--mol_theme_hue) );
+	--mol_theme_current: oklch( 50% .2 calc( var(--mol_theme_hue) - var(--mol_theme_hue_spread) ) );
+	--mol_theme_special: oklch( 50% .2 calc( var(--mol_theme_hue) + var(--mol_theme_hue_spread) ) );
+
+} }
+
+:where( :root, [mol_theme="$mol_theme_dark"] ) [mol_theme="$mol_theme_base"] {
+	--mol_theme_back: oklch( 25% .075 var(--mol_theme_hue) );
+	--mol_theme_card: oklch( 35% .1 var(--mol_theme_hue) / .25 );
+}
+:where( [mol_theme="$mol_theme_light"] ) [mol_theme="$mol_theme_base"] {
+	--mol_theme_back: oklch( 85% .075 var(--mol_theme_hue) );
+	--mol_theme_card: oklch( 98% .03 var(--mol_theme_hue) / .25 );
+}
+
+:where( :root, [mol_theme="$mol_theme_dark"] ) [mol_theme="$mol_theme_current"] {
+	--mol_theme_back: oklch( 25% .05 calc( var(--mol_theme_hue) - var(--mol_theme_hue_spread) ) );
+	--mol_theme_card: oklch( 35% .1 calc( var(--mol_theme_hue) - var(--mol_theme_hue_spread) ) / .25 );
+}
+:where( [mol_theme="$mol_theme_light"] ) [mol_theme="$mol_theme_current"] {
+	--mol_theme_back: oklch( 85% .05 calc( var(--mol_theme_hue) - var(--mol_theme_hue_spread) ) );
+	--mol_theme_card: oklch( 98% .03 calc( var(--mol_theme_hue) - var(--mol_theme_hue_spread) ) / .25 );
+}
+
+:where( :root, [mol_theme="$mol_theme_dark"] ) [mol_theme="$mol_theme_special"] {
+	--mol_theme_back: oklch( 25% .05 calc( var(--mol_theme_hue) + var(--mol_theme_hue_spread) ) );
+	--mol_theme_card: oklch( 35% .1 calc( var(--mol_theme_hue) + var(--mol_theme_hue_spread) ) / .25 );
+}
+:where( [mol_theme="$mol_theme_light"] ) [mol_theme="$mol_theme_special"] {
+	--mol_theme_back: oklch( 85% .05 calc( var(--mol_theme_hue) + var(--mol_theme_hue_spread) ) );
+	--mol_theme_card: oklch( 98% .03 calc( var(--mol_theme_hue) + var(--mol_theme_hue_spread) ) / .25 );
+}
+
+:where( :root, [mol_theme="$mol_theme_dark"] ) [mol_theme="$mol_theme_accent"] {
+	--mol_theme_back: oklch( 35% .1 calc( var(--mol_theme_hue) + 180deg ) );
+	--mol_theme_card: oklch( 45% .15 calc( var(--mol_theme_hue) + 180deg ) / .25 );
+}
+:where( [mol_theme="$mol_theme_light"] ) [mol_theme="$mol_theme_accent"] {
+	--mol_theme_back: oklch( 83% .1 calc( var(--mol_theme_hue) + 180deg ) );
+	--mol_theme_card: oklch( 98% .03 calc( var(--mol_theme_hue) + 180deg ) / .25 );
+}
+
+</style><style id="$mol_style_attach:mol/gap/gap.css">:root {
+	--mol_gap_page: 3rem;
+	--mol_gap_block: .75rem;
+	--mol_gap_text: .5rem .75rem;
+	--mol_gap_emoji: .5rem;
+	--mol_gap_round: .25rem;
+	--mol_gap_space: .25rem;
+	--mol_gap_blur: .5rem;
+}
+</style><style id="$mol_style_attach:mol/view/view/view.css">@view-transition {
+	navigation: auto;
+}
+
+[mol_view] {
+	transition-property: height, width, min-height, min-width, max-width, max-height, transform, scale, translate, rotate;
+	transition-duration: .2s;
+	transition-timing-function: ease-out;
+	-webkit-appearance: none;
+	box-sizing: border-box;
+	display: flex;
+	flex-shrink: 0;
+	contain: style;
+	scrollbar-color: var(--mol_theme_line) transparent;
+	scrollbar-width: thin;
+	/* text-wrap-style: pretty; dont work in textarea */
+	unicode-bidi: plaintext
+}
+
+[mol_view]::selection {
+	background: var(--mol_theme_line);
+}	
+
+[mol_view]::-webkit-scrollbar {
+	width: .25rem;
+	height: .25rem;
+}
+
+[mol_view]::-webkit-scrollbar-corner {
+	background-color: var(--mol_theme_line);
+}
+
+[mol_view]::-webkit-scrollbar-track {
+	background-color: transparent;
+}
+
+[mol_view]::-webkit-scrollbar-thumb {
+	background-color: var(--mol_theme_line);
+	border-radius: var(--mol_gap_round);
+}
+
+[mol_view] > * {
+	word-break: inherit;
+}
+
+[mol_view_root] {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	font-family: system-ui, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	font-size: 1rem;
+	line-height: 1.5rem;
+	/* background: var(--mol_theme_back);
+	color: var(--mol_theme_text); */
+	contain: unset; /** Fixes bg ignoring when applied to body on Chrome */
+	tab-size: 4;
+	/*overscroll-behavior: contain; /** Disable navigation gestures **/
+}
+
+@media print {
+	[mol_view_root] {
+		height: auto;
+	}
+}
+[mol_view][mol_view_error]:not([mol_view_error="Promise"], [mol_view_error="$mol_promise_blocker"]) {
+	background-image: repeating-linear-gradient(
+		-45deg,
+		#f92323,
+		#f92323 .5rem,
+		#ff3d3d .5rem,
+		#ff3d3d 1.5rem
+	);
+	color: black;
+	align-items: center;
+	justify-content: center;
+}
+
+@keyframes mol_view_wait {
+	from {
+		opacity: .25;
+	}
+	20% {
+		opacity: .75;
+	}
+	to {
+		opacity: .25;
+	}
+}
+
+:where([mol_view][mol_view_error="$mol_promise_blocker"]),
+:where([mol_view][mol_view_error="Promise"]) {
+	background: var(--mol_theme_hover);
+}
+
+[mol_view][mol_view_error="Promise"] {
+	animation: mol_view_wait 1s steps(20,end) infinite;
+}
+</style><style id="$mol_style_attach:$bog_builderui_div">[bog_builderui_div] {
+	font-family: var(--bog_builderui_font_body);
+	color: var(--bog_builderui_text);
+	flex-direction: column;
+}
+</style><style id="$mol_style_attach:$bog_builderui_card">[bog_builderui_card] {
+	background-color: var(--bog_builderui_card);
+	color: var(--bog_builderui_text);
+	border-radius: var(--bog_builderui_radius);
+	border-width: 1px;
+	border-style: solid;
+	border-color: var(--bog_builderui_line);
+	padding-top: 1rem;
+	padding-bottom: 1rem;
+	padding-left: 1.25rem;
+	padding-right: 1.25rem;
+	box-shadow: 0 1px 3px 0 #0000001a;
+	gap: 0.75rem;
+	flex-direction: column;
+	break-inside: avoid;
+	margin-bottom: 1rem;
+}
+</style><style id="$mol_style_attach:mol/layer/layer.css">:root {
+	--mol_layer_hover: 1;
+	--mol_layer_focus: 2;
+	--mol_layer_speck: 3;
+	--mol_layer_float: 4;
+	--mol_layer_popup: 5;
+}
+</style><style id="$mol_style_attach:mol/string/string.view.css">[mol_string] {
+	box-sizing: border-box;
+	outline-offset: 0;
+	border: none;
+	border-radius: var(--mol_gap_round);
+	white-space: pre-line;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding: var(--mol_gap_text);
+	text-align: start;
+	position: relative;
+	font: inherit;
+	flex: 1 1 auto;
+	background: transparent;
+	min-width: 0;
+	color: inherit;
+	background: var(--mol_theme_field);
+}
+
+[mol_string]:disabled:not(:placeholder-shown) {
+	background-color: transparent;
+	color: var(--mol_theme_text);
+}
+
+[mol_string]:where(:not(:disabled)) {
+	box-shadow: inset 0 0 0 1px var(--mol_theme_line);
+}
+
+[mol_string]:where(:not(:disabled)):hover {
+	box-shadow: inset 0 0 0 2px var(--mol_theme_line);
+	z-index: var(--mol_layer_hover);
+}
+
+[mol_string]:focus {
+	outline: none;
+	z-index: var(--mol_layer_focus);
+	color: var(--mol_theme_text);
+	box-shadow: inset 0 0 0 1px var(--mol_theme_focus);
+}
+
+[mol_string]::placeholder {
+	color: var(--mol_theme_shade);
+}
+
+[mol_string]::-ms-clear {
+	display: none;
+}
+</style><style id="$mol_style_attach:$bog_builderui_field">[bog_builderui_field] {
+	font-family: var(--bog_builderui_font_body);
+	color: var(--bog_builderui_text);
+	background-color: var(--bog_builderui_field);
+	border-radius: var(--bog_builderui_radius);
+	border-width: 1px;
+	border-style: solid;
+	border-color: var(--bog_builderui_line);
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+	padding-left: 0.75rem;
+	padding-right: 0.75rem;
+	flex-grow: 0;
+	flex-shrink: 1;
+	align-self: stretch;
+	min-width: 0;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+</style><style id="$mol_style_attach:$mol_scroll">[mol_scroll] {
+	display: grid;
+	overflow: auto;
+	flex-direction: column;
+	flex-grow: 1;
+	flex-shrink: 1;
+	outline: none;
+	align-self: stretch;
+	align-items: flex-start;
+	box-sizing: border-box;
+	will-change: scroll-position;
+	scroll-padding: 0.75rem 0;
+	max-height: 100%;
+	max-width: 100%;
+	webkit-overflow-scrolling: touch;
+	contain: content;
+}
+[mol_scroll] > :where([mol_view]) {
+	grid-area: 1/1;
+}
+[mol_scroll]::before {
+	display: none;
+}
+[mol_scroll]::after {
+	display: none;
+}
+[mol_scroll]::-webkit-scrollbar {
+	width: 0.25rem;
+	height: 0.25rem;
+}
+@media print {
+[mol_scroll] {
+	overflow: hidden;
+	contain: none;
+	max-height: unset;
+}
+}
+</style><style id="$mol_style_attach:mol/gallery/gallery.view.css">[mol_gallery] {
+	flex-wrap: wrap;
+	flex: 1 1 auto;
+	align-items: stretch;
+    align-content: stretch;
+}
+</style><style id="$mol_style_attach:mol/plot/graph/graph.view.css">[mol_plot_graph] {
+	stroke: currentColor;
+}
+
+[mol_plot_graph_sample] {
+	border-width: 0;
+	border-style: solid;
+}
+
+[mol_plot_graph_type="dashed"] {
+	stroke-dasharray: 4 4;
+	border-style: dashed;
+}
+</style><style id="$mol_style_attach:mol/chart/legend/legend.view.css">[mol_chart_legend] {
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: row;
+	flex: 0 1 auto;
+}
+
+[mol_chart_legend_graph_legend] {
+	display: flex;
+	justify-content: flex-start;
+	flex: 1 1 8rem;
+	padding: .5rem;
+}
+
+[mol_chart_legend_graph_title] {
+	margin: 0 .25rem;
+	flex: 1 1 auto;
+}
+
+[mol_chart_legend_graph_sample_box] {
+	position: relative;
+	width: 1.5rem;
+	flex: none;
+}
+</style><style id="$mol_style_attach:mol/svg/root/root.view.css">[mol_svg_root] {
+	overflow: hidden;
+}
+</style><style id="$mol_style_attach:mol/plot/pane/pane.view.css">[mol_plot_pane] {
+	color: var(--mol_theme_control);
+	flex: 1 1 auto;
+	align-self: stretch;
+	stroke-width: 2px;
+	user-select: none;
+}
+</style><style id="$mol_style_attach:mol/chart/chart.view.css">[mol_chart] {
+	display: flex;
+	flex-direction: column;
+	align-self: stretch;
+	flex: 1 1 auto;
+	min-height: 0;
+}
+
+[mol_chart_plot] {
+	flex: 1 0 50%;
+	margin: .5rem;
+}
+</style><style id="$mol_style_attach:$bog_builderui_chart">[bog_builderui_chart] {
+	font-family: var(--bog_builderui_font_body);
+	color: var(--bog_builderui_text);
+}
+</style><style id="$mol_style_attach:mol/follower/follower.view.css">[mol_follower] {
+	position: absolute;
+	top: 0;
+	left: 0;
+	transition: none;
+}
+</style><style id="$mol_style_attach:mol/pop/pop.view.css">@keyframes mol_pop_show {
+	from {
+		opacity: 0;
+	}
+}
+
+[mol_pop] {
+	position: relative;
+	display: inline-flex;
+}
+
+[mol_pop_bubble] {
+	border: none;
+	padding: 0;
+	color: var(--mol_theme_text);
+	box-shadow: 0 0 1rem hsla(0,0%,0%,.5);
+	border-radius: var(--mol_gap_round);
+	position: fixed;
+	z-index: var(--mol_layer_popup);
+	background: var(--mol_theme_back);
+	max-width: none;
+	max-height: none;
+	/* overflow: hidden;
+	overflow-y: scroll;
+	overflow-y: overlay; */
+	word-break: normal;
+	width: max-content;
+	/* height: max-content; */
+	flex-direction: column;
+	max-width: 100vw;
+	max-height: 80vw;
+	contain: paint;
+	transition-property: opacity;
+	/* Safari ios layer fix, https://t.me/mam_mol/170017 */
+	transform: translateZ(0);
+	animation: mol_pop_show .1s ease-in;
+}
+
+:where( [mol_pop_bubble] > * ) {
+	background: var(--mol_theme_card);
+}
+
+[mol_pop_bubble][mol_scroll] {
+	background: var(--mol_theme_back);
+}
+
+[mol_pop_bubble]:focus {
+	outline: none;
+}
+</style><style id="$mol_style_attach:mol/speck/speck.view.css">[mol_speck] {
+	font-size: .75rem;
+	border-radius: 1rem;
+	margin: -0.5rem -0.2rem;
+	align-self: flex-start;
+	min-height: 1em;
+	min-width: .75rem;
+	vertical-align: sub;
+	padding: 0 .2rem;
+	position: absolute;
+	z-index: var(--mol_layer_speck);
+	text-align: center;
+	line-height: .9;
+	display: inline-block;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	user-select: none;
+	box-shadow: 0 0 3px rgba(0,0,0,.5);
+}
+</style><style id="$mol_style_attach:mol/button/button.view.css">[mol_button] {
+	border: none;
+	font: inherit;
+	display: inline-flex;
+	flex-shrink: 0;
+	text-decoration: inherit;
+	cursor: inherit;
+	position: relative;
+	box-sizing: border-box;
+	word-break: normal;
+	cursor: default;
+	user-select: none;
+	-webkit-user-select: none;
+	border-radius: var(--mol_gap_round);
+	background: transparent;
+	color: inherit;
+}
+
+[mol_button]:where(:not(:disabled)):hover {
+	z-index: var(--mol_layer_hover);
+}
+
+[mol_button]:focus {
+	outline: none;
+	z-index: var(--mol_layer_focus);
+}
+</style><style id="$mol_style_attach:mol/button/typed/typed.view.css">[mol_button_typed] {
+	align-content: center;
+	align-items: center;
+	padding: var(--mol_gap_text);
+	border-radius: var(--mol_gap_round);
+	gap: var(--mol_gap_space);
+	user-select: none;
+	cursor: pointer;
+	min-width: 2.5rem;
+	min-height: 2.5rem;
+}
+
+[mol_button_typed][disabled] {
+	pointer-events: none;
+}
+
+[mol_button_typed]:hover ,
+[mol_button_typed]:focus-visible {
+	box-shadow: inset 0 0 0 100vmax var(--mol_theme_hover);
+}
+
+[mol_button_typed]:active {
+	color: var(--mol_theme_focus);
+}
+</style><style id="$mol_style_attach:mol/button/minor/minor.view.css">[mol_button_minor]:where(:not([disabled])) {
+	color: var(--mol_theme_control);
+}
+</style><style id="$mol_style_attach:mol/check/check.css">[mol_check] {
+	flex: 0 0 auto;
+	justify-content: flex-start;
+	align-content: center;
+	/* align-items: flex-start; */
+	border: none;
+	font-weight: inherit;
+	box-shadow: none;
+	text-align: start;
+	display: inline-flex;
+	flex-wrap: nowrap;
+}
+
+[mol_check_title] {
+	flex-shrink: 1;
+}
+</style><style id="$mol_style_attach:mol/pick/pick.view.css">[mol_pick_trigger] {
+	align-items: center;
+	flex-grow: 1;
+}
+</style><style id="$mol_style_attach:mol/paragraph/paragraph.view.css">:where([mol_paragraph]) {
+	margin: 0;
+	max-width: 100%;
+}
+</style><style id="$mol_style_attach:mol/dimmer/dimmer.view.css">[mol_dimmer] {
+	display: block;
+	max-width: 100%;
+}
+
+[mol_dimmer_low] {
+	display: inline;
+	opacity: 0.8;
+}
+
+[mol_dimmer_high] {
+	display: inline;
+	color: var(--mol_theme_focus);
+	text-shadow: 0 0;
+}
+</style><style id="$mol_style_attach:mol/list/list.view.css">[mol_list] {
+	will-change: contents;
+	display: flex;
+	flex-direction: column;
+	flex-shrink: 0;
+	max-width: 100%;
+	/* display: flex;
+	align-items: stretch;
+	align-content: stretch; */
+	transition: none;
+	/* will-change: contents; */
+}
+
+[mol_list]:where([mol_view_error]) {
+	min-height: 1.5rem;
+}
+
+[mol_list_gap_before] ,
+[mol_list_gap_after] {
+	display: block !important;
+	flex: none;
+	transition: none;
+	overflow-anchor: none;
+}
+</style><style id="$mol_style_attach:mol/icon/icon.view.css">[mol_icon] {
+	fill: currentColor;
+	stroke: none;
+	width: 1em;
+	height: 1.5em;
+	flex: 0 0 auto;
+	vertical-align: top;
+	display: inline-block;
+	filter: drop-shadow(0px 1px 1px var(--mol_theme_back));
+	transform-origin: center;
+}
+
+[mol_icon_path] {
+	transform-origin: center;
+}
+</style><style id="$mol_style_attach:mol/search/search.view.css">[mol_search] {
+	align-self: flex-start;
+	flex: auto;
+}
+
+[mol_search_anchor] {
+	flex: 1 1 auto;
+}
+
+[mol_search_query] {
+	flex-grow: 1;
+}
+
+[mol_search_menu] {
+	min-height: .75rem;
+	display: flex;
+}
+
+[mol_search_suggest] {
+	text-align: start;
+}
+
+[mol_search_suggest_label_high] {
+	color: var(--mol_theme_shade);
+	text-shadow: none;
+}
+</style><style id="$mol_style_attach:mol/select/select.view.css">[mol_select] {
+	display: flex;
+	word-break: normal;
+	align-self: flex-start;
+}
+
+[mol_select_option_row] {
+	min-width: 100%;
+	padding: 0;
+	justify-content: flex-start;
+}
+
+[mol_select_filter] {
+	flex: 1 0 auto;
+	align-self: stretch;
+}
+
+[mol_select_option_label] {
+	padding: var(--mol_gap_text);
+	text-align: start;
+	min-height: 1.5em;
+	display: block;
+	white-space: nowrap;
+}
+
+[mol_select_clear_option_content] {
+	padding: .5em 1rem .5rem 0;
+	text-align: start;
+	box-shadow: var(--mol_theme_line);
+	flex: 1 0 auto;
+}
+
+[mol_select_no_options] {
+	padding: var(--mol_gap_text);
+	text-align: start;
+	display: block;
+	color: var(--mol_theme_shade);
+}
+
+[mol_select_trigger] {
+	padding: 0;
+	flex: 1 1 auto;
+	display: flex;
+}
+
+[mol_select_trigger] > * {
+	margin-inline-end: -1rem;
+}
+
+[mol_select_trigger] > *:last-child {
+	margin-inline-end: 0;
+}
+
+[mol_select_menu] {
+	display: flex;
+	flex-direction: column;
+}
+
+</style><style id="$mol_style_attach:$bog_builderui_select">[bog_builderui_select] {
+	font-family: var(--bog_builderui_font_body);
+	color: var(--bog_builderui_text);
+	background-color: var(--bog_builderui_field);
+	border-radius: var(--bog_builderui_radius);
+	border-width: 1px;
+	border-style: solid;
+	border-color: var(--bog_builderui_line);
+	padding-left: 0.75rem;
+	padding-right: 0.75rem;
+	cursor: pointer;
+	transition: background-color 120ms, border-color 120ms;
+}
+[bog_builderui_select]:hover {
+	background-color: var(--bog_builderui_hover);
+	border-color: var(--bog_builderui_focus);
+}
+[bog_builderui_select] :where([mol_check]) {
+	background-color: transparent;
+	box-shadow: none;
+	outline: none;
+	color: inherit;
+}
+[bog_builderui_select] :where([mol_check]):hover {
+	background-color: transparent;
+	box-shadow: none;
+}
+[bog_builderui_select] :where([mol_check]):focus {
+	background-color: transparent;
+	box-shadow: none;
+	outline: none;
+}
+[bog_builderui_select] :where([mol_check]):focus-visible {
+	background-color: transparent;
+	box-shadow: none;
+	outline: none;
+}
+[bog_builderui_select] :where([mol_pop_bubble]) {
+	background-color: var(--bog_builderui_card);
+	color: var(--bog_builderui_text);
+	border-width: 1px;
+	border-style: solid;
+	border-color: var(--bog_builderui_line);
+	border-radius: var(--bog_builderui_radius);
+	padding-top: 0.25rem;
+	padding-right: 0.25rem;
+	padding-bottom: 0.25rem;
+	padding-left: 0.25rem;
+	box-shadow: 0 4px 12px 0 #00000026;
+	overflow: hidden;
+}
+[bog_builderui_select] :where([mol_pop_bubble]) :where([mol_scroll]) {
+	background-color: transparent;
+	border-radius: var(--bog_builderui_radius);
+}
+[bog_builderui_select] :where([mol_pop_bubble]) :where([mol_button_minor]) {
+	border-radius: var(--bog_builderui_radius);
+	color: var(--bog_builderui_text);
+	background-color: transparent;
+	box-shadow: none;
+}
+[bog_builderui_select] :where([mol_pop_bubble]) :where([mol_button_minor]):hover {
+	background-color: var(--bog_builderui_hover);
+	box-shadow: none;
+}
+[bog_builderui_select] :where([mol_pop_bubble]) :where([mol_button_minor]):focus {
+	background-color: transparent;
+	box-shadow: none;
+}
+[bog_builderui_select] :where([mol_pop_bubble]) :where([mol_button_minor]):focus-visible {
+	background-color: transparent;
+	box-shadow: none;
+}
+</style><style id="$mol_style_attach:mol/pop/over/over.view.css">[mol_pop_over]:focus {
+	outline: none;
+}</style><style id="$mol_style_attach:bog/builderui/theme.css">@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=EB+Garamond:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+	--bog_builderui_font_body: 'Inter', system-ui, sans-serif;
+	--bog_builderui_font_head: 'Inter', system-ui, sans-serif;
+	--bog_builderui_radius: 0.5rem;
+}
+
+/* ============================================================
+   RADIUS PRESETS
+   ============================================================ */
+[bog_builderui_radius="none"] { --bog_builderui_radius: 0; }
+[bog_builderui_radius="small"] { --bog_builderui_radius: 0.25rem; }
+[bog_builderui_radius="medium"] { --bog_builderui_radius: 0.5rem; }
+[bog_builderui_radius="large"] { --bog_builderui_radius: 1rem; }
+
+/* ============================================================
+   BODY FONT
+   ============================================================ */
+[bog_builderui_font_body="inter"] { --bog_builderui_font_body: 'Inter', system-ui, sans-serif; }
+[bog_builderui_font_body="manrope"] { --bog_builderui_font_body: 'Manrope', system-ui, sans-serif; }
+[bog_builderui_font_body="dm-sans"] { --bog_builderui_font_body: 'DM Sans', system-ui, sans-serif; }
+[bog_builderui_font_body="eb-garamond"] { --bog_builderui_font_body: 'EB Garamond', Georgia, serif; }
+
+/* ============================================================
+   HEADING FONT
+   ============================================================ */
+[bog_builderui_font_head="inter"] { --bog_builderui_font_head: 'Inter', system-ui, sans-serif; }
+[bog_builderui_font_head="manrope"] { --bog_builderui_font_head: 'Manrope', system-ui, sans-serif; }
+[bog_builderui_font_head="dm-sans"] { --bog_builderui_font_head: 'DM Sans', system-ui, sans-serif; }
+[bog_builderui_font_head="eb-garamond"] { --bog_builderui_font_head: 'EB Garamond', Georgia, serif; }
+
+/* ============================================================
+   BASE COLORS (neutral palette)
+   Vars: back, card, field, text, shade, line, hover
+   ============================================================ */
+
+/* === Slate (default) === */
+:root,
+[bog_builderui_base="slate"][bog_builderui_lights="dark"],
+[bog_builderui_base="slate"][bog_builderui_lights="system"] {
+	--bog_builderui_back: #020817;
+	--bog_builderui_card: #0f172a;
+	--bog_builderui_field: #1e293b;
+	--bog_builderui_text: #f8fafc;
+	--bog_builderui_shade: #94a3b8;
+	--bog_builderui_line: #1e293b;
+	--bog_builderui_hover: #ffffff0d;
+}
+[bog_builderui_base="slate"][bog_builderui_lights="light"] {
+	--bog_builderui_back: #ffffff;
+	--bog_builderui_card: #f8fafc;
+	--bog_builderui_field: #f1f5f9;
+	--bog_builderui_text: #0f172a;
+	--bog_builderui_shade: #64748b;
+	--bog_builderui_line: #e2e8f0;
+	--bog_builderui_hover: #0000000a;
+}
+
+/* === Stone === */
+[bog_builderui_base="stone"][bog_builderui_lights="dark"],
+[bog_builderui_base="stone"][bog_builderui_lights="system"] {
+	--bog_builderui_back: #0c0a09;
+	--bog_builderui_card: #1c1917;
+	--bog_builderui_field: #292524;
+	--bog_builderui_text: #fafaf9;
+	--bog_builderui_shade: #a8a29e;
+	--bog_builderui_line: #292524;
+	--bog_builderui_hover: #ffffff0d;
+}
+[bog_builderui_base="stone"][bog_builderui_lights="light"] {
+	--bog_builderui_back: #fafaf9;
+	--bog_builderui_card: #ffffff;
+	--bog_builderui_field: #f5f5f4;
+	--bog_builderui_text: #0c0a09;
+	--bog_builderui_shade: #78716c;
+	--bog_builderui_line: #e7e5e4;
+	--bog_builderui_hover: #0000000a;
+}
+
+/* === Zinc === */
+[bog_builderui_base="zinc"][bog_builderui_lights="dark"],
+[bog_builderui_base="zinc"][bog_builderui_lights="system"] {
+	--bog_builderui_back: #09090b;
+	--bog_builderui_card: #18181b;
+	--bog_builderui_field: #27272a;
+	--bog_builderui_text: #fafafa;
+	--bog_builderui_shade: #a1a1aa;
+	--bog_builderui_line: #27272a;
+	--bog_builderui_hover: #ffffff0d;
+}
+[bog_builderui_base="zinc"][bog_builderui_lights="light"] {
+	--bog_builderui_back: #ffffff;
+	--bog_builderui_card: #fafafa;
+	--bog_builderui_field: #f4f4f5;
+	--bog_builderui_text: #09090b;
+	--bog_builderui_shade: #71717a;
+	--bog_builderui_line: #e4e4e7;
+	--bog_builderui_hover: #0000000a;
+}
+
+/* === Gray === */
+[bog_builderui_base="gray"][bog_builderui_lights="dark"],
+[bog_builderui_base="gray"][bog_builderui_lights="system"] {
+	--bog_builderui_back: #030712;
+	--bog_builderui_card: #111827;
+	--bog_builderui_field: #1f2937;
+	--bog_builderui_text: #f9fafb;
+	--bog_builderui_shade: #9ca3af;
+	--bog_builderui_line: #1f2937;
+	--bog_builderui_hover: #ffffff0d;
+}
+[bog_builderui_base="gray"][bog_builderui_lights="light"] {
+	--bog_builderui_back: #ffffff;
+	--bog_builderui_card: #f9fafb;
+	--bog_builderui_field: #f3f4f6;
+	--bog_builderui_text: #030712;
+	--bog_builderui_shade: #6b7280;
+	--bog_builderui_line: #e5e7eb;
+	--bog_builderui_hover: #0000000a;
+}
+
+/* ============================================================
+   SYSTEM MODE — the reader has picked no theme, so the OS decides.
+
+   Without this, a page can only be light or dark once JavaScript has
+   run and set `lights`. A prerendered page therefore ships whatever
+   the snapshot was taken in, and a reader whose system is dark gets a
+   bright flash on every cold load. With `lights="system"` in the
+   markup, CSS alone paints the first frame correctly.
+
+   The rules above already give system mode the dark palette; this
+   block flips it to light when the OS asks for light. An explicit
+   `lights="light"` / `lights="dark"` carries the same specificity and
+   a different attribute value, so a deliberate choice is untouched.
+   ============================================================ */
+@media (prefers-color-scheme: light) {
+	[bog_builderui_base="slate"][bog_builderui_lights="system"] {
+		--bog_builderui_back: #ffffff;
+		--bog_builderui_card: #f8fafc;
+		--bog_builderui_field: #f1f5f9;
+		--bog_builderui_text: #0f172a;
+		--bog_builderui_shade: #64748b;
+		--bog_builderui_line: #e2e8f0;
+		--bog_builderui_hover: #0000000a;
+	}
+	[bog_builderui_base="stone"][bog_builderui_lights="system"] {
+		--bog_builderui_back: #fafaf9;
+		--bog_builderui_card: #ffffff;
+		--bog_builderui_field: #f5f5f4;
+		--bog_builderui_text: #0c0a09;
+		--bog_builderui_shade: #78716c;
+		--bog_builderui_line: #e7e5e4;
+		--bog_builderui_hover: #0000000a;
+	}
+	[bog_builderui_base="zinc"][bog_builderui_lights="system"] {
+		--bog_builderui_back: #ffffff;
+		--bog_builderui_card: #fafafa;
+		--bog_builderui_field: #f4f4f5;
+		--bog_builderui_text: #09090b;
+		--bog_builderui_shade: #71717a;
+		--bog_builderui_line: #e4e4e7;
+		--bog_builderui_hover: #0000000a;
+	}
+	[bog_builderui_base="gray"][bog_builderui_lights="system"] {
+		--bog_builderui_back: #ffffff;
+		--bog_builderui_card: #f9fafb;
+		--bog_builderui_field: #f3f4f6;
+		--bog_builderui_text: #030712;
+		--bog_builderui_shade: #6b7280;
+		--bog_builderui_line: #e5e7eb;
+		--bog_builderui_hover: #0000000a;
+	}
+}
+
+/* ============================================================
+   ACCENT THEMES (vars: control, focus, current, special)
+   ============================================================ */
+
+:root,
+[bog_builderui_theme="sky"] {
+	--bog_builderui_control: #0ea5e9;
+	--bog_builderui_focus: #38bdf8;
+	--bog_builderui_current: #06b6d4;
+	--bog_builderui_special: #6366f1;
+}
+[bog_builderui_theme="rose"] {
+	--bog_builderui_control: #f43f5e;
+	--bog_builderui_focus: #fb7185;
+	--bog_builderui_current: #ec4899;
+	--bog_builderui_special: #f97316;
+}
+[bog_builderui_theme="violet"] {
+	--bog_builderui_control: #8b5cf6;
+	--bog_builderui_focus: #a78bfa;
+	--bog_builderui_current: #6366f1;
+	--bog_builderui_special: #d946ef;
+}
+[bog_builderui_theme="emerald"] {
+	--bog_builderui_control: #10b981;
+	--bog_builderui_focus: #34d399;
+	--bog_builderui_current: #14b8a6;
+	--bog_builderui_special: #84cc16;
+}
+[bog_builderui_theme="amber"] {
+	--bog_builderui_control: #f59e0b;
+	--bog_builderui_focus: #fbbf24;
+	--bog_builderui_current: #f97316;
+	--bog_builderui_special: #eab308;
+}
+
+/* ============================================================
+   Bridge to --mol_theme_* so stock $mol components ($mol_chart,
+   $mol_button, $mol_string) pick up our palette automatically.
+   ============================================================ */
+:where([bog_builderui_lights]) {
+	--mol_theme_back: var(--bog_builderui_back);
+	--mol_theme_card: var(--bog_builderui_card);
+	--mol_theme_field: var(--bog_builderui_field);
+	--mol_theme_hover: var(--bog_builderui_hover);
+	--mol_theme_text: var(--bog_builderui_text);
+	--mol_theme_shade: var(--bog_builderui_shade);
+	--mol_theme_line: var(--bog_builderui_line);
+	--mol_theme_focus: var(--bog_builderui_focus);
+	--mol_theme_control: var(--bog_builderui_control);
+	--mol_theme_current: var(--bog_builderui_current);
+	--mol_theme_special: var(--bog_builderui_special);
+}
+
+/* ============================================================
+   CHART COLOR — independent accent for the chart bar/line
+   ============================================================ */
+:root,
+[bog_builderui_chart="blue"] { --bog_builderui_chart: #3b82f6; }
+[bog_builderui_chart="green"] { --bog_builderui_chart: #10b981; }
+[bog_builderui_chart="red"] { --bog_builderui_chart: #ef4444; }
+[bog_builderui_chart="yellow"] { --bog_builderui_chart: #eab308; }
+[bog_builderui_chart="purple"] { --bog_builderui_chart: #a855f7; }
+
+/* ============================================================
+   Popover for $bog_builderui_select (style the $mol_pop bubble
+   when it sits inside our scope or carries our marker)
+   ============================================================ */
+[bog_builderui_lights] [mol_pop_bubble],
+[bog_builderui_pop] {
+	background-color: var(--bog_builderui_card);
+	border: 1px solid var(--bog_builderui_line);
+	border-radius: var(--bog_builderui_radius);
+	box-shadow: 0 10px 30px #00000059;
+	padding: 0.375rem;
+	gap: 0.125rem;
+	min-width: 14rem;
+	overflow: hidden;
+}
+
+[bog_builderui_lights] [mol_select_filter] {
+	display: none;
+}
+
+[bog_builderui_lights] [mol_select_option_row] {
+	border-radius: calc(var(--bog_builderui_radius) - 2px);
+	padding: 0.5rem 0.75rem;
+	color: var(--bog_builderui_text);
+	font-family: var(--bog_builderui_font_body);
+	font-size: 0.9rem;
+	background-color: transparent;
+}
+
+[bog_builderui_lights] [mol_select_option_row]:hover {
+	background-color: var(--bog_builderui_hover);
+}
+
+[bog_builderui_lights] [mol_select_option_label] {
+	padding: 0;
+	color: inherit;
+}
+
+[bog_builderui_lights] [mol_select_no_options] {
+	color: var(--bog_builderui_shade);
+	padding: 0.5rem 0.75rem;
+}
+
+[bog_builderui_lights] [bog_builderui_select] [mol_select_trigger] {
+	gap: 0.5rem;
+	padding: 0 0.25rem 0 0;
+}
+[bog_builderui_lights] [bog_builderui_select] [mol_select_trigger] > * {
+	margin-right: 0;
+}
+
+/* ============================================================
+   Skeleton — any $mol_view in pending state gets a pulsing surface
+   ============================================================ */
+@keyframes bog_builderui_skeleton_pulse {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.5; }
+}
+
+[bog_builderui_lights] [mol_view][mol_view_error="Promise"],
+[bog_builderui_lights] [mol_view][mol_view_error="$mol_promise_blocker"] {
+	border-radius: var(--bog_builderui_radius);
+	background-color: var(--bog_builderui_field);
+	color: transparent;
+	animation: bog_builderui_skeleton_pulse 1.6s ease-in-out infinite;
+}
+
+/* ============================================================
+   Tooltip surface
+   ============================================================ */
+[bog_builderui_lights] [bog_builderui_tooltip] [mol_pop_bubble] {
+	background-color: var(--bog_builderui_text);
+	color: var(--bog_builderui_back);
+	border: none;
+	border-radius: calc(var(--bog_builderui_radius) - 2px);
+	padding: 0.375rem 0.625rem;
+	font-family: var(--bog_builderui_font_body);
+	font-size: 0.8rem;
+	box-shadow: 0 4px 12px #0000004d;
+	min-width: 0;
+}
+
+</style><style id="$mol_style_attach:mol/image/image.view.css">[mol_image] {
+	border-radius: var(--mol_gap_round);
+	overflow: hidden;
+	flex: 0 1 auto;
+	max-width: 100%;
+	object-fit: cover;
+	height: fit-content;
+}
+</style><style id="$mol_style_attach:$mol_link">[mol_link] {
+	text-decoration: none;
+	color: var(--mol_theme_control);
+	stroke: currentcolor;
+	cursor: pointer;
+	padding: var(--mol_gap_text);
+	box-sizing: border-box;
+	position: relative;
+	min-width: 2.5rem;
+	min-height: 2.5rem;
+	gap: var(--mol_gap_space);
+	border-radius: var(--mol_gap_round);
+}
+[mol_link]:hover {
+	background-color: var(--mol_theme_hover);
+}
+[mol_link]:focus {
+	outline: none;
+}
+[mol_link]:focus-visible {
+	outline: none;
+	background-color: var(--mol_theme_hover);
+}
+[mol_link]:active {
+	color: var(--mol_theme_focus);
+}
+[mol_link]:where([mol_link_current="true"]) {
+	color: var(--mol_theme_current);
+	text-shadow: 0 0;
+}
+</style><style id="$mol_style_attach:bog/music/landing/landing.view.css">/* Та же палитра, что у приложения (app/app.view.css), чтобы лендинг и плеер
+   выглядели одним продуктом. */
+[bog_music_landing][bog_builderui_base][bog_builderui_lights="light"] {
+	--bog_builderui_control: hsl( 210, 68%, 42% );
+	--bog_builderui_focus: hsl( 210, 72%, 36% );
+	--bog_builderui_current: hsl( 26, 82%, 44% );
+	--bog_builderui_special: hsl( 26, 82%, 44% );
+	--bog_builderui_back: #faf9f7;
+	--bog_builderui_card: #ffffff;
+}
+[bog_music_landing][bog_builderui_base][bog_builderui_lights="dark"],
+[bog_music_landing][bog_builderui_base][bog_builderui_lights="system"] {
+	--bog_builderui_control: hsl( 210, 72%, 64% );
+	--bog_builderui_focus: hsl( 210, 76%, 72% );
+	--bog_builderui_current: hsl( 30, 85%, 60% );
+	--bog_builderui_special: hsl( 30, 85%, 60% );
+	--bog_builderui_text: #d4d4d8;
+	--bog_builderui_back: #18181b;
+	--bog_builderui_card: #09090b;
+}
+@media ( prefers-color-scheme: light ) {
+	[bog_music_landing][bog_builderui_base][bog_builderui_lights="system"] {
+		--bog_builderui_control: hsl( 210, 68%, 42% );
+		--bog_builderui_focus: hsl( 210, 72%, 36% );
+		--bog_builderui_current: hsl( 26, 82%, 44% );
+		--bog_builderui_special: hsl( 26, 82%, 44% );
+		--bog_builderui_text: #09090b;
+		--bog_builderui_back: #faf9f7;
+		--bog_builderui_card: #ffffff;
+	}
+}
+html:has([bog_music_landing]) {
+	background: var(--bog_builderui_back);
+}
+
+/* Страница длиннее экрана: корню mol достаётся height:100%, поэтому фон
+   красим на html, а корень отпускаем в высоту по содержимому. */
+html:has([bog_music_landing]),
+body:has([bog_music_landing]) {
+	background: #faf9f7;
+}
+@media ( prefers-color-scheme: dark ) {
+	html:has([bog_music_landing]),
+	body:has([bog_music_landing]) {
+		background: #18181b;
+	}
+}
+[bog_music_landing][mol_view_root] {
+	height: auto;
+	min-height: 100%;
+}
+</style><style id="$mol_style_attach:$bog_music_landing">[bog_music_landing] {
+	flex-direction: column;
+	align-items: center;
+	gap: 3rem;
+	padding-top: 3rem;
+	padding-bottom: 3rem;
+	padding-left: var(--mol_gap_block);
+	padding-right: var(--mol_gap_block);
+	font-family: var(--bog_builderui_font_body);
+	background-color: var(--bog_builderui_back);
+	color: var(--bog_builderui_text);
+	min-height: 100vh;
+	width: 100%;
+	box-sizing: border-box;
+}
+[bog_music_landing] :where([mol_icon]) {
+	width: 1.5em;
+}
+[bog_music_landing_hero] {
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+	width: 100%;
+	max-width: 40rem;
+	text-align: center;
+}
+[bog_music_landing_hero_image] {
+	width: 6rem;
+	height: 6rem;
+}
+[bog_music_landing_hero_title] {
+	display: block;
+	font-family: var(--bog_builderui_font_head);
+	font-size: 3rem;
+	font-weight: 500;
+	line-height: 1.1;
+	margin-top: 0;
+	margin-bottom: 0;
+}
+[bog_music_landing_hero_subtitle] {
+	display: block;
+	white-space: normal;
+	font-size: 1.25rem;
+	line-height: 1.5;
+	color: var(--bog_builderui_shade);
+	margin-top: 0;
+	margin-bottom: 0;
+}
+[bog_music_landing_hero_actions] {
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: var(--mol_gap_block);
+	margin-top: 0.5rem;
+}
+[bog_music_landing_open] {
+	align-items: center;
+	gap: var(--mol_gap_text);
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	padding-left: 1.5rem;
+	padding-right: 1.5rem;
+	border-radius: var(--bog_builderui_radius);
+	background-color: var(--bog_builderui_control);
+	color: var(--bog_builderui_back);
+	font-weight: 600;
+	text-decoration: none;
+}
+[bog_music_landing_extension] {
+	align-items: center;
+	gap: var(--mol_gap_text);
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	padding-left: 1.5rem;
+	padding-right: 1.5rem;
+	border-radius: var(--bog_builderui_radius);
+	border-width: 1px;
+	border-style: solid;
+	border-color: var(--bog_builderui_line);
+	color: var(--bog_builderui_text);
+	text-decoration: none;
+}
+[bog_music_landing_features] {
+	flex-direction: column;
+	gap: 1.5rem;
+	width: 100%;
+	max-width: 50rem;
+}
+[bog_music_landing_features_title] {
+	display: block;
+	font-family: var(--bog_builderui_font_head);
+	font-size: 2rem;
+	font-weight: 500;
+	text-align: center;
+	margin-top: 0;
+	margin-bottom: 0;
+}
+[bog_music_landing_features_list] {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+	gap: var(--mol_gap_block);
+}
+[bog_music_landing_install] {
+	flex-direction: column;
+	align-items: center;
+	gap: 1.5rem;
+	width: 100%;
+	max-width: 50rem;
+}
+[bog_music_landing_install_title] {
+	display: block;
+	font-family: var(--bog_builderui_font_head);
+	font-size: 2rem;
+	font-weight: 500;
+	text-align: center;
+	margin-top: 0;
+	margin-bottom: 0;
+}
+[bog_music_landing_install_text] {
+	display: block;
+	white-space: normal;
+	text-align: center;
+	color: var(--bog_builderui_shade);
+	margin-top: 0;
+	margin-bottom: 0;
+}
+[bog_music_landing_install_list] {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+	gap: var(--mol_gap_block);
+	width: 100%;
+}
+[bog_music_landing_install_open] {
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	padding-left: 1.5rem;
+	padding-right: 1.5rem;
+	border-radius: var(--bog_builderui_radius);
+	background-color: var(--bog_builderui_control);
+	color: var(--bog_builderui_back);
+	font-weight: 600;
+	text-decoration: none;
+}
+[bog_music_landing_foot] {
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: var(--mol_gap_block);
+	color: var(--bog_builderui_shade);
+	font-size: 0.875rem;
+}
+</style><style id="$mol_style_attach:$bog_music_landing_feature">[bog_music_landing_feature] {
+	flex-direction: row;
+	min-width: 0;
+	align-items: flex-start;
+	gap: var(--mol_gap_block);
+	padding: var(--mol_gap_block);
+	background-color: var(--bog_builderui_card);
+	border-radius: var(--bog_builderui_radius);
+	border-width: 1px;
+	border-style: solid;
+	border-color: var(--bog_builderui_line);
+}
+[bog_music_landing_feature_icon] {
+	flex-shrink: 0;
+	width: 2rem;
+	height: 2rem;
+	color: var(--bog_builderui_control);
+}
+[bog_music_landing_feature_body] {
+	flex-direction: column;
+	flex-grow: 1;
+	flex-shrink: 1;
+	gap: 0.25rem;
+	min-width: 0;
+}
+[bog_music_landing_feature_title] {
+	display: block;
+	white-space: normal;
+	font-size: 1.125rem;
+	font-weight: 600;
+	margin-top: 0;
+	margin-bottom: 0;
+}
+[bog_music_landing_feature_text] {
+	display: block;
+	white-space: normal;
+	color: var(--bog_builderui_shade);
+	line-height: 1.5;
+	margin-top: 0;
+	margin-bottom: 0;
+}
+</style></head>
+	<body mol_view_root="">
+		<div mol_view_root="$bog_music_landing" id="$bog_music_landing.Root(0)" bog_music_landing="" mol_view="" bog_music_landing_skin="" bog_builderui_skin="" mol_plugin="" bog_builderui_lights="system" bog_builderui_base="zinc" bog_builderui_theme="sky" bog_builderui_chart="blue" bog_builderui_radius="medium" bog_builderui_font_body="inter" bog_builderui_font_head="eb-garamond"><mol_view id="$bog_music_landing.Root(0).Hero()" bog_music_landing_hero="" mol_view=""><img id="$bog_music_landing.Root(0).Hero_image()" bog_music_landing_hero_image="" mol_image="" mol_view="" src="bog/music/app/favicon.svg" title="" alt="Bog Music" loading="lazy" decoding="async" width="150" height="150"><h1 id="$bog_music_landing.Root(0).Hero_title()" bog_music_landing_hero_title="" mol_view="">Bog Music</h1><p id="$bog_music_landing.Root(0).Hero_subtitle()" bog_music_landing_hero_subtitle="" mol_view="">Своя музыка на всех устройствах. Бесплатно, без рекламы, играет офлайн.</p><mol_view id="$bog_music_landing.Root(0).Hero_actions()" bog_music_landing_hero_actions="" mol_view=""><a id="$bog_music_landing.Root(0).Open()" bog_music_landing_open="" mol_link="" mol_view="" href="https://b-on-g.github.io/music/" title="" target="_blank" rel=""><svg id="$bog_music_landing.Root(0).Open_icon()" bog_music_landing_open_icon="" mol_icon_play="" mol_icon="" mol_svg_root="" mol_svg="" mol_view="" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid"><path id="$bog_music_landing.Root(0).Open_icon().Path()" mol_icon_play_path="" mol_icon_path="" bog_music_landing_open_icon_path="" mol_svg_path="" mol_svg="" mol_view="" d="M8,5.14V19.14L19,12.14L8,5.14Z"></path></svg><mol_view id="$bog_music_landing.Root(0).Open_label()" bog_music_landing_open_label="" mol_view="">Открыть приложение</mol_view></a><a id="$bog_music_landing.Root(0).Extension()" bog_music_landing_extension="" mol_link="" mol_view="" href="https://github.com/b-on-g/music/releases/latest" title="" target="_blank" rel=""><svg id="$bog_music_landing.Root(0).Extension_icon()" bog_music_landing_extension_icon="" mol_icon_puzzle="" mol_icon="" mol_svg_root="" mol_svg="" mol_view="" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid"><path id="$bog_music_landing.Root(0).Extension_icon().Path()" mol_icon_puzzle_path="" mol_icon_path="" bog_music_landing_extension_icon_path="" mol_svg_path="" mol_svg="" mol_view="" d="M20.5,11H19V7C19,5.89 18.1,5 17,5H13V3.5A2.5,2.5 0 0,0 10.5,1A2.5,2.5 0 0,0 8,3.5V5H4A2,2 0 0,0 2,7V10.8H3.5C5,10.8 6.2,12 6.2,13.5C6.2,15 5,16.2 3.5,16.2H2V20A2,2 0 0,0 4,22H7.8V20.5C7.8,19 9,17.8 10.5,17.8C12,17.8 13.2,19 13.2,20.5V22H17A2,2 0 0,0 19,20V16H20.5A2.5,2.5 0 0,0 23,13.5A2.5,2.5 0 0,0 20.5,11Z"></path></svg><mol_view id="$bog_music_landing.Root(0).Extension_label()" bog_music_landing_extension_label="" mol_view="">Расширение для Chrome</mol_view></a></mol_view></mol_view><mol_view id="$bog_music_landing.Root(0).Features()" bog_music_landing_features="" mol_view=""><h2 id="$bog_music_landing.Root(0).Features_title()" bog_music_landing_features_title="" mol_view="">Что умеет</h2><mol_view id="$bog_music_landing.Root(0).Features_list()" bog_music_landing_features_list="" mol_view=""><bog_music_landing_feature id="$bog_music_landing.Root(0).Feature_vk()" bog_music_landing_feature_vk="" bog_music_landing_feature="" mol_view=""><svg id="$bog_music_landing.Root(0).Feature_vk_icon()" bog_music_landing_feature_vk_icon="" mol_icon_download="" mol_icon="" mol_svg_root="" mol_svg="" mol_view="" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid"><path id="$bog_music_landing.Root(0).Feature_vk_icon().Path()" mol_icon_download_path="" mol_icon_path="" bog_music_landing_feature_vk_icon_path="" mol_svg_path="" mol_svg="" mol_view="" d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"></path></svg><mol_view id="$bog_music_landing.Root(0).Feature_vk().Body()" bog_music_landing_feature_body="" bog_music_landing_feature_vk_body="" mol_view=""><h3 id="$bog_music_landing.Root(0).Feature_vk().Title()" bog_music_landing_feature_title="" bog_music_landing_feature_vk_title="" mol_view="">Сохраняет из VK</h3><p id="$bog_music_landing.Root(0).Feature_vk().Text()" bog_music_landing_feature_text="" bog_music_landing_feature_vk_text="" mol_view="">Одна кнопка прямо в списке аудио на vk.com — трек уезжает в твою фонотеку.</p></mol_view></bog_music_landing_feature><bog_music_landing_feature id="$bog_music_landing.Root(0).Feature_tube()" bog_music_landing_feature_tube="" bog_music_landing_feature="" mol_view=""><svg id="$bog_music_landing.Root(0).Feature_tube_icon()" bog_music_landing_feature_tube_icon="" mol_icon_magnify="" mol_icon="" mol_svg_root="" mol_svg="" mol_view="" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid"><path id="$bog_music_landing.Root(0).Feature_tube_icon().Path()" mol_icon_magnify_path="" mol_icon_path="" bog_music_landing_feature_tube_icon_path="" mol_svg_path="" mol_svg="" mol_view="" d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"></path></svg><mol_view id="$bog_music_landing.Root(0).Feature_tube().Body()" bog_music_landing_feature_body="" bog_music_landing_feature_tube_body="" mol_view=""><h3 id="$bog_music_landing.Root(0).Feature_tube().Title()" bog_music_landing_feature_title="" bog_music_landing_feature_tube_title="" mol_view="">Ищет на YouTube</h3><p id="$bog_music_landing.Root(0).Feature_tube().Text()" bog_music_landing_feature_text="" bog_music_landing_feature_tube_text="" mol_view="">Поиск, прослушивание превью и скачивание звука одной кнопкой.</p></mol_view></bog_music_landing_feature><bog_music_landing_feature id="$bog_music_landing.Root(0).Feature_tg()" bog_music_landing_feature_tg="" bog_music_landing_feature="" mol_view=""><svg id="$bog_music_landing.Root(0).Feature_tg_icon()" bog_music_landing_feature_tg_icon="" mol_icon_send="" mol_icon="" mol_svg_root="" mol_svg="" mol_view="" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid"><path id="$bog_music_landing.Root(0).Feature_tg_icon().Path()" mol_icon_send_path="" mol_icon_path="" bog_music_landing_feature_tg_icon_path="" mol_svg_path="" mol_svg="" mol_view="" d="M2,21L23,12L2,3V10L17,12L2,14V21Z"></path></svg><mol_view id="$bog_music_landing.Root(0).Feature_tg().Body()" bog_music_landing_feature_body="" bog_music_landing_feature_tg_body="" mol_view=""><h3 id="$bog_music_landing.Root(0).Feature_tg().Title()" bog_music_landing_feature_title="" bog_music_landing_feature_tg_title="" mol_view="">Принимает из Телеграма</h3><p id="$bog_music_landing.Root(0).Feature_tg().Text()" bog_music_landing_feature_text="" bog_music_landing_feature_tg_text="" mol_view="">Перешли песню боту — она появится в «Моей музыке» на всех устройствах.</p></mol_view></bog_music_landing_feature><bog_music_landing_feature id="$bog_music_landing.Root(0).Feature_offline()" bog_music_landing_feature_offline="" bog_music_landing_feature="" mol_view=""><svg id="$bog_music_landing.Root(0).Feature_offline_icon()" bog_music_landing_feature_offline_icon="" mol_icon_cloud_off_outline="" mol_icon="" mol_svg_root="" mol_svg="" mol_view="" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid"><path id="$bog_music_landing.Root(0).Feature_offline_icon().Path()" mol_icon_cloud_off_outline_path="" mol_icon_path="" bog_music_landing_feature_offline_icon_path="" mol_svg_path="" mol_svg="" mol_view="" d="M19.8 22.6L17.15 20H6.5Q4.2 20 2.6 18.4T1 14.5Q1 12.58 2.19 11.08 3.38 9.57 5.25 9.15 5.33 8.95 5.4 8.76 5.5 8.57 5.55 8.35L1.4 4.2L2.8 2.8L21.2 21.2M6.5 18H15.15L7.1 9.95Q7.05 10.23 7.03 10.5 7 10.73 7 11H6.5Q5.05 11 4.03 12.03 3 13.05 3 14.5 3 15.95 4.03 17 5.05 18 6.5 18M11.13 14M21.6 18.75L20.15 17.35Q20.58 17 20.79 16.54 21 16.08 21 15.5 21 14.45 20.27 13.73 19.55 13 18.5 13H17V11Q17 8.93 15.54 7.46 14.08 6 12 6 11.33 6 10.7 6.16 10.07 6.33 9.5 6.68L8.05 5.23Q8.93 4.63 9.91 4.31 10.9 4 12 4 14.93 4 16.96 6.04 19 8.07 19 11 20.73 11.2 21.86 12.5 23 13.78 23 15.5 23 16.5 22.63 17.31 22.25 18.15 21.6 18.75M14.83 12.03Z"></path></svg><mol_view id="$bog_music_landing.Root(0).Feature_offline().Body()" bog_music_landing_feature_body="" bog_music_landing_feature_offline_body="" mol_view=""><h3 id="$bog_music_landing.Root(0).Feature_offline().Title()" bog_music_landing_feature_title="" bog_music_landing_feature_offline_title="" mol_view="">Играет офлайн</h3><p id="$bog_music_landing.Root(0).Feature_offline().Text()" bog_music_landing_feature_text="" bog_music_landing_feature_offline_text="" mol_view="">Треки лежат на устройстве. Метро, самолёт, дача — музыка есть.</p></mol_view></bog_music_landing_feature><bog_music_landing_feature id="$bog_music_landing.Root(0).Feature_sync()" bog_music_landing_feature_sync="" bog_music_landing_feature="" mol_view=""><svg id="$bog_music_landing.Root(0).Feature_sync_icon()" bog_music_landing_feature_sync_icon="" mol_icon_sync="" mol_icon="" mol_svg_root="" mol_svg="" mol_view="" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid"><path id="$bog_music_landing.Root(0).Feature_sync_icon().Path()" mol_icon_sync_path="" mol_icon_path="" bog_music_landing_feature_sync_icon_path="" mol_svg_path="" mol_svg="" mol_view="" d="M12,18A6,6 0 0,1 6,12C6,11 6.25,10.03 6.7,9.2L5.24,7.74C4.46,8.97 4,10.43 4,12A8,8 0 0,0 12,20V23L16,19L12,15M12,4V1L8,5L12,9V6A6,6 0 0,1 18,12C18,13 17.75,13.97 17.3,14.8L18.76,16.26C19.54,15.03 20,13.57 20,12A8,8 0 0,0 12,4Z"></path></svg><mol_view id="$bog_music_landing.Root(0).Feature_sync().Body()" bog_music_landing_feature_body="" bog_music_landing_feature_sync_body="" mol_view=""><h3 id="$bog_music_landing.Root(0).Feature_sync().Title()" bog_music_landing_feature_title="" bog_music_landing_feature_sync_title="" mol_view="">Синхронизирует между устройствами</h3><p id="$bog_music_landing.Root(0).Feature_sync().Text()" bog_music_landing_feature_text="" bog_music_landing_feature_sync_text="" mol_view="">Телефон и компьютер видят одну фонотеку. Перенос аккаунта — одной ссылкой.</p></mol_view></bog_music_landing_feature><bog_music_landing_feature id="$bog_music_landing.Root(0).Feature_loud()" bog_music_landing_feature_loud="" bog_music_landing_feature="" mol_view=""><svg id="$bog_music_landing.Root(0).Feature_loud_icon()" bog_music_landing_feature_loud_icon="" mol_icon_equalizer="" mol_icon="" mol_svg_root="" mol_svg="" mol_view="" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid"><path id="$bog_music_landing.Root(0).Feature_loud_icon().Path()" mol_icon_equalizer_path="" mol_icon_path="" bog_music_landing_feature_loud_icon_path="" mol_svg_path="" mol_svg="" mol_view="" d="M10,20H14V4H10V20M4,20H8V12H4V20M16,9V20H20V9H16Z"></path></svg><mol_view id="$bog_music_landing.Root(0).Feature_loud().Body()" bog_music_landing_feature_body="" bog_music_landing_feature_loud_body="" mol_view=""><h3 id="$bog_music_landing.Root(0).Feature_loud().Title()" bog_music_landing_feature_title="" bog_music_landing_feature_loud_title="" mol_view="">Выравнивает громкость</h3><p id="$bog_music_landing.Root(0).Feature_loud().Text()" bog_music_landing_feature_text="" bog_music_landing_feature_loud_text="" mol_view="">Тихие и громкие записи звучат одинаково. Эквалайзер и обрез трека — в комплекте.</p></mol_view></bog_music_landing_feature><bog_music_landing_feature id="$bog_music_landing.Root(0).Feature_share()" bog_music_landing_feature_share="" bog_music_landing_feature="" mol_view=""><svg id="$bog_music_landing.Root(0).Feature_share_icon()" bog_music_landing_feature_share_icon="" mol_icon_share="" mol_icon="" mol_svg_root="" mol_svg="" mol_view="" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid"><path id="$bog_music_landing.Root(0).Feature_share_icon().Path()" mol_icon_share_path="" mol_icon_path="" bog_music_landing_feature_share_icon_path="" mol_svg_path="" mol_svg="" mol_view="" d="M21,12L14,5V9C7,10 4,15 3,20C5.5,16.5 9,14.9 14,14.9V19L21,12Z"></path></svg><mol_view id="$bog_music_landing.Root(0).Feature_share().Body()" bog_music_landing_feature_body="" bog_music_landing_feature_share_body="" mol_view=""><h3 id="$bog_music_landing.Root(0).Feature_share().Title()" bog_music_landing_feature_title="" bog_music_landing_feature_share_title="" mol_view="">Делится ссылкой</h3><p id="$bog_music_landing.Root(0).Feature_share().Text()" bog_music_landing_feature_text="" bog_music_landing_feature_share_text="" mol_view="">Трек шифруется, ключ живёт только в ссылке. Получатель откроет — и заиграет.</p></mol_view></bog_music_landing_feature><bog_music_landing_feature id="$bog_music_landing.Root(0).Feature_font()" bog_music_landing_feature_font="" bog_music_landing_feature="" mol_view=""><svg id="$bog_music_landing.Root(0).Feature_font_icon()" bog_music_landing_feature_font_icon="" mol_icon_format_size="" mol_icon="" mol_svg_root="" mol_svg="" mol_view="" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid"><path id="$bog_music_landing.Root(0).Feature_font_icon().Path()" mol_icon_format_size_path="" mol_icon_path="" bog_music_landing_feature_font_icon_path="" mol_svg_path="" mol_svg="" mol_view="" d="M2 4V7H7V19H10V7H15V4H2M21 9H12V12H15V19H18V12H21V9Z"></path></svg><mol_view id="$bog_music_landing.Root(0).Feature_font().Body()" bog_music_landing_feature_body="" bog_music_landing_feature_font_body="" mol_view=""><h3 id="$bog_music_landing.Root(0).Feature_font().Title()" bog_music_landing_feature_title="" bog_music_landing_feature_font_title="" mol_view="">Крупный шрифт</h3><p id="$bog_music_landing.Root(0).Feature_font().Text()" bog_music_landing_feature_text="" bog_music_landing_feature_font_text="" mol_view="">Три размера текста в настройках — удобно читать без очков.</p></mol_view></bog_music_landing_feature></mol_view></mol_view><mol_view id="$bog_music_landing.Root(0).Install()" bog_music_landing_install="" mol_view=""><h2 id="$bog_music_landing.Root(0).Install_title()" bog_music_landing_install_title="" mol_view="">Как поставить на телефон</h2><p id="$bog_music_landing.Root(0).Install_text()" bog_music_landing_install_text="" mol_view="">Магазин приложений не нужен: открой ссылку в браузере и добавь ярлык на экран.</p><mol_view id="$bog_music_landing.Root(0).Install_list()" bog_music_landing_install_list="" mol_view=""><bog_music_landing_feature id="$bog_music_landing.Root(0).Install_android()" bog_music_landing_install_android="" bog_music_landing_feature="" mol_view=""><svg id="$bog_music_landing.Root(0).Install_android_icon()" bog_music_landing_install_android_icon="" mol_icon_android="" mol_icon="" mol_svg_root="" mol_svg="" mol_view="" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid"><path id="$bog_music_landing.Root(0).Install_android_icon().Path()" mol_icon_android_path="" mol_icon_path="" bog_music_landing_install_android_icon_path="" mol_svg_path="" mol_svg="" mol_view="" d="M16.61 15.15C16.15 15.15 15.77 14.78 15.77 14.32S16.15 13.5 16.61 13.5H16.61C17.07 13.5 17.45 13.86 17.45 14.32C17.45 14.78 17.07 15.15 16.61 15.15M7.41 15.15C6.95 15.15 6.57 14.78 6.57 14.32C6.57 13.86 6.95 13.5 7.41 13.5H7.41C7.87 13.5 8.24 13.86 8.24 14.32C8.24 14.78 7.87 15.15 7.41 15.15M16.91 10.14L18.58 7.26C18.67 7.09 18.61 6.88 18.45 6.79C18.28 6.69 18.07 6.75 18 6.92L16.29 9.83C14.95 9.22 13.5 8.9 12 8.91C10.47 8.91 9 9.24 7.73 9.82L6.04 6.91C5.95 6.74 5.74 6.68 5.57 6.78C5.4 6.87 5.35 7.08 5.44 7.25L7.1 10.13C4.25 11.69 2.29 14.58 2 18H22C21.72 14.59 19.77 11.7 16.91 10.14H16.91Z"></path></svg><mol_view id="$bog_music_landing.Root(0).Install_android().Body()" bog_music_landing_feature_body="" bog_music_landing_install_android_body="" mol_view=""><h3 id="$bog_music_landing.Root(0).Install_android().Title()" bog_music_landing_feature_title="" bog_music_landing_install_android_title="" mol_view="">Android, Chrome</h3><p id="$bog_music_landing.Root(0).Install_android().Text()" bog_music_landing_feature_text="" bog_music_landing_install_android_text="" mol_view="">Меню ⋮ → «Установить приложение» или «Добавить на главный экран».</p></mol_view></bog_music_landing_feature><bog_music_landing_feature id="$bog_music_landing.Root(0).Install_ios()" bog_music_landing_install_ios="" bog_music_landing_feature="" mol_view=""><svg id="$bog_music_landing.Root(0).Install_ios_icon()" bog_music_landing_install_ios_icon="" mol_icon_apple="" mol_icon="" mol_svg_root="" mol_svg="" mol_view="" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid"><path id="$bog_music_landing.Root(0).Install_ios_icon().Path()" mol_icon_apple_path="" mol_icon_path="" bog_music_landing_install_ios_icon_path="" mol_svg_path="" mol_svg="" mol_view="" d="M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.1 17.41,12.63C17.44,15.65 20.06,16.66 20.09,16.67C20.06,16.74 19.67,18.11 18.71,19.5M13,3.5C13.73,2.67 14.94,2.04 15.94,2C16.07,3.17 15.6,4.35 14.9,5.19C14.21,6.04 13.07,6.7 11.95,6.61C11.8,5.46 12.36,4.26 13,3.5Z"></path></svg><mol_view id="$bog_music_landing.Root(0).Install_ios().Body()" bog_music_landing_feature_body="" bog_music_landing_install_ios_body="" mol_view=""><h3 id="$bog_music_landing.Root(0).Install_ios().Title()" bog_music_landing_feature_title="" bog_music_landing_install_ios_title="" mol_view="">iPhone, Safari</h3><p id="$bog_music_landing.Root(0).Install_ios().Text()" bog_music_landing_feature_text="" bog_music_landing_install_ios_text="" mol_view="">Кнопка «Поделиться» → «На экран Домой».</p></mol_view></bog_music_landing_feature></mol_view><a id="$bog_music_landing.Root(0).Install_open()" bog_music_landing_install_open="" mol_link="" mol_view="" href="https://b-on-g.github.io/music/" title="" target="_blank" rel=""><mol_view id="$bog_music_landing.Root(0).Install_open_label()" bog_music_landing_install_open_label="" mol_view="">Открыть Bog Music</mol_view></a></mol_view><mol_view id="$bog_music_landing.Root(0).Foot()" bog_music_landing_foot="" mol_view=""><a id="$bog_music_landing.Root(0).Source()" bog_music_landing_source="" mol_link="" mol_view="" href="https://github.com/b-on-g/music" title="" target="_blank" rel="">Открытый код на GitHub</a><a id="$bog_music_landing.Root(0).Baza()" bog_music_landing_baza="" mol_link="" mol_view="" href="https://github.com/giper-dev/baza" title="" target="_blank" rel="">Синхронизация — Giper Baza</a></mol_view></div>
+		<script src="web.js"></script>
+	
+
+</body></html>
