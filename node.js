@@ -16727,6 +16727,8 @@ var $;
             for (const gift of this._gift.values()) {
                 if (mine.units_persisted.has(gift))
                     continue;
+                if (!this.unit_seal(gift))
+                    continue;
                 persisting.add(gift);
                 check_lord(gift.lord());
                 check_lord(gift.mate());
@@ -16735,6 +16737,8 @@ var $;
                 for (const units of kids.values()) {
                     for (const sand of units.values()) {
                         if ($mol_wire_sync(mine.units_persisted).has(sand))
+                            continue;
+                        if (!this.unit_seal(sand))
                             continue;
                         persisting.add(sand);
                         check_lord(sand.lord());
