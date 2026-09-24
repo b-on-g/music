@@ -18838,12 +18838,22 @@ var $;
         }
         lands_news = new $mol_wire_set();
         static masters_default = [];
-        static masters() {
+        static masters_seeded() {
             const all = this.$.$giper_baza_glob.Seed().peers();
             const self = this.$.$giper_baza_auth.current().pass().lord();
             const pos = all.findLastIndex(peer => peer.link().str === self.str);
             const links = all.slice(pos + 1).flatMap(peer => peer.urls());
-            return [...this.masters_default, ...links];
+            return links.length ? links : null;
+        }
+        static masters_override() {
+            const arg = this.$.$mol_state_arg.value('giper_baza_yard_masters');
+            if (arg == null)
+                return null;
+            const links = arg.split(',').filter(Boolean);
+            return links;
+        }
+        static masters() {
+            return this.masters_override() ?? this.masters_seeded() ?? this.masters_default;
         }
         master_cursor(next = 0) {
             return next;
@@ -19190,6 +19200,12 @@ var $;
     __decorate([
         $mol_mem_key
     ], $giper_baza_yard.prototype, "face_port_land", null);
+    __decorate([
+        $mol_mem
+    ], $giper_baza_yard, "masters_seeded", null);
+    __decorate([
+        $mol_mem
+    ], $giper_baza_yard, "masters_override", null);
     __decorate([
         $mol_mem
     ], $giper_baza_yard, "masters", null);
@@ -42544,107 +42560,6 @@ var $;
 ;
 "use strict";
 var $;
-(function ($_1) {
-    var $$;
-    (function ($$) {
-        $mol_test({
-            "Empty release"($) {
-                const pool = new $mol_memory_pool;
-                $mol_assert_equal(pool.empty(), true);
-                pool.release(0, 0);
-                $mol_assert_equal(pool.acquire(8), 0);
-                $mol_assert_equal(pool.empty(), false);
-                pool.release(0, 8);
-                $mol_assert_equal(pool.empty(), true);
-            },
-            "linear allocation"($) {
-                const pool = new $mol_memory_pool;
-                $mol_assert_equal(pool.acquire(8), 0);
-                $mol_assert_equal(pool.acquire(16), 8);
-                $mol_assert_equal(pool.acquire(32), 24);
-            },
-            "allocation in released"($) {
-                const pool = new $mol_memory_pool;
-                $mol_assert_equal(pool.acquire(8), 0);
-                $mol_assert_equal(pool.acquire(16), 8);
-                pool.release(0, 16);
-                $mol_assert_equal(pool.acquire(8), 0);
-                $mol_assert_equal(pool.acquire(16), 24);
-                $mol_assert_equal(pool.acquire(8), 8);
-            },
-            "space limitation"($) {
-                const pool = new $mol_memory_pool(10);
-                pool.acquire(8);
-                pool.release(2, 4);
-                $mol_assert_fail(() => pool.acquire(6), 'No free space\nneed: 6\nhave: 4');
-            },
-            "double release"($) {
-                const pool = new $mol_memory_pool;
-                $mol_assert_fail(() => pool.release(0, 2), 'Double release');
-                $mol_assert_fail(() => pool.release(2, 2), 'Release out of allocated');
-                pool.acquire(16);
-                pool.release(4, 8);
-                $mol_assert_fail(() => pool.release(4, 8), 'Double release');
-                $mol_assert_fail(() => pool.release(10, 4), 'Double release');
-                $mol_assert_fail(() => pool.release(2, 4), 'Double release');
-            },
-        });
-    })($$ = $_1.$$ || ($_1.$$ = {}));
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($_1) {
-    var $$;
-    (function ($$) {
-        $mol_test({
-            "faces serial and parse"($) {
-                const land1 = new $giper_baza_link('12345678_12345678');
-                const land2 = new $giper_baza_link('87654321_87654321');
-                const land3 = new $giper_baza_link('87654321_00000000');
-                const peer1 = new $giper_baza_link('12345678');
-                const peer2 = new $giper_baza_link('87654321');
-                const faces1 = new $giper_baza_face_map;
-                faces1.peer_time(peer1.str, $giper_baza_time_now(), 0);
-                faces1.peer_summ(peer1.str, 0);
-                faces1.peer_time(peer2.str, $giper_baza_time_now(), 0);
-                faces1.peer_summ(peer2.str, 64_000);
-                const faces2 = new $giper_baza_face_map;
-                faces2.peer_time(peer1.str, $giper_baza_time_now(), 0);
-                faces2.peer_summ(peer1.str, 1);
-                faces2.peer_time(peer2.str, $giper_baza_time_now(), 1);
-                const faces3 = new $giper_baza_face_map;
-                const parts = [
-                    [land1.str, new $giper_baza_pack_part([], faces1)],
-                    [land2.str, new $giper_baza_pack_part([], faces2)],
-                    [land3.str, new $giper_baza_pack_part([], faces3)],
-                ];
-                const pack = $giper_baza_pack.make(parts);
-                $mol_assert_equal(parts, pack.parts());
-            },
-            "units serial and parse"($) {
-                const land = new $giper_baza_link('12345678_12345678');
-                const pass = $.$giper_baza_auth.grab().pass();
-                const gift = $giper_baza_unit_gift.make();
-                const sand_small = $giper_baza_unit_sand.make(5);
-                const ball = new Uint8Array($giper_baza_unit_sand.size_equator + 5);
-                const sand_big = $giper_baza_unit_sand.make(ball.byteLength);
-                sand_big.ball(ball);
-                const seal = $giper_baza_unit_seal.make(15, true);
-                const parts = [
-                    [land.str, new $giper_baza_pack_part([pass, gift, sand_small, sand_big, seal])],
-                ];
-                const pack = $giper_baza_pack.make(parts);
-                $mol_assert_equal(parts, pack.parts());
-            },
-        });
-    })($$ = $_1.$$ || ($_1.$$ = {}));
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
 (function ($) {
     $mol_test({
         'triplets'() {
@@ -43367,11 +43282,51 @@ var $;
 "use strict";
 var $;
 (function ($_1) {
-    $mol_test_mocks.push($ => {
-        class $giper_baza_mine_mock extends $.$giper_baza_mine_temp {
-        }
-        $.$giper_baza_mine = $giper_baza_mine_mock;
-    });
+    var $$;
+    (function ($$) {
+        $mol_test({
+            "Empty release"($) {
+                const pool = new $mol_memory_pool;
+                $mol_assert_equal(pool.empty(), true);
+                pool.release(0, 0);
+                $mol_assert_equal(pool.acquire(8), 0);
+                $mol_assert_equal(pool.empty(), false);
+                pool.release(0, 8);
+                $mol_assert_equal(pool.empty(), true);
+            },
+            "linear allocation"($) {
+                const pool = new $mol_memory_pool;
+                $mol_assert_equal(pool.acquire(8), 0);
+                $mol_assert_equal(pool.acquire(16), 8);
+                $mol_assert_equal(pool.acquire(32), 24);
+            },
+            "allocation in released"($) {
+                const pool = new $mol_memory_pool;
+                $mol_assert_equal(pool.acquire(8), 0);
+                $mol_assert_equal(pool.acquire(16), 8);
+                pool.release(0, 16);
+                $mol_assert_equal(pool.acquire(8), 0);
+                $mol_assert_equal(pool.acquire(16), 24);
+                $mol_assert_equal(pool.acquire(8), 8);
+            },
+            "space limitation"($) {
+                const pool = new $mol_memory_pool(10);
+                pool.acquire(8);
+                pool.release(2, 4);
+                $mol_assert_fail(() => pool.acquire(6), 'No free space\nneed: 6\nhave: 4');
+            },
+            "double release"($) {
+                const pool = new $mol_memory_pool;
+                $mol_assert_fail(() => pool.release(0, 2), 'Double release');
+                $mol_assert_fail(() => pool.release(2, 2), 'Release out of allocated');
+                pool.acquire(16);
+                pool.release(4, 8);
+                $mol_assert_fail(() => pool.release(4, 8), 'Double release');
+                $mol_assert_fail(() => pool.release(10, 4), 'Double release');
+                $mol_assert_fail(() => pool.release(2, 4), 'Double release');
+            },
+        });
+    })($$ = $_1.$$ || ($_1.$$ = {}));
 })($ || ($ = {}));
 
 ;
@@ -43715,127 +43670,6 @@ var $;
 ;
 "use strict";
 var $;
-(function ($) {
-    $.$mol_schema_enum = $mol_memo_key.func(function $mol_schema_enum(Options) {
-        return class $mol_schema_enum_ extends $mol_schema_any {
-            static Options = Options;
-            static toString() {
-                if (this !== $mol_schema_enum_)
-                    return super.toString();
-                return '$mol_schema_enum<' + $mol_key(Options) + '>';
-            }
-            static guard(value) {
-                if (Options.some(Option => Object.is(Option, value)))
-                    return value;
-                return $mol_fail(new TypeError('Wrong option', { cause: { value, schema: this } }));
-            }
-            static cast(value) {
-                if (this.check(value))
-                    return value;
-                return Options[0];
-            }
-            static default = Options[0];
-        };
-    });
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($_1) {
-    var $$;
-    (function ($$) {
-        $mol_test({
-            "Cache of enum schema"($) {
-                $mol_assert_equal($mol_schema_enum(['foo']), $mol_schema_enum(['foo']));
-                $mol_assert_unique($mol_schema_enum(['foo']), $mol_schema_enum(['bar']));
-            },
-            "Enum options"($) {
-                const Config = $mol_schema_enum([123, 'foo']);
-                $mol_assert_equal('$mol_schema_enum<[123,"foo"]>', Config + '', $mol_key(Config));
-                $mol_assert_equal(true, Config.check(123));
-                $mol_assert_equal(true, Config.check('foo'));
-                $mol_assert_equal(false, Config.check(true));
-                $mol_assert_equal(false, Config.check(321));
-                $mol_assert_equal(false, Config.check('bar'));
-                $mol_assert_equal(Config.cast(123), 123);
-                $mol_assert_equal(Config.cast('foo'), 'foo');
-                $mol_assert_equal(Config.cast('bar'), 123);
-                $mol_assert_equal(123, Config.guard(123));
-                $mol_assert_fail(() => Config.guard(321), 'Wrong option');
-            },
-        });
-    })($$ = $_1.$$ || ($_1.$$ = {}));
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($_1) {
-    var $$;
-    (function ($$) {
-        $mol_test({
-            "Empty representation"($) {
-                const land = $giper_baza_land.make({ $ });
-                const reg = land.Pawn($giper_baza_atom_time).Data();
-                $mol_assert_equal(reg.val(), null);
-                reg.vary(null);
-                $mol_assert_equal(reg.val(), null);
-            },
-            "Validation on set, cast on get"($) {
-                const land = $.$giper_baza_glob.home().land();
-                const head = new $giper_baza_link('22222222');
-                const str = land.Pawn($giper_baza_atom.of($mol_schema_maybe($mol_schema_string))).Head(head);
-                const mail = land.Pawn($giper_baza_atom.of($mol_schema_pattern(/.+@.+/))).Head(head);
-                $mol_assert_equal(str.val(), null);
-                $mol_assert_equal(mail.val(), null);
-                $mol_assert_fail(() => str.val(123), 'Wrong type');
-                $mol_assert_fail(() => mail.val('foo'), 'Wrong string');
-                $mol_assert_equal(str.val(), null);
-                $mol_assert_equal(mail.val(), null);
-                str.val('foo');
-                $mol_assert_equal(str.val(), 'foo');
-                $mol_assert_equal(mail.val(), null);
-                mail.val('foo@bar');
-                $mol_assert_equal(str.val(), 'foo@bar');
-                $mol_assert_equal(mail.val(), 'foo@bar');
-            },
-            "Hyper link to another land"($) {
-                const land = $.$giper_baza_glob.home().land();
-                const reg = land.Pawn($giper_baza_atom_link.to(() => $giper_baza_atom)).Head(new $giper_baza_link('11111111'));
-                const remote = reg.ensure(land);
-                $mol_assert_unique(reg.land(), remote.land());
-                $mol_assert_equal(reg.vary(), remote.link());
-                $mol_assert_equal(reg.remote(), remote);
-            },
-            "Register with linked Pawns"($) {
-                const land = $.$giper_baza_glob.home().land();
-                const str = land.Pawn($giper_baza_atom_text).Head(new $giper_baza_link('11111111'));
-                const link = land.Pawn($giper_baza_atom_link.to(() => $giper_baza_atom_text)).Head(new $giper_baza_link('11111111'));
-                $mol_assert_equal(link.remote(), null);
-                link.remote(str);
-                $mol_assert_equal(link.vary(), link.remote().link(), str.link());
-            },
-            "Enumerated reg type"($) {
-                class FileType extends $giper_baza_atom.of($mol_schema_maybe($mol_schema_enum(['file', 'dir', 'link']))) {
-                }
-                const land = $.$giper_baza_glob.home().land();
-                const type = land.Data(FileType);
-                $mol_assert_equal(type.val(), null);
-                type.val('file');
-                $mol_assert_equal(type.val(), 'file');
-                $mol_assert_fail(() => type.val('drive'), 'Wrong option');
-                $mol_assert_equal(type.val(), 'file');
-                type.vary('drive');
-                $mol_assert_equal(type.val(), null);
-            },
-        });
-    })($$ = $_1.$$ || ($_1.$$ = {}));
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
 (function ($_1) {
     function clone(base) {
         const land = $mol_wire_sync(base.$.$giper_baza_land).make({ $: base.$ });
@@ -44147,6 +43981,203 @@ var $;
 "use strict";
 var $;
 (function ($_1) {
+    $mol_test_mocks.push($ => {
+        class $giper_baza_mine_mock extends $.$giper_baza_mine_temp {
+        }
+        $.$giper_baza_mine = $giper_baza_mine_mock;
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($_1) {
+    var $$;
+    (function ($$) {
+        $mol_test({
+            "faces serial and parse"($) {
+                const land1 = new $giper_baza_link('12345678_12345678');
+                const land2 = new $giper_baza_link('87654321_87654321');
+                const land3 = new $giper_baza_link('87654321_00000000');
+                const peer1 = new $giper_baza_link('12345678');
+                const peer2 = new $giper_baza_link('87654321');
+                const faces1 = new $giper_baza_face_map;
+                faces1.peer_time(peer1.str, $giper_baza_time_now(), 0);
+                faces1.peer_summ(peer1.str, 0);
+                faces1.peer_time(peer2.str, $giper_baza_time_now(), 0);
+                faces1.peer_summ(peer2.str, 64_000);
+                const faces2 = new $giper_baza_face_map;
+                faces2.peer_time(peer1.str, $giper_baza_time_now(), 0);
+                faces2.peer_summ(peer1.str, 1);
+                faces2.peer_time(peer2.str, $giper_baza_time_now(), 1);
+                const faces3 = new $giper_baza_face_map;
+                const parts = [
+                    [land1.str, new $giper_baza_pack_part([], faces1)],
+                    [land2.str, new $giper_baza_pack_part([], faces2)],
+                    [land3.str, new $giper_baza_pack_part([], faces3)],
+                ];
+                const pack = $giper_baza_pack.make(parts);
+                $mol_assert_equal(parts, pack.parts());
+            },
+            "units serial and parse"($) {
+                const land = new $giper_baza_link('12345678_12345678');
+                const pass = $.$giper_baza_auth.grab().pass();
+                const gift = $giper_baza_unit_gift.make();
+                const sand_small = $giper_baza_unit_sand.make(5);
+                const ball = new Uint8Array($giper_baza_unit_sand.size_equator + 5);
+                const sand_big = $giper_baza_unit_sand.make(ball.byteLength);
+                sand_big.ball(ball);
+                const seal = $giper_baza_unit_seal.make(15, true);
+                const parts = [
+                    [land.str, new $giper_baza_pack_part([pass, gift, sand_small, sand_big, seal])],
+                ];
+                const pack = $giper_baza_pack.make(parts);
+                $mol_assert_equal(parts, pack.parts());
+            },
+        });
+    })($$ = $_1.$$ || ($_1.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($_1) {
+    $mol_test_mocks.push($ => {
+        class $giper_baza_yard_mock extends $.$giper_baza_yard {
+            master() {
+                return null;
+            }
+        }
+        $.$giper_baza_yard = $giper_baza_yard_mock;
+    });
+    $giper_baza_yard.masters_override = () => ['http://localhost:9090/'];
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $.$mol_schema_enum = $mol_memo_key.func(function $mol_schema_enum(Options) {
+        return class $mol_schema_enum_ extends $mol_schema_any {
+            static Options = Options;
+            static toString() {
+                if (this !== $mol_schema_enum_)
+                    return super.toString();
+                return '$mol_schema_enum<' + $mol_key(Options) + '>';
+            }
+            static guard(value) {
+                if (Options.some(Option => Object.is(Option, value)))
+                    return value;
+                return $mol_fail(new TypeError('Wrong option', { cause: { value, schema: this } }));
+            }
+            static cast(value) {
+                if (this.check(value))
+                    return value;
+                return Options[0];
+            }
+            static default = Options[0];
+        };
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($_1) {
+    var $$;
+    (function ($$) {
+        $mol_test({
+            "Cache of enum schema"($) {
+                $mol_assert_equal($mol_schema_enum(['foo']), $mol_schema_enum(['foo']));
+                $mol_assert_unique($mol_schema_enum(['foo']), $mol_schema_enum(['bar']));
+            },
+            "Enum options"($) {
+                const Config = $mol_schema_enum([123, 'foo']);
+                $mol_assert_equal('$mol_schema_enum<[123,"foo"]>', Config + '', $mol_key(Config));
+                $mol_assert_equal(true, Config.check(123));
+                $mol_assert_equal(true, Config.check('foo'));
+                $mol_assert_equal(false, Config.check(true));
+                $mol_assert_equal(false, Config.check(321));
+                $mol_assert_equal(false, Config.check('bar'));
+                $mol_assert_equal(Config.cast(123), 123);
+                $mol_assert_equal(Config.cast('foo'), 'foo');
+                $mol_assert_equal(Config.cast('bar'), 123);
+                $mol_assert_equal(123, Config.guard(123));
+                $mol_assert_fail(() => Config.guard(321), 'Wrong option');
+            },
+        });
+    })($$ = $_1.$$ || ($_1.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($_1) {
+    var $$;
+    (function ($$) {
+        $mol_test({
+            "Empty representation"($) {
+                const land = $giper_baza_land.make({ $ });
+                const reg = land.Pawn($giper_baza_atom_time).Data();
+                $mol_assert_equal(reg.val(), null);
+                reg.vary(null);
+                $mol_assert_equal(reg.val(), null);
+            },
+            "Validation on set, cast on get"($) {
+                const land = $.$giper_baza_glob.home().land();
+                const head = new $giper_baza_link('22222222');
+                const str = land.Pawn($giper_baza_atom.of($mol_schema_maybe($mol_schema_string))).Head(head);
+                const mail = land.Pawn($giper_baza_atom.of($mol_schema_pattern(/.+@.+/))).Head(head);
+                $mol_assert_equal(str.val(), null);
+                $mol_assert_equal(mail.val(), null);
+                $mol_assert_fail(() => str.val(123), 'Wrong type');
+                $mol_assert_fail(() => mail.val('foo'), 'Wrong string');
+                $mol_assert_equal(str.val(), null);
+                $mol_assert_equal(mail.val(), null);
+                str.val('foo');
+                $mol_assert_equal(str.val(), 'foo');
+                $mol_assert_equal(mail.val(), null);
+                mail.val('foo@bar');
+                $mol_assert_equal(str.val(), 'foo@bar');
+                $mol_assert_equal(mail.val(), 'foo@bar');
+            },
+            "Hyper link to another land"($) {
+                const land = $.$giper_baza_glob.home().land();
+                const reg = land.Pawn($giper_baza_atom_link.to(() => $giper_baza_atom)).Head(new $giper_baza_link('11111111'));
+                const remote = reg.ensure(land);
+                $mol_assert_unique(reg.land(), remote.land());
+                $mol_assert_equal(reg.vary(), remote.link());
+                $mol_assert_equal(reg.remote(), remote);
+            },
+            "Register with linked Pawns"($) {
+                const land = $.$giper_baza_glob.home().land();
+                const str = land.Pawn($giper_baza_atom_text).Head(new $giper_baza_link('11111111'));
+                const link = land.Pawn($giper_baza_atom_link.to(() => $giper_baza_atom_text)).Head(new $giper_baza_link('11111111'));
+                $mol_assert_equal(link.remote(), null);
+                link.remote(str);
+                $mol_assert_equal(link.vary(), link.remote().link(), str.link());
+            },
+            "Enumerated reg type"($) {
+                class FileType extends $giper_baza_atom.of($mol_schema_maybe($mol_schema_enum(['file', 'dir', 'link']))) {
+                }
+                const land = $.$giper_baza_glob.home().land();
+                const type = land.Data(FileType);
+                $mol_assert_equal(type.val(), null);
+                type.val('file');
+                $mol_assert_equal(type.val(), 'file');
+                $mol_assert_fail(() => type.val('drive'), 'Wrong option');
+                $mol_assert_equal(type.val(), 'file');
+                type.vary('drive');
+                $mol_assert_equal(type.val(), null);
+            },
+        });
+    })($$ = $_1.$$ || ($_1.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($_1) {
     var $$;
     (function ($$) {
         $mol_test({
@@ -44240,24 +44271,6 @@ var $;
         }
         $.$giper_baza_glob = $giper_baza_glob_mock;
     });
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($_1) {
-    $mol_test_mocks.push($ => {
-        class $giper_baza_yard_mock extends $.$giper_baza_yard {
-            master() {
-                return null;
-            }
-        }
-        $.$giper_baza_yard = $giper_baza_yard_mock;
-    });
-    $giper_baza_yard.masters = () => {
-        $giper_baza_glob.Seed();
-        return ['http://localhost:9090/'];
-    };
 })($ || ($ = {}));
 
 ;
