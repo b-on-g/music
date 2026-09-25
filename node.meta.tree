@@ -110,6 +110,8 @@
 	pack trip git \https://github.com/b-on-g/trip.git
 	pack probe git \https://github.com/b-on-g/probe.git
 	pack gamengine git \https://github.com/b-on-g/gamengine.git
+	pack doodle git \https://github.com/b-on-g/doodle.git
+	pack flow git \https://github.com/b-on-g/flow.git
 	pack selection git \https://github.com/b-on-g/selection.git
 	pack max git \https://github.com/b-on-g/max.git
 	pack rash git \https://github.com/b-on-g/rash.git
