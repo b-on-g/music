@@ -22695,6 +22695,14 @@ var $;
 			(obj.sub) = () => ([(this.count_label())]);
 			return obj;
 		}
+		version(){
+			return "";
+		}
+		Version(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.version())]);
+			return obj;
+		}
 		sync_logging(next){
 			if(next !== undefined) return next;
 			return false;
@@ -22793,7 +22801,11 @@ var $;
 		}
 		Head(){
 			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.Count()), (this.Tools())]);
+			(obj.sub) = () => ([
+				(this.Count()), 
+				(this.Version()), 
+				(this.Tools())
+			]);
 			return obj;
 		}
 		Filter(){
@@ -22815,6 +22827,7 @@ var $;
 		}
 	};
 	($mol_mem(($.$bog_music_log_view.prototype), "Count"));
+	($mol_mem(($.$bog_music_log_view.prototype), "Version"));
 	($mol_mem(($.$bog_music_log_view.prototype), "sync_logging"));
 	($mol_mem(($.$bog_music_log_view.prototype), "Sync"));
 	($mol_mem(($.$bog_music_log_view.prototype), "copy"));
@@ -22982,6 +22995,11 @@ var $;
                 // Счётчик уступает место кнопкам, но не режется в ноль.
                 flex: { shrink: 1 },
                 minWidth: 0,
+            },
+            Version: {
+                font: { size: '0.8125rem', family: 'monospace' },
+                color: $mol_theme.shade,
+                flex: { shrink: 0 },
             },
             Tools: {
                 flex: {
@@ -28394,6 +28412,7 @@ var $;
 		}
 		Logs(){
 			const obj = new this.$.$bog_music_log_view();
+			(obj.version) = () => ((this.version_label()));
 			return obj;
 		}
 		Feedback(){
@@ -29028,10 +29047,20 @@ var $;
             this.mode(false);
         }
         // ---------- статусы для тоста ----------
+        status_logged = '';
         status(next) {
+            if (next && next !== this.status_logged)
+                $bog_music_log.act(`шар: ${next}`);
+            if (next !== undefined)
+                this.status_logged = next;
             return next ?? '';
         }
+        import_logged = '';
         import_status(next) {
+            if (next && next !== this.import_logged)
+                $bog_music_log.act(`приём шара: ${next}`);
+            if (next !== undefined)
+                this.import_logged = next;
             return next ?? '';
         }
         busy(next) {
@@ -29096,7 +29125,7 @@ var $;
                 const to_gen = Math.max(0, needed - (auth_class.embryos?.length ?? 0));
                 if (to_gen > 0) {
                     this.status(`Генерирую ключи (${to_gen})…`);
-                    const generated = await Promise.all(Array.from({ length: to_gen }, () => auth_class.generate()));
+                    const generated = await Promise.all(Array.from({ length: to_gen }, () => auth_class._generate()));
                     for (const g of generated) {
                         auth_class.embryos.push(g.toString() + g.toStringPrivate());
                     }
@@ -29121,14 +29150,15 @@ var $;
                     ciphers.push({ audio, mime: blob.type || 'audio/mpeg', meta: meta_cipher, blob: blob_cipher });
                 }
                 this.status('Заливаю в baza…');
-                const land_link = await $mol_wire_async(this).write_in_fiber(sender_cipher, verifier_cipher, ciphers);
+                const burn = await $giper_baza_auth._generate();
+                const land_link = await $mol_wire_async(this).write_in_fiber(sender_cipher, verifier_cipher, ciphers, burn.pass());
                 if (!land_link) {
                     $bog_music_log.err('шар не залился: write_in_fiber не вернул ленд');
                     this.status('Не удалось залить треки');
                     return;
                 }
                 $bog_music_log.act(`шар залит: ${ciphers.length} трек(ов)`, land_link);
-                const url = this.url_for(land_link, key.toString());
+                const url = this.url_for(land_link, key.toString(), burn.toString() + burn.toStringPrivate());
                 try {
                     navigator.clipboard.writeText(url);
                     this.status(`Скопировано: ${ciphers.length} ${$bog_music_share.plural_tracks(ciphers.length)}`);
@@ -29153,8 +29183,9 @@ var $;
             }
         }
         /** Все записи шара одной фиброй: land_grab (PoW) + атомы + file-lands + sync. */
-        write_in_fiber(sender_cipher, verifier_cipher, ciphers) {
-            const land = $giper_baza_glob.land_grab([[null, $giper_baza_rank_post('fast')]]);
+        write_in_fiber(sender_cipher, verifier_cipher, ciphers, burn) {
+            const preset = [[null, $giper_baza_rank_read], [burn, $giper_baza_rank_post('just')]];
+            const land = $giper_baza_glob.land_grab(preset);
             const data = land.Data($bog_music_share_baza);
             data.Sender('auto').val(sender_cipher);
             data.Verifier('auto').val(verifier_cipher);
@@ -29166,7 +29197,7 @@ var $;
                 if (!trk)
                     continue;
                 trk.Meta('auto').val(c.meta);
-                const file_store = trk.File('auto').ensure([[null, $giper_baza_rank_post('fast')]]);
+                const file_store = trk.File('auto').ensure(preset);
                 if (!file_store)
                     continue;
                 file_store.buffer(c.blob);
@@ -29180,11 +29211,11 @@ var $;
                 this.keep(fl);
             return land.link().str;
         }
-        url_for(link, key) {
+        url_for(link, key, burn) {
             const base = $bog_music_boot.in_extension()
                 ? 'https://b-on-g.github.io/music/'
                 : location.origin + location.pathname + location.search;
-            return base + '#share=' + link + '.' + key;
+            return base + '#share=' + link + '.' + key + '.' + burn;
         }
         // ---------- receiver ----------
         token_done(token, next) {
@@ -29194,15 +29225,13 @@ var $;
         async import(token) {
             if (!token || this.token_done(token))
                 return null;
-            const dot = token.indexOf('.');
-            if (dot <= 0) {
+            const [link_str, key_str, burn_str = ''] = token.split('.');
+            if (!link_str || !key_str) {
                 $bog_music_log.err('импорт шара: битая ссылка, нет разделителя ленда и ключа');
                 this.import_status('Битая ссылка');
                 this.finish(token);
                 return null;
             }
-            const link_str = token.slice(0, dot);
-            const key_str = token.slice(dot + 1);
             let key;
             try {
                 key = $mol_crypto_sacred.from(key_str);
@@ -29216,6 +29245,7 @@ var $;
             $bog_music_log.act('импорт шара: ленд и ключ разобраны', link_str);
             try {
                 const land = $giper_baza_glob.Land(new $giper_baza_link(link_str));
+                this.keep(land);
                 this.import_status('Загружаю шар…');
                 let header = null;
                 for (let i = 0; i < 90; i++) {
@@ -29291,11 +29321,12 @@ var $;
                         if (e instanceof Promise)
                             throw e;
                         console.warn('[share] track import failed:', e?.message ?? e);
+                        $bog_music_log.err(`приём шара: трек ${k} не импортирован: ${e?.message ?? e}`, link_str);
                     }
                 }
                 if (imported) {
                     const burned = await $mol_wire_async(this)
-                        .burn_in_fiber(land, header.keys).catch(() => false);
+                        .burn_in_fiber(land, header.keys, burn_str).catch((e) => { $bog_music_log.err(`шар не сожжён: ${e?.message ?? e}`, link_str); return false; });
                     $bog_music_log.act(burned ? 'шар сожжён после импорта' : 'шар старый, сжечь нельзя', link_str);
                 }
                 this.finish(token);
@@ -29310,6 +29341,7 @@ var $;
                 if (e instanceof Promise)
                     throw e;
                 console.warn('[share] import failed:', e?.message ?? e);
+                $bog_music_log.err(`приём шара не удался: ${e?.message ?? e}`, link_str);
                 this.import_status('Не получилось: ' + (e?.message ?? 'ошибка'));
                 return null;
             }
@@ -29330,7 +29362,12 @@ var $;
             this.kept.set(link, atom);
             atom.fresh();
         }
-        burn_in_fiber(land, keys) {
+        burn_in_fiber(land, keys, burn_str) {
+            if (!burn_str)
+                return false;
+            const burn = $giper_baza_auth.from(burn_str);
+            const sign = (target) => Object.assign(target, { auth: () => burn });
+            sign(land);
             const data = land.Data($bog_music_share_baza);
             if (!data.can_change())
                 return false;
@@ -29339,6 +29376,8 @@ var $;
             for (const key of keys) {
                 const file = tracks.key(key)?.File()?.remote();
                 try {
+                    if (file)
+                        sign(file.land());
                     if (file?.can_change())
                         file.buffer(new Uint8Array());
                     if (file)
@@ -29987,7 +30026,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.73';
+    $.$bog_music_version = 'v1.74';
 })($ || ($ = {}));
 
 ;

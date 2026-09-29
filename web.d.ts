@@ -37096,40 +37096,40 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_check_box__title_bog_music_log_view_2 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_log_view_2 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_check_box__title_bog_music_log_view_3 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_check_box['title'] >
 	>
-	type $mol_check_box__checked_bog_music_log_view_3 = $mol_type_enforce<
+	type $mol_check_box__checked_bog_music_log_view_4 = $mol_type_enforce<
 		ReturnType< $bog_music_log_view['sync_logging'] >
 		,
 		ReturnType< $mol_check_box['checked'] >
 	>
-	type $mol_button_minor__title_bog_music_log_view_4 = $mol_type_enforce<
+	type $mol_button_minor__title_bog_music_log_view_5 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__click_bog_music_log_view_5 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_log_view_6 = $mol_type_enforce<
 		ReturnType< $bog_music_log_view['copy'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__title_bog_music_log_view_6 = $mol_type_enforce<
+	type $mol_button_minor__title_bog_music_log_view_7 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__click_bog_music_log_view_7 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_log_view_8 = $mol_type_enforce<
 		ReturnType< $bog_music_log_view['clear'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
-	>
-	type $mol_view__sub_bog_music_log_view_8 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_view['sub'] >
 	>
 	type $mol_view__sub_bog_music_log_view_9 = $mol_type_enforce<
 		readonly(any)[]
@@ -37161,17 +37161,22 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_string__value_bog_music_log_view_15 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_log_view_15 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_string__value_bog_music_log_view_16 = $mol_type_enforce<
 		ReturnType< $bog_music_log_view['filter'] >
 		,
 		ReturnType< $mol_string['value'] >
 	>
-	type $mol_string__hint_bog_music_log_view_16 = $mol_type_enforce<
+	type $mol_string__hint_bog_music_log_view_17 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_string['hint'] >
 	>
-	type $mol_view__attr_bog_music_log_view_17 = $mol_type_enforce<
+	type $mol_view__attr_bog_music_log_view_18 = $mol_type_enforce<
 		({ 
 			'mol_theme': ReturnType< $bog_music_log_view['row_theme'] >,
 			'bog_music_log_kind': ReturnType< $bog_music_log_view['kind_id'] >,
@@ -37179,12 +37184,12 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['attr'] >
 	>
-	type $mol_view__sub_bog_music_log_view_18 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_log_view_19 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_log_view_19 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_log_view_20 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
@@ -37193,6 +37198,8 @@ declare namespace $ {
 		log_rows( ): readonly(any)[]
 		count_label( ): string
 		Count( ): $mol_view
+		version( ): string
+		Version( ): $mol_view
 		sync_logging( next?: boolean ): boolean
 		Sync( ): $mol_check_box
 		copy( next?: any ): any
@@ -49542,7 +49549,9 @@ declare namespace $ {
         enter(key: string): void;
         toggle(key: string): void;
         exit(): void;
+        private status_logged;
         status(next?: string): string;
+        private import_logged;
         import_status(next?: string): string;
         busy(next?: boolean): boolean;
         /** Клик по share-иконке вне режима выбора — мгновенный одиночный шар. */
@@ -49567,7 +49576,7 @@ declare namespace $ {
             mime: string;
             meta: Uint8Array;
             blob: Uint8Array;
-        }[]): string;
+        }[], burn: $giper_baza_auth_pass): string;
         private url_for;
         private token_done;
         /** Возвращает id плейлиста с импортированными треками (или null). */
@@ -49575,7 +49584,7 @@ declare namespace $ {
         private finish;
         private kept;
         keep(land: $giper_baza_land): void;
-        burn_in_fiber(land: $giper_baza_land, keys: readonly string[]): boolean;
+        burn_in_fiber(land: $giper_baza_land, keys: readonly string[], burn_str: string): boolean;
         /** Sync-чтение заголовка шара — в фибре, ретраится на загрузке land. */
         header_read(land: $giper_baza_land): {
             sender_cipher: Uint8Array<ArrayBufferLike> | null;
@@ -54866,194 +54875,199 @@ declare namespace $ {
 		,
 		ReturnType< $bog_music_account['fm_link'] >
 	>
-	type $bog_feedback2_form__feedback_id_bog_music_app_28 = $mol_type_enforce<
+	type $bog_music_log_view__version_bog_music_app_28 = $mol_type_enforce<
+		ReturnType< $bog_music_app['version_label'] >
+		,
+		ReturnType< $bog_music_log_view['version'] >
+	>
+	type $bog_feedback2_form__feedback_id_bog_music_app_29 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $bog_feedback2_form['feedback_id'] >
 	>
-	type $mol_view__sub_bog_music_app_29 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_app_30 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $bog_music_playlists__page_bog_music_app_30 = $mol_type_enforce<
+	type $bog_music_playlists__page_bog_music_app_31 = $mol_type_enforce<
 		ReturnType< $bog_music_app['page'] >
 		,
 		ReturnType< $bog_music_playlists['page'] >
 	>
-	type $bog_music_playlists__my_title_bog_music_app_31 = $mol_type_enforce<
+	type $bog_music_playlists__my_title_bog_music_app_32 = $mol_type_enforce<
 		ReturnType< $bog_music_app['my_title'] >
 		,
 		ReturnType< $bog_music_playlists['my_title'] >
 	>
-	type $bog_music_playlists__archive_title_bog_music_app_32 = $mol_type_enforce<
+	type $bog_music_playlists__archive_title_bog_music_app_33 = $mol_type_enforce<
 		ReturnType< $bog_music_app['archive_title'] >
 		,
 		ReturnType< $bog_music_playlists['archive_title'] >
 	>
-	type $bog_music_playlists__list_dict_bog_music_app_33 = $mol_type_enforce<
+	type $bog_music_playlists__list_dict_bog_music_app_34 = $mol_type_enforce<
 		ReturnType< $bog_music_app['list_dict'] >
 		,
 		ReturnType< $bog_music_playlists['list_dict'] >
 	>
-	type $bog_music_tracks__track_keys_bog_music_app_34 = $mol_type_enforce<
+	type $bog_music_tracks__track_keys_bog_music_app_35 = $mol_type_enforce<
 		ReturnType< $bog_music_app['visible_keys'] >
 		,
 		ReturnType< $bog_music_tracks['track_keys'] >
 	>
-	type $bog_music_tracks__current_key_bog_music_app_35 = $mol_type_enforce<
+	type $bog_music_tracks__current_key_bog_music_app_36 = $mol_type_enforce<
 		ReturnType< $bog_music_app['current_key'] >
 		,
 		ReturnType< $bog_music_tracks['current_key'] >
 	>
-	type $bog_music_tracks__play_key_bog_music_app_36 = $mol_type_enforce<
+	type $bog_music_tracks__play_key_bog_music_app_37 = $mol_type_enforce<
 		ReturnType< $bog_music_app['play_key'] >
 		,
 		ReturnType< $bog_music_tracks['play_key'] >
 	>
-	type $bog_music_tracks__archive_mode_bog_music_app_37 = $mol_type_enforce<
+	type $bog_music_tracks__archive_mode_bog_music_app_38 = $mol_type_enforce<
 		ReturnType< $bog_music_app['archive_mode'] >
 		,
 		ReturnType< $bog_music_tracks['archive_mode'] >
 	>
-	type $bog_music_tracks__reorder_to_bog_music_app_38 = $mol_type_enforce<
+	type $bog_music_tracks__reorder_to_bog_music_app_39 = $mol_type_enforce<
 		ReturnType< $bog_music_app['reorder_to'] >
 		,
 		ReturnType< $bog_music_tracks['reorder_to'] >
 	>
-	type $bog_music_tracks__archive_key_bog_music_app_39 = $mol_type_enforce<
+	type $bog_music_tracks__archive_key_bog_music_app_40 = $mol_type_enforce<
 		ReturnType< $bog_music_app['archive_key'] >
 		,
 		ReturnType< $bog_music_tracks['archive_key'] >
 	>
-	type $bog_music_tracks__restore_key_bog_music_app_40 = $mol_type_enforce<
+	type $bog_music_tracks__restore_key_bog_music_app_41 = $mol_type_enforce<
 		ReturnType< $bog_music_app['restore_key'] >
 		,
 		ReturnType< $bog_music_tracks['restore_key'] >
 	>
-	type $bog_music_tracks__delete_key_bog_music_app_41 = $mol_type_enforce<
+	type $bog_music_tracks__delete_key_bog_music_app_42 = $mol_type_enforce<
 		ReturnType< $bog_music_app['delete_key'] >
 		,
 		ReturnType< $bog_music_tracks['delete_key'] >
 	>
-	type $bog_music_tracks__demote_key_bog_music_app_42 = $mol_type_enforce<
+	type $bog_music_tracks__demote_key_bog_music_app_43 = $mol_type_enforce<
 		ReturnType< $bog_music_app['demote_key'] >
 		,
 		ReturnType< $bog_music_tracks['demote_key'] >
 	>
-	type $mol_string__hint_bog_music_app_43 = $mol_type_enforce<
+	type $mol_string__hint_bog_music_app_44 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_string['hint'] >
 	>
-	type $mol_string__value_bog_music_app_44 = $mol_type_enforce<
+	type $mol_string__value_bog_music_app_45 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_query'] >
 		,
 		ReturnType< $mol_string['value'] >
 	>
-	type $mol_string__keyboard_bog_music_app_45 = $mol_type_enforce<
+	type $mol_string__keyboard_bog_music_app_46 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_string['keyboard'] >
 	>
-	type $mol_string__enter_bog_music_app_46 = $mol_type_enforce<
+	type $mol_string__enter_bog_music_app_47 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_string['enter'] >
 	>
-	type $mol_button_major__title_bog_music_app_47 = $mol_type_enforce<
+	type $mol_button_major__title_bog_music_app_48 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_major['title'] >
 	>
-	type $mol_button_major__click_bog_music_app_48 = $mol_type_enforce<
+	type $mol_button_major__click_bog_music_app_49 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_find'] >
 		,
 		ReturnType< $mol_button_major['click'] >
 	>
-	type $mol_view__dom_name_bog_music_app_49 = $mol_type_enforce<
+	type $mol_view__dom_name_bog_music_app_50 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_view['dom_name'] >
 	>
-	type $mol_view__event_bog_music_app_50 = $mol_type_enforce<
+	type $mol_view__event_bog_music_app_51 = $mol_type_enforce<
 		({ 
 			submit( next?: ReturnType< $bog_music_app['tube_submit'] > ): ReturnType< $bog_music_app['tube_submit'] >,
 		})  & ReturnType< $mol_view['event'] >
 		,
 		ReturnType< $mol_view['event'] >
 	>
-	type $mol_view__sub_bog_music_app_51 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_app_52 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_list__rows_bog_music_app_52 = $mol_type_enforce<
+	type $mol_list__rows_bog_music_app_53 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_rows'] >
 		,
 		ReturnType< $mol_list['rows'] >
 	>
-	type $bog_music_tube_row__title_bog_music_app_53 = $mol_type_enforce<
+	type $bog_music_tube_row__title_bog_music_app_54 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_title'] >
 		,
 		ReturnType< $bog_music_tube_row['title'] >
 	>
-	type $bog_music_tube_row__subtitle_bog_music_app_54 = $mol_type_enforce<
+	type $bog_music_tube_row__subtitle_bog_music_app_55 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_meta'] >
 		,
 		ReturnType< $bog_music_tube_row['subtitle'] >
 	>
-	type $bog_music_tube_row__status_bog_music_app_55 = $mol_type_enforce<
+	type $bog_music_tube_row__status_bog_music_app_56 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_status_text'] >
 		,
 		ReturnType< $bog_music_tube_row['status'] >
 	>
-	type $bog_music_tube_row__cover_bog_music_app_56 = $mol_type_enforce<
+	type $bog_music_tube_row__cover_bog_music_app_57 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_cover'] >
 		,
 		ReturnType< $bog_music_tube_row['cover'] >
 	>
-	type $bog_music_tube_row__busy_bog_music_app_57 = $mol_type_enforce<
+	type $bog_music_tube_row__busy_bog_music_app_58 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_busy'] >
 		,
 		ReturnType< $bog_music_tube_row['busy'] >
 	>
-	type $bog_music_tube_row__play_bog_music_app_58 = $mol_type_enforce<
+	type $bog_music_tube_row__play_bog_music_app_59 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_play'] >
 		,
 		ReturnType< $bog_music_tube_row['play'] >
 	>
-	type $bog_music_tube_row__get_bog_music_app_59 = $mol_type_enforce<
+	type $bog_music_tube_row__get_bog_music_app_60 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_get'] >
 		,
 		ReturnType< $bog_music_tube_row['get'] >
 	>
-	type $bog_music_player__full_bog_music_app_60 = $mol_type_enforce<
+	type $bog_music_player__full_bog_music_app_61 = $mol_type_enforce<
 		ReturnType< $bog_music_app['player_full'] >
 		,
 		ReturnType< $bog_music_player['full'] >
 	>
-	type $bog_music_player__open_bog_music_app_61 = $mol_type_enforce<
+	type $bog_music_player__open_bog_music_app_62 = $mol_type_enforce<
 		ReturnType< $bog_music_app['player_open'] >
 		,
 		ReturnType< $bog_music_player['open'] >
 	>
-	type $bog_music_player__collapse_bog_music_app_62 = $mol_type_enforce<
+	type $bog_music_player__collapse_bog_music_app_63 = $mol_type_enforce<
 		ReturnType< $bog_music_app['player_collapse'] >
 		,
 		ReturnType< $bog_music_player['collapse'] >
 	>
-	type $bog_music_player__queue_keys_bog_music_app_63 = $mol_type_enforce<
+	type $bog_music_player__queue_keys_bog_music_app_64 = $mol_type_enforce<
 		ReturnType< $bog_music_app['visible_keys'] >
 		,
 		ReturnType< $bog_music_player['queue_keys'] >
 	>
-	type $bog_music_player__current_key_bog_music_app_64 = $mol_type_enforce<
+	type $bog_music_player__current_key_bog_music_app_65 = $mol_type_enforce<
 		ReturnType< $bog_music_app['current_key'] >
 		,
 		ReturnType< $bog_music_player['current_key'] >
 	>
-	type $bog_music_nav__section_bog_music_app_65 = $mol_type_enforce<
+	type $bog_music_nav__section_bog_music_app_66 = $mol_type_enforce<
 		ReturnType< $bog_music_app['section'] >
 		,
 		ReturnType< $bog_music_nav['section'] >
