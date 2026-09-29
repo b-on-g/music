@@ -27054,7 +27054,7 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    $mol_style_attach("bog/music/playlists/playlists.view.css", "[bog_music_playlists_my_label],\n[bog_music_playlists_archive_label],\n[bog_music_playlists_list] [mol_select_trigger] [mol_dimmer] {\n\tdisplay: block;\n\tmin-width: 0;\n\toverflow: hidden;\n\twhite-space: nowrap;\n\ttext-overflow: ellipsis;\n}\n[bog_music_playlists_list] [mol_select_trigger] {\n\tmin-width: 0;\n\tmax-width: 100%;\n\tflex-wrap: nowrap;\n}\n[bog_music_playlists_current=\"true\"] {\n\tcolor: var(--mol_theme_current);\n\tbackground-color: var(--mol_theme_hover);\n}\n[bog_music_playlists_my_label],\n[bog_music_playlists_archive_label] {\n\tflex-shrink: 1;\n}\n[bog_music_playlists_list] {\n\tflex: 1 1 auto;\n}\n[bog_music_playlists_add_anchor] {\n\tpadding-left: 0.25rem;\n\tpadding-right: 0.25rem;\n}\n");
+    $mol_style_attach("bog/music/playlists/playlists.view.css", "[bog_music_playlists_my_label],\n[bog_music_playlists_archive_label],\n[bog_music_playlists_list] [mol_select_trigger] [mol_dimmer] {\n\tdisplay: block;\n\tmin-width: 0;\n\toverflow: hidden;\n\twhite-space: nowrap;\n\ttext-overflow: ellipsis;\n}\n[bog_music_playlists_list] [mol_select_trigger] {\n\tmin-width: 0;\n\tmax-width: 100%;\n\tflex-wrap: nowrap;\n}\n[bog_music_playlists_current=\"true\"] {\n\tcolor: var(--mol_theme_current);\n\tbackground-color: var(--mol_theme_hover);\n}\n[bog_music_playlists_my_label],\n[bog_music_playlists_archive_label] {\n\tflex-shrink: 1;\n}\n[bog_music_playlists_list] {\n\tflex: 1 1 auto;\n}\n[bog_music_playlists_add_anchor] {\n\tpadding-left: 0rem;\n\tpadding-right: 0rem;\n\tjustify-content: center;\n}\n");
 })($ || ($ = {}));
 
 ;
@@ -27125,6 +27125,12 @@ var $;
                 width: '16rem',
                 maxWidth: '80vw',
             },
+            Add_anchor: {
+                paddingLeft: '0rem',
+                paddingRight: '0rem',
+                width: '24px',
+                height: '24px'
+            }
         });
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
@@ -29892,7 +29898,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.68';
+    $.$bog_music_version = 'v1.69';
 })($ || ($ = {}));
 
 ;
