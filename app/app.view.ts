@@ -8,7 +8,8 @@ namespace $.$$ {
 	 * мало, надо глушить сам `masters()`. Поэтому сначала обнуляем список по
 	 * умолчанию, затем подменяем функцию — ничего от Гипер Базы не остаётся.
 	 */
-	const master = 'https://cmyser-bg-pony.87.120.36.150.ip.giper.dev/'
+	const local = typeof location !== 'undefined' && /^(localhost|127\.0\.0\.1|\[::1\])$/.test( location.hostname )
+	const master = local ? 'http://localhost:9090/' : 'https://cmyser-bg-pony.87.120.36.150.ip.giper.dev/'
 
 	$giper_baza_yard.masters_default.length = 0
 	$giper_baza_yard.masters = (): string[] => [ master ]
