@@ -14,6 +14,18 @@ namespace $.$$ {
 			return this.track()?.Artist()?.val() ?? ''
 		}
 
+		cover() {
+			return this.track()?.cover() ?? ''
+		}
+
+		Cover() {
+			return this.cover() ? super.Cover() : null as any
+		}
+
+		Cover_placeholder() {
+			return this.cover() ? null as any : super.Cover_placeholder()
+		}
+
 		cached() {
 			// Неблокирующая проверка: НЕ триггерит sync (иначе рендер списка поднял
 			// бы загрузку всех blob-лендов разом). blob догоняет фоновый prefetch.
@@ -33,32 +45,68 @@ namespace $.$$ {
 			return !this.archive_mode()
 		}
 
-		Archive() {
-			if (this.archive_mode()) return null as any
-			return super.Archive()
+		// =====================================================================
+		// Меню действий: одна кнопка «⋯» вместо ряда иконок, чтобы тексту
+		// доставалась вся ширина строки (на крупном шрифте иконки распирали
+		// строку до одной буквы в линии).
+		// =====================================================================
+
+		@$mol_action
+		menu_toggle() {
+			$bog_music_pop_toggle(this.Menu())
+			return null
 		}
 
-		Restore() {
-			if (!this.archive_mode()) return null as any
-			return super.Restore()
+		menu_items() {
+			return this.archive_mode()
+				? [ this.Restore(), this.Delete_forever() ]
+				: [
+					this.Demote(),
+					... this.can_drop_cache() ? [ this.Delete() ] : [],
+					this.Archive(),
+				]
 		}
 
-		Delete_forever() {
-			if (!this.archive_mode()) return null as any
-			return super.Delete_forever()
+		/** Локальный файл с устройства больше взять неоткуда — кеш не сбрасываем. */
+		can_drop_cache() {
+			return !this.is_local() && this.cached()
 		}
 
-		/** В архиве порядок не важен и перетаскивание там тоже выключено. */
-		Demote() {
-			if (this.archive_mode()) return null as any
-			return super.Demote()
+		// =====================================================================
+		// Удаление навсегда — только через подтверждение прямо в строке.
+		// =====================================================================
+
+		@$mol_mem
+		delete_asked(next?: boolean) {
+			return next ?? false
 		}
 
-		Delete() {
-			if (this.archive_mode()) return null as any
-			if (this.is_local()) return null as any
-			if (!this.cached()) return null as any
-			return super.Delete()
+		content() {
+			return this.delete_asked() ? [ this.Confirm() ] : super.content()
+		}
+
+		confirm_text() {
+			return `Удалить «${this.title()}» навсегда?`
+		}
+
+		@$mol_action
+		delete_ask() {
+			this.Menu().showed(false)
+			this.delete_asked(true)
+			return null
+		}
+
+		@$mol_action
+		delete_cancel() {
+			this.delete_asked(false)
+			return null
+		}
+
+		@$mol_action
+		delete_confirm() {
+			this.delete_asked(false)
+			this.delete_forever()
+			return null
 		}
 
 		on_play_click() {
@@ -94,6 +142,7 @@ namespace $.$$ {
 
 		@$mol_action
 		delete_cached() {
+			this.Menu().showed(false)
 			$bog_music_account_baza.home().drop_blob(this.key())
 		}
 
@@ -151,6 +200,30 @@ namespace $.$$ {
 
 		share_pointer_leave(event?: Event) {
 			return this.share_pointer_cancel(event)
+		}
+
+		// Пункты меню: закрыть панель и дёрнуть действие, которое привязал
+		// список ($bog_music_tracks через <=>).
+
+		@$mol_action
+		demote_click() {
+			this.Menu().showed(false)
+			this.demote(null)
+			return null
+		}
+
+		@$mol_action
+		archive_click() {
+			this.Menu().showed(false)
+			this.archive(null)
+			return null
+		}
+
+		@$mol_action
+		restore_click() {
+			this.Menu().showed(false)
+			this.restore(null)
+			return null
 		}
 
 	}

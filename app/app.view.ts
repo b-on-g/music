@@ -606,6 +606,7 @@ namespace $.$$ {
 					title: item.title,
 					duration: item.duration,
 					url: '',
+					cover: $bog_music_tube.cover_url(item.id),
 				}
 				await ($mol_wire_async(this.account()) as any).import_audio(audio, bytes, 'audio/mp4')
 				$bog_music_log.act(`скачано с YouTube: ${item.title} (${bytes.length} байт)`)

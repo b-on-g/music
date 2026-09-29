@@ -28,6 +28,8 @@ namespace $ {
 		// при первом проигрывании — для выравнивания треков между собой
 		// ($bog_music_gain).
 		Lufs: $giper_baza_atom.of( $mol_schema_float ),
+		// URL обложки (превью YouTube, альбом VK). Пусто — заглушка-нота.
+		Cover: $giper_baza_atom.of( $mol_schema_string ),
 	}) {
 
 		/** Метаданные в форме VK-audio. null если Vk_id не парсится. */
@@ -44,7 +46,13 @@ namespace $ {
 				title: this.Title()?.val() ?? '',
 				duration: this.Duration()?.val() ?? 0,
 				url: this.Url()?.val() ?? '',
+				cover: this.cover(),
 			}
+		}
+
+		/** URL обложки. '' — обложки нет. */
+		cover(): string {
+			return String(this.Cover()?.val() ?? '')
 		}
 
 		playlist(): string {

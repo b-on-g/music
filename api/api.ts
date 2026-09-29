@@ -125,6 +125,8 @@ namespace $ {
 		duration: number
 		url: string
 		access_key?: string
+		/** URL обложки — прямой, без похода в album. Заполняют YouTube и шары. */
+		cover?: string
 		album?: {
 			id: number
 			title: string

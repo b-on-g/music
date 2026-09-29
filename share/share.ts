@@ -175,6 +175,7 @@ namespace $ {
 						mime: blob.type || 'audio/mpeg',
 						owner_id: audio.owner_id,
 						id: audio.id,
+						cover: audio.cover ?? '',
 					})
 					const meta_cipher = await this.encrypt(key, $mol_charset_encode(meta_json))
 					const blob_cipher = await this.encrypt(key, new Uint8Array(await blob.arrayBuffer()))
@@ -352,6 +353,7 @@ namespace $ {
 							title: String(meta.title ?? ''),
 							duration: Number(meta.duration ?? 0),
 							url: '',
+							cover: String(meta.cover ?? ''),
 						}
 						const mime = String(meta.mime || td.file_mime || 'audio/mpeg')
 						await ($mol_wire_async(this.account()) as any).import_audio(audio, buf, mime, playlist)

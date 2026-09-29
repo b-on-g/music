@@ -16,13 +16,20 @@ $bog_music_player $mol_view
 	sub /
 		<= Progress_row $mol_view
 			sub /
-				<= Time_current $mol_paragraph
-					title <= time_current_text \
 				<= Progress $mol_view
-					sub /
+					event *
+						pointerdown?event <=> seek_pointer_down?event null
+						pointermove?event <=> seek_pointer_move?event null
+						pointerup?event <=> seek_pointer_up?event null
+						pointercancel?event <=> seek_pointer_up?event null
+					sub <= progress_parts /
+						<= Progress_line $mol_view
 						<= Progress_bar $mol_view
 							style *
 								width <= progress_width \
+						<= Progress_knob $mol_view
+							style *
+								left <= progress_width \
 						<= Trim_start_handle $mol_view
 							event *
 								pointerdown?event <=> trim_start_pointer_down?event null
@@ -39,31 +46,14 @@ $bog_music_player $mol_view
 								pointercancel?event <=> trim_pointer_up?event null
 							style *
 								left <= trim_end_left \
+		<= Time_row $mol_view
+			sub /
+				<= Time_current $mol_paragraph
+					title <= time_current_text \
+				<= Trim_hint $mol_view
+					sub / <= trim_hint \
 				<= Time_total $mol_paragraph
 					title <= time_total_text \
-				<= Eq $mol_pop
-					Anchor <= Eq_anchor $mol_button_minor
-						hint \Эквалайзер
-						click? <=> eq_pop_toggle? null
-						sub / <= Eq_icon $mol_icon_tune_vertical
-					bubble_content /
-						<= Eq_panel $mol_view
-							sub /
-								<= Eq_curve $bog_music_eq_curve
-									gains <= eq_gains /number
-									pointer_down?event <=> eq_pointer_down?event null
-									pointer_move?event <=> eq_pointer_move?event null
-									pointer_up?event <=> eq_pointer_up?event null
-								<= Eq_power $mol_check_icon
-									title \Эквалайзер
-									hint \Включить эквалайзер
-									Icon <= Eq_power_icon $mol_icon_tune_vertical
-									checked? <=> eq_on? false
-								<= Eq_presets $mol_view
-									sub <= eq_preset_rows /
-										<= Eq_preset_row*0 $mol_check
-											title <= eq_preset_title* \
-											checked? <=> eq_preset_checked*? false
 		<= Controls $mol_view
 			sub /
 				<= Left $mol_view
@@ -100,6 +90,33 @@ $bog_music_player $mol_view
 								<= Repeat_all_icon $mol_icon_repeat
 								<= Repeat_one_icon $mol_icon_repeat_once
 								<= Shuffle_icon $mol_icon_shuffle
+						<= Trim_toggle $mol_check_icon
+							hint \Обрезать начало и конец
+							Icon <= Trim_icon $mol_icon_content_cut
+							checked? <=> trim_mode? false
+				<= Eq $mol_pop
+					Anchor <= Eq_anchor $mol_button_minor
+						hint \Эквалайзер
+						click? <=> eq_pop_toggle? null
+						sub / <= Eq_icon $mol_icon_tune_vertical
+					bubble_content /
+						<= Eq_panel $mol_view
+							sub /
+								<= Eq_curve $bog_music_eq_curve
+									gains <= eq_gains /number
+									pointer_down?event <=> eq_pointer_down?event null
+									pointer_move?event <=> eq_pointer_move?event null
+									pointer_up?event <=> eq_pointer_up?event null
+								<= Eq_power $mol_check_icon
+									title \Эквалайзер
+									hint \Включить эквалайзер
+									Icon <= Eq_power_icon $mol_icon_tune_vertical
+									checked? <=> eq_on? false
+								<= Eq_presets $mol_view
+									sub <= eq_preset_rows /
+										<= Eq_preset_row*0 $mol_check
+											title <= eq_preset_title* \
+											checked? <=> eq_preset_checked*? false
 				<= Volume $mol_pop
 					align \top_right
 					Anchor <= Volume_anchor $mol_button_minor
