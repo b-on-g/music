@@ -29163,7 +29163,7 @@ var $;
         }
         /** Все записи шара одной фиброй: land_grab (PoW) + атомы + file-lands + sync. */
         write_in_fiber(sender_cipher, verifier_cipher, ciphers) {
-            const land = $giper_baza_glob.land_grab([[null, $giper_baza_rank_read]]);
+            const land = $giper_baza_glob.land_grab([[null, $giper_baza_rank_post('fast')]]);
             const data = land.Data($bog_music_share_baza);
             data.Sender('auto').val(sender_cipher);
             data.Verifier('auto').val(verifier_cipher);
@@ -29175,7 +29175,7 @@ var $;
                 if (!trk)
                     continue;
                 trk.Meta('auto').val(c.meta);
-                const file_store = trk.File('auto').ensure([[null, $giper_baza_rank_read]]);
+                const file_store = trk.File('auto').ensure([[null, $giper_baza_rank_post('fast')]]);
                 if (!file_store)
                     continue;
                 file_store.buffer(c.blob);
@@ -29184,9 +29184,9 @@ var $;
                 file_lands.push(file_store.land());
             }
             // Шар — эфемерный land вне home: пуш на master запускаем явно.
-            land.sync();
+            this.keep(land);
             for (const fl of file_lands)
-                fl.sync();
+                this.keep(fl);
             return land.link().str;
         }
         url_for(link, key) {
@@ -29232,6 +29232,8 @@ var $;
                         .header_read(land).catch(() => null);
                     if (cur?.verifier_cipher) {
                         header = cur;
+                        if (cur.burned)
+                            break;
                         if (cur.count > 0 && cur.keys.length >= cur.count)
                             break;
                         if (cur.count === 0 && cur.keys.length > 0)
@@ -29243,6 +29245,12 @@ var $;
                 }
                 if (!header?.verifier_cipher) {
                     this.import_status('Шар не загрузился — попробуй позже');
+                    return null;
+                }
+                if (header.burned) {
+                    $bog_music_log.act('импорт шара: ссылка уже использована', link_str);
+                    this.import_status('Ссылка уже использована');
+                    this.finish(token);
                     return null;
                 }
                 let verifier = '';
@@ -29294,6 +29302,11 @@ var $;
                         console.warn('[share] track import failed:', e?.message ?? e);
                     }
                 }
+                if (imported) {
+                    const burned = await $mol_wire_async(this)
+                        .burn_in_fiber(land, header.keys).catch(() => false);
+                    $bog_music_log.act(burned ? 'шар сожжён после импорта' : 'шар старый, сжечь нельзя', link_str);
+                }
                 this.finish(token);
                 if (imported) {
                     this.import_status(`От ${sender}: ${imported} ${$bog_music_share.plural_tracks(imported)}`);
@@ -29314,6 +29327,41 @@ var $;
             this.token_done(token, true);
             $bog_music_boot.clear_share_hash();
         }
+        kept = new Map();
+        keep(land) {
+            const link = land.link().str;
+            if (this.kept.has(link))
+                return;
+            const atom = new $mol_wire_atom(`bog_music_share_keep<${link}>`, () => {
+                $giper_baza_glob.Land(new $giper_baza_link(link)).sync();
+                return null;
+            });
+            this.kept.set(link, atom);
+            atom.fresh();
+        }
+        burn_in_fiber(land, keys) {
+            const data = land.Data($bog_music_share_baza);
+            if (!data.can_change())
+                return false;
+            data.Burned('auto').val(true);
+            const tracks = data.Tracks(null);
+            for (const key of keys) {
+                const file = tracks.key(key)?.File()?.remote();
+                try {
+                    if (file?.can_change())
+                        file.buffer(new Uint8Array());
+                    if (file)
+                        this.keep(file.land());
+                }
+                catch (error) {
+                    if ($mol_promise_like(error))
+                        throw error;
+                }
+                tracks.cut(key);
+            }
+            this.keep(land);
+            return true;
+        }
         /** Sync-чтение заголовка шара — в фибре, ретраится на загрузке land. */
         header_read(land) {
             const data = land.Data($bog_music_share_baza);
@@ -29321,6 +29369,7 @@ var $;
                 sender_cipher: data.Sender()?.val() ?? null,
                 verifier_cipher: data.Verifier()?.val() ?? null,
                 count: Number(data.Count()?.val() ?? 0),
+                burned: Boolean(data.Burned()?.val()),
                 keys: (data.Tracks()?.keys() ?? []),
             };
         }
@@ -29418,7 +29467,7 @@ var $;
     }
     $.$bog_music_share_tracks_dict = $bog_music_share_tracks_dict;
     /**
-     * Эфемерный share-land. `[null, $giper_baza_rank_read]` — публичное чтение
+     * Эфемерный share-land. `[null, $giper_baza_rank_post('fast')]` — публичная запись, чтобы получатель сжёг шар после импорта
      * (на самом деле приватное: link достаточно длинный, payload зашифрован).
      *
      * Verifier — фиксированная зашифрованная строка для быстрой проверки ключа
@@ -29431,6 +29480,7 @@ var $;
         // синка — `tracks.keys().length` догоняет до Count или истекает таймаут.
         // Plaintext (приватность count'а — приемлемая утечка).
         Count: $giper_baza_atom.of($mol_schema_float),
+        Burned: $giper_baza_atom.of($mol_schema_boolean),
         Tracks: $bog_music_share_tracks_dict,
     }) {
     }
@@ -29946,7 +29996,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.72';
+    $.$bog_music_version = 'v1.73';
 })($ || ($ = {}));
 
 ;
