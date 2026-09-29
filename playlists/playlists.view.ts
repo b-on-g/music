@@ -54,7 +54,6 @@ namespace $.$$ {
 
 		@$mol_action
 		add_toggle() {
-			this.rename_draft(null)
 			this.remove_asked(false)
 			if ($bog_music_pop_toggle(this.Add())) this.focus_later(this.Add_title())
 		}
@@ -70,23 +69,15 @@ namespace $.$$ {
 		}
 
 		@$mol_mem
-		rename_draft(next?: string | null): string | null {
-			this.own_list()
-			return next ?? null
-		}
-
 		rename_title(next?: string) {
-			if (next !== undefined) this.rename_draft(next)
-			return this.rename_draft() ?? this.account().playlist_title(this.own_list())
+			const id = this.own_list()
+			if (next === undefined) return this.account().playlist_title(id)
+			if (id && next.trim()) this.account().playlist_rename(id, next)
+			return next
 		}
 
 		@$mol_action
 		rename_submit() {
-			const id = this.own_list()
-			const title = this.rename_title().trim()
-			if (!id || !title) return
-			this.account().playlist_rename(id, title)
-			this.rename_draft(null)
 			this.Add().showed(false)
 		}
 

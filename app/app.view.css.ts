@@ -45,6 +45,12 @@ namespace $.$$ {
 				left: '0.5rem',
 				right: '0.5rem',
 			},
+			List: {
+				Trigger: {
+					display: "flex",
+					justifyContent:'center'
+				}
+			}
 		},
 
 		Tools: {

@@ -324,7 +324,6 @@ namespace $ {
 
 		@$mol_action
 		playlist_rename(id: string, title: string): void {
-			$bog_music_log.act(`плейлист ${id} → «${title}»`, this.land_id())
 			this.playlists_dict().key(id, 'auto')!.val(title)
 		}
 

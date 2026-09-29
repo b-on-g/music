@@ -53,12 +53,6 @@ namespace $.$$ {
 			maxWidth: '80vw',
 		},
 
-		Edit_actions: {
-			flex: { wrap: 'wrap' },
-			justify: { content: 'space-between' },
-			gap: $mol_gap.text,
-		},
-
 		Remove: {
 			gap: $mol_gap.text,
 			color: $mol_theme.special,
