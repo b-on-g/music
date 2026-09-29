@@ -4293,6 +4293,14 @@ declare namespace $ {
 }
 
 //# sourceMappingURL=skin.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $bog_builderui_skin extends $.$bog_builderui_skin {
+        static ios_zoom_fixed: WeakSet<object>;
+        ios_zoom_fix(): void;
+        auto(): any;
+    }
+}
+
 declare namespace $ {
     /**
      * Theme css variables
@@ -44927,7 +44935,6 @@ declare namespace $ {
         /** Токен шара из #share=… — забирается приложением один раз в auto(). */
         static share_token: string;
         static init(): void;
-        static ios_no_input_zoom(): void;
         static in_extension(): boolean;
         /** Мост `chrome.storage.local.vk_token` → `localStorage.vk_token`. */
         static bridge_vk_token(): void;
