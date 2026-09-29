@@ -3061,6 +3061,8 @@ $mol_icon_archive $mol_icon path \M3,3H21V7H3V3M4,8H20V21H4V8M9.5,11A0.5,0.5 0 0
 
 $mol_icon_playlist_plus $mol_icon path \M3 16H10V14H3M18 14V10H16V14H12V16H16V20H18V16H22V14M14 6H3V8H14M14 10H3V12H14V10Z
 
+$mol_icon_playlist_remove $mol_icon path \M14 10H3V12H14V10M14 6H3V8H14V6M3 16H10V14H3V16M14.4 22L17 19.4L19.6 22L21 20.6L18.4 18L21 15.4L19.6 14L17 16.6L14.4 14L13 15.4L15.6 18L13 20.6L14.4 22Z
+
 $mol_icon_restore $mol_icon path \M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z
 
 $bog_music_track $mol_view
@@ -3140,16 +3142,11 @@ $bog_music_track $mol_view
 								<= Archive_icon $mol_icon_archive
 								<= Archive_label $mol_view
 									sub / \В архив
-						<= To_my $mol_button_minor
-							click? <=> to_my_click? null
-							sub /
-								<= To_my_icon $mol_icon_playlist_music
-								<= To_my_label $mol_view
-									sub / \В Мою музыку
 						<= Move*0 $mol_button_minor
 							click? <=> move_click*? null
-							sub /
-								<= Move_icon* $mol_icon_playlist_plus
+							sub <= move_content* /
+								<= Move_add_icon* $mol_icon_playlist_plus
+								<= Move_cut_icon* $mol_icon_playlist_remove
 								<= Move_label* $mol_view
 									sub / <= move_label* \
 						<= Restore $mol_button_minor

@@ -38095,7 +38095,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.70';
+    $.$bog_music_version = 'v1.71';
 })($ || ($ = {}));
 
 ;
@@ -38153,6 +38153,17 @@ var $;
                 }
                 return $mol_state_arg.value('page') ?? 'my';
             }
+            list_id() {
+                const page = this.page();
+                return page.startsWith('list:') ? page : '';
+            }
+            _lists_migrated = false;
+            lists_migrate() {
+                if (this._lists_migrated)
+                    return;
+                this._lists_migrated = true;
+                $mol_wire_async(this.account()).migrate_lists();
+            }
             archive_mode() {
                 return this.page() === 'archive';
             }
@@ -38162,7 +38173,9 @@ var $;
                     return this.share().selection();
                 if (p === 'archive')
                     return this.account().keys_in('archive');
-                if (p.startsWith('shared:') || p.startsWith('list:'))
+                if (p.startsWith('list:'))
+                    return this.account().list_keys(p);
+                if (p.startsWith('shared:'))
                     return this.account().keys_in(p);
                 return this.account().keys_in('');
             }
@@ -38181,7 +38194,7 @@ var $;
                     opts['share'] = n ? `Расшаренный ${n}` : 'Расшаренный';
                 }
                 for (const pl of this.account().playlists()) {
-                    const n = this.account().keys_in(pl.id).length;
+                    const n = this.account().list_keys(pl.id).length;
                     opts[pl.id] = n ? `${pl.title} ${n}` : pl.title;
                 }
                 for (const pl of this.account().shared_playlists()) {
@@ -38292,6 +38305,9 @@ var $;
                     return;
                 const moving = keys[from];
                 $bog_music_log.act(`перестановка ${moving}: ${from} → ${to}`);
+                const list = this.list_id();
+                if (list)
+                    return this.account().list_move(list, moving, keys[to]);
                 const step = from < to ? 1 : -1;
                 for (let i = from; i !== to; i += step) {
                     this.account().swap_order(moving, keys[i + step]);
@@ -38335,7 +38351,11 @@ var $;
                 // Первый за текущим, минуя уезжающий. Если уезжает сам текущий —
                 // это просто следующий за ним.
                 const follow = at < 0 ? '' : keys.slice(at + 1).find(k => k !== key) ?? '';
-                this.account().move_to_bottom(key);
+                const list = this.list_id();
+                if (list)
+                    this.account().list_move(list, key, keys[keys.length - 1]);
+                else
+                    this.account().move_to_bottom(key);
                 if (at < 0)
                     return; // играет что-то не из этого списка — очередь не наша
                 const fresh = this.visible_keys();
@@ -38940,6 +38960,7 @@ var $;
                 $mol_wire_async(this).drain_pending();
                 $mol_wire_async(this).tg_drain();
                 $mol_wire_async(this).fm_refresh();
+                this.lists_migrate();
                 const token = $bog_music_boot.share_token;
                 if (token) {
                     $bog_music_boot.share_token = '';
@@ -40146,6 +40167,18 @@ var $;
 
 
 ;
+	($.$mol_icon_playlist_remove) = class $mol_icon_playlist_remove extends ($.$mol_icon) {
+		path(){
+			return "M14 10H3V12H14V10M14 6H3V8H14V6M3 16H10V14H3V16M14.4 22L17 19.4L19.6 22L21 20.6L18.4 18L21 15.4L19.6 14L17 16.6L14.4 14L13 15.4L15.6 18L13 20.6L14.4 22Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
 	($.$mol_icon_restore) = class $mol_icon_restore extends ($.$mol_icon) {
 		path(){
 			return "M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z";
@@ -40319,31 +40352,16 @@ var $;
 			(obj.sub) = () => ([(this.Archive_icon()), (this.Archive_label())]);
 			return obj;
 		}
-		to_my_click(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		To_my_icon(){
-			const obj = new this.$.$mol_icon_playlist_music();
-			return obj;
-		}
-		To_my_label(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => (["В Мою музыку"]);
-			return obj;
-		}
-		To_my(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.click) = (next) => ((this.to_my_click(next)));
-			(obj.sub) = () => ([(this.To_my_icon()), (this.To_my_label())]);
-			return obj;
-		}
 		move_click(id, next){
 			if(next !== undefined) return next;
 			return null;
 		}
-		Move_icon(id){
+		Move_add_icon(id){
 			const obj = new this.$.$mol_icon_playlist_plus();
+			return obj;
+		}
+		Move_cut_icon(id){
+			const obj = new this.$.$mol_icon_playlist_remove();
 			return obj;
 		}
 		move_label(id){
@@ -40354,10 +40372,17 @@ var $;
 			(obj.sub) = () => ([(this.move_label(id))]);
 			return obj;
 		}
+		move_content(id){
+			return [
+				(this.Move_add_icon(id)), 
+				(this.Move_cut_icon(id)), 
+				(this.Move_label(id))
+			];
+		}
 		Move(id){
 			const obj = new this.$.$mol_button_minor();
 			(obj.click) = (next) => ((this.move_click(id, next)));
-			(obj.sub) = () => ([(this.Move_icon(id)), (this.Move_label(id))]);
+			(obj.sub) = () => ((this.move_content(id)));
 			return obj;
 		}
 		restore_click(next){
@@ -40403,7 +40428,6 @@ var $;
 				(this.Demote()), 
 				(this.Delete()), 
 				(this.Archive()), 
-				(this.To_my()), 
 				(this.Move("0")), 
 				(this.Restore()), 
 				(this.Delete_forever())
@@ -40562,12 +40586,9 @@ var $;
 	($mol_mem(($.$bog_music_track.prototype), "Archive_icon"));
 	($mol_mem(($.$bog_music_track.prototype), "Archive_label"));
 	($mol_mem(($.$bog_music_track.prototype), "Archive"));
-	($mol_mem(($.$bog_music_track.prototype), "to_my_click"));
-	($mol_mem(($.$bog_music_track.prototype), "To_my_icon"));
-	($mol_mem(($.$bog_music_track.prototype), "To_my_label"));
-	($mol_mem(($.$bog_music_track.prototype), "To_my"));
 	($mol_mem_key(($.$bog_music_track.prototype), "move_click"));
-	($mol_mem_key(($.$bog_music_track.prototype), "Move_icon"));
+	($mol_mem_key(($.$bog_music_track.prototype), "Move_add_icon"));
+	($mol_mem_key(($.$bog_music_track.prototype), "Move_cut_icon"));
 	($mol_mem_key(($.$bog_music_track.prototype), "Move_label"));
 	($mol_mem_key(($.$bog_music_track.prototype), "Move"));
 	($mol_mem(($.$bog_music_track.prototype), "restore_click"));
@@ -40657,27 +40678,34 @@ var $;
                         this.Demote(),
                         ...this.can_drop_cache() ? [this.Delete()] : [],
                         ...this.move_targets().map(id => this.Move(id)),
-                        ...this.track()?.playlist() ? [this.To_my()] : [],
                         this.Archive(),
                     ];
             }
+            account() {
+                return $bog_music_account_baza.home();
+            }
             move_targets() {
-                const own = this.track()?.playlist() ?? '';
-                return $bog_music_account_baza.home().playlists()
-                    .map(pl => pl.id)
-                    .filter(id => id !== own);
+                return this.account().playlists().map(pl => pl.id);
+            }
+            move_member(id) {
+                return this.account().list_has(id, this.key());
+            }
+            move_content(id) {
+                return [
+                    this.move_member(id) ? this.Move_cut_icon(id) : this.Move_add_icon(id),
+                    this.Move_label(id),
+                ];
             }
             move_label(id) {
-                return `В «${$bog_music_account_baza.home().playlist_title(id)}»`;
+                const title = this.account().playlist_title(id);
+                return this.move_member(id) ? `Убрать из «${title}»` : `В «${title}»`;
             }
             move_click(id) {
                 this.Menu().showed(false);
-                $bog_music_account_baza.home().move_to_playlist(this.key(), id);
-                return null;
-            }
-            to_my_click() {
-                this.Menu().showed(false);
-                $bog_music_account_baza.home().move_to_playlist(this.key(), '');
+                if (this.move_member(id))
+                    this.account().list_cut(id, this.key());
+                else
+                    this.account().list_add(id, this.key());
                 return null;
             }
             /** Локальный файл с устройства больше взять неоткуда — кеш не сбрасываем. */
@@ -40824,9 +40852,6 @@ var $;
         __decorate([
             $mol_action
         ], $bog_music_track.prototype, "move_click", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_track.prototype, "to_my_click", null);
         __decorate([
             $mol_mem
         ], $bog_music_track.prototype, "delete_asked", null);
@@ -41123,6 +41148,9 @@ var $;
     class $bog_music_playlists_dict extends $giper_baza_dict_to($giper_baza_atom_text) {
     }
     $.$bog_music_playlists_dict = $bog_music_playlists_dict;
+    class $bog_music_lists_dict extends $giper_baza_dict_to($giper_baza_list_str) {
+    }
+    $.$bog_music_lists_dict = $bog_music_lists_dict;
 })($ || ($ = {}));
 
 ;
@@ -41250,7 +41278,6 @@ var $;
             Delete: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
             Archive: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
             Restore: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
-            To_my: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
             Move: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
             Delete_forever: { justify: { content: 'flex-start' }, gap: $mol_gap.text, color: $mol_theme.special },
             Confirm: {
@@ -41455,6 +41482,7 @@ var $;
         Eq_gains: $giper_baza_atom.of($mol_schema_string),
         Tracks: $bog_music_tracks_dict,
         Playlists: $bog_music_playlists_dict,
+        Lists: $bog_music_lists_dict,
     }) {
         /** Модель текущего пользователя (home land). */
         static home() {
@@ -41763,7 +41791,61 @@ var $;
             $bog_music_log.act(`удалён плейлист ${id}`, this.land_id());
             for (const key of this.keys_in(id))
                 this.move_to_playlist(key, '');
+            this.Lists(null).cut(id);
             this.playlists_dict().cut(id);
+        }
+        list(id, auto) {
+            return this.Lists(null).key(id, auto);
+        }
+        list_raw(id) {
+            return (this.list(id)?.items() ?? []);
+        }
+        list_keys(id) {
+            const keys = [];
+            for (const key of this.list_raw(id)) {
+                try {
+                    const track = this.track(key);
+                    if (!track?.audio())
+                        continue;
+                    if (track.playlist() === 'archive')
+                        continue;
+                    keys.push(key);
+                }
+                catch {
+                    continue;
+                }
+            }
+            return keys;
+        }
+        list_has(id, key) {
+            return this.list(id)?.has(key) ?? false;
+        }
+        list_add(id, key) {
+            $bog_music_log.act(`${key} → в «${this.playlist_title(id)}»`, this.land_id());
+            this.list(id, 'auto').add(key);
+        }
+        list_cut(id, key) {
+            $bog_music_log.act(`${key} ← из «${this.playlist_title(id)}»`, this.land_id());
+            this.list(id)?.cut(key);
+        }
+        list_move(id, key, to_key) {
+            const raw = this.list_raw(id);
+            const from = raw.indexOf(key);
+            const to = raw.indexOf(to_key);
+            if (from < 0 || to < 0 || from === to)
+                return;
+            this.list(id, 'auto').move(from, to > from ? to + 1 : to);
+        }
+        migrate_lists() {
+            const dict = this.tracks();
+            for (const key of (dict.keys() ?? [])) {
+                const track = dict.key(key);
+                const id = track?.playlist() ?? '';
+                if (!id.startsWith('list:'))
+                    continue;
+                this.list(id, 'auto').add(key);
+                track.Playlist('auto').val('');
+            }
         }
         delete_track(key) {
             $bog_music_log.act(`трек вырезан из фонотеки: ${key}`, this.land_id());
@@ -41887,6 +41969,18 @@ var $;
     __decorate([
         $mol_action
     ], $bog_music_account_baza.prototype, "playlist_delete", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "list_add", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "list_cut", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "list_move", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "migrate_lists", null);
     __decorate([
         $mol_action
     ], $bog_music_account_baza.prototype, "delete_track", null);
