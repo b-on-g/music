@@ -42630,9 +42630,6 @@ declare namespace $ {
 
 //# sourceMappingURL=down.view.tree.d.ts.map
 declare namespace $ {
-}
-
-declare namespace $ {
 
 	export class $bog_music_select extends $mol_select {
 		bubble_content( ): readonly(any)[]
@@ -42641,6 +42638,9 @@ declare namespace $ {
 }
 
 //# sourceMappingURL=select.view.tree.d.ts.map
+declare namespace $.$$ {
+}
+
 declare namespace $ {
 
 	export class $mol_icon_plus extends $mol_icon {
@@ -42933,9 +42933,6 @@ declare namespace $.$$ {
         remove_click(): void;
         focus_later(field: $.$mol_view): void;
     }
-}
-
-declare namespace $ {
 }
 
 declare namespace $.$$ {
@@ -65896,9 +65893,6 @@ declare namespace $.$$ {
         private setup_pagehide_save;
         auto(): void;
     }
-}
-
-declare namespace $ {
 }
 
 declare namespace $.$$ {

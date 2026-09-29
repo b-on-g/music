@@ -26625,14 +26625,23 @@ var $;
 
 ;
 "use strict";
-var $;
-(function ($) {
-    $mol_style_attach("bog/music/select/select.view.css", "[bog_music_select_bubble][mol_pop_bubble][mol_view] {\n\toverflow-y: auto;\n}\n");
-})($ || ($ = {}));
+
 
 ;
 "use strict";
-
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $mol_style_define($bog_music_select, {
+            Menu: {
+                flex: { shrink: 1 },
+                minHeight: 0,
+                overflow: { y: 'auto' },
+            },
+        });
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
 
 ;
 	($.$mol_icon_plus) = class $mol_icon_plus extends ($.$mol_icon) {
@@ -27054,20 +27063,30 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    $mol_style_attach("bog/music/playlists/playlists.view.css", "[bog_music_playlists_my_label],\n[bog_music_playlists_archive_label],\n[bog_music_playlists_list] [mol_select_trigger] [mol_dimmer] {\n\tdisplay: block;\n\tmin-width: 0;\n\toverflow: hidden;\n\twhite-space: nowrap;\n\ttext-overflow: ellipsis;\n}\n[bog_music_playlists_list] [mol_select_trigger] {\n\tmin-width: 0;\n\tmax-width: 100%;\n\tflex-wrap: nowrap;\n}\n[bog_music_playlists_current=\"true\"] {\n\tcolor: var(--mol_theme_current);\n\tbackground-color: var(--mol_theme_hover);\n}\n[bog_music_playlists_my_label],\n[bog_music_playlists_archive_label] {\n\tflex-shrink: 1;\n}\n[bog_music_playlists_list] {\n\tflex: 1 1 auto;\n}\n[bog_music_playlists_add_anchor] {\n\tpadding-left: 0rem;\n\tpadding-right: 0rem;\n\tjustify-content: center;\n}\n");
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
     var $$;
     (function ($$) {
+        const current = {
+            '[bog_music_playlists_current]': {
+                true: {
+                    color: $mol_theme.current,
+                    background: { color: $mol_theme.hover },
+                },
+            },
+        };
         const cell = {
+            ...current,
             flex: { grow: 1, shrink: 1, basis: '0%' },
             justify: { content: 'center' },
             align: { items: 'center' },
             minWidth: 0,
+        };
+        const label = {
+            display: 'block',
+            flex: { shrink: 1 },
+            minWidth: 0,
+            overflow: { x: 'hidden', y: 'hidden' },
+            whiteSpace: 'nowrap',
+            textOverflow: 'ellipsis',
         };
         $mol_style_define($bog_music_playlists, {
             flex: { direction: 'row' },
@@ -27083,18 +27102,26 @@ var $;
                 ...cell,
                 textAlign: 'center',
             },
+            My_label: label,
             Archive: {
                 ...cell,
                 textAlign: 'center',
             },
+            Archive_label: label,
             Middle: {
                 ...cell,
                 flex: { grow: 1.5, shrink: 1, basis: '0%' },
                 gap: 0,
             },
             List: {
-                flex: { shrink: 1 },
+                flex: { grow: 1, shrink: 1, basis: 'auto' },
                 minWidth: 0,
+                Trigger: {
+                    minWidth: 0,
+                    maxWidth: '100%',
+                    flex: { wrap: 'nowrap' },
+                    $mol_dimmer: label,
+                },
             },
             Edit_panel: {
                 border: { top: { width: '1px', style: 'solid', color: $mol_theme.line } },
@@ -27126,11 +27153,11 @@ var $;
                 maxWidth: '80vw',
             },
             Add_anchor: {
-                paddingLeft: '0rem',
-                paddingRight: '0rem',
+                padding: { left: 0, right: 0 },
+                justify: { content: 'center' },
                 width: '24px',
-                height: '24px'
-            }
+                height: '24px',
+            },
         });
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
@@ -29898,7 +29925,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.69';
+    $.$bog_music_version = 'v1.70';
 })($ || ($ = {}));
 
 ;
@@ -30925,7 +30952,7 @@ var $;
                 List: {
                     Trigger: {
                         display: 'flex',
-                        justifyContent: 'space-around'
+                        justifyContent: 'space-between'
                     }
                 }
             },
@@ -37902,13 +37929,6 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    $mol_style_attach("bog/music/player/player.view.css", "[bog_music_player_full=\"true\"] [bog_music_player_left] {\n\torder: -1;\n}\n\n[bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_center] > [mol_button],\n[bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_close] {\n\tpadding-left: 0.25rem;\n\tpadding-right: 0.25rem;\n}\n");
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
     var $$;
     (function ($$) {
         const cover_size = $mol_style_func.clamp('12rem', '70vw', '20rem');
@@ -38252,6 +38272,14 @@ var $;
             },
             ':not([bog_music_player_full="true"])': {
                 Options: { display: 'none' },
+                Center: {
+                    $mol_button: {
+                        padding: { left: '0.25rem', right: '0.25rem' },
+                    },
+                },
+                Close: {
+                    padding: { left: '0.25rem', right: '0.25rem' },
+                },
             },
             '@': {
                 bog_music_player_full: {
@@ -38274,6 +38302,7 @@ var $;
                         },
                         Left: {
                             flex: { direction: 'column', basis: '100%', grow: 0 },
+                            order: '-1',
                             overflow: { x: 'visible' },
                             gap: '1rem',
                         },
