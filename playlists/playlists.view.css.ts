@@ -70,6 +70,12 @@ namespace $.$$ {
 			width: '16rem',
 			maxWidth: '80vw',
 		},
+		Add_anchor: {
+			paddingLeft: '0rem',
+			paddingRight: '0rem',
+			width:'24px',
+			height:'24px'
+		}
 
 	})
 

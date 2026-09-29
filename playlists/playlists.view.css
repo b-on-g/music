@@ -24,6 +24,7 @@
 	flex: 1 1 auto;
 }
 [bog_music_playlists_add_anchor] {
-	padding-left: 0.25rem;
-	padding-right: 0.25rem;
+	padding-left: 0rem;
+	padding-right: 0rem;
+	justify-content: center;
 }
