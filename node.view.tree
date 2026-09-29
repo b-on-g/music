@@ -1482,17 +1482,12 @@ $bog_music_playlists $mol_view
 									value? <=> rename_title? \
 									submit? <=> rename_submit? null
 									enter \done
-								<= Edit_actions $mol_view
+								<= Remove $mol_button_minor
+									click? <=> remove_click? null
 									sub /
-										<= Remove $mol_button_minor
-											click? <=> remove_click? null
-											sub /
-												<= Remove_icon $mol_icon_delete
-												<= Remove_label $mol_view
-													sub / <= remove_label \Удалить
-										<= Rename_save $mol_button_minor
-											title \Переименовать
-											click? <=> rename_submit? null
+										<= Remove_icon $mol_icon_delete
+										<= Remove_label $mol_view
+											sub / <= remove_label \Удалить
 		<= Archive $mol_button_minor
 			attr *
 				^

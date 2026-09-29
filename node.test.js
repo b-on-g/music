@@ -26771,20 +26771,9 @@ var $;
 			(obj.sub) = () => ([(this.Remove_icon()), (this.Remove_label())]);
 			return obj;
 		}
-		Rename_save(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.title) = () => ("Переименовать");
-			(obj.click) = (next) => ((this.rename_submit(next)));
-			return obj;
-		}
-		Edit_actions(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.Remove()), (this.Rename_save())]);
-			return obj;
-		}
 		Edit_panel(){
 			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.Rename()), (this.Edit_actions())]);
+			(obj.sub) = () => ([(this.Rename()), (this.Remove())]);
 			return obj;
 		}
 		add_content(){
@@ -26867,8 +26856,6 @@ var $;
 	($mol_mem(($.$bog_music_playlists.prototype), "Remove_icon"));
 	($mol_mem(($.$bog_music_playlists.prototype), "Remove_label"));
 	($mol_mem(($.$bog_music_playlists.prototype), "Remove"));
-	($mol_mem(($.$bog_music_playlists.prototype), "Rename_save"));
-	($mol_mem(($.$bog_music_playlists.prototype), "Edit_actions"));
 	($mol_mem(($.$bog_music_playlists.prototype), "Edit_panel"));
 	($mol_mem(($.$bog_music_playlists.prototype), "Add"));
 	($mol_mem(($.$bog_music_playlists.prototype), "Middle"));
@@ -26971,7 +26958,6 @@ var $;
                 return this.own_list() ? [this.Add_panel(), this.Edit_panel()] : [this.Add_panel()];
             }
             add_toggle() {
-                this.rename_draft(null);
                 this.remove_asked(false);
                 if ($bog_music_pop_toggle(this.Add()))
                     this.focus_later(this.Add_title());
@@ -26985,22 +26971,15 @@ var $;
                 this.Add().showed(false);
                 this.page(id);
             }
-            rename_draft(next) {
-                this.own_list();
-                return next ?? null;
-            }
             rename_title(next) {
-                if (next !== undefined)
-                    this.rename_draft(next);
-                return this.rename_draft() ?? this.account().playlist_title(this.own_list());
+                const id = this.own_list();
+                if (next === undefined)
+                    return this.account().playlist_title(id);
+                if (id && next.trim())
+                    this.account().playlist_rename(id, next);
+                return next;
             }
             rename_submit() {
-                const id = this.own_list();
-                const title = this.rename_title().trim();
-                if (!id || !title)
-                    return;
-                this.account().playlist_rename(id, title);
-                this.rename_draft(null);
                 this.Add().showed(false);
             }
             remove_asked(next) {
@@ -27048,7 +27027,7 @@ var $;
         ], $bog_music_playlists.prototype, "add_submit", null);
         __decorate([
             $mol_mem
-        ], $bog_music_playlists.prototype, "rename_draft", null);
+        ], $bog_music_playlists.prototype, "rename_title", null);
         __decorate([
             $mol_action
         ], $bog_music_playlists.prototype, "rename_submit", null);
@@ -27120,11 +27099,6 @@ var $;
                 },
                 width: '16rem',
                 maxWidth: '80vw',
-            },
-            Edit_actions: {
-                flex: { wrap: 'wrap' },
-                justify: { content: 'space-between' },
-                gap: $mol_gap.text,
             },
             Remove: {
                 gap: $mol_gap.text,
@@ -29909,7 +29883,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.66';
+    $.$bog_music_version = 'v1.67';
 })($ || ($ = {}));
 
 ;
@@ -30933,6 +30907,12 @@ var $;
                     left: '0.5rem',
                     right: '0.5rem',
                 },
+                List: {
+                    Trigger: {
+                        display: "flex",
+                        justifyContent: 'center'
+                    }
+                }
             },
             Tools: {
                 alignItems: 'center',
@@ -33616,7 +33596,6 @@ var $;
             return id;
         }
         playlist_rename(id, title) {
-            $bog_music_log.act(`плейлист ${id} → «${title}»`, this.land_id());
             this.playlists_dict().key(id, 'auto').val(title);
         }
         playlist_delete(id) {

@@ -42813,71 +42813,56 @@ declare namespace $ {
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_button_minor__title_bog_music_playlists_28 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_button_minor['title'] >
-	>
-	type $mol_button_minor__click_bog_music_playlists_29 = $mol_type_enforce<
-		ReturnType< $bog_music_playlists['rename_submit'] >
-		,
-		ReturnType< $mol_button_minor['click'] >
-	>
-	type $mol_view__sub_bog_music_playlists_30 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_playlists_28 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_playlists_31 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_view['sub'] >
-	>
-	type $mol_pop__align_bog_music_playlists_32 = $mol_type_enforce<
+	type $mol_pop__align_bog_music_playlists_29 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_pop['align'] >
 	>
-	type $mol_pop__Anchor_bog_music_playlists_33 = $mol_type_enforce<
+	type $mol_pop__Anchor_bog_music_playlists_30 = $mol_type_enforce<
 		ReturnType< $bog_music_playlists['Add_anchor'] >
 		,
 		ReturnType< $mol_pop['Anchor'] >
 	>
-	type $mol_pop__bubble_content_bog_music_playlists_34 = $mol_type_enforce<
+	type $mol_pop__bubble_content_bog_music_playlists_31 = $mol_type_enforce<
 		ReturnType< $bog_music_playlists['add_content'] >
 		,
 		ReturnType< $mol_pop['bubble_content'] >
 	>
-	type $mol_view__attr_bog_music_playlists_35 = $mol_type_enforce<
+	type $mol_view__attr_bog_music_playlists_32 = $mol_type_enforce<
 		({ 
 			'bog_music_playlists_current': ReturnType< $bog_music_playlists['list_active'] >,
 		})  & ReturnType< $mol_view['attr'] >
 		,
 		ReturnType< $mol_view['attr'] >
 	>
-	type $mol_view__sub_bog_music_playlists_36 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_playlists_33 = $mol_type_enforce<
 		ReturnType< $bog_music_playlists['middle'] >
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_playlists_37 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_playlists_34 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_button_minor__attr_bog_music_playlists_38 = $mol_type_enforce<
+	type $mol_button_minor__attr_bog_music_playlists_35 = $mol_type_enforce<
 		({ 
 			'bog_music_playlists_current': ReturnType< $bog_music_playlists['archive_current'] >,
 		})  & ReturnType< $mol_button_minor['attr'] >
 		,
 		ReturnType< $mol_button_minor['attr'] >
 	>
-	type $mol_button_minor__click_bog_music_playlists_39 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_playlists_36 = $mol_type_enforce<
 		ReturnType< $bog_music_playlists['archive_click'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_music_playlists_40 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_music_playlists_37 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
@@ -42907,8 +42892,6 @@ declare namespace $ {
 		remove_label( ): string
 		Remove_label( ): $mol_view
 		Remove( ): $mol_button_minor
-		Rename_save( ): $mol_button_minor
-		Edit_actions( ): $mol_view
 		Edit_panel( ): $mol_view
 		add_content( ): readonly(any)[]
 		Add( ): $mol_pop
@@ -42943,7 +42926,6 @@ declare namespace $.$$ {
         add_content(): $mol_view[];
         add_toggle(): void;
         add_submit(): void;
-        rename_draft(next?: string | null): string | null;
         rename_title(next?: string): string;
         rename_submit(): void;
         remove_asked(next?: boolean): boolean;
