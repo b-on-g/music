@@ -1,0 +1,69 @@
+$bog_music_playlists $mol_view
+	page? \my
+	my_title \Моя музыка
+	archive_title \Архив
+	list_dict *
+	sub /
+		<= My $mol_button_minor
+			attr *
+				^
+				bog_music_playlists_current <= my_current false
+			click? <=> my_click? null
+			sub /
+				<= My_label $mol_view
+					sub / <= my_title
+		<= Middle $mol_view
+			attr *
+				^
+				bog_music_playlists_current <= list_active false
+			sub <= middle /
+				<= List $mol_select
+					hint \Плейлисты
+					value? <=> list_current? \
+					dictionary <= list_dict
+					option_label_default \Плейлисты
+					no_options_message \Плейлистов нет
+					Trigger_icon <= List_icon $mol_icon_chevron_down
+				<= Add $mol_pop
+					align \bottom_center
+					Anchor <= Add_anchor $mol_button_minor
+						hint \Плейлисты
+						click? <=> add_toggle? null
+						sub / <= Add_icon $mol_icon_plus
+					bubble_content <= add_content /
+						<= Add_panel $mol_view
+							sub /
+								<= Add_title $mol_string
+									hint \Новый плейлист
+									value? <=> add_title? \
+									submit? <=> add_submit? null
+									enter \done
+								<= Add_submit $mol_button_major
+									title \Создать
+									click? <=> add_submit? null
+						<= Edit_panel $mol_view
+							sub /
+								<= Rename $mol_string
+									hint \Название текущего
+									value? <=> rename_title? \
+									submit? <=> rename_submit? null
+									enter \done
+								<= Edit_actions $mol_view
+									sub /
+										<= Remove $mol_button_minor
+											click? <=> remove_click? null
+											sub /
+												<= Remove_icon $mol_icon_delete
+												<= Remove_label $mol_view
+													sub / <= remove_label \Удалить
+										<= Rename_save $mol_button_minor
+											title \Переименовать
+											click? <=> rename_submit? null
+		<= Archive $mol_button_minor
+			attr *
+				^
+				bog_music_playlists_current <= archive_current false
+			click? <=> archive_click? null
+			sub /
+				<= Archive_label $mol_view
+					sub / <= archive_title

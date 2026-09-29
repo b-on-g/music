@@ -63,8 +63,35 @@ namespace $.$$ {
 				: [
 					this.Demote(),
 					... this.can_drop_cache() ? [ this.Delete() ] : [],
+					... this.move_targets().map( id => this.Move( id ) ),
+					... this.track()?.playlist() ? [ this.To_my() ] : [],
 					this.Archive(),
 				]
+		}
+
+		move_targets() {
+			const own = this.track()?.playlist() ?? ''
+			return $bog_music_account_baza.home().playlists()
+				.map( pl => pl.id )
+				.filter( id => id !== own )
+		}
+
+		move_label( id: string ) {
+			return `В «${ $bog_music_account_baza.home().playlist_title( id ) }»`
+		}
+
+		@$mol_action
+		move_click( id: string ) {
+			this.Menu().showed( false )
+			$bog_music_account_baza.home().move_to_playlist( this.key(), id )
+			return null
+		}
+
+		@$mol_action
+		to_my_click() {
+			this.Menu().showed( false )
+			$bog_music_account_baza.home().move_to_playlist( this.key(), '' )
+			return null
 		}
 
 		/** Локальный файл с устройства больше взять неоткуда — кеш не сбрасываем. */

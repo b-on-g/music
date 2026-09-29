@@ -123,6 +123,8 @@ namespace $.$$ {
 		Delete: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
 		Archive: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
 		Restore: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
+		To_my: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
+		Move: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
 		Delete_forever: { justify: { content: 'flex-start' }, gap: $mol_gap.text, color: $mol_theme.special },
 
 		Confirm: {

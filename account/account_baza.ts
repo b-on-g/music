@@ -18,6 +18,7 @@ namespace $ {
 		Eq_on: $giper_baza_atom.of( $mol_schema_boolean ),
 		Eq_gains: $giper_baza_atom.of( $mol_schema_string ),
 		Tracks: $bog_music_tracks_dict,
+		Playlists: $bog_music_playlists_dict,
 	}) {
 
 		/** Модель текущего пользователя (home land). */
@@ -288,6 +289,50 @@ namespace $ {
 			if (!track) return
 			$bog_music_log.act(`${key} → плейлист «${playlist || 'Моя музыка'}»`, this.land_id())
 			track.Playlist('auto')!.val(playlist)
+		}
+
+		playlists_dict() {
+			return this.Playlists(null)!
+		}
+
+		playlists(): { id: string, title: string }[] {
+			const dict = this.playlists_dict()
+			const rows: { id: string, title: string }[] = []
+			for (const id of (dict.keys() ?? []) as string[]) {
+				try {
+					const title = dict.key(id)?.val()
+					if (title == null) continue
+					rows.push({ id, title })
+				} catch {
+					continue
+				}
+			}
+			return rows.sort((a, b) => a.title.localeCompare(b.title, 'ru', { numeric: true }))
+		}
+
+		playlist_title(id: string): string {
+			return this.playlists_dict().key(id)?.val() ?? ''
+		}
+
+		@$mol_action
+		playlist_create(title: string): string {
+			const id = 'list:' + $mol_guid(8, id => this.playlists_dict().has(id))
+			$bog_music_log.act(`новый плейлист «${title}»`, this.land_id())
+			this.playlists_dict().key(id, 'auto')!.val(title)
+			return id
+		}
+
+		@$mol_action
+		playlist_rename(id: string, title: string): void {
+			$bog_music_log.act(`плейлист ${id} → «${title}»`, this.land_id())
+			this.playlists_dict().key(id, 'auto')!.val(title)
+		}
+
+		@$mol_action
+		playlist_delete(id: string): void {
+			$bog_music_log.act(`удалён плейлист ${id}`, this.land_id())
+			for (const key of this.keys_in(id)) this.move_to_playlist(key, '')
+			this.playlists_dict().cut(id)
 		}
 
 		@$mol_action

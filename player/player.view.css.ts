@@ -276,6 +276,12 @@ namespace $.$$ {
 			gap: '0.25rem',
 		},
 
+		Options: {
+			flex: { direction: 'row' },
+			align: { items: 'center' },
+			gap: '0.25rem',
+		},
+
 		Volume_panel: {
 			padding: {
 				top: '0.75rem',
@@ -363,10 +369,7 @@ namespace $.$$ {
 		},
 
 		':not([bog_music_player_full="true"])': {
-			Repeat: { display: 'none' },
-			Volume: { display: 'none' },
-			Eq: { display: 'none' },
-			Trim_toggle: { display: 'none' },
+			Options: { display: 'none' },
 		},
 
 		'@': {
@@ -493,8 +496,20 @@ namespace $.$$ {
 					},
 
 					Center: {
-						flex: { wrap: 'wrap' },
+						flex: { basis: '100%' },
 						justify: { content: 'center' },
+						gap: '1.5rem',
+					},
+
+					Options: {
+						flex: { basis: '100%' },
+						justify: { content: 'center' },
+					},
+
+					Collapse: {
+						position: 'absolute',
+						top: '0.5rem',
+						left: '0.5rem',
 					},
 
 					Close: {

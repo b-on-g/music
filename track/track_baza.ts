@@ -259,4 +259,6 @@ namespace $ {
 	/** Словарь cache_key → трек. Вынесен отдельно, чтобы не циклить TS-инференс. */
 	export class $bog_music_tracks_dict extends $giper_baza_dict_to($bog_music_track_baza) {}
 
+	export class $bog_music_playlists_dict extends $giper_baza_dict_to($giper_baza_atom_text) {}
+
 }

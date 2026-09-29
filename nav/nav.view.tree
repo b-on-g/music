@@ -11,11 +11,6 @@ $bog_music_nav $mol_view
 			active <= music_active \off
 			Icon <= Music_icon $mol_icon_playlist_music
 			click? <=> music_click? null
-		<= Tab_player $bog_music_nav_item
-			label \Плеер
-			active <= player_active \off
-			Icon <= Player_icon $mol_icon_play_circle_outline
-			click? <=> player_click? null
 		<= Tab_account $bog_music_nav_item
 			label \Аккаунт
 			active <= account_active \off

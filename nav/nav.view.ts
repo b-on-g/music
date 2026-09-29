@@ -4,7 +4,6 @@ namespace $.$$ {
 
 		music_active() { return this.section() === 'music' ? 'on' : 'off' }
 		search_active() { return this.section() === 'search' ? 'on' : 'off' }
-		player_active() { return this.section() === 'player' ? 'on' : 'off' }
 		account_active() { return this.section() === 'account' ? 'on' : 'off' }
 		logs_active() { return this.section() === 'logs' ? 'on' : 'off' }
 
@@ -19,13 +18,6 @@ namespace $.$$ {
 		search_click(e?: Event) {
 			if (e) e.preventDefault()
 			this.section('search')
-			return null
-		}
-
-		@$mol_action
-		player_click(e?: Event) {
-			if (e) e.preventDefault()
-			this.section('player')
 			return null
 		}
 

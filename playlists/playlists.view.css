@@ -1,0 +1,29 @@
+[bog_music_playlists_my_label],
+[bog_music_playlists_archive_label],
+[bog_music_playlists_list] [mol_select_trigger] [mol_dimmer] {
+	display: block;
+	min-width: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+[bog_music_playlists_list] [mol_select_trigger] {
+	min-width: 0;
+	max-width: 100%;
+	flex-wrap: nowrap;
+}
+[bog_music_playlists_current="true"] {
+	color: var(--mol_theme_current);
+	background-color: var(--mol_theme_hover);
+}
+[bog_music_playlists_my_label],
+[bog_music_playlists_archive_label] {
+	flex-shrink: 1;
+}
+[bog_music_playlists_list] {
+	flex: 1 1 auto;
+}
+[bog_music_playlists_add_anchor] {
+	padding-left: 0.25rem;
+	padding-right: 0.25rem;
+}

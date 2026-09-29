@@ -74,15 +74,17 @@ $bog_music_player $mol_view
 						<= Prev $mol_button_minor
 							click? <=> prev? null
 							sub / <= Prev_icon $mol_icon_skip_previous
-						<= Play $mol_button_minor
+						<= Toggle $mol_button_minor
+							hint <= toggle_hint \
 							click? <=> toggle? null
-							sub / <= Play_icon $mol_icon_play
-						<= Pause $mol_button_minor
-							click? <=> toggle? null
-							sub / <= Pause_icon $mol_icon_pause
+							sub <= toggle_icons /
+								<= Play_icon $mol_icon_play
+								<= Pause_icon $mol_icon_pause
 						<= Next $mol_button_minor
 							click? <=> next? null
 							sub / <= Next_icon $mol_icon_skip_next
+				<= Options $mol_view
+					sub /
 						<= Repeat $mol_button_minor
 							hint <= repeat_hint \
 							click? <=> repeat_cycle? null
@@ -94,52 +96,56 @@ $bog_music_player $mol_view
 							hint \Обрезать начало и конец
 							Icon <= Trim_icon $mol_icon_content_cut
 							checked? <=> trim_mode? false
-				<= Eq $mol_pop
-					Anchor <= Eq_anchor $mol_button_minor
-						hint \Эквалайзер
-						click? <=> eq_pop_toggle? null
-						sub / <= Eq_icon $mol_icon_tune_vertical
-					bubble_content /
-						<= Eq_panel $mol_view
-							sub /
-								<= Eq_curve $bog_music_eq_curve
-									gains <= eq_gains /number
-									pointer_down?event <=> eq_pointer_down?event null
-									pointer_move?event <=> eq_pointer_move?event null
-									pointer_up?event <=> eq_pointer_up?event null
-								<= Eq_power $mol_check_icon
-									title \Эквалайзер
-									hint \Включить эквалайзер
-									Icon <= Eq_power_icon $mol_icon_tune_vertical
-									checked? <=> eq_on? false
-								<= Eq_presets $mol_view
-									sub <= eq_preset_rows /
-										<= Eq_preset_row*0 $mol_check
-											title <= eq_preset_title* \
-											checked? <=> eq_preset_checked*? false
-				<= Volume $mol_pop
-					align \top_right
-					Anchor <= Volume_anchor $mol_button_minor
-						hint \Громкость
-						click? <=> volume_toggle? null
-						sub / <= Volume_icon $mol_icon_volume_high
-					bubble_content /
-						<= Volume_panel $mol_view
-							sub /
-								<= Norm $mol_check_icon
-									hint \Выравнивать громкость треков
-									Icon <= Norm_icon $mol_icon_equalizer
-									checked? <=> normalize? true
-								<= Volume_slider $mol_view
-									event *
-										pointerdown?event <=> volume_pointer_down?event null
-										pointermove?event <=> volume_pointer_move?event null
-										pointerup?event <=> volume_pointer_up?event null
-										pointercancel?event <=> volume_pointer_up?event null
+						<= Eq $mol_pop
+							Anchor <= Eq_anchor $mol_button_minor
+								hint \Эквалайзер
+								click? <=> eq_pop_toggle? null
+								sub / <= Eq_icon $mol_icon_tune_vertical
+							bubble_content /
+								<= Eq_panel $mol_view
 									sub /
-										<= Volume_fill $mol_view
-											style *
-												height <= volume_fill_height \
+										<= Eq_curve $bog_music_eq_curve
+											gains <= eq_gains /number
+											pointer_down?event <=> eq_pointer_down?event null
+											pointer_move?event <=> eq_pointer_move?event null
+											pointer_up?event <=> eq_pointer_up?event null
+										<= Eq_power $mol_check_icon
+											title \Эквалайзер
+											hint \Включить эквалайзер
+											Icon <= Eq_power_icon $mol_icon_tune_vertical
+											checked? <=> eq_on? false
+										<= Eq_presets $mol_view
+											sub <= eq_preset_rows /
+												<= Eq_preset_row*0 $mol_check
+													title <= eq_preset_title* \
+													checked? <=> eq_preset_checked*? false
+						<= Volume $mol_pop
+							align \top_right
+							Anchor <= Volume_anchor $mol_button_minor
+								hint \Громкость
+								click? <=> volume_toggle? null
+								sub / <= Volume_icon $mol_icon_volume_high
+							bubble_content /
+								<= Volume_panel $mol_view
+									sub /
+										<= Norm $mol_check_icon
+											hint \Выравнивать громкость треков
+											Icon <= Norm_icon $mol_icon_equalizer
+											checked? <=> normalize? true
+										<= Volume_slider $mol_view
+											event *
+												pointerdown?event <=> volume_pointer_down?event null
+												pointermove?event <=> volume_pointer_move?event null
+												pointerup?event <=> volume_pointer_up?event null
+												pointercancel?event <=> volume_pointer_up?event null
+											sub /
+												<= Volume_fill $mol_view
+													style *
+														height <= volume_fill_height \
+				<= Collapse $mol_button_minor
+					hint \Свернуть плеер
+					click? <=> collapse?event null
+					sub / <= Collapse_icon $mol_icon_chevron_down
 				<= Close $mol_button_minor
 					hint \Закрыть плеер
 					click? <=> close? null

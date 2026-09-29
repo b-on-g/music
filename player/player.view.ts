@@ -22,13 +22,29 @@ namespace $.$$ {
 		}
 
 		current_audio(): $bog_music_api_audio | null {
-			if (this._ext) return { id: 0, owner_id: 0, artist: this._ext.artist, title: this._ext.title, duration: 0, url: this._ext.url }
+			const ext = this.ext()
+			if (ext) return { id: 0, owner_id: 0, artist: ext.artist, title: ext.title, duration: 0, url: ext.url }
 			return this.current_track()?.audio() ?? null
 		}
 
 		// Внешний источник (стрим tube-превью), играющий без записи в baza.
 		// Пока задан — плеер работает по url, а не по ключу из baza.
 		private _ext: { url: string, title: string, artist: string, cover: string } | null = null
+		private _ext_seq = 0
+
+		@$mol_mem
+		ext_rev(next?: number) {
+			return next ?? 0
+		}
+
+		ext(next?: { url: string, title: string, artist: string, cover: string } | null) {
+			if (next !== undefined) {
+				this._ext = next
+				this.ext_rev(++this._ext_seq)
+			}
+			this.ext_rev()
+			return this._ext
+		}
 
 		/** Прослушать по прямому URL, не сохраняя трек (tube-превью). */
 		play_external(url: string, title: string, artist: string, cover = '') {
@@ -37,7 +53,7 @@ namespace $.$$ {
 				return
 			}
 			$bog_music_log.act(`внешний стрим: ${artist} — ${title}`)
-			this._ext = { url, title, artist, cover }
+			this.ext({ url, title, artist, cover })
 			this.current_key('')
 			this.current_time(0)
 			this.duration(0)
@@ -799,7 +815,8 @@ namespace $.$$ {
 		}
 
 		cover() {
-			if (this._ext) return this._ext.cover
+			const ext = this.ext()
+			if (ext) return ext.cover
 			return this.current_track()?.cover() ?? ''
 		}
 
@@ -1174,7 +1191,7 @@ namespace $.$$ {
 			}
 			$bog_music_log.act(`старт трека ${audio.artist} — ${audio.title} (${key})`)
 
-			this._ext = null // возвращаемся к baza-треку, гасим tube-превью
+			this.ext(null) // возвращаемся к baza-треку, гасим tube-превью
 
 			$bog_music_mem.play_started()
 			// Предыдущий трек больше не нужен: отпускаем и его Blob, и object URL.
@@ -1610,7 +1627,7 @@ namespace $.$$ {
 		close() {
 			$bog_music_log.act('закрытие плеера')
 			this._dispatch_token++ // инвалидировать pending dispatch'и
-			this._ext = null
+			this.ext(null)
 			this._planned_wave = null
 			this._blob_cache.clear()
 			this._silent = false
@@ -1650,7 +1667,7 @@ namespace $.$$ {
 
 		prev() {
 			// Тот же случай, что и в next(): играет выдача — шагаем по ней.
-			if (this._ext) {
+			if (this.ext()) {
 				$bog_music_log.act('предыдущий результат выдачи')
 				this.ext_step(-1)
 				return
@@ -1699,9 +1716,9 @@ namespace $.$$ {
 			// Играет стрим из выдачи YouTube. Шагаем по выдаче, а не по фонотеке:
 			// у внешнего трека current_key пустой, и общий путь ниже взял бы
 			// queue[0] — по концу трека молча стартовал личный плейлист с начала.
-			if (this._ext) {
+			if (this.ext()) {
 				if (!manual && mode === 'one') {
-					const ext = this._ext
+					const ext = this.ext()!
 					this.play_external(ext.url, ext.title, ext.artist)
 					return
 				}
@@ -1772,18 +1789,21 @@ namespace $.$$ {
 		}
 
 		sub() {
-			if (!this.current_key() && !this._ext) return this.full() ? [ this.Empty() ] : []
+			if (!this.current_key() && !this.ext()) return this.full() ? [ this.Empty() ] : []
 			return super.sub()
 		}
 
-		Play() {
-			if (this.playing()) return null as any
-			return super.Play()
+		toggle_icons() {
+			return [ this.playing() ? this.Pause_icon() : this.Play_icon() ]
 		}
 
-		Pause() {
-			if (!this.playing()) return null as any
-			return super.Pause()
+		toggle_hint() {
+			return this.playing() ? 'Пауза' : 'Играть'
+		}
+
+		Collapse() {
+			if (!this.full()) return null as any
+			return super.Collapse()
 		}
 
 		// ---------- обрез трека (trim handles на прогресс-баре) ----------

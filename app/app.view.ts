@@ -64,25 +64,35 @@ namespace $.$$ {
 			const p = this.page()
 			if (p === 'share') return this.share().selection()
 			if (p === 'archive') return this.account().keys_in('archive')
-			if (p.startsWith('shared:')) return this.account().keys_in(p)
+			if (p.startsWith('shared:') || p.startsWith('list:')) return this.account().keys_in(p)
 			return this.account().keys_in('')
 		}
 
-		tab_options() {
+		my_title() {
 			const my = this.account().keys_in('').length
+			return my ? `Моя музыка ${my}` : 'Моя музыка'
+		}
+
+		archive_title() {
 			const arch = this.account().keys_in('archive').length
-			const opts: Record<string, string> = {
-				my: my ? `Моя музыка ${my}` : 'Моя музыка',
-				archive: arch ? `Архив ${arch}` : 'Архив',
-			}
+			return arch ? `Архив ${arch}` : 'Архив'
+		}
+
+		@$mol_mem
+		list_dict() {
+			const opts: Record<string, string> = {}
 			if (this.share().mode()) {
 				const n = this.share().selection().length
 				opts['share'] = n ? `Расшаренный ${n}` : 'Расшаренный'
 			}
+			for (const pl of this.account().playlists()) {
+				const n = this.account().keys_in(pl.id).length
+				opts[pl.id] = n ? `${pl.title} ${n}` : pl.title
+			}
 			for (const pl of this.account().shared_playlists()) {
 				opts[pl.id] = `${pl.sender} ${pl.count}`
 			}
-			return opts as { my: string, archive: string }
+			return opts
 		}
 
 		// =====================================================================
@@ -140,7 +150,6 @@ namespace $.$$ {
 			const idx = keys.indexOf(key)
 			this.Player().queue_index(idx >= 0 ? idx : 0)
 			this.Player().play_track(key)
-			this.section('player')
 
 			const item = this.recsys_item(key)
 			if (item) {
@@ -439,9 +448,18 @@ namespace $.$$ {
 			return this.section() === 'player'
 		}
 
+		private _section_back = 'music'
+
 		@$mol_action
 		player_open( event?: Event ) {
+			if( this.player_full() ) return
+			this._section_back = this.section()
 			this.section( 'player' )
+		}
+
+		@$mol_action
+		player_collapse( event?: Event ) {
+			this.section( this._section_back )
 		}
 
 		body() {
@@ -495,11 +513,23 @@ namespace $.$$ {
 			this.tube_committed(query)
 		}
 
+		@$mol_action
+		tube_submit( event?: Event ) {
+			event?.preventDefault()
+			this.tube_find()
+			;( this.Tube_query().dom_node() as HTMLInputElement ).blur()
+		}
+
+		private _tube_found ={ query: '', items: [] as $bog_music_tube_item[] }
+
 		@$mol_mem
 		tube_items(): $bog_music_tube_item[] {
-			const q = this.tube_committed()
-			if (!q.trim()) return []
-			return $bog_music_tube.search(q)
+			const query = this.tube_committed().trim()
+			if (!query) return []
+			if (this._tube_found.query === query) return this._tube_found.items
+			const items = $bog_music_tube.search(query)
+			this._tube_found = { query, items }
+			return items
 		}
 
 		@$mol_mem
@@ -573,7 +603,6 @@ namespace $.$$ {
 				item.channel,
 				$bog_music_tube.cover_url(item.id),
 			)
-			this.section('player')
 		}
 
 		@$mol_mem_key

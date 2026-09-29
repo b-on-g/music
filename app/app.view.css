@@ -144,3 +144,19 @@ html:has([bog_music_app][bog_music_font="huge"]) [bog_music_player_full="true"] 
 html:has([bog_music_app][bog_music_font="huge"]) [bog_music_player_full="true"] [bog_music_player_title] {
 	font-size: 1.25rem;
 }
+
+[bog_music_app] input,
+[bog_music_app] textarea,
+[bog_music_app] select {
+	font-size: max( 16px, 1rem );
+}
+
+html:has([bog_music_app][bog_music_font="large"]) [bog_music_player]:not([bog_music_player_full="true"]) [bog_music_player_prev],
+html:has([bog_music_app][bog_music_font="huge"]) [bog_music_player]:not([bog_music_player_full="true"]) [bog_music_player_prev] {
+	display: none;
+}
+html:has([bog_music_app][bog_music_font="huge"]) [bog_music_player]:not([bog_music_player_full="true"]) [bog_music_player_cover],
+html:has([bog_music_app][bog_music_font="huge"]) [bog_music_player]:not([bog_music_player_full="true"]) [bog_music_player_cover_placeholder] {
+	width: 2.25rem;
+	height: 2.25rem;
+}
