@@ -218,7 +218,7 @@ namespace $ {
 			verifier_cipher: Uint8Array,
 			ciphers: { audio: $bog_music_api_audio, mime: string, meta: Uint8Array, blob: Uint8Array }[],
 		): string {
-			const land = $giper_baza_glob.land_grab([[null, $giper_baza_rank_read]])
+			const land = $giper_baza_glob.land_grab([[null, $giper_baza_rank_post('fast')]])
 			const data = land.Data($bog_music_share_baza)
 			data.Sender('auto')!.val(sender_cipher as Uint8Array<ArrayBuffer>)
 			data.Verifier('auto')!.val(verifier_cipher as Uint8Array<ArrayBuffer>)
@@ -230,7 +230,7 @@ namespace $ {
 				const trk = tracks.key($bog_music_account_baza.key_of(c.audio), 'auto')
 				if (!trk) continue
 				trk.Meta('auto')!.val(c.meta as Uint8Array<ArrayBuffer>)
-				const file_store = trk.File('auto')!.ensure([[null, $giper_baza_rank_read]])
+				const file_store = trk.File('auto')!.ensure([[null, $giper_baza_rank_post('fast')]])
 				if (!file_store) continue
 				file_store.buffer(c.blob as Uint8Array<ArrayBuffer>)
 				file_store.type(c.mime)
@@ -239,8 +239,8 @@ namespace $ {
 			}
 
 			// Шар — эфемерный land вне home: пуш на master запускаем явно.
-			land.sync()
-			for (const fl of file_lands) fl.sync()
+			this.keep(land)
+			for (const fl of file_lands) this.keep(fl)
 
 			return land.link().str
 		}
@@ -294,6 +294,7 @@ namespace $ {
 					sender_cipher: Uint8Array | null,
 					verifier_cipher: Uint8Array | null,
 					count: number,
+					burned: boolean,
 					keys: readonly string[],
 				}
 				let header: Header | null = null
@@ -302,6 +303,7 @@ namespace $ {
 						.header_read(land).catch(() => null) as Header | null
 					if (cur?.verifier_cipher) {
 						header = cur
+						if (cur.burned) break
 						if (cur.count > 0 && cur.keys.length >= cur.count) break
 						if (cur.count === 0 && cur.keys.length > 0) break
 					}
@@ -310,6 +312,12 @@ namespace $ {
 				}
 				if (!header?.verifier_cipher) {
 					this.import_status('Шар не загрузился — попробуй позже')
+					return null
+				}
+				if (header.burned) {
+					$bog_music_log.act('импорт шара: ссылка уже использована', link_str)
+					this.import_status('Ссылка уже использована')
+					this.finish(token)
 					return null
 				}
 
@@ -364,6 +372,12 @@ namespace $ {
 					}
 				}
 
+				if (imported) {
+					const burned = await ($mol_wire_async(this) as any)
+						.burn_in_fiber(land, header.keys).catch(() => false) as boolean
+					$bog_music_log.act(burned ? 'шар сожжён после импорта' : 'шар старый, сжечь нельзя', link_str)
+				}
+
 				this.finish(token)
 				if (imported) {
 					this.import_status(`От ${sender}: ${imported} ${$bog_music_share.plural_tracks(imported)}`)
@@ -384,6 +398,38 @@ namespace $ {
 			$bog_music_boot.clear_share_hash()
 		}
 
+		private kept = new Map< string, $mol_wire_atom< any, any, null > >()
+
+		keep(land: $giper_baza_land) {
+			const link = land.link().str
+			if (this.kept.has(link)) return
+			const atom = new $mol_wire_atom(`bog_music_share_keep<${link}>`, () => {
+				$giper_baza_glob.Land(new $giper_baza_link(link)).sync()
+				return null
+			})
+			this.kept.set(link, atom)
+			atom.fresh()
+		}
+
+		burn_in_fiber(land: $giper_baza_land, keys: readonly string[]): boolean {
+			const data = land.Data($bog_music_share_baza)
+			if (!data.can_change()) return false
+			data.Burned('auto')!.val(true)
+			const tracks = data.Tracks(null)!
+			for (const key of keys) {
+				const file = tracks.key(key)?.File()?.remote()
+				try {
+					if (file?.can_change()) file.buffer(new Uint8Array())
+					if (file) this.keep(file.land())
+				} catch (error) {
+					if ($mol_promise_like(error)) throw error
+				}
+				tracks.cut(key)
+			}
+			this.keep(land)
+			return true
+		}
+
 		/** Sync-чтение заголовка шара — в фибре, ретраится на загрузке land. */
 		header_read(land: $giper_baza_land) {
 			const data = land.Data($bog_music_share_baza)
@@ -391,6 +437,7 @@ namespace $ {
 				sender_cipher: (data.Sender()?.val() as Uint8Array | undefined) ?? null,
 				verifier_cipher: (data.Verifier()?.val() as Uint8Array | undefined) ?? null,
 				count: Number(data.Count()?.val() ?? 0),
+				burned: Boolean(data.Burned()?.val()),
 				keys: (data.Tracks()?.keys() ?? []) as string[],
 			}
 		}

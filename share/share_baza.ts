@@ -16,7 +16,7 @@ namespace $ {
 	export class $bog_music_share_tracks_dict extends $giper_baza_dict_to($bog_music_share_track_baza) {}
 
 	/**
-	 * Эфемерный share-land. `[null, $giper_baza_rank_read]` — публичное чтение
+	 * Эфемерный share-land. `[null, $giper_baza_rank_post('fast')]` — публичная запись, чтобы получатель сжёг шар после импорта
 	 * (на самом деле приватное: link достаточно длинный, payload зашифрован).
 	 *
 	 * Verifier — фиксированная зашифрованная строка для быстрой проверки ключа
@@ -29,6 +29,7 @@ namespace $ {
 		// синка — `tracks.keys().length` догоняет до Count или истекает таймаут.
 		// Plaintext (приватность count'а — приемлемая утечка).
 		Count: $giper_baza_atom.of( $mol_schema_float ),
+		Burned: $giper_baza_atom.of( $mol_schema_boolean ),
 		Tracks: $bog_music_share_tracks_dict,
 	}) {}
 
