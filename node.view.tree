@@ -1421,21 +1421,81 @@ $bog_feedback2_form $mol_page
 	Not_configured $mol_status
 		message @ \Form not yet configured
 
-$mol_check_list $mol_view
-	dictionary *
-	Option* $mol_check
-		checked? <=> option_checked*? false
-		label <= option_label* /
-			<= option_title* \
-		enabled <= option_enabled* <= enabled true
-		hint <= option_hint* \
-		minimal_height 24
-	options *
-	keys /string
-	sub <= items /$mol_check
+$mol_icon_chevron_down $mol_icon path \M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z
 
-$mol_switch $mol_check_list
-	value? \
+$mol_icon_plus $mol_icon path \M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z
+
+$mol_icon_delete $mol_icon path \M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z
+
+$bog_music_playlists $mol_view
+	page? \my
+	my_title \Моя музыка
+	archive_title \Архив
+	list_dict *
+	sub /
+		<= My $mol_button_minor
+			attr *
+				^
+				bog_music_playlists_current <= my_current false
+			click? <=> my_click? null
+			sub /
+				<= My_label $mol_view
+					sub / <= my_title
+		<= Middle $mol_view
+			attr *
+				^
+				bog_music_playlists_current <= list_active false
+			sub <= middle /
+				<= List $mol_select
+					hint \Плейлисты
+					value? <=> list_current? \
+					dictionary <= list_dict
+					option_label_default \Плейлисты
+					no_options_message \Плейлистов нет
+					Trigger_icon <= List_icon $mol_icon_chevron_down
+				<= Add $mol_pop
+					align \bottom_center
+					Anchor <= Add_anchor $mol_button_minor
+						hint \Плейлисты
+						click? <=> add_toggle? null
+						sub / <= Add_icon $mol_icon_plus
+					bubble_content <= add_content /
+						<= Add_panel $mol_view
+							sub /
+								<= Add_title $mol_string
+									hint \Новый плейлист
+									value? <=> add_title? \
+									submit? <=> add_submit? null
+									enter \done
+								<= Add_submit $mol_button_major
+									title \Создать
+									click? <=> add_submit? null
+						<= Edit_panel $mol_view
+							sub /
+								<= Rename $mol_string
+									hint \Название текущего
+									value? <=> rename_title? \
+									submit? <=> rename_submit? null
+									enter \done
+								<= Edit_actions $mol_view
+									sub /
+										<= Remove $mol_button_minor
+											click? <=> remove_click? null
+											sub /
+												<= Remove_icon $mol_icon_delete
+												<= Remove_label $mol_view
+													sub / <= remove_label \Удалить
+										<= Rename_save $mol_button_minor
+											title \Переименовать
+											click? <=> rename_submit? null
+		<= Archive $mol_button_minor
+			attr *
+				^
+				bog_music_playlists_current <= archive_current false
+			click? <=> archive_click? null
+			sub /
+				<= Archive_label $mol_view
+					sub / <= archive_title
 
 $bog_music_tracks $mol_list
 	track_keys /
@@ -1527,10 +1587,6 @@ $bog_music_nav_item $mol_view
 
 $mol_icon_playlist_music $mol_icon path \M15,6H3V8H15V6M15,10H3V12H15V10M3,16H11V14H3V16M17,6V14.18C16.69,14.07 16.35,14 16,14A3,3 0 0,0 13,17A3,3 0 0,0 16,20A3,3 0 0,0 19,17V8H22V6H17Z
 
-$mol_icon_play_circle $mol_icon path \M10,16.5V7.5L16,12M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z
-
-$mol_icon_play_circle_outline $mol_icon path \M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M10,16.5L16,12L10,7.5V16.5Z
-
 $mol_icon_account $mol_icon path \M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z
 
 $mol_icon_account_circle $mol_icon path \M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z
@@ -1554,11 +1610,6 @@ $bog_music_nav $mol_view
 			active <= music_active \off
 			Icon <= Music_icon $mol_icon_playlist_music
 			click? <=> music_click? null
-		<= Tab_player $bog_music_nav_item
-			label \Плеер
-			active <= player_active \off
-			Icon <= Player_icon $mol_icon_play_circle_outline
-			click? <=> player_click? null
 		<= Tab_account $bog_music_nav_item
 			label \Аккаунт
 			active <= account_active \off
@@ -1628,11 +1679,11 @@ $bog_music_app $mol_page
 			feedback_id \bog_music
 		<= Share_toast $mol_view
 			sub / <= share_toast_text \
-		<= Tabs $mol_switch
-			value? <=> page? \my
-			options <= tab_options *
-				my \Моя музыка
-				archive \Архив
+		<= Tabs $bog_music_playlists
+			page? <=> page? \my
+			my_title <= my_title \Моя музыка
+			archive_title <= archive_title \Архив
+			list_dict <= list_dict *
 		<= Tracks $bog_music_tracks
 			track_keys <= visible_keys /
 			current_key <= current_key \
@@ -1644,11 +1695,14 @@ $bog_music_app $mol_page
 			delete_key? <=> delete_key? null
 			demote_key? <=> demote_key? null
 		<= Tube_bar $mol_view
+			dom_name \form
+			event *
+				^
+				submit?event <=> tube_submit?event null
 			sub /
 				<= Tube_query $mol_string
 					hint \Что ищем на YouTube?
 					value? <=> tube_query? \
-					submit? <=> tube_find? null
 					keyboard \search
 					enter \search
 				<= Tube_find $mol_button_major
@@ -1668,10 +1722,27 @@ $bog_music_app $mol_page
 		<= Player $bog_music_player
 			full <= player_full false
 			open?event <=> player_open?event null
+			collapse?event <=> player_collapse?event null
 			queue_keys <= visible_keys /
 			current_key? <=> current_key? \
 		<= Nav $bog_music_nav
 			section? <=> section? \music
+
+$mol_check_list $mol_view
+	dictionary *
+	Option* $mol_check
+		checked? <=> option_checked*? false
+		label <= option_label* /
+			<= option_title* \
+		enabled <= option_enabled* <= enabled true
+		hint <= option_hint* \
+		minimal_height 24
+	options *
+	keys /string
+	sub <= items /$mol_check
+
+$mol_switch $mol_check_list
+	value? \
 
 $mol_labeler $mol_list
 	rows /
@@ -1810,9 +1881,9 @@ $mol_icon_share $mol_icon path \M21,12L14,5V9C7,10 4,15 3,20C5.5,16.5 9,14.9 14,
 
 $mol_icon_format_vertical_align_bottom $mol_icon path \M16,13H13V3H11V13H8L12,17L16,13M4,19V21H20V19H4Z
 
-$mol_icon_delete $mol_icon path \M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z
-
 $mol_icon_archive $mol_icon path \M3,3H21V7H3V3M4,8H20V21H4V8M9.5,11A0.5,0.5 0 0,0 9,11.5V13H15V11.5A0.5,0.5 0 0,0 14.5,11H9.5Z
+
+$mol_icon_playlist_plus $mol_icon path \M3 16H10V14H3M18 14V10H16V14H12V16H16V20H18V16H22V14M14 6H3V8H14M14 10H3V12H14V10Z
 
 $mol_icon_restore $mol_icon path \M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z
 
@@ -1895,6 +1966,18 @@ $bog_music_track $mol_view
 								<= Archive_icon $mol_icon_archive
 								<= Archive_label $mol_view
 									sub / \В архив
+						<= To_my $mol_button_minor
+							click? <=> to_my_click? null
+							sub /
+								<= To_my_icon $mol_icon_playlist_music
+								<= To_my_label $mol_view
+									sub / \В Мою музыку
+						<= Move*0 $mol_button_minor
+							click? <=> move_click*? null
+							sub /
+								<= Move_icon* $mol_icon_playlist_plus
+								<= Move_label* $mol_view
+									sub / <= move_label* \
 						<= Restore $mol_button_minor
 							click? <=> restore_click? null
 							sub /
@@ -2101,15 +2184,17 @@ $bog_music_player $mol_view
 						<= Prev $mol_button_minor
 							click? <=> prev? null
 							sub / <= Prev_icon $mol_icon_skip_previous
-						<= Play $mol_button_minor
+						<= Toggle $mol_button_minor
+							hint <= toggle_hint \
 							click? <=> toggle? null
-							sub / <= Play_icon $mol_icon_play
-						<= Pause $mol_button_minor
-							click? <=> toggle? null
-							sub / <= Pause_icon $mol_icon_pause
+							sub <= toggle_icons /
+								<= Play_icon $mol_icon_play
+								<= Pause_icon $mol_icon_pause
 						<= Next $mol_button_minor
 							click? <=> next? null
 							sub / <= Next_icon $mol_icon_skip_next
+				<= Options $mol_view
+					sub /
 						<= Repeat $mol_button_minor
 							hint <= repeat_hint \
 							click? <=> repeat_cycle? null
@@ -2121,52 +2206,56 @@ $bog_music_player $mol_view
 							hint \Обрезать начало и конец
 							Icon <= Trim_icon $mol_icon_content_cut
 							checked? <=> trim_mode? false
-				<= Eq $mol_pop
-					Anchor <= Eq_anchor $mol_button_minor
-						hint \Эквалайзер
-						click? <=> eq_pop_toggle? null
-						sub / <= Eq_icon $mol_icon_tune_vertical
-					bubble_content /
-						<= Eq_panel $mol_view
-							sub /
-								<= Eq_curve $bog_music_eq_curve
-									gains <= eq_gains /number
-									pointer_down?event <=> eq_pointer_down?event null
-									pointer_move?event <=> eq_pointer_move?event null
-									pointer_up?event <=> eq_pointer_up?event null
-								<= Eq_power $mol_check_icon
-									title \Эквалайзер
-									hint \Включить эквалайзер
-									Icon <= Eq_power_icon $mol_icon_tune_vertical
-									checked? <=> eq_on? false
-								<= Eq_presets $mol_view
-									sub <= eq_preset_rows /
-										<= Eq_preset_row*0 $mol_check
-											title <= eq_preset_title* \
-											checked? <=> eq_preset_checked*? false
-				<= Volume $mol_pop
-					align \top_right
-					Anchor <= Volume_anchor $mol_button_minor
-						hint \Громкость
-						click? <=> volume_toggle? null
-						sub / <= Volume_icon $mol_icon_volume_high
-					bubble_content /
-						<= Volume_panel $mol_view
-							sub /
-								<= Norm $mol_check_icon
-									hint \Выравнивать громкость треков
-									Icon <= Norm_icon $mol_icon_equalizer
-									checked? <=> normalize? true
-								<= Volume_slider $mol_view
-									event *
-										pointerdown?event <=> volume_pointer_down?event null
-										pointermove?event <=> volume_pointer_move?event null
-										pointerup?event <=> volume_pointer_up?event null
-										pointercancel?event <=> volume_pointer_up?event null
+						<= Eq $mol_pop
+							Anchor <= Eq_anchor $mol_button_minor
+								hint \Эквалайзер
+								click? <=> eq_pop_toggle? null
+								sub / <= Eq_icon $mol_icon_tune_vertical
+							bubble_content /
+								<= Eq_panel $mol_view
 									sub /
-										<= Volume_fill $mol_view
-											style *
-												height <= volume_fill_height \
+										<= Eq_curve $bog_music_eq_curve
+											gains <= eq_gains /number
+											pointer_down?event <=> eq_pointer_down?event null
+											pointer_move?event <=> eq_pointer_move?event null
+											pointer_up?event <=> eq_pointer_up?event null
+										<= Eq_power $mol_check_icon
+											title \Эквалайзер
+											hint \Включить эквалайзер
+											Icon <= Eq_power_icon $mol_icon_tune_vertical
+											checked? <=> eq_on? false
+										<= Eq_presets $mol_view
+											sub <= eq_preset_rows /
+												<= Eq_preset_row*0 $mol_check
+													title <= eq_preset_title* \
+													checked? <=> eq_preset_checked*? false
+						<= Volume $mol_pop
+							align \top_right
+							Anchor <= Volume_anchor $mol_button_minor
+								hint \Громкость
+								click? <=> volume_toggle? null
+								sub / <= Volume_icon $mol_icon_volume_high
+							bubble_content /
+								<= Volume_panel $mol_view
+									sub /
+										<= Norm $mol_check_icon
+											hint \Выравнивать громкость треков
+											Icon <= Norm_icon $mol_icon_equalizer
+											checked? <=> normalize? true
+										<= Volume_slider $mol_view
+											event *
+												pointerdown?event <=> volume_pointer_down?event null
+												pointermove?event <=> volume_pointer_move?event null
+												pointerup?event <=> volume_pointer_up?event null
+												pointercancel?event <=> volume_pointer_up?event null
+											sub /
+												<= Volume_fill $mol_view
+													style *
+														height <= volume_fill_height \
+				<= Collapse $mol_button_minor
+					hint \Свернуть плеер
+					click? <=> collapse?event null
+					sub / <= Collapse_icon $mol_icon_chevron_down
 				<= Close $mol_button_minor
 					hint \Закрыть плеер
 					click? <=> close? null

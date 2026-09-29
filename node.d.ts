@@ -42622,87 +42622,329 @@ declare namespace $ {
 
 declare namespace $ {
 
-	type $mol_check__checked_mol_check_list_1 = $mol_type_enforce<
-		ReturnType< $mol_check_list['option_checked'] >
-		,
-		ReturnType< $mol_check['checked'] >
-	>
-	type $mol_check__label_mol_check_list_2 = $mol_type_enforce<
-		ReturnType< $mol_check_list['option_label'] >
-		,
-		ReturnType< $mol_check['label'] >
-	>
-	type $mol_check__enabled_mol_check_list_3 = $mol_type_enforce<
-		ReturnType< $mol_check_list['option_enabled'] >
-		,
-		ReturnType< $mol_check['enabled'] >
-	>
-	type $mol_check__hint_mol_check_list_4 = $mol_type_enforce<
-		ReturnType< $mol_check_list['option_hint'] >
-		,
-		ReturnType< $mol_check['hint'] >
-	>
-	type $mol_check__minimal_height_mol_check_list_5 = $mol_type_enforce<
-		number
-		,
-		ReturnType< $mol_check['minimal_height'] >
-	>
-	export class $mol_check_list extends $mol_view {
-		option_checked( id: any, next?: boolean ): boolean
-		option_title( id: any): string
-		option_label( id: any): readonly(any)[]
-		enabled( ): boolean
-		option_enabled( id: any): ReturnType< $mol_check_list['enabled'] >
-		option_hint( id: any): string
-		items( ): readonly($mol_check)[]
-		dictionary( ): Record<string, any>
-		Option( id: any): $mol_check
-		options( ): Record<string, any>
-		keys( ): readonly(string)[]
-		sub( ): ReturnType< $mol_check_list['items'] >
+	export class $mol_icon_chevron_down extends $mol_icon {
+		path( ): string
 	}
 	
 }
 
-//# sourceMappingURL=list.view.tree.d.ts.map
-declare namespace $.$$ {
+//# sourceMappingURL=down.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_plus extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=plus.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_delete extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=delete.view.tree.d.ts.map
+declare namespace $ {
     /**
-     * List of checkboxes
-     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_check_list_demo
+     * Тап мимо панели закрывает её. Сам $mol_pop закрывается, только когда
+     * фокус уезжает на другой фокусируемый элемент, а тап по пустому месту
+     * на телефоне фокус никуда не переносит — панель висела бы на экране.
      */
-    class $mol_check_list extends $.$mol_check_list {
-        options(): {
-            [key: string]: string;
-        };
-        dictionary(next?: Record<string, boolean>): Record<string, boolean>;
-        option_checked(id: string, next?: boolean | null): boolean;
-        keys(): readonly string[];
-        items(): $.$mol_check[];
-        option_title(key: string): string;
+    function $bog_music_pop_dismiss(pop: $mol_pop): void;
+    /**
+     * Тап по якорю открывает и закрывает панель. $mol_pop_over для этого не
+     * годится: он показан, пока «в фокусе ИЛИ под курсором», а на телефоне
+     * фокус остаётся на кнопке, и повторный тап ничего не закрывает.
+     */
+    function $bog_music_pop_toggle(pop: $mol_pop): boolean;
+}
+
+declare namespace $ {
+
+	type $mol_view__sub_bog_music_playlists_1 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_button_minor__attr_bog_music_playlists_2 = $mol_type_enforce<
+		({ 
+			'bog_music_playlists_current': ReturnType< $bog_music_playlists['my_current'] >,
+		})  & ReturnType< $mol_button_minor['attr'] >
+		,
+		ReturnType< $mol_button_minor['attr'] >
+	>
+	type $mol_button_minor__click_bog_music_playlists_3 = $mol_type_enforce<
+		ReturnType< $bog_music_playlists['my_click'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub_bog_music_playlists_4 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_select__hint_bog_music_playlists_5 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_select['hint'] >
+	>
+	type $mol_select__value_bog_music_playlists_6 = $mol_type_enforce<
+		ReturnType< $bog_music_playlists['list_current'] >
+		,
+		ReturnType< $mol_select['value'] >
+	>
+	type $mol_select__dictionary_bog_music_playlists_7 = $mol_type_enforce<
+		ReturnType< $bog_music_playlists['list_dict'] >
+		,
+		ReturnType< $mol_select['dictionary'] >
+	>
+	type $mol_select__option_label_default_bog_music_playlists_8 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_select['option_label_default'] >
+	>
+	type $mol_select__no_options_message_bog_music_playlists_9 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_select['no_options_message'] >
+	>
+	type $mol_select__Trigger_icon_bog_music_playlists_10 = $mol_type_enforce<
+		ReturnType< $bog_music_playlists['List_icon'] >
+		,
+		ReturnType< $mol_select['Trigger_icon'] >
+	>
+	type $mol_button_minor__hint_bog_music_playlists_11 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['hint'] >
+	>
+	type $mol_button_minor__click_bog_music_playlists_12 = $mol_type_enforce<
+		ReturnType< $bog_music_playlists['add_toggle'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub_bog_music_playlists_13 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_string__hint_bog_music_playlists_14 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_string['hint'] >
+	>
+	type $mol_string__value_bog_music_playlists_15 = $mol_type_enforce<
+		ReturnType< $bog_music_playlists['add_title'] >
+		,
+		ReturnType< $mol_string['value'] >
+	>
+	type $mol_string__submit_bog_music_playlists_16 = $mol_type_enforce<
+		ReturnType< $bog_music_playlists['add_submit'] >
+		,
+		ReturnType< $mol_string['submit'] >
+	>
+	type $mol_string__enter_bog_music_playlists_17 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_string['enter'] >
+	>
+	type $mol_button_major__title_bog_music_playlists_18 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_major['title'] >
+	>
+	type $mol_button_major__click_bog_music_playlists_19 = $mol_type_enforce<
+		ReturnType< $bog_music_playlists['add_submit'] >
+		,
+		ReturnType< $mol_button_major['click'] >
+	>
+	type $mol_view__sub_bog_music_playlists_20 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_string__hint_bog_music_playlists_21 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_string['hint'] >
+	>
+	type $mol_string__value_bog_music_playlists_22 = $mol_type_enforce<
+		ReturnType< $bog_music_playlists['rename_title'] >
+		,
+		ReturnType< $mol_string['value'] >
+	>
+	type $mol_string__submit_bog_music_playlists_23 = $mol_type_enforce<
+		ReturnType< $bog_music_playlists['rename_submit'] >
+		,
+		ReturnType< $mol_string['submit'] >
+	>
+	type $mol_string__enter_bog_music_playlists_24 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_string['enter'] >
+	>
+	type $mol_view__sub_bog_music_playlists_25 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_button_minor__click_bog_music_playlists_26 = $mol_type_enforce<
+		ReturnType< $bog_music_playlists['remove_click'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub_bog_music_playlists_27 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_button_minor__title_bog_music_playlists_28 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['title'] >
+	>
+	type $mol_button_minor__click_bog_music_playlists_29 = $mol_type_enforce<
+		ReturnType< $bog_music_playlists['rename_submit'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_view__sub_bog_music_playlists_30 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_music_playlists_31 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_pop__align_bog_music_playlists_32 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_pop['align'] >
+	>
+	type $mol_pop__Anchor_bog_music_playlists_33 = $mol_type_enforce<
+		ReturnType< $bog_music_playlists['Add_anchor'] >
+		,
+		ReturnType< $mol_pop['Anchor'] >
+	>
+	type $mol_pop__bubble_content_bog_music_playlists_34 = $mol_type_enforce<
+		ReturnType< $bog_music_playlists['add_content'] >
+		,
+		ReturnType< $mol_pop['bubble_content'] >
+	>
+	type $mol_view__attr_bog_music_playlists_35 = $mol_type_enforce<
+		({ 
+			'bog_music_playlists_current': ReturnType< $bog_music_playlists['list_active'] >,
+		})  & ReturnType< $mol_view['attr'] >
+		,
+		ReturnType< $mol_view['attr'] >
+	>
+	type $mol_view__sub_bog_music_playlists_36 = $mol_type_enforce<
+		ReturnType< $bog_music_playlists['middle'] >
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_music_playlists_37 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_button_minor__attr_bog_music_playlists_38 = $mol_type_enforce<
+		({ 
+			'bog_music_playlists_current': ReturnType< $bog_music_playlists['archive_current'] >,
+		})  & ReturnType< $mol_button_minor['attr'] >
+		,
+		ReturnType< $mol_button_minor['attr'] >
+	>
+	type $mol_button_minor__click_bog_music_playlists_39 = $mol_type_enforce<
+		ReturnType< $bog_music_playlists['archive_click'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub_bog_music_playlists_40 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	export class $bog_music_playlists extends $mol_view {
+		my_current( ): boolean
+		my_click( next?: any ): any
+		My_label( ): $mol_view
+		My( ): $mol_button_minor
+		list_active( ): boolean
+		list_current( next?: string ): string
+		List_icon( ): $mol_icon_chevron_down
+		List( ): $mol_select
+		add_toggle( next?: any ): any
+		Add_icon( ): $mol_icon_plus
+		Add_anchor( ): $mol_button_minor
+		add_title( next?: string ): string
+		add_submit( next?: any ): any
+		Add_title( ): $mol_string
+		Add_submit( ): $mol_button_major
+		Add_panel( ): $mol_view
+		rename_title( next?: string ): string
+		rename_submit( next?: any ): any
+		Rename( ): $mol_string
+		remove_click( next?: any ): any
+		Remove_icon( ): $mol_icon_delete
+		remove_label( ): string
+		Remove_label( ): $mol_view
+		Remove( ): $mol_button_minor
+		Rename_save( ): $mol_button_minor
+		Edit_actions( ): $mol_view
+		Edit_panel( ): $mol_view
+		add_content( ): readonly(any)[]
+		Add( ): $mol_pop
+		middle( ): readonly(any)[]
+		Middle( ): $mol_view
+		archive_current( ): boolean
+		archive_click( next?: any ): any
+		Archive_label( ): $mol_view
+		Archive( ): $mol_button_minor
+		page( next?: string ): string
+		my_title( ): string
+		archive_title( ): string
+		list_dict( ): Record<string, any>
+		sub( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=playlists.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $bog_music_playlists extends $.$bog_music_playlists {
+        account(): $bog_music_account_baza;
+        my_current(): boolean;
+        archive_current(): boolean;
+        list_active(): boolean;
+        own_list(): string;
+        my_click(): void;
+        archive_click(): void;
+        list_current(next?: string): string;
+        middle(): ($.$mol_pop | $.$mol_select)[];
+        add_title(next?: string): string;
+        add_content(): $mol_view[];
+        add_toggle(): void;
+        add_submit(): void;
+        rename_draft(next?: string | null): string | null;
+        rename_title(next?: string): string;
+        rename_submit(): void;
+        remove_asked(next?: boolean): boolean;
+        remove_label(): "Точно удалить?" | "Удалить";
+        remove_click(): void;
+        focus_later(field: $.$mol_view): void;
     }
 }
 
 declare namespace $ {
 }
 
-declare namespace $ {
-
-	export class $mol_switch extends $mol_check_list {
-		value( next?: string ): string
-	}
-	
-}
-
-//# sourceMappingURL=switch.view.tree.d.ts.map
 declare namespace $.$$ {
-    /**
-     * Buttons which switching the state
-     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_switch_demo
-     */
-    class $mol_switch extends $.$mol_switch {
-        value(next?: string): string;
-        option_checked(key: string, next?: boolean): boolean;
-    }
 }
 
 declare namespace $ {
@@ -43072,24 +43314,6 @@ declare namespace $ {
 //# sourceMappingURL=music.view.tree.d.ts.map
 declare namespace $ {
 
-	export class $mol_icon_play_circle extends $mol_icon {
-		path( ): string
-	}
-	
-}
-
-//# sourceMappingURL=circle.view.tree.d.ts.map
-declare namespace $ {
-
-	export class $mol_icon_play_circle_outline extends $mol_icon {
-		path( ): string
-	}
-	
-}
-
-//# sourceMappingURL=outline.view.tree.d.ts.map
-declare namespace $ {
-
 	export class $mol_icon_account extends $mol_icon {
 		path( ): string
 	}
@@ -43181,17 +43405,17 @@ declare namespace $ {
 		ReturnType< $bog_music_nav_item['label'] >
 	>
 	type $bog_music_nav_item__active_bog_music_nav_10 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['player_active'] >
+		ReturnType< $bog_music_nav['account_active'] >
 		,
 		ReturnType< $bog_music_nav_item['active'] >
 	>
 	type $bog_music_nav_item__Icon_bog_music_nav_11 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['Player_icon'] >
+		ReturnType< $bog_music_nav['Account_icon'] >
 		,
 		ReturnType< $bog_music_nav_item['Icon'] >
 	>
 	type $bog_music_nav_item__click_bog_music_nav_12 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['player_click'] >
+		ReturnType< $bog_music_nav['account_click'] >
 		,
 		ReturnType< $bog_music_nav_item['click'] >
 	>
@@ -43201,36 +43425,16 @@ declare namespace $ {
 		ReturnType< $bog_music_nav_item['label'] >
 	>
 	type $bog_music_nav_item__active_bog_music_nav_14 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['account_active'] >
-		,
-		ReturnType< $bog_music_nav_item['active'] >
-	>
-	type $bog_music_nav_item__Icon_bog_music_nav_15 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['Account_icon'] >
-		,
-		ReturnType< $bog_music_nav_item['Icon'] >
-	>
-	type $bog_music_nav_item__click_bog_music_nav_16 = $mol_type_enforce<
-		ReturnType< $bog_music_nav['account_click'] >
-		,
-		ReturnType< $bog_music_nav_item['click'] >
-	>
-	type $bog_music_nav_item__label_bog_music_nav_17 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $bog_music_nav_item['label'] >
-	>
-	type $bog_music_nav_item__active_bog_music_nav_18 = $mol_type_enforce<
 		ReturnType< $bog_music_nav['logs_active'] >
 		,
 		ReturnType< $bog_music_nav_item['active'] >
 	>
-	type $bog_music_nav_item__Icon_bog_music_nav_19 = $mol_type_enforce<
+	type $bog_music_nav_item__Icon_bog_music_nav_15 = $mol_type_enforce<
 		ReturnType< $bog_music_nav['Logs_icon'] >
 		,
 		ReturnType< $bog_music_nav_item['Icon'] >
 	>
-	type $bog_music_nav_item__click_bog_music_nav_20 = $mol_type_enforce<
+	type $bog_music_nav_item__click_bog_music_nav_16 = $mol_type_enforce<
 		ReturnType< $bog_music_nav['logs_click'] >
 		,
 		ReturnType< $bog_music_nav_item['click'] >
@@ -43244,10 +43448,6 @@ declare namespace $ {
 		Music_icon( ): $mol_icon_playlist_music
 		music_click( next?: any ): any
 		Tab_music( ): $bog_music_nav_item
-		player_active( ): string
-		Player_icon( ): $mol_icon_play_circle_outline
-		player_click( next?: any ): any
-		Tab_player( ): $bog_music_nav_item
 		account_active( ): string
 		Account_icon( ): $mol_icon_account_circle
 		account_click( next?: any ): any
@@ -43267,12 +43467,10 @@ declare namespace $.$$ {
     class $bog_music_nav extends $.$bog_music_nav {
         music_active(): "on" | "off";
         search_active(): "on" | "off";
-        player_active(): "on" | "off";
         account_active(): "on" | "off";
         logs_active(): "on" | "off";
         music_click(e?: Event): null;
         search_click(e?: Event): null;
-        player_click(e?: Event): null;
         account_click(e?: Event): null;
         /**
          * Вкладка журнала — только для владельца приложения. Сравнивается
@@ -49425,162 +49623,184 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_switch__value_bog_music_app_30 = $mol_type_enforce<
+	type $bog_music_playlists__page_bog_music_app_30 = $mol_type_enforce<
 		ReturnType< $bog_music_app['page'] >
 		,
-		ReturnType< $mol_switch['value'] >
+		ReturnType< $bog_music_playlists['page'] >
 	>
-	type $mol_switch__options_bog_music_app_31 = $mol_type_enforce<
-		ReturnType< $bog_music_app['tab_options'] >
+	type $bog_music_playlists__my_title_bog_music_app_31 = $mol_type_enforce<
+		ReturnType< $bog_music_app['my_title'] >
 		,
-		ReturnType< $mol_switch['options'] >
+		ReturnType< $bog_music_playlists['my_title'] >
 	>
-	type $bog_music_tracks__track_keys_bog_music_app_32 = $mol_type_enforce<
+	type $bog_music_playlists__archive_title_bog_music_app_32 = $mol_type_enforce<
+		ReturnType< $bog_music_app['archive_title'] >
+		,
+		ReturnType< $bog_music_playlists['archive_title'] >
+	>
+	type $bog_music_playlists__list_dict_bog_music_app_33 = $mol_type_enforce<
+		ReturnType< $bog_music_app['list_dict'] >
+		,
+		ReturnType< $bog_music_playlists['list_dict'] >
+	>
+	type $bog_music_tracks__track_keys_bog_music_app_34 = $mol_type_enforce<
 		ReturnType< $bog_music_app['visible_keys'] >
 		,
 		ReturnType< $bog_music_tracks['track_keys'] >
 	>
-	type $bog_music_tracks__current_key_bog_music_app_33 = $mol_type_enforce<
+	type $bog_music_tracks__current_key_bog_music_app_35 = $mol_type_enforce<
 		ReturnType< $bog_music_app['current_key'] >
 		,
 		ReturnType< $bog_music_tracks['current_key'] >
 	>
-	type $bog_music_tracks__play_key_bog_music_app_34 = $mol_type_enforce<
+	type $bog_music_tracks__play_key_bog_music_app_36 = $mol_type_enforce<
 		ReturnType< $bog_music_app['play_key'] >
 		,
 		ReturnType< $bog_music_tracks['play_key'] >
 	>
-	type $bog_music_tracks__archive_mode_bog_music_app_35 = $mol_type_enforce<
+	type $bog_music_tracks__archive_mode_bog_music_app_37 = $mol_type_enforce<
 		ReturnType< $bog_music_app['archive_mode'] >
 		,
 		ReturnType< $bog_music_tracks['archive_mode'] >
 	>
-	type $bog_music_tracks__reorder_to_bog_music_app_36 = $mol_type_enforce<
+	type $bog_music_tracks__reorder_to_bog_music_app_38 = $mol_type_enforce<
 		ReturnType< $bog_music_app['reorder_to'] >
 		,
 		ReturnType< $bog_music_tracks['reorder_to'] >
 	>
-	type $bog_music_tracks__archive_key_bog_music_app_37 = $mol_type_enforce<
+	type $bog_music_tracks__archive_key_bog_music_app_39 = $mol_type_enforce<
 		ReturnType< $bog_music_app['archive_key'] >
 		,
 		ReturnType< $bog_music_tracks['archive_key'] >
 	>
-	type $bog_music_tracks__restore_key_bog_music_app_38 = $mol_type_enforce<
+	type $bog_music_tracks__restore_key_bog_music_app_40 = $mol_type_enforce<
 		ReturnType< $bog_music_app['restore_key'] >
 		,
 		ReturnType< $bog_music_tracks['restore_key'] >
 	>
-	type $bog_music_tracks__delete_key_bog_music_app_39 = $mol_type_enforce<
+	type $bog_music_tracks__delete_key_bog_music_app_41 = $mol_type_enforce<
 		ReturnType< $bog_music_app['delete_key'] >
 		,
 		ReturnType< $bog_music_tracks['delete_key'] >
 	>
-	type $bog_music_tracks__demote_key_bog_music_app_40 = $mol_type_enforce<
+	type $bog_music_tracks__demote_key_bog_music_app_42 = $mol_type_enforce<
 		ReturnType< $bog_music_app['demote_key'] >
 		,
 		ReturnType< $bog_music_tracks['demote_key'] >
 	>
-	type $mol_string__hint_bog_music_app_41 = $mol_type_enforce<
+	type $mol_string__hint_bog_music_app_43 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_string['hint'] >
 	>
-	type $mol_string__value_bog_music_app_42 = $mol_type_enforce<
+	type $mol_string__value_bog_music_app_44 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_query'] >
 		,
 		ReturnType< $mol_string['value'] >
 	>
-	type $mol_string__submit_bog_music_app_43 = $mol_type_enforce<
-		ReturnType< $bog_music_app['tube_find'] >
-		,
-		ReturnType< $mol_string['submit'] >
-	>
-	type $mol_string__keyboard_bog_music_app_44 = $mol_type_enforce<
+	type $mol_string__keyboard_bog_music_app_45 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_string['keyboard'] >
 	>
-	type $mol_string__enter_bog_music_app_45 = $mol_type_enforce<
+	type $mol_string__enter_bog_music_app_46 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_string['enter'] >
 	>
-	type $mol_button_major__title_bog_music_app_46 = $mol_type_enforce<
+	type $mol_button_major__title_bog_music_app_47 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_major['title'] >
 	>
-	type $mol_button_major__click_bog_music_app_47 = $mol_type_enforce<
+	type $mol_button_major__click_bog_music_app_48 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_find'] >
 		,
 		ReturnType< $mol_button_major['click'] >
 	>
-	type $mol_view__sub_bog_music_app_48 = $mol_type_enforce<
+	type $mol_view__dom_name_bog_music_app_49 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_view['dom_name'] >
+	>
+	type $mol_view__event_bog_music_app_50 = $mol_type_enforce<
+		({ 
+			submit( next?: ReturnType< $bog_music_app['tube_submit'] > ): ReturnType< $bog_music_app['tube_submit'] >,
+		})  & ReturnType< $mol_view['event'] >
+		,
+		ReturnType< $mol_view['event'] >
+	>
+	type $mol_view__sub_bog_music_app_51 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_list__rows_bog_music_app_49 = $mol_type_enforce<
+	type $mol_list__rows_bog_music_app_52 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_rows'] >
 		,
 		ReturnType< $mol_list['rows'] >
 	>
-	type $bog_music_tube_row__title_bog_music_app_50 = $mol_type_enforce<
+	type $bog_music_tube_row__title_bog_music_app_53 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_title'] >
 		,
 		ReturnType< $bog_music_tube_row['title'] >
 	>
-	type $bog_music_tube_row__subtitle_bog_music_app_51 = $mol_type_enforce<
+	type $bog_music_tube_row__subtitle_bog_music_app_54 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_meta'] >
 		,
 		ReturnType< $bog_music_tube_row['subtitle'] >
 	>
-	type $bog_music_tube_row__status_bog_music_app_52 = $mol_type_enforce<
+	type $bog_music_tube_row__status_bog_music_app_55 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_status_text'] >
 		,
 		ReturnType< $bog_music_tube_row['status'] >
 	>
-	type $bog_music_tube_row__cover_bog_music_app_53 = $mol_type_enforce<
+	type $bog_music_tube_row__cover_bog_music_app_56 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_cover'] >
 		,
 		ReturnType< $bog_music_tube_row['cover'] >
 	>
-	type $bog_music_tube_row__busy_bog_music_app_54 = $mol_type_enforce<
+	type $bog_music_tube_row__busy_bog_music_app_57 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_busy'] >
 		,
 		ReturnType< $bog_music_tube_row['busy'] >
 	>
-	type $bog_music_tube_row__play_bog_music_app_55 = $mol_type_enforce<
+	type $bog_music_tube_row__play_bog_music_app_58 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_play'] >
 		,
 		ReturnType< $bog_music_tube_row['play'] >
 	>
-	type $bog_music_tube_row__get_bog_music_app_56 = $mol_type_enforce<
+	type $bog_music_tube_row__get_bog_music_app_59 = $mol_type_enforce<
 		ReturnType< $bog_music_app['tube_get'] >
 		,
 		ReturnType< $bog_music_tube_row['get'] >
 	>
-	type $bog_music_player__full_bog_music_app_57 = $mol_type_enforce<
+	type $bog_music_player__full_bog_music_app_60 = $mol_type_enforce<
 		ReturnType< $bog_music_app['player_full'] >
 		,
 		ReturnType< $bog_music_player['full'] >
 	>
-	type $bog_music_player__open_bog_music_app_58 = $mol_type_enforce<
+	type $bog_music_player__open_bog_music_app_61 = $mol_type_enforce<
 		ReturnType< $bog_music_app['player_open'] >
 		,
 		ReturnType< $bog_music_player['open'] >
 	>
-	type $bog_music_player__queue_keys_bog_music_app_59 = $mol_type_enforce<
+	type $bog_music_player__collapse_bog_music_app_62 = $mol_type_enforce<
+		ReturnType< $bog_music_app['player_collapse'] >
+		,
+		ReturnType< $bog_music_player['collapse'] >
+	>
+	type $bog_music_player__queue_keys_bog_music_app_63 = $mol_type_enforce<
 		ReturnType< $bog_music_app['visible_keys'] >
 		,
 		ReturnType< $bog_music_player['queue_keys'] >
 	>
-	type $bog_music_player__current_key_bog_music_app_60 = $mol_type_enforce<
+	type $bog_music_player__current_key_bog_music_app_64 = $mol_type_enforce<
 		ReturnType< $bog_music_app['current_key'] >
 		,
 		ReturnType< $bog_music_player['current_key'] >
 	>
-	type $bog_music_nav__section_bog_music_app_61 = $mol_type_enforce<
+	type $bog_music_nav__section_bog_music_app_65 = $mol_type_enforce<
 		ReturnType< $bog_music_app['section'] >
 		,
 		ReturnType< $bog_music_nav['section'] >
@@ -49622,11 +49842,10 @@ declare namespace $ {
 		share_toast_text( ): string
 		Share_toast( ): $mol_view
 		page( next?: string ): string
-		tab_options( ): ({ 
-			'my': string,
-			'archive': string,
-		}) 
-		Tabs( ): $mol_switch
+		my_title( ): string
+		archive_title( ): string
+		list_dict( ): Record<string, any>
+		Tabs( ): $bog_music_playlists
 		visible_keys( ): readonly(any)[]
 		current_key( next?: string ): string
 		play_key( next?: any ): any
@@ -49637,9 +49856,10 @@ declare namespace $ {
 		delete_key( next?: any ): any
 		demote_key( next?: any ): any
 		Tracks( ): $bog_music_tracks
+		tube_submit( next?: any ): any
 		tube_query( next?: string ): string
-		tube_find( next?: any ): any
 		Tube_query( ): $mol_string
+		tube_find( next?: any ): any
 		Tube_find( ): $mol_button_major
 		Tube_bar( ): $mol_view
 		tube_rows( ): readonly(any)[]
@@ -49654,6 +49874,7 @@ declare namespace $ {
 		Tube_row( id: any): $bog_music_tube_row
 		player_full( ): boolean
 		player_open( next?: any ): any
+		player_collapse( next?: any ): any
 		Player( ): $bog_music_player
 		section( next?: string ): string
 		Nav( ): $bog_music_nav
@@ -49683,10 +49904,9 @@ declare namespace $.$$ {
         page(next?: string): string;
         archive_mode(): boolean;
         visible_keys(): readonly string[];
-        tab_options(): {
-            my: string;
-            archive: string;
-        };
+        my_title(): string;
+        archive_title(): string;
+        list_dict(): Record<string, string>;
         current_key(next?: string): string;
         /**
          * Сколько треков держим докачанными вперёд от текущего. Слушают по
@@ -49766,7 +49986,9 @@ declare namespace $.$$ {
         /** Нижняя навигация: search / music / player / account / logs. */
         section(next?: string): string;
         player_full(): boolean;
+        private _section_back;
         player_open(event?: Event): void;
+        player_collapse(event?: Event): void;
         body(): any[];
         foot(): ($.$bog_music_nav | $.$bog_music_player)[];
         /**
@@ -49780,6 +50002,8 @@ declare namespace $.$$ {
          */
         tube_committed(next?: string): string;
         tube_find(): void;
+        tube_submit(event?: Event): void;
+        private _tube_found;
         tube_items(): $bog_music_tube_item[];
         tube_rows(): $.$bog_music_tube_row[];
         tube_item(index: number): $bog_music_tube_item | null;
@@ -49874,6 +50098,91 @@ declare namespace $ {
 }
 
 declare namespace $.$$ {
+}
+
+declare namespace $ {
+
+	type $mol_check__checked_mol_check_list_1 = $mol_type_enforce<
+		ReturnType< $mol_check_list['option_checked'] >
+		,
+		ReturnType< $mol_check['checked'] >
+	>
+	type $mol_check__label_mol_check_list_2 = $mol_type_enforce<
+		ReturnType< $mol_check_list['option_label'] >
+		,
+		ReturnType< $mol_check['label'] >
+	>
+	type $mol_check__enabled_mol_check_list_3 = $mol_type_enforce<
+		ReturnType< $mol_check_list['option_enabled'] >
+		,
+		ReturnType< $mol_check['enabled'] >
+	>
+	type $mol_check__hint_mol_check_list_4 = $mol_type_enforce<
+		ReturnType< $mol_check_list['option_hint'] >
+		,
+		ReturnType< $mol_check['hint'] >
+	>
+	type $mol_check__minimal_height_mol_check_list_5 = $mol_type_enforce<
+		number
+		,
+		ReturnType< $mol_check['minimal_height'] >
+	>
+	export class $mol_check_list extends $mol_view {
+		option_checked( id: any, next?: boolean ): boolean
+		option_title( id: any): string
+		option_label( id: any): readonly(any)[]
+		enabled( ): boolean
+		option_enabled( id: any): ReturnType< $mol_check_list['enabled'] >
+		option_hint( id: any): string
+		items( ): readonly($mol_check)[]
+		dictionary( ): Record<string, any>
+		Option( id: any): $mol_check
+		options( ): Record<string, any>
+		keys( ): readonly(string)[]
+		sub( ): ReturnType< $mol_check_list['items'] >
+	}
+	
+}
+
+//# sourceMappingURL=list.view.tree.d.ts.map
+declare namespace $.$$ {
+    /**
+     * List of checkboxes
+     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_check_list_demo
+     */
+    class $mol_check_list extends $.$mol_check_list {
+        options(): {
+            [key: string]: string;
+        };
+        dictionary(next?: Record<string, boolean>): Record<string, boolean>;
+        option_checked(id: string, next?: boolean | null): boolean;
+        keys(): readonly string[];
+        items(): $.$mol_check[];
+        option_title(key: string): string;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_switch extends $mol_check_list {
+		value( next?: string ): string
+	}
+	
+}
+
+//# sourceMappingURL=switch.view.tree.d.ts.map
+declare namespace $.$$ {
+    /**
+     * Buttons which switching the state
+     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_switch_demo
+     */
+    class $mol_switch extends $.$mol_switch {
+        value(next?: string): string;
+        option_checked(key: string, next?: boolean): boolean;
+    }
 }
 
 declare namespace $ {
@@ -50138,15 +50447,6 @@ declare namespace $ {
 //# sourceMappingURL=bottom.view.tree.d.ts.map
 declare namespace $ {
 
-	export class $mol_icon_delete extends $mol_icon {
-		path( ): string
-	}
-	
-}
-
-//# sourceMappingURL=delete.view.tree.d.ts.map
-declare namespace $ {
-
 	export class $mol_icon_archive extends $mol_icon {
 		path( ): string
 	}
@@ -50154,6 +50454,15 @@ declare namespace $ {
 }
 
 //# sourceMappingURL=archive.view.tree.d.ts.map
+declare namespace $ {
+
+	export class $mol_icon_playlist_plus extends $mol_icon {
+		path( ): string
+	}
+	
+}
+
+//# sourceMappingURL=plus.view.tree.d.ts.map
 declare namespace $ {
 
 	export class $mol_icon_restore extends $mol_icon {
@@ -50172,21 +50481,6 @@ declare namespace $ {
 }
 
 //# sourceMappingURL=forever.view.tree.d.ts.map
-declare namespace $ {
-    /**
-     * Тап мимо панели закрывает её. Сам $mol_pop закрывается, только когда
-     * фокус уезжает на другой фокусируемый элемент, а тап по пустому месту
-     * на телефоне фокус никуда не переносит — панель висела бы на экране.
-     */
-    function $bog_music_pop_dismiss(pop: $mol_pop): void;
-    /**
-     * Тап по якорю открывает и закрывает панель. $mol_pop_over для этого не
-     * годится: он показан, пока «в фокусе ИЛИ под курсором», а на телефоне
-     * фокус остаётся на кнопке, и повторный тап ничего не закрывает.
-     */
-    function $bog_music_pop_toggle(pop: $mol_pop): boolean;
-}
-
 declare namespace $ {
 
 	type $mol_image__uri_bog_music_track_1 = $mol_type_enforce<
@@ -50317,7 +50611,7 @@ declare namespace $ {
 		ReturnType< $mol_view['sub'] >
 	>
 	type $mol_button_minor__click_bog_music_track_24 = $mol_type_enforce<
-		ReturnType< $bog_music_track['restore_click'] >
+		ReturnType< $bog_music_track['to_my_click'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
@@ -50332,7 +50626,7 @@ declare namespace $ {
 		ReturnType< $mol_view['sub'] >
 	>
 	type $mol_button_minor__click_bog_music_track_27 = $mol_type_enforce<
-		ReturnType< $bog_music_track['delete_ask'] >
+		ReturnType< $bog_music_track['move_click'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
@@ -50342,51 +50636,81 @@ declare namespace $ {
 		ReturnType< $mol_button_minor['sub'] >
 	>
 	type $mol_view__sub_bog_music_track_29 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_button_minor__click_bog_music_track_30 = $mol_type_enforce<
+		ReturnType< $bog_music_track['restore_click'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub_bog_music_track_31 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_view__sub_bog_music_track_32 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_button_minor__click_bog_music_track_33 = $mol_type_enforce<
+		ReturnType< $bog_music_track['delete_ask'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub_bog_music_track_34 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_view__sub_bog_music_track_35 = $mol_type_enforce<
 		ReturnType< $bog_music_track['menu_items'] >
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_pop__Anchor_bog_music_track_30 = $mol_type_enforce<
+	type $mol_pop__Anchor_bog_music_track_36 = $mol_type_enforce<
 		ReturnType< $bog_music_track['Menu_anchor'] >
 		,
 		ReturnType< $mol_pop['Anchor'] >
 	>
-	type $mol_pop__bubble_content_bog_music_track_31 = $mol_type_enforce<
+	type $mol_pop__bubble_content_bog_music_track_37 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_pop['bubble_content'] >
 	>
-	type $mol_paragraph__title_bog_music_track_32 = $mol_type_enforce<
+	type $mol_paragraph__title_bog_music_track_38 = $mol_type_enforce<
 		ReturnType< $bog_music_track['confirm_text'] >
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_button_minor__title_bog_music_track_33 = $mol_type_enforce<
+	type $mol_button_minor__title_bog_music_track_39 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__click_bog_music_track_34 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_track_40 = $mol_type_enforce<
 		ReturnType< $bog_music_track['delete_cancel'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_major__title_bog_music_track_35 = $mol_type_enforce<
+	type $mol_button_major__title_bog_music_track_41 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_major['title'] >
 	>
-	type $mol_button_major__click_bog_music_track_36 = $mol_type_enforce<
+	type $mol_button_major__click_bog_music_track_42 = $mol_type_enforce<
 		ReturnType< $bog_music_track['delete_confirm'] >
 		,
 		ReturnType< $mol_button_major['click'] >
 	>
-	type $mol_view__sub_bog_music_track_37 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_track_43 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_track_38 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_track_44 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
@@ -50426,6 +50750,15 @@ declare namespace $ {
 		Archive_icon( ): $mol_icon_archive
 		Archive_label( ): $mol_view
 		Archive( ): $mol_button_minor
+		to_my_click( next?: any ): any
+		To_my_icon( ): $mol_icon_playlist_music
+		To_my_label( ): $mol_view
+		To_my( ): $mol_button_minor
+		move_click( id: any, next?: any ): any
+		Move_icon( id: any): $mol_icon_playlist_plus
+		move_label( id: any): string
+		Move_label( id: any): $mol_view
+		Move( id: any): $mol_button_minor
 		restore_click( next?: any ): any
 		Restore_icon( ): $mol_icon_restore
 		Restore_label( ): $mol_view
@@ -50492,6 +50825,10 @@ declare namespace $.$$ {
         can_drag(): boolean;
         menu_toggle(): null;
         menu_items(): $mol_button_minor[];
+        move_targets(): string[];
+        move_label(id: string): string;
+        move_click(id: string): null;
+        to_my_click(): null;
         /** Локальный файл с устройства больше взять неоткуда — кеш не сбрасываем. */
         can_drop_cache(): boolean;
         delete_asked(next?: boolean): boolean;
@@ -60293,6 +60630,305 @@ declare namespace $ {
     /** Словарь cache_key → трек. Вынесен отдельно, чтобы не циклить TS-инференс. */
     export class $bog_music_tracks_dict extends $bog_music_tracks_dict_base {
     }
+    const $bog_music_playlists_dict_base: {
+        new (): {
+            Value: typeof $giper_baza_atom_text;
+            key(key: $giper_baza_vary_type, auto?: any): $giper_baza_atom_text;
+            keys(): readonly $giper_baza_vary_type[];
+            dive<Pawn_1 extends typeof $giper_baza_pawn>(key: $giper_baza_vary_type, Pawn: Pawn_1, auto?: any): InstanceType<Pawn_1> | null;
+            [$mol_dev_format_head](): any[];
+            items_vary(next?: readonly $giper_baza_vary_type[], tag?: keyof typeof $giper_baza_unit_sand_tag): readonly $giper_baza_vary_type[];
+            splice(next: readonly $giper_baza_vary_type[], from?: number, to?: number, tag?: keyof typeof $giper_baza_unit_sand_tag): void;
+            find(vary: $giper_baza_vary_type): $giper_baza_unit_sand | null;
+            has(vary: $giper_baza_vary_type, next?: boolean, tag?: keyof typeof $giper_baza_unit_sand_tag): boolean;
+            add(vary: $giper_baza_vary_type, tag?: keyof typeof $giper_baza_unit_sand_tag): void;
+            cut(vary: $giper_baza_vary_type): void;
+            move(from: number, to: number): void;
+            wipe(seat: number): void;
+            pawn_make<Pawn_1 extends typeof $giper_baza_pawn>(Pawn: Pawn_1, vary: $giper_baza_vary_type, tag?: keyof typeof $giper_baza_unit_sand_tag): InstanceType<Pawn_1>;
+            land(): $giper_baza_land;
+            head(): $giper_baza_link;
+            land_link(): $giper_baza_link;
+            link(): $giper_baza_link;
+            toJSON(): string;
+            cast<Pawn_1 extends typeof $giper_baza_pawn>(Pawn: Pawn_1): InstanceType<Pawn_1>;
+            pawns<Pawn_1 extends typeof $giper_baza_pawn>(Pawn: Pawn_1 | null): readonly InstanceType<Pawn_1>[];
+            units(): $giper_baza_unit_sand[];
+            units_of(peer: $giper_baza_link | null): $giper_baza_unit_sand[];
+            meta(next?: $giper_baza_link): $giper_baza_link | null;
+            meta_of(peer: $giper_baza_link | null): $giper_baza_link | null;
+            filled(): boolean;
+            can_change(): boolean;
+            last_change(): $mol_time_moment | null;
+            authors(): $giper_baza_auth_pass[];
+            get $(): $;
+            set $(next: $);
+            destructor(): void;
+            toString(): string;
+            [Symbol.toStringTag]: string;
+            [$mol_ambient_ref]: $;
+            [Symbol.dispose](): void;
+        };
+        toString(): any;
+        tag: keyof typeof $giper_baza_unit_sand_tag;
+        schema: Record<string, typeof $giper_baza_pawn>;
+        with<This extends typeof $giper_baza_dict, const Schema extends Record<string, {
+            tag: keyof typeof $giper_baza_unit_sand_tag;
+            new (): {};
+        }>>(this: This, schema: Schema, path?: string): Omit<This, "prototype"> & {
+            new (...args: any[]): $mol_type_override<InstanceType<This>, { readonly [Key in keyof Schema]: (auto?: any) => InstanceType<Schema[Key]> | null; }>;
+            path: string;
+        } & {
+            schema: {
+                [x: string]: typeof $giper_baza_pawn;
+            } & Schema;
+        };
+        of<Init extends new (...args: any[]) => any>(init: Init): {
+            new (): {
+                items(next?: readonly (Init extends typeof $mol_schema_any ? Init : {
+                    new (value?: any): {
+                        constructor: Function;
+                        toString(): string;
+                        toLocaleString(): string;
+                        valueOf(): Object;
+                        hasOwnProperty(v: PropertyKey): boolean;
+                        isPrototypeOf(v: Object): boolean;
+                        propertyIsEnumerable(v: PropertyKey): boolean;
+                    };
+                    Class: Init;
+                    toString(): string;
+                    guard<This extends typeof $mol_schema_any, Value>(this: This, value: Value): Value & This["default"];
+                    cast<This extends typeof $mol_schema_any>(this: This, value: unknown): This["default"];
+                    default: InstanceType<Init>;
+                    check<This extends typeof $mol_schema_any, Value_1>(this: This, value: Value_1): value is Value_1 & This["default"];
+                    [Symbol.toStringTag]: string;
+                    [$mol_key_handle](): string;
+                    [Symbol.hasInstance]<This extends typeof $mol_schema_any, Value_2>(this: This, value: Value_2): value is Value_2 & This["default"];
+                    getPrototypeOf(o: any): any;
+                    getOwnPropertyDescriptor(o: any, p: PropertyKey): PropertyDescriptor | undefined;
+                    getOwnPropertyNames(o: any): string[];
+                    create(o: object | null): any;
+                    create(o: object | null, properties: PropertyDescriptorMap & ThisType<any>): any;
+                    defineProperty<T>(o: T, p: PropertyKey, attributes: PropertyDescriptor & ThisType<any>): T;
+                    defineProperties<T>(o: T, properties: PropertyDescriptorMap & ThisType<any>): T;
+                    seal<T>(o: T): T;
+                    freeze<T extends Function>(f: T): T;
+                    freeze<T extends {
+                        [idx: string]: U | null | undefined | object;
+                    }, U extends string | bigint | number | boolean | symbol>(o: T): Readonly<T>;
+                    freeze<T>(o: T): Readonly<T>;
+                    preventExtensions<T>(o: T): T;
+                    isSealed(o: any): boolean;
+                    isFrozen(o: any): boolean;
+                    isExtensible(o: any): boolean;
+                    keys(o: object): string[];
+                    keys(o: {}): string[];
+                    assign<T extends {}, U_1>(target: T, source: U_1): T & U_1;
+                    assign<T extends {}, U_2, V>(target: T, source1: U_2, source2: V): T & U_2 & V;
+                    assign<T extends {}, U_3, V_1, W>(target: T, source1: U_3, source2: V_1, source3: W): T & U_3 & V_1 & W;
+                    assign(target: object, ...sources: any[]): any;
+                    getOwnPropertySymbols(o: any): symbol[];
+                    is(value1: any, value2: any): boolean;
+                    setPrototypeOf(o: any, proto: object | null): any;
+                    values<T>(o: {
+                        [s: string]: T;
+                    } | ArrayLike<T>): T[];
+                    values(o: {}): any[];
+                    entries<T>(o: {
+                        [s: string]: T;
+                    } | ArrayLike<T>): [string, T][];
+                    entries(o: {}): [string, any][];
+                    getOwnPropertyDescriptors<T>(o: T): { [P in keyof T]: TypedPropertyDescriptor<T[P]>; } & {
+                        [x: string]: PropertyDescriptor;
+                    };
+                    fromEntries<T = any>(entries: Iterable<readonly [PropertyKey, T]>): {
+                        [k: string]: T;
+                    };
+                    fromEntries(entries: Iterable<readonly any[]>): any;
+                    hasOwn(o: object, v: PropertyKey): boolean;
+                    groupBy<K extends PropertyKey, T>(items: Iterable<T>, keySelector: (item: T, index: number) => K): Partial<Record<K, T[]>>;
+                })["default"][]): readonly (Init extends typeof $mol_schema_any ? Init : {
+                    new (value?: any): {
+                        constructor: Function;
+                        toString(): string;
+                        toLocaleString(): string;
+                        valueOf(): Object;
+                        hasOwnProperty(v: PropertyKey): boolean;
+                        isPrototypeOf(v: Object): boolean;
+                        propertyIsEnumerable(v: PropertyKey): boolean;
+                    };
+                    Class: Init;
+                    toString(): string;
+                    guard<This extends typeof $mol_schema_any, Value>(this: This, value: Value): Value & This["default"];
+                    cast<This extends typeof $mol_schema_any>(this: This, value: unknown): This["default"];
+                    default: InstanceType<Init>;
+                    check<This extends typeof $mol_schema_any, Value_1>(this: This, value: Value_1): value is Value_1 & This["default"];
+                    [Symbol.toStringTag]: string;
+                    [$mol_key_handle](): string;
+                    [Symbol.hasInstance]<This extends typeof $mol_schema_any, Value_2>(this: This, value: Value_2): value is Value_2 & This["default"];
+                    getPrototypeOf(o: any): any;
+                    getOwnPropertyDescriptor(o: any, p: PropertyKey): PropertyDescriptor | undefined;
+                    getOwnPropertyNames(o: any): string[];
+                    create(o: object | null): any;
+                    create(o: object | null, properties: PropertyDescriptorMap & ThisType<any>): any;
+                    defineProperty<T_1>(o: T_1, p: PropertyKey, attributes: PropertyDescriptor & ThisType<any>): T_1;
+                    defineProperties<T_1>(o: T_1, properties: PropertyDescriptorMap & ThisType<any>): T_1;
+                    seal<T_1>(o: T_1): T_1;
+                    freeze<T_1 extends Function>(f: T_1): T_1;
+                    freeze<T_1 extends {
+                        [idx: string]: U | null | undefined | object;
+                    }, U extends string | bigint | number | boolean | symbol>(o: T_1): Readonly<T_1>;
+                    freeze<T_1>(o: T_1): Readonly<T_1>;
+                    preventExtensions<T_1>(o: T_1): T_1;
+                    isSealed(o: any): boolean;
+                    isFrozen(o: any): boolean;
+                    isExtensible(o: any): boolean;
+                    keys(o: object): string[];
+                    keys(o: {}): string[];
+                    assign<T_1 extends {}, U_1>(target: T_1, source: U_1): T_1 & U_1;
+                    assign<T_1 extends {}, U_2, V>(target: T_1, source1: U_2, source2: V): T_1 & U_2 & V;
+                    assign<T_1 extends {}, U_3, V_1, W>(target: T_1, source1: U_3, source2: V_1, source3: W): T_1 & U_3 & V_1 & W;
+                    assign(target: object, ...sources: any[]): any;
+                    getOwnPropertySymbols(o: any): symbol[];
+                    is(value1: any, value2: any): boolean;
+                    setPrototypeOf(o: any, proto: object | null): any;
+                    values<T_1>(o: {
+                        [s: string]: T_1;
+                    } | ArrayLike<T_1>): T_1[];
+                    values(o: {}): any[];
+                    entries<T_1>(o: {
+                        [s: string]: T_1;
+                    } | ArrayLike<T_1>): [string, T_1][];
+                    entries(o: {}): [string, any][];
+                    getOwnPropertyDescriptors<T_1>(o: T_1): { [P in keyof T_1]: TypedPropertyDescriptor<T_1[P]>; } & {
+                        [x: string]: PropertyDescriptor;
+                    };
+                    fromEntries<T_1 = any>(entries: Iterable<readonly [PropertyKey, T_1]>): {
+                        [k: string]: T_1;
+                    };
+                    fromEntries(entries: Iterable<readonly any[]>): any;
+                    hasOwn(o: object, v: PropertyKey): boolean;
+                    groupBy<K extends PropertyKey, T>(items: Iterable<T>, keySelector: (item: T, index: number) => K): Partial<Record<K, T[]>>;
+                })["default"][];
+                items_vary(next?: readonly $giper_baza_vary_type[], tag?: keyof typeof $giper_baza_unit_sand_tag): readonly $giper_baza_vary_type[];
+                splice(next: readonly $giper_baza_vary_type[], from?: number, to?: number, tag?: keyof typeof $giper_baza_unit_sand_tag): void;
+                find(vary: $giper_baza_vary_type): $giper_baza_unit_sand | null;
+                has(vary: $giper_baza_vary_type, next?: boolean, tag?: keyof typeof $giper_baza_unit_sand_tag): boolean;
+                add(vary: $giper_baza_vary_type, tag?: keyof typeof $giper_baza_unit_sand_tag): void;
+                cut(vary: $giper_baza_vary_type): void;
+                move(from: number, to: number): void;
+                wipe(seat: number): void;
+                pawn_make<Pawn_1 extends typeof $giper_baza_pawn>(Pawn: Pawn_1, vary: $giper_baza_vary_type, tag?: keyof typeof $giper_baza_unit_sand_tag): InstanceType<Pawn_1>;
+                [$mol_dev_format_head](): any[];
+                land(): $giper_baza_land;
+                head(): $giper_baza_link;
+                land_link(): $giper_baza_link;
+                link(): $giper_baza_link;
+                toJSON(): string;
+                cast<Pawn_1 extends typeof $giper_baza_pawn>(Pawn: Pawn_1): InstanceType<Pawn_1>;
+                pawns<Pawn_1 extends typeof $giper_baza_pawn>(Pawn: Pawn_1 | null): readonly InstanceType<Pawn_1>[];
+                units(): $giper_baza_unit_sand[];
+                units_of(peer: $giper_baza_link | null): $giper_baza_unit_sand[];
+                meta(next?: $giper_baza_link): $giper_baza_link | null;
+                meta_of(peer: $giper_baza_link | null): $giper_baza_link | null;
+                filled(): boolean;
+                can_change(): boolean;
+                last_change(): $mol_time_moment | null;
+                authors(): $giper_baza_auth_pass[];
+                get $(): $;
+                set $(next: $);
+                destructor(): void;
+                toString(): string;
+                [Symbol.toStringTag]: string;
+                [$mol_ambient_ref]: $;
+                [Symbol.dispose](): void;
+            };
+            Item: Init extends typeof $mol_schema_any ? Init : {
+                new (value?: any): {
+                    constructor: Function;
+                    toString(): string;
+                    toLocaleString(): string;
+                    valueOf(): Object;
+                    hasOwnProperty(v: PropertyKey): boolean;
+                    isPrototypeOf(v: Object): boolean;
+                    propertyIsEnumerable(v: PropertyKey): boolean;
+                };
+                Class: Init;
+                toString(): string;
+                guard<This extends typeof $mol_schema_any, Value>(this: This, value: Value): Value & This["default"];
+                cast<This extends typeof $mol_schema_any>(this: This, value: unknown): This["default"];
+                default: InstanceType<Init>;
+                check<This extends typeof $mol_schema_any, Value_1>(this: This, value: Value_1): value is Value_1 & This["default"];
+                [Symbol.toStringTag]: string;
+                [$mol_key_handle](): string;
+                [Symbol.hasInstance]<This extends typeof $mol_schema_any, Value_2>(this: This, value: Value_2): value is Value_2 & This["default"];
+                getPrototypeOf(o: any): any;
+                getOwnPropertyDescriptor(o: any, p: PropertyKey): PropertyDescriptor | undefined;
+                getOwnPropertyNames(o: any): string[];
+                create(o: object | null): any;
+                create(o: object | null, properties: PropertyDescriptorMap & ThisType<any>): any;
+                defineProperty<T_1>(o: T_1, p: PropertyKey, attributes: PropertyDescriptor & ThisType<any>): T_1;
+                defineProperties<T_1>(o: T_1, properties: PropertyDescriptorMap & ThisType<any>): T_1;
+                seal<T_1>(o: T_1): T_1;
+                freeze<T_1 extends Function>(f: T_1): T_1;
+                freeze<T_1 extends {
+                    [idx: string]: U | null | undefined | object;
+                }, U extends string | bigint | number | boolean | symbol>(o: T_1): Readonly<T_1>;
+                freeze<T_1>(o: T_1): Readonly<T_1>;
+                preventExtensions<T_1>(o: T_1): T_1;
+                isSealed(o: any): boolean;
+                isFrozen(o: any): boolean;
+                isExtensible(o: any): boolean;
+                keys(o: object): string[];
+                keys(o: {}): string[];
+                assign<T_1 extends {}, U_1>(target: T_1, source: U_1): T_1 & U_1;
+                assign<T_1 extends {}, U_2, V>(target: T_1, source1: U_2, source2: V): T_1 & U_2 & V;
+                assign<T_1 extends {}, U_3, V_1, W>(target: T_1, source1: U_3, source2: V_1, source3: W): T_1 & U_3 & V_1 & W;
+                assign(target: object, ...sources: any[]): any;
+                getOwnPropertySymbols(o: any): symbol[];
+                is(value1: any, value2: any): boolean;
+                setPrototypeOf(o: any, proto: object | null): any;
+                values<T_1>(o: {
+                    [s: string]: T_1;
+                } | ArrayLike<T_1>): T_1[];
+                values(o: {}): any[];
+                entries<T_1>(o: {
+                    [s: string]: T_1;
+                } | ArrayLike<T_1>): [string, T_1][];
+                entries(o: {}): [string, any][];
+                getOwnPropertyDescriptors<T_1>(o: T_1): { [P in keyof T_1]: TypedPropertyDescriptor<T_1[P]>; } & {
+                    [x: string]: PropertyDescriptor;
+                };
+                fromEntries<T_1 = any>(entries: Iterable<readonly [PropertyKey, T_1]>): {
+                    [k: string]: T_1;
+                };
+                fromEntries(entries: Iterable<readonly any[]>): any;
+                hasOwn(o: object, v: PropertyKey): boolean;
+                groupBy<K extends PropertyKey, T>(items: Iterable<T>, keySelector: (item: T, index: number) => K): Partial<Record<K, T[]>>;
+            };
+            toString(): any;
+            tag: keyof typeof $giper_baza_unit_sand_tag;
+            of<Init extends new (...args: any[]) => any>(init: Init): /*elided*/ any;
+            meta: null | $giper_baza_link;
+            make<This extends typeof $mol_object>(this: This, config: Partial<InstanceType<This>>): InstanceType<This>;
+            $: $;
+            create<Instance>(this: new (init?: (instance: any) => void) => Instance, init?: (instance: $mol_type_writable<Instance>) => void): Instance;
+            toJSON(): any;
+            destructor(): void;
+            [Symbol.toPrimitive](): any;
+            [$mol_key_handle](): any;
+        };
+        meta: null | $giper_baza_link;
+        make<This extends typeof $mol_object>(this: This, config: Partial<InstanceType<This>>): InstanceType<This>;
+        $: $;
+        create<Instance>(this: new (init?: (instance: any) => void) => Instance, init?: (instance: $mol_type_writable<Instance>) => void): Instance;
+        toJSON(): any;
+        destructor(): void;
+        [Symbol.toPrimitive](): any;
+        [$mol_key_handle](): any;
+    };
+    export class $bog_music_playlists_dict extends $bog_music_playlists_dict_base {
+    }
     export {};
 }
 
@@ -60783,6 +61419,7 @@ declare namespace $ {
                 [Symbol.dispose](): void;
             } | null;
             readonly Tracks: (auto?: any) => $bog_music_tracks_dict | null;
+            readonly Playlists: (auto?: any) => $bog_music_playlists_dict | null;
         }>;
         path: string;
     } & {
@@ -63715,6 +64352,7 @@ declare namespace $ {
                 [$mol_key_handle](): any;
             };
             readonly Tracks: typeof $bog_music_tracks_dict;
+            readonly Playlists: typeof $bog_music_playlists_dict;
         };
     };
     /**
@@ -63804,6 +64442,15 @@ declare namespace $ {
         save_local_track(file: File, buffer: Uint8Array, order?: number): $bog_music_api_audio | null;
         swap_order(key_a: string, key_b: string): void;
         move_to_playlist(key: string, playlist: string): void;
+        playlists_dict(): $bog_music_playlists_dict;
+        playlists(): {
+            id: string;
+            title: string;
+        }[];
+        playlist_title(id: string): string;
+        playlist_create(title: string): string;
+        playlist_rename(id: string, title: string): void;
+        playlist_delete(id: string): void;
         delete_track(key: string): void;
         /** Убирает только blob-кеш, метаданные остаются. */
         drop_blob(key: string): void;
@@ -64487,35 +65134,35 @@ declare namespace $ {
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_button_minor__click_bog_music_player_23 = $mol_type_enforce<
+	type $mol_button_minor__hint_bog_music_player_23 = $mol_type_enforce<
+		ReturnType< $bog_music_player['toggle_hint'] >
+		,
+		ReturnType< $mol_button_minor['hint'] >
+	>
+	type $mol_button_minor__click_bog_music_player_24 = $mol_type_enforce<
 		ReturnType< $bog_music_player['toggle'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_music_player_24 = $mol_type_enforce<
-		readonly(any)[]
+	type $mol_button_minor__sub_bog_music_player_25 = $mol_type_enforce<
+		ReturnType< $bog_music_player['toggle_icons'] >
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_button_minor__click_bog_music_player_25 = $mol_type_enforce<
-		ReturnType< $bog_music_player['toggle'] >
-		,
-		ReturnType< $mol_button_minor['click'] >
-	>
-	type $mol_button_minor__sub_bog_music_player_26 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_button_minor['sub'] >
-	>
-	type $mol_button_minor__click_bog_music_player_27 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_player_26 = $mol_type_enforce<
 		ReturnType< $bog_music_player['next'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_music_player_28 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_music_player_27 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_view__sub_bog_music_player_28 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
 	>
 	type $mol_button_minor__hint_bog_music_player_29 = $mol_type_enforce<
 		ReturnType< $bog_music_player['repeat_hint'] >
@@ -64547,134 +65194,129 @@ declare namespace $ {
 		,
 		ReturnType< $mol_check_icon['checked'] >
 	>
-	type $mol_view__sub_bog_music_player_35 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_view['sub'] >
-	>
-	type $mol_button_minor__hint_bog_music_player_36 = $mol_type_enforce<
+	type $mol_button_minor__hint_bog_music_player_35 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__click_bog_music_player_37 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_player_36 = $mol_type_enforce<
 		ReturnType< $bog_music_player['eq_pop_toggle'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_music_player_38 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_music_player_37 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $bog_music_eq_curve__gains_bog_music_player_39 = $mol_type_enforce<
+	type $bog_music_eq_curve__gains_bog_music_player_38 = $mol_type_enforce<
 		ReturnType< $bog_music_player['eq_gains'] >
 		,
 		ReturnType< $bog_music_eq_curve['gains'] >
 	>
-	type $bog_music_eq_curve__pointer_down_bog_music_player_40 = $mol_type_enforce<
+	type $bog_music_eq_curve__pointer_down_bog_music_player_39 = $mol_type_enforce<
 		ReturnType< $bog_music_player['eq_pointer_down'] >
 		,
 		ReturnType< $bog_music_eq_curve['pointer_down'] >
 	>
-	type $bog_music_eq_curve__pointer_move_bog_music_player_41 = $mol_type_enforce<
+	type $bog_music_eq_curve__pointer_move_bog_music_player_40 = $mol_type_enforce<
 		ReturnType< $bog_music_player['eq_pointer_move'] >
 		,
 		ReturnType< $bog_music_eq_curve['pointer_move'] >
 	>
-	type $bog_music_eq_curve__pointer_up_bog_music_player_42 = $mol_type_enforce<
+	type $bog_music_eq_curve__pointer_up_bog_music_player_41 = $mol_type_enforce<
 		ReturnType< $bog_music_player['eq_pointer_up'] >
 		,
 		ReturnType< $bog_music_eq_curve['pointer_up'] >
 	>
-	type $mol_check_icon__title_bog_music_player_43 = $mol_type_enforce<
+	type $mol_check_icon__title_bog_music_player_42 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_check_icon['title'] >
 	>
-	type $mol_check_icon__hint_bog_music_player_44 = $mol_type_enforce<
+	type $mol_check_icon__hint_bog_music_player_43 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_check_icon['hint'] >
 	>
-	type $mol_check_icon__Icon_bog_music_player_45 = $mol_type_enforce<
+	type $mol_check_icon__Icon_bog_music_player_44 = $mol_type_enforce<
 		ReturnType< $bog_music_player['Eq_power_icon'] >
 		,
 		ReturnType< $mol_check_icon['Icon'] >
 	>
-	type $mol_check_icon__checked_bog_music_player_46 = $mol_type_enforce<
+	type $mol_check_icon__checked_bog_music_player_45 = $mol_type_enforce<
 		ReturnType< $bog_music_player['eq_on'] >
 		,
 		ReturnType< $mol_check_icon['checked'] >
 	>
-	type $mol_check__title_bog_music_player_47 = $mol_type_enforce<
+	type $mol_check__title_bog_music_player_46 = $mol_type_enforce<
 		ReturnType< $bog_music_player['eq_preset_title'] >
 		,
 		ReturnType< $mol_check['title'] >
 	>
-	type $mol_check__checked_bog_music_player_48 = $mol_type_enforce<
+	type $mol_check__checked_bog_music_player_47 = $mol_type_enforce<
 		ReturnType< $bog_music_player['eq_preset_checked'] >
 		,
 		ReturnType< $mol_check['checked'] >
 	>
-	type $mol_view__sub_bog_music_player_49 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_48 = $mol_type_enforce<
 		ReturnType< $bog_music_player['eq_preset_rows'] >
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_player_50 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_49 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_pop__Anchor_bog_music_player_51 = $mol_type_enforce<
+	type $mol_pop__Anchor_bog_music_player_50 = $mol_type_enforce<
 		ReturnType< $bog_music_player['Eq_anchor'] >
 		,
 		ReturnType< $mol_pop['Anchor'] >
 	>
-	type $mol_pop__bubble_content_bog_music_player_52 = $mol_type_enforce<
+	type $mol_pop__bubble_content_bog_music_player_51 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_pop['bubble_content'] >
 	>
-	type $mol_button_minor__hint_bog_music_player_53 = $mol_type_enforce<
+	type $mol_button_minor__hint_bog_music_player_52 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_button_minor['hint'] >
 	>
-	type $mol_button_minor__click_bog_music_player_54 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_music_player_53 = $mol_type_enforce<
 		ReturnType< $bog_music_player['volume_toggle'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_button_minor__sub_bog_music_player_55 = $mol_type_enforce<
+	type $mol_button_minor__sub_bog_music_player_54 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_check_icon__hint_bog_music_player_56 = $mol_type_enforce<
+	type $mol_check_icon__hint_bog_music_player_55 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_check_icon['hint'] >
 	>
-	type $mol_check_icon__Icon_bog_music_player_57 = $mol_type_enforce<
+	type $mol_check_icon__Icon_bog_music_player_56 = $mol_type_enforce<
 		ReturnType< $bog_music_player['Norm_icon'] >
 		,
 		ReturnType< $mol_check_icon['Icon'] >
 	>
-	type $mol_check_icon__checked_bog_music_player_58 = $mol_type_enforce<
+	type $mol_check_icon__checked_bog_music_player_57 = $mol_type_enforce<
 		ReturnType< $bog_music_player['normalize'] >
 		,
 		ReturnType< $mol_check_icon['checked'] >
 	>
-	type $mol_view__style_bog_music_player_59 = $mol_type_enforce<
+	type $mol_view__style_bog_music_player_58 = $mol_type_enforce<
 		({ 
 			'height': ReturnType< $bog_music_player['volume_fill_height'] >,
 		}) 
 		,
 		ReturnType< $mol_view['style'] >
 	>
-	type $mol_view__event_bog_music_player_60 = $mol_type_enforce<
+	type $mol_view__event_bog_music_player_59 = $mol_type_enforce<
 		({ 
 			pointerdown( next?: ReturnType< $bog_music_player['volume_pointer_down'] > ): ReturnType< $bog_music_player['volume_pointer_down'] >,
 			pointermove( next?: ReturnType< $bog_music_player['volume_pointer_move'] > ): ReturnType< $bog_music_player['volume_pointer_move'] >,
@@ -64684,30 +65326,35 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['event'] >
 	>
+	type $mol_view__sub_bog_music_player_60 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
 	type $mol_view__sub_bog_music_player_61 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_player_62 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_view['sub'] >
-	>
-	type $mol_pop__align_bog_music_player_63 = $mol_type_enforce<
+	type $mol_pop__align_bog_music_player_62 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_pop['align'] >
 	>
-	type $mol_pop__Anchor_bog_music_player_64 = $mol_type_enforce<
+	type $mol_pop__Anchor_bog_music_player_63 = $mol_type_enforce<
 		ReturnType< $bog_music_player['Volume_anchor'] >
 		,
 		ReturnType< $mol_pop['Anchor'] >
 	>
-	type $mol_pop__bubble_content_bog_music_player_65 = $mol_type_enforce<
+	type $mol_pop__bubble_content_bog_music_player_64 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_pop['bubble_content'] >
+	>
+	type $mol_view__sub_bog_music_player_65 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
 	>
 	type $mol_button_minor__hint_bog_music_player_66 = $mol_type_enforce<
 		string
@@ -64715,7 +65362,7 @@ declare namespace $ {
 		ReturnType< $mol_button_minor['hint'] >
 	>
 	type $mol_button_minor__click_bog_music_player_67 = $mol_type_enforce<
-		ReturnType< $bog_music_player['close'] >
+		ReturnType< $bog_music_player['collapse'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
@@ -64724,12 +65371,27 @@ declare namespace $ {
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_view__sub_bog_music_player_69 = $mol_type_enforce<
+	type $mol_button_minor__hint_bog_music_player_69 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['hint'] >
+	>
+	type $mol_button_minor__click_bog_music_player_70 = $mol_type_enforce<
+		ReturnType< $bog_music_player['close'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__sub_bog_music_player_71 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_button_minor['sub'] >
+	>
+	type $mol_view__sub_bog_music_player_72 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_player_70 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_player_73 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
@@ -64775,14 +65437,16 @@ declare namespace $ {
 		prev( next?: any ): any
 		Prev_icon( ): $mol_icon_skip_previous
 		Prev( ): $mol_button_minor
+		toggle_hint( ): string
 		toggle( next?: any ): any
 		Play_icon( ): $mol_icon_play
-		Play( ): $mol_button_minor
 		Pause_icon( ): $mol_icon_pause
-		Pause( ): $mol_button_minor
+		toggle_icons( ): readonly(any)[]
+		Toggle( ): $mol_button_minor
 		next( next?: any ): any
 		Next_icon( ): $mol_icon_skip_next
 		Next( ): $mol_button_minor
+		Center( ): $mol_view
 		repeat_hint( ): string
 		repeat_cycle( next?: any ): any
 		Repeat_all_icon( ): $mol_icon_repeat
@@ -64792,7 +65456,6 @@ declare namespace $ {
 		Trim_icon( ): $mol_icon_content_cut
 		trim_mode( next?: boolean ): boolean
 		Trim_toggle( ): $mol_check_icon
-		Center( ): $mol_view
 		eq_pop_toggle( next?: any ): any
 		Eq_icon( ): $mol_icon_tune_vertical
 		Eq_anchor( ): $mol_button_minor
@@ -64825,6 +65488,10 @@ declare namespace $ {
 		Volume_slider( ): $mol_view
 		Volume_panel( ): $mol_view
 		Volume( ): $mol_pop
+		Options( ): $mol_view
+		collapse( next?: any ): any
+		Collapse_icon( ): $mol_icon_chevron_down
+		Collapse( ): $mol_button_minor
 		close( next?: any ): any
 		Close_icon( ): $mol_icon_close
 		Close( ): $mol_button_minor
@@ -64860,6 +65527,19 @@ declare namespace $.$$ {
         current_track(): $bog_music_track_baza | null;
         current_audio(): $bog_music_api_audio | null;
         private _ext;
+        private _ext_seq;
+        ext_rev(next?: number): number;
+        ext(next?: {
+            url: string;
+            title: string;
+            artist: string;
+            cover: string;
+        } | null): {
+            url: string;
+            title: string;
+            artist: string;
+            cover: string;
+        } | null;
         /** Прослушать по прямому URL, не сохраняя трек (tube-превью). */
         play_external(url: string, title: string, artist: string, cover?: string): void;
         private is_extension;
@@ -65179,8 +65859,9 @@ declare namespace $.$$ {
         private wave_pick;
         next(manual?: boolean): void;
         sub(): readonly any[];
-        Play(): any;
-        Pause(): any;
+        toggle_icons(): ($mol_icon_pause | $mol_icon_play)[];
+        toggle_hint(): "Пауза" | "Играть";
+        Collapse(): any;
         /**
          * Ручки обреза показываем только по кнопке «ножницы» в полном плеере:
          * на общей полоске их принимали за перемотку, а второй ползунок «в

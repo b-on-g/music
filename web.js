@@ -25343,54 +25343,312 @@ var $;
 })($ || ($ = {}));
 
 ;
-	($.$mol_check_list) = class $mol_check_list extends ($.$mol_view) {
-		option_checked(id, next){
-			if(next !== undefined) return next;
-			return false;
-		}
-		option_title(id){
-			return "";
-		}
-		option_label(id){
-			return [(this.option_title(id))];
-		}
-		enabled(){
-			return true;
-		}
-		option_enabled(id){
-			return (this.enabled());
-		}
-		option_hint(id){
-			return "";
-		}
-		items(){
-			return [];
-		}
-		dictionary(){
-			return {};
-		}
-		Option(id){
-			const obj = new this.$.$mol_check();
-			(obj.checked) = (next) => ((this.option_checked(id, next)));
-			(obj.label) = () => ((this.option_label(id)));
-			(obj.enabled) = () => ((this.option_enabled(id)));
-			(obj.hint) = () => ((this.option_hint(id)));
-			(obj.minimal_height) = () => (24);
-			return obj;
-		}
-		options(){
-			return {};
-		}
-		keys(){
-			return [];
-		}
-		sub(){
-			return (this.items());
+	($.$mol_icon_chevron_down) = class $mol_icon_chevron_down extends ($.$mol_icon) {
+		path(){
+			return "M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z";
 		}
 	};
-	($mol_mem_key(($.$mol_check_list.prototype), "option_checked"));
-	($mol_mem_key(($.$mol_check_list.prototype), "Option"));
 
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_plus) = class $mol_icon_plus extends ($.$mol_icon) {
+		path(){
+			return "M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_delete) = class $mol_icon_delete extends ($.$mol_icon) {
+		path(){
+			return "M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$bog_music_playlists) = class $bog_music_playlists extends ($.$mol_view) {
+		my_current(){
+			return false;
+		}
+		my_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		My_label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.my_title())]);
+			return obj;
+		}
+		My(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.attr) = () => ({...(this.$.$mol_button_minor.prototype.attr.call(obj)), "bog_music_playlists_current": (this.my_current())});
+			(obj.click) = (next) => ((this.my_click(next)));
+			(obj.sub) = () => ([(this.My_label())]);
+			return obj;
+		}
+		list_active(){
+			return false;
+		}
+		list_current(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		List_icon(){
+			const obj = new this.$.$mol_icon_chevron_down();
+			return obj;
+		}
+		List(){
+			const obj = new this.$.$mol_select();
+			(obj.hint) = () => ("Плейлисты");
+			(obj.value) = (next) => ((this.list_current(next)));
+			(obj.dictionary) = () => ((this.list_dict()));
+			(obj.option_label_default) = () => ("Плейлисты");
+			(obj.no_options_message) = () => ("Плейлистов нет");
+			(obj.Trigger_icon) = () => ((this.List_icon()));
+			return obj;
+		}
+		add_toggle(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Add_icon(){
+			const obj = new this.$.$mol_icon_plus();
+			return obj;
+		}
+		Add_anchor(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.hint) = () => ("Плейлисты");
+			(obj.click) = (next) => ((this.add_toggle(next)));
+			(obj.sub) = () => ([(this.Add_icon())]);
+			return obj;
+		}
+		add_title(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		add_submit(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Add_title(){
+			const obj = new this.$.$mol_string();
+			(obj.hint) = () => ("Новый плейлист");
+			(obj.value) = (next) => ((this.add_title(next)));
+			(obj.submit) = (next) => ((this.add_submit(next)));
+			(obj.enter) = () => ("done");
+			return obj;
+		}
+		Add_submit(){
+			const obj = new this.$.$mol_button_major();
+			(obj.title) = () => ("Создать");
+			(obj.click) = (next) => ((this.add_submit(next)));
+			return obj;
+		}
+		Add_panel(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Add_title()), (this.Add_submit())]);
+			return obj;
+		}
+		rename_title(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		rename_submit(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Rename(){
+			const obj = new this.$.$mol_string();
+			(obj.hint) = () => ("Название текущего");
+			(obj.value) = (next) => ((this.rename_title(next)));
+			(obj.submit) = (next) => ((this.rename_submit(next)));
+			(obj.enter) = () => ("done");
+			return obj;
+		}
+		remove_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Remove_icon(){
+			const obj = new this.$.$mol_icon_delete();
+			return obj;
+		}
+		remove_label(){
+			return "Удалить";
+		}
+		Remove_label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.remove_label())]);
+			return obj;
+		}
+		Remove(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.click) = (next) => ((this.remove_click(next)));
+			(obj.sub) = () => ([(this.Remove_icon()), (this.Remove_label())]);
+			return obj;
+		}
+		Rename_save(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ("Переименовать");
+			(obj.click) = (next) => ((this.rename_submit(next)));
+			return obj;
+		}
+		Edit_actions(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Remove()), (this.Rename_save())]);
+			return obj;
+		}
+		Edit_panel(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Rename()), (this.Edit_actions())]);
+			return obj;
+		}
+		add_content(){
+			return [(this.Add_panel()), (this.Edit_panel())];
+		}
+		Add(){
+			const obj = new this.$.$mol_pop();
+			(obj.align) = () => ("bottom_center");
+			(obj.Anchor) = () => ((this.Add_anchor()));
+			(obj.bubble_content) = () => ((this.add_content()));
+			return obj;
+		}
+		middle(){
+			return [(this.List()), (this.Add())];
+		}
+		Middle(){
+			const obj = new this.$.$mol_view();
+			(obj.attr) = () => ({...(this.$.$mol_view.prototype.attr.call(obj)), "bog_music_playlists_current": (this.list_active())});
+			(obj.sub) = () => ((this.middle()));
+			return obj;
+		}
+		archive_current(){
+			return false;
+		}
+		archive_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Archive_label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.archive_title())]);
+			return obj;
+		}
+		Archive(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.attr) = () => ({...(this.$.$mol_button_minor.prototype.attr.call(obj)), "bog_music_playlists_current": (this.archive_current())});
+			(obj.click) = (next) => ((this.archive_click(next)));
+			(obj.sub) = () => ([(this.Archive_label())]);
+			return obj;
+		}
+		page(next){
+			if(next !== undefined) return next;
+			return "my";
+		}
+		my_title(){
+			return "Моя музыка";
+		}
+		archive_title(){
+			return "Архив";
+		}
+		list_dict(){
+			return {};
+		}
+		sub(){
+			return [
+				(this.My()), 
+				(this.Middle()), 
+				(this.Archive())
+			];
+		}
+	};
+	($mol_mem(($.$bog_music_playlists.prototype), "my_click"));
+	($mol_mem(($.$bog_music_playlists.prototype), "My_label"));
+	($mol_mem(($.$bog_music_playlists.prototype), "My"));
+	($mol_mem(($.$bog_music_playlists.prototype), "list_current"));
+	($mol_mem(($.$bog_music_playlists.prototype), "List_icon"));
+	($mol_mem(($.$bog_music_playlists.prototype), "List"));
+	($mol_mem(($.$bog_music_playlists.prototype), "add_toggle"));
+	($mol_mem(($.$bog_music_playlists.prototype), "Add_icon"));
+	($mol_mem(($.$bog_music_playlists.prototype), "Add_anchor"));
+	($mol_mem(($.$bog_music_playlists.prototype), "add_title"));
+	($mol_mem(($.$bog_music_playlists.prototype), "add_submit"));
+	($mol_mem(($.$bog_music_playlists.prototype), "Add_title"));
+	($mol_mem(($.$bog_music_playlists.prototype), "Add_submit"));
+	($mol_mem(($.$bog_music_playlists.prototype), "Add_panel"));
+	($mol_mem(($.$bog_music_playlists.prototype), "rename_title"));
+	($mol_mem(($.$bog_music_playlists.prototype), "rename_submit"));
+	($mol_mem(($.$bog_music_playlists.prototype), "Rename"));
+	($mol_mem(($.$bog_music_playlists.prototype), "remove_click"));
+	($mol_mem(($.$bog_music_playlists.prototype), "Remove_icon"));
+	($mol_mem(($.$bog_music_playlists.prototype), "Remove_label"));
+	($mol_mem(($.$bog_music_playlists.prototype), "Remove"));
+	($mol_mem(($.$bog_music_playlists.prototype), "Rename_save"));
+	($mol_mem(($.$bog_music_playlists.prototype), "Edit_actions"));
+	($mol_mem(($.$bog_music_playlists.prototype), "Edit_panel"));
+	($mol_mem(($.$bog_music_playlists.prototype), "Add"));
+	($mol_mem(($.$bog_music_playlists.prototype), "Middle"));
+	($mol_mem(($.$bog_music_playlists.prototype), "archive_click"));
+	($mol_mem(($.$bog_music_playlists.prototype), "Archive_label"));
+	($mol_mem(($.$bog_music_playlists.prototype), "Archive"));
+	($mol_mem(($.$bog_music_playlists.prototype), "page"));
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    const dismissed = new WeakSet();
+    /**
+     * Тап мимо панели закрывает её. Сам $mol_pop закрывается, только когда
+     * фокус уезжает на другой фокусируемый элемент, а тап по пустому месту
+     * на телефоне фокус никуда не переносит — панель висела бы на экране.
+     */
+    function $bog_music_pop_dismiss(pop) {
+        if (dismissed.has(pop))
+            return;
+        dismissed.add(pop);
+        window.addEventListener('pointerdown', event => {
+            if (!pop.showed())
+                return;
+            const target = event.target;
+            if (!target)
+                return;
+            if (pop.dom_node().contains(target))
+                return;
+            if (pop.Bubble().dom_node().contains(target))
+                return;
+            pop.showed(false);
+        }, true);
+    }
+    $.$bog_music_pop_dismiss = $bog_music_pop_dismiss;
+    /**
+     * Тап по якорю открывает и закрывает панель. $mol_pop_over для этого не
+     * годится: он показан, пока «в фокусе ИЛИ под курсором», а на телефоне
+     * фокус остаётся на кнопке, и повторный тап ничего не закрывает.
+     */
+    function $bog_music_pop_toggle(pop) {
+        const showed = pop.showed();
+        pop.showed(!showed);
+        if (!showed)
+            $bog_music_pop_dismiss(pop);
+        return !showed;
+    }
+    $.$bog_music_pop_toggle = $bog_music_pop_toggle;
+})($ || ($ = {}));
 
 ;
 "use strict";
@@ -25402,43 +25660,134 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        /**
-         * List of checkboxes
-         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_check_list_demo
-         */
-        class $mol_check_list extends $.$mol_check_list {
-            options() {
-                return {};
+        class $bog_music_playlists extends $.$bog_music_playlists {
+            account() {
+                return $bog_music_account_baza.home();
             }
-            dictionary(next) {
-                return next ?? {};
+            my_current() {
+                return this.page() === 'my';
             }
-            option_checked(id, next) {
-                const prev = this.dictionary();
-                if (next === undefined)
-                    return prev[id] ?? null;
-                const next_rec = { ...prev, [id]: next };
-                if (next === null)
-                    delete next_rec[id];
-                return this.dictionary(next_rec)[id] ?? null;
+            archive_current() {
+                return this.page() === 'archive';
             }
-            keys() {
-                return Object.keys(this.options());
+            list_active() {
+                return !this.my_current() && !this.archive_current();
             }
-            items() {
-                return this.keys().map(key => this.Option(key));
+            own_list() {
+                return this.page().startsWith('list:') ? this.page() : '';
             }
-            option_title(key) {
-                return this.options()[key] || key;
+            my_click() {
+                this.page('my');
+            }
+            archive_click() {
+                this.page('archive');
+            }
+            list_current(next) {
+                if (next)
+                    this.page(next);
+                return this.list_active() ? this.page() : '';
+            }
+            middle() {
+                return [
+                    ...Object.keys(this.list_dict()).length ? [this.List()] : [],
+                    this.Add(),
+                ];
+            }
+            add_title(next) {
+                return next ?? '';
+            }
+            add_content() {
+                return this.own_list() ? [this.Add_panel(), this.Edit_panel()] : [this.Add_panel()];
+            }
+            add_toggle() {
+                this.rename_draft(null);
+                this.remove_asked(false);
+                if ($bog_music_pop_toggle(this.Add()))
+                    this.focus_later(this.Add_title());
+            }
+            add_submit() {
+                const title = this.add_title().trim();
+                if (!title)
+                    return;
+                const id = this.account().playlist_create(title);
+                this.add_title('');
+                this.Add().showed(false);
+                this.page(id);
+            }
+            rename_draft(next) {
+                this.own_list();
+                return next ?? null;
+            }
+            rename_title(next) {
+                if (next !== undefined)
+                    this.rename_draft(next);
+                return this.rename_draft() ?? this.account().playlist_title(this.own_list());
+            }
+            rename_submit() {
+                const id = this.own_list();
+                const title = this.rename_title().trim();
+                if (!id || !title)
+                    return;
+                this.account().playlist_rename(id, title);
+                this.rename_draft(null);
+                this.Add().showed(false);
+            }
+            remove_asked(next) {
+                this.own_list();
+                return next ?? false;
+            }
+            remove_label() {
+                return this.remove_asked() ? 'Точно удалить?' : 'Удалить';
+            }
+            remove_click() {
+                if (!this.remove_asked()) {
+                    this.remove_asked(true);
+                    return;
+                }
+                const id = this.own_list();
+                if (!id)
+                    return;
+                this.Add().showed(false);
+                this.account().playlist_delete(id);
+                this.page('my');
+            }
+            focus_later(field) {
+                new $mol_after_frame(() => {
+                    try {
+                        field.focused(true);
+                    }
+                    catch { }
+                });
             }
         }
         __decorate([
-            $mol_mem
-        ], $mol_check_list.prototype, "keys", null);
+            $mol_action
+        ], $bog_music_playlists.prototype, "my_click", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_playlists.prototype, "archive_click", null);
         __decorate([
             $mol_mem
-        ], $mol_check_list.prototype, "items", null);
-        $$.$mol_check_list = $mol_check_list;
+        ], $bog_music_playlists.prototype, "add_title", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_playlists.prototype, "add_toggle", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_playlists.prototype, "add_submit", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_playlists.prototype, "rename_draft", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_playlists.prototype, "rename_submit", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_playlists.prototype, "remove_asked", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_playlists.prototype, "remove_click", null);
+        $$.$bog_music_playlists = $bog_music_playlists;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 
@@ -25446,22 +25795,8 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    $mol_style_attach("mol/check/list/list.view.css", "[mol_check_list] {\n\tdisplay: flex;\n\tflex-wrap: wrap;\n\tflex: 1 1 auto;\n\tborder-radius: var(--mol_gap_round);\n\tgap: 1px;\n}\n\n[mol_check_list_option] {\n\tflex: 0 1 auto;\n}\n\n[mol_check_list_option]:where([mol_check_checked=\"true\"]) {\n\ttext-shadow: 0 0;\n\tcolor: var(--mol_theme_current);\n}\n\n[mol_check_list_option]:where([mol_check_checked=\"true\"][disabled]) {\n\tcolor: var(--mol_theme_text);\n}\n");
+    $mol_style_attach("bog/music/playlists/playlists.view.css", "[bog_music_playlists_my_label],\n[bog_music_playlists_archive_label],\n[bog_music_playlists_list] [mol_select_trigger] [mol_dimmer] {\n\tdisplay: block;\n\tmin-width: 0;\n\toverflow: hidden;\n\twhite-space: nowrap;\n\ttext-overflow: ellipsis;\n}\n[bog_music_playlists_list] [mol_select_trigger] {\n\tmin-width: 0;\n\tmax-width: 100%;\n\tflex-wrap: nowrap;\n}\n[bog_music_playlists_current=\"true\"] {\n\tcolor: var(--mol_theme_current);\n\tbackground-color: var(--mol_theme_hover);\n}\n[bog_music_playlists_my_label],\n[bog_music_playlists_archive_label] {\n\tflex-shrink: 1;\n}\n[bog_music_playlists_list] {\n\tflex: 1 1 auto;\n}\n[bog_music_playlists_add_anchor] {\n\tpadding-left: 0.25rem;\n\tpadding-right: 0.25rem;\n}\n");
 })($ || ($ = {}));
-
-;
-	($.$mol_switch) = class $mol_switch extends ($.$mol_check_list) {
-		value(next){
-			if(next !== undefined) return next;
-			return "";
-		}
-	};
-	($mol_mem(($.$mol_switch.prototype), "value"));
-
-
-;
-"use strict";
-
 
 ;
 "use strict";
@@ -25469,22 +25804,74 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        /**
-         * Buttons which switching the state
-         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_switch_demo
-         */
-        class $mol_switch extends $.$mol_switch {
-            value(next) {
-                return $mol_state_session.value(`${this}.value()`, next) ?? '';
-            }
-            option_checked(key, next) {
-                if (next === undefined)
-                    return this.value() == key;
-                this.value(next ? key : '');
-                return next;
-            }
-        }
-        $$.$mol_switch = $mol_switch;
+        const cell = {
+            flex: { grow: 1, shrink: 1, basis: '0%' },
+            justify: { content: 'center' },
+            align: { items: 'center' },
+            minWidth: 0,
+        };
+        $mol_style_define($bog_music_playlists, {
+            flex: { direction: 'row' },
+            align: { items: 'stretch' },
+            gap: '0.25rem',
+            padding: {
+                top: '0.5rem',
+                bottom: '0.25rem',
+                left: '0.5rem',
+                right: '0.5rem',
+            },
+            My: {
+                ...cell,
+                textAlign: 'center',
+            },
+            Archive: {
+                ...cell,
+                textAlign: 'center',
+            },
+            Middle: {
+                ...cell,
+                flex: { grow: 1.5, shrink: 1, basis: '0%' },
+                gap: 0,
+            },
+            List: {
+                flex: { shrink: 1 },
+                minWidth: 0,
+            },
+            Edit_panel: {
+                border: { top: { width: '1px', style: 'solid', color: $mol_theme.line } },
+                flex: { direction: 'column' },
+                gap: $mol_gap.text,
+                padding: {
+                    top: '0.5rem',
+                    bottom: '0.5rem',
+                    left: '0.5rem',
+                    right: '0.5rem',
+                },
+                width: '16rem',
+                maxWidth: '80vw',
+            },
+            Edit_actions: {
+                flex: { wrap: 'wrap' },
+                justify: { content: 'space-between' },
+                gap: $mol_gap.text,
+            },
+            Remove: {
+                gap: $mol_gap.text,
+                color: $mol_theme.special,
+            },
+            Add_panel: {
+                flex: { direction: 'column' },
+                gap: $mol_gap.text,
+                padding: {
+                    top: '0.5rem',
+                    bottom: '0.5rem',
+                    left: '0.5rem',
+                    right: '0.5rem',
+                },
+                width: '16rem',
+                maxWidth: '80vw',
+            },
+        });
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 
@@ -26101,30 +26488,6 @@ var $;
 
 
 ;
-	($.$mol_icon_play_circle) = class $mol_icon_play_circle extends ($.$mol_icon) {
-		path(){
-			return "M10,16.5V7.5L16,12M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_play_circle_outline) = class $mol_icon_play_circle_outline extends ($.$mol_icon) {
-		path(){
-			return "M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M10,16.5L16,12L10,7.5V16.5Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
 	($.$mol_icon_account) = class $mol_icon_account extends ($.$mol_icon) {
 		path(){
 			return "M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z";
@@ -26224,25 +26587,6 @@ var $;
 			(obj.click) = (next) => ((this.music_click(next)));
 			return obj;
 		}
-		player_active(){
-			return "off";
-		}
-		Player_icon(){
-			const obj = new this.$.$mol_icon_play_circle_outline();
-			return obj;
-		}
-		player_click(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Tab_player(){
-			const obj = new this.$.$bog_music_nav_item();
-			(obj.label) = () => ("Плеер");
-			(obj.active) = () => ((this.player_active()));
-			(obj.Icon) = () => ((this.Player_icon()));
-			(obj.click) = (next) => ((this.player_click(next)));
-			return obj;
-		}
 		account_active(){
 			return "off";
 		}
@@ -26289,7 +26633,6 @@ var $;
 			return [
 				(this.Tab_search()), 
 				(this.Tab_music()), 
-				(this.Tab_player()), 
 				(this.Tab_account()), 
 				(this.Tab_logs())
 			];
@@ -26301,9 +26644,6 @@ var $;
 	($mol_mem(($.$bog_music_nav.prototype), "Music_icon"));
 	($mol_mem(($.$bog_music_nav.prototype), "music_click"));
 	($mol_mem(($.$bog_music_nav.prototype), "Tab_music"));
-	($mol_mem(($.$bog_music_nav.prototype), "Player_icon"));
-	($mol_mem(($.$bog_music_nav.prototype), "player_click"));
-	($mol_mem(($.$bog_music_nav.prototype), "Tab_player"));
 	($mol_mem(($.$bog_music_nav.prototype), "Account_icon"));
 	($mol_mem(($.$bog_music_nav.prototype), "account_click"));
 	($mol_mem(($.$bog_music_nav.prototype), "Tab_account"));
@@ -26326,7 +26666,6 @@ var $;
         class $bog_music_nav extends $.$bog_music_nav {
             music_active() { return this.section() === 'music' ? 'on' : 'off'; }
             search_active() { return this.section() === 'search' ? 'on' : 'off'; }
-            player_active() { return this.section() === 'player' ? 'on' : 'off'; }
             account_active() { return this.section() === 'account' ? 'on' : 'off'; }
             logs_active() { return this.section() === 'logs' ? 'on' : 'off'; }
             music_click(e) {
@@ -26339,12 +26678,6 @@ var $;
                 if (e)
                     e.preventDefault();
                 this.section('search');
-                return null;
-            }
-            player_click(e) {
-                if (e)
-                    e.preventDefault();
-                this.section('player');
                 return null;
             }
             account_click(e) {
@@ -26387,9 +26720,6 @@ var $;
         __decorate([
             $mol_action
         ], $bog_music_nav.prototype, "search_click", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_nav.prototype, "player_click", null);
         __decorate([
             $mol_action
         ], $bog_music_nav.prototype, "account_click", null);
@@ -28619,18 +28949,6 @@ var $;
 (function ($) {
     $mol_style_attach("mol/date/date.view.css", "/* [mol_date_bubble] {\n\tpadding: .5rem;\n} */\n\n[mol_date_input] {\n\tflex-shrink: 0;\n}\n\n[mol_date_month_prev] ,\n[mol_date_month_next] {\n\tflex-grow: 1;\n}\n\n[dir=\"rtl\"] :where(\n\t[mol_date_month_prev],\n\t[mol_date_month_next],\n\t[mol_date_year_prev],\n\t[mol_date_year_next]\n) {\n\ttransform: scaleX(-1);\n}\n\n[mol_date_month_prev] {\n\tjustify-content: flex-end;\n}\n\n[mol_date_calendar_title] {\n\tpadding: var(--mol_gap_text);\n}\n\n[mol_date_calendar_day] {\n\tpadding: 0;\n}\n\n[mol_date_calendar_day_button] {\n\twidth: 100%;\n\t/* padding: .25rem .5rem; */\n\tjustify-content: center;\n\tcursor: pointer;\n\tcolor: inherit;\n}\n");
 })($ || ($ = {}));
-
-;
-	($.$mol_icon_plus) = class $mol_icon_plus extends ($.$mol_icon) {
-		path(){
-			return "M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z";
-		}
-	};
-
-
-;
-"use strict";
-
 
 ;
 	($.$mol_drag) = class $mol_drag extends ($.$mol_ghost) {
@@ -32863,18 +33181,6 @@ var $;
 })($ || ($ = {}));
 
 ;
-	($.$mol_icon_delete) = class $mol_icon_delete extends ($.$mol_icon) {
-		path(){
-			return "M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
 	($.$mol_icon_delete_forever) = class $mol_icon_delete_forever extends ($.$mol_icon) {
 		path(){
 			return "M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8.46,11.88L9.87,10.47L12,12.59L14.12,10.47L15.53,11.88L13.41,14L15.53,16.12L14.12,17.53L12,15.41L9.88,17.53L8.47,16.12L10.59,14L8.46,11.88M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z";
@@ -35649,13 +35955,21 @@ var $;
 			if(next !== undefined) return next;
 			return "my";
 		}
-		tab_options(){
-			return {"my": "Моя музыка", "archive": "Архив"};
+		my_title(){
+			return "Моя музыка";
+		}
+		archive_title(){
+			return "Архив";
+		}
+		list_dict(){
+			return {};
 		}
 		Tabs(){
-			const obj = new this.$.$mol_switch();
-			(obj.value) = (next) => ((this.page(next)));
-			(obj.options) = () => ((this.tab_options()));
+			const obj = new this.$.$bog_music_playlists();
+			(obj.page) = (next) => ((this.page(next)));
+			(obj.my_title) = () => ((this.my_title()));
+			(obj.archive_title) = () => ((this.archive_title()));
+			(obj.list_dict) = () => ((this.list_dict()));
 			return obj;
 		}
 		visible_keys(){
@@ -35705,22 +36019,25 @@ var $;
 			(obj.demote_key) = (next) => ((this.demote_key(next)));
 			return obj;
 		}
+		tube_submit(next){
+			if(next !== undefined) return next;
+			return null;
+		}
 		tube_query(next){
 			if(next !== undefined) return next;
 			return "";
-		}
-		tube_find(next){
-			if(next !== undefined) return next;
-			return null;
 		}
 		Tube_query(){
 			const obj = new this.$.$mol_string();
 			(obj.hint) = () => ("Что ищем на YouTube?");
 			(obj.value) = (next) => ((this.tube_query(next)));
-			(obj.submit) = (next) => ((this.tube_find(next)));
 			(obj.keyboard) = () => ("search");
 			(obj.enter) = () => ("search");
 			return obj;
+		}
+		tube_find(next){
+			if(next !== undefined) return next;
+			return null;
 		}
 		Tube_find(){
 			const obj = new this.$.$mol_button_major();
@@ -35730,6 +36047,8 @@ var $;
 		}
 		Tube_bar(){
 			const obj = new this.$.$mol_view();
+			(obj.dom_name) = () => ("form");
+			(obj.event) = () => ({...(this.$.$mol_view.prototype.event.call(obj)), "submit": (next) => (this.tube_submit(next))});
 			(obj.sub) = () => ([(this.Tube_query()), (this.Tube_find())]);
 			return obj;
 		}
@@ -35782,10 +36101,15 @@ var $;
 			if(next !== undefined) return next;
 			return null;
 		}
+		player_collapse(next){
+			if(next !== undefined) return next;
+			return null;
+		}
 		Player(){
 			const obj = new this.$.$bog_music_player();
 			(obj.full) = () => ((this.player_full()));
 			(obj.open) = (next) => ((this.player_open(next)));
+			(obj.collapse) = (next) => ((this.player_collapse(next)));
 			(obj.queue_keys) = () => ((this.visible_keys()));
 			(obj.current_key) = (next) => ((this.current_key(next)));
 			return obj;
@@ -35889,9 +36213,10 @@ var $;
 	($mol_mem(($.$bog_music_app.prototype), "delete_key"));
 	($mol_mem(($.$bog_music_app.prototype), "demote_key"));
 	($mol_mem(($.$bog_music_app.prototype), "Tracks"));
+	($mol_mem(($.$bog_music_app.prototype), "tube_submit"));
 	($mol_mem(($.$bog_music_app.prototype), "tube_query"));
-	($mol_mem(($.$bog_music_app.prototype), "tube_find"));
 	($mol_mem(($.$bog_music_app.prototype), "Tube_query"));
+	($mol_mem(($.$bog_music_app.prototype), "tube_find"));
 	($mol_mem(($.$bog_music_app.prototype), "Tube_find"));
 	($mol_mem(($.$bog_music_app.prototype), "Tube_bar"));
 	($mol_mem(($.$bog_music_app.prototype), "Tube_list"));
@@ -35899,6 +36224,7 @@ var $;
 	($mol_mem_key(($.$bog_music_app.prototype), "tube_get"));
 	($mol_mem_key(($.$bog_music_app.prototype), "Tube_row"));
 	($mol_mem(($.$bog_music_app.prototype), "player_open"));
+	($mol_mem(($.$bog_music_app.prototype), "player_collapse"));
 	($mol_mem(($.$bog_music_app.prototype), "Player"));
 	($mol_mem(($.$bog_music_app.prototype), "section"));
 	($mol_mem(($.$bog_music_app.prototype), "Nav"));
@@ -37729,7 +38055,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.64';
+    $.$bog_music_version = 'v1.65';
 })($ || ($ = {}));
 
 ;
@@ -37796,20 +38122,27 @@ var $;
                     return this.share().selection();
                 if (p === 'archive')
                     return this.account().keys_in('archive');
-                if (p.startsWith('shared:'))
+                if (p.startsWith('shared:') || p.startsWith('list:'))
                     return this.account().keys_in(p);
                 return this.account().keys_in('');
             }
-            tab_options() {
+            my_title() {
                 const my = this.account().keys_in('').length;
+                return my ? `Моя музыка ${my}` : 'Моя музыка';
+            }
+            archive_title() {
                 const arch = this.account().keys_in('archive').length;
-                const opts = {
-                    my: my ? `Моя музыка ${my}` : 'Моя музыка',
-                    archive: arch ? `Архив ${arch}` : 'Архив',
-                };
+                return arch ? `Архив ${arch}` : 'Архив';
+            }
+            list_dict() {
+                const opts = {};
                 if (this.share().mode()) {
                     const n = this.share().selection().length;
                     opts['share'] = n ? `Расшаренный ${n}` : 'Расшаренный';
+                }
+                for (const pl of this.account().playlists()) {
+                    const n = this.account().keys_in(pl.id).length;
+                    opts[pl.id] = n ? `${pl.title} ${n}` : pl.title;
                 }
                 for (const pl of this.account().shared_playlists()) {
                     opts[pl.id] = `${pl.sender} ${pl.count}`;
@@ -37865,7 +38198,6 @@ var $;
                 const idx = keys.indexOf(key);
                 this.Player().queue_index(idx >= 0 ? idx : 0);
                 this.Player().play_track(key);
-                this.section('player');
                 const item = this.recsys_item(key);
                 if (item) {
                     $bog_recsys.namespace('vk'); // исторический id, на нём накоплена статистика
@@ -38146,8 +38478,15 @@ var $;
             player_full() {
                 return this.section() === 'player';
             }
+            _section_back = 'music';
             player_open(event) {
+                if (this.player_full())
+                    return;
+                this._section_back = this.section();
                 this.section('player');
+            }
+            player_collapse(event) {
+                this.section(this._section_back);
             }
             body() {
                 switch (this.section()) {
@@ -38192,11 +38531,21 @@ var $;
                 $bog_music_log.act(`поиск на YouTube: ${query}`);
                 this.tube_committed(query);
             }
+            tube_submit(event) {
+                event?.preventDefault();
+                this.tube_find();
+                this.Tube_query().dom_node().blur();
+            }
+            _tube_found = { query: '', items: [] };
             tube_items() {
-                const q = this.tube_committed();
-                if (!q.trim())
+                const query = this.tube_committed().trim();
+                if (!query)
                     return [];
-                return $bog_music_tube.search(q);
+                if (this._tube_found.query === query)
+                    return this._tube_found.items;
+                const items = $bog_music_tube.search(query);
+                this._tube_found = { query, items };
+                return items;
             }
             tube_rows() {
                 return this.tube_items().map((_, i) => this.Tube_row(i));
@@ -38258,7 +38607,6 @@ var $;
                 $bog_music_log.act(`стрим с YouTube: ${item.title}`);
                 this.tube_current(index);
                 this.Player().play_external($bog_music_tube.audio_url(item.id), item.title, item.channel, $bog_music_tube.cover_url(item.id));
-                this.section('player');
             }
             tube_status_text(index, next) {
                 return next ?? '';
@@ -38568,6 +38916,9 @@ var $;
         ], $bog_music_app.prototype, "visible_keys", null);
         __decorate([
             $mol_mem
+        ], $bog_music_app.prototype, "list_dict", null);
+        __decorate([
+            $mol_mem
         ], $bog_music_app.prototype, "current_key", null);
         __decorate([
             $mol_mem
@@ -38618,6 +38969,9 @@ var $;
             $mol_action
         ], $bog_music_app.prototype, "player_open", null);
         __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "player_collapse", null);
+        __decorate([
             $mol_mem
         ], $bog_music_app.prototype, "tube_query", null);
         __decorate([
@@ -38626,6 +38980,9 @@ var $;
         __decorate([
             $mol_action
         ], $bog_music_app.prototype, "tube_find", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "tube_submit", null);
         __decorate([
             $mol_mem
         ], $bog_music_app.prototype, "tube_items", null);
@@ -38673,7 +39030,7 @@ var $node = $node || {} ; $node[ "/bog/music/app/favicon.svg" ] = "data:image/sv
 "use strict";
 var $;
 (function ($) {
-    $mol_style_attach("bog/music/app/app.view.css", "[bog_music_app][bog_builderui_base][bog_builderui_lights=\"light\"] {\n\t--bog_builderui_control: hsl( 210, 68%, 42% );\n\t--bog_builderui_focus: hsl( 210, 72%, 36% );\n\t--bog_builderui_current: hsl( 26, 82%, 44% );\n\t--bog_builderui_special: hsl( 26, 82%, 44% );\n\t--bog_builderui_back: #faf9f7;\n\t--bog_builderui_card: #ffffff;\n}\n[bog_music_app][bog_builderui_base][bog_builderui_lights=\"dark\"],\n[bog_music_app][bog_builderui_base][bog_builderui_lights=\"system\"] {\n\t--bog_builderui_control: hsl( 210, 72%, 64% );\n\t--bog_builderui_focus: hsl( 210, 76%, 72% );\n\t--bog_builderui_current: hsl( 30, 85%, 60% );\n\t--bog_builderui_special: hsl( 30, 85%, 60% );\n\t--bog_builderui_text: #d4d4d8;\n\t--bog_builderui_back: #18181b;\n\t--bog_builderui_card: #09090b;\n}\n@media ( prefers-color-scheme: light ) {\n\t[bog_music_app][bog_builderui_base][bog_builderui_lights=\"system\"] {\n\t\t--bog_builderui_control: hsl( 210, 68%, 42% );\n\t\t--bog_builderui_focus: hsl( 210, 72%, 36% );\n\t\t--bog_builderui_current: hsl( 26, 82%, 44% );\n\t\t--bog_builderui_special: hsl( 26, 82%, 44% );\n\t\t--bog_builderui_text: #09090b;\n\t\t--bog_builderui_back: #faf9f7;\n\t\t--bog_builderui_card: #ffffff;\n\t}\n}\n\n[bog_music_app][bog_builderui_lights] {\n\t--mol_theme_back: var(--bog_builderui_back);\n\t--mol_theme_card: var(--bog_builderui_card);\n\t--mol_theme_field: var(--bog_builderui_field);\n\t--mol_theme_hover: var(--bog_builderui_hover);\n\t--mol_theme_text: var(--bog_builderui_text);\n\t--mol_theme_shade: var(--bog_builderui_shade);\n\t--mol_theme_line: var(--bog_builderui_line);\n\t--mol_theme_focus: var(--bog_builderui_focus);\n\t--mol_theme_control: var(--bog_builderui_control);\n\t--mol_theme_current: var(--bog_builderui_current);\n\t--mol_theme_special: var(--bog_builderui_special);\n}\n\n/* $bog_popup распирает html и body до min-width: 20rem (иначе попап\n   расширения схлопывается). Размер шрифта тоже на html, и на Огромном этот\n   минимум вырастал до 440px — шире экрана телефона. Те же 20rem, но в px. */\nhtml:has([bog_music_app]),\nbody:has([bog_music_app]) {\n\tmin-width: 320px;\n}\nhtml:has([bog_music_app][bog_music_font=\"large\"]) {\n\tfont-size: 118.75%;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) {\n\tfont-size: 137.5%;\n}\n\n@media ( max-width: 40rem ) {\n\t[bog_music_app_nickname_label],\n\t[bog_music_app_version] {\n\t\tdisplay: none;\n\t}\n\t[bog_music_app_brand_name] {\n\t\tfont-size: 1.25rem;\n\t}\n\t[bog_music_app] > [mol_page_head] {\n\t\tpadding-left: 0.25rem;\n\t\tpadding-right: 0.25rem;\n\t\t/* Шапка всегда в одну строку: инструменты не переносятся вниз, а\n\t\t   название при нехватке места режется многоточием. */\n\t\tflex-wrap: nowrap;\n\t\tgap: 0.25rem;\n\t}\n\t[bog_music_app_brand] {\n\t\tmin-width: 0;\n\t\tflex-shrink: 1;\n\t\tpadding-right: 0;\n\t}\n\t[bog_music_app_brand_name] {\n\t\tmin-width: 0;\n\t\toverflow: hidden;\n\t\ttext-overflow: ellipsis;\n\t}\n\t[bog_music_app_tools] {\n\t\tflex-shrink: 0;\n\t\tgap: 0;\n\t}\n}\n\n/* Огромный шрифт на телефоне: иконки шапки чуть меньше и без лишних полей,\n   иначе пять инструментов плюс название не влезают в 390px. */\n@media ( max-width: 40rem ) {\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tools] > * {\n\t\tpadding-left: 0.2rem;\n\t\tpadding-right: 0.2rem;\n\t\tmin-width: 0;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tools] [mol_icon] {\n\t\twidth: 1.25rem;\n\t\theight: 1.25rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_brand_image] {\n\t\twidth: 1.75rem;\n\t\theight: 1.75rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_brand_name] {\n\t\tfont-size: 1.1rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app] > [mol_page_head] {\n\t\tpadding-top: 0.25rem;\n\t\tpadding-bottom: 0.25rem;\n\t}\n}\n\n/* Огромный шрифт: контролы и навигация не раздуваются вместе с текстом. */\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_controls] {\n\tpadding: 0.125rem 0.5rem;\n\tgap: 0.25rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_center] {\n\tgap: 0;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_nav_item] {\n\tmin-height: 3rem;\n\tpadding: 0.25rem 0.125rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tabs] {\n\tpadding: 0.25rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] {\n\tgap: 0.5rem;\n\tpadding: 0.5rem 0.75rem 0.75rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_cover],\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_cover_placeholder] {\n\twidth: 45vw;\n\theight: 45vw;\n\tpadding: 2rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_left] {\n\tgap: 0.5rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_title] {\n\tfont-size: 1.25rem;\n}\n");
+    $mol_style_attach("bog/music/app/app.view.css", "[bog_music_app][bog_builderui_base][bog_builderui_lights=\"light\"] {\n\t--bog_builderui_control: hsl( 210, 68%, 42% );\n\t--bog_builderui_focus: hsl( 210, 72%, 36% );\n\t--bog_builderui_current: hsl( 26, 82%, 44% );\n\t--bog_builderui_special: hsl( 26, 82%, 44% );\n\t--bog_builderui_back: #faf9f7;\n\t--bog_builderui_card: #ffffff;\n}\n[bog_music_app][bog_builderui_base][bog_builderui_lights=\"dark\"],\n[bog_music_app][bog_builderui_base][bog_builderui_lights=\"system\"] {\n\t--bog_builderui_control: hsl( 210, 72%, 64% );\n\t--bog_builderui_focus: hsl( 210, 76%, 72% );\n\t--bog_builderui_current: hsl( 30, 85%, 60% );\n\t--bog_builderui_special: hsl( 30, 85%, 60% );\n\t--bog_builderui_text: #d4d4d8;\n\t--bog_builderui_back: #18181b;\n\t--bog_builderui_card: #09090b;\n}\n@media ( prefers-color-scheme: light ) {\n\t[bog_music_app][bog_builderui_base][bog_builderui_lights=\"system\"] {\n\t\t--bog_builderui_control: hsl( 210, 68%, 42% );\n\t\t--bog_builderui_focus: hsl( 210, 72%, 36% );\n\t\t--bog_builderui_current: hsl( 26, 82%, 44% );\n\t\t--bog_builderui_special: hsl( 26, 82%, 44% );\n\t\t--bog_builderui_text: #09090b;\n\t\t--bog_builderui_back: #faf9f7;\n\t\t--bog_builderui_card: #ffffff;\n\t}\n}\n\n[bog_music_app][bog_builderui_lights] {\n\t--mol_theme_back: var(--bog_builderui_back);\n\t--mol_theme_card: var(--bog_builderui_card);\n\t--mol_theme_field: var(--bog_builderui_field);\n\t--mol_theme_hover: var(--bog_builderui_hover);\n\t--mol_theme_text: var(--bog_builderui_text);\n\t--mol_theme_shade: var(--bog_builderui_shade);\n\t--mol_theme_line: var(--bog_builderui_line);\n\t--mol_theme_focus: var(--bog_builderui_focus);\n\t--mol_theme_control: var(--bog_builderui_control);\n\t--mol_theme_current: var(--bog_builderui_current);\n\t--mol_theme_special: var(--bog_builderui_special);\n}\n\n/* $bog_popup распирает html и body до min-width: 20rem (иначе попап\n   расширения схлопывается). Размер шрифта тоже на html, и на Огромном этот\n   минимум вырастал до 440px — шире экрана телефона. Те же 20rem, но в px. */\nhtml:has([bog_music_app]),\nbody:has([bog_music_app]) {\n\tmin-width: 320px;\n}\nhtml:has([bog_music_app][bog_music_font=\"large\"]) {\n\tfont-size: 118.75%;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) {\n\tfont-size: 137.5%;\n}\n\n@media ( max-width: 40rem ) {\n\t[bog_music_app_nickname_label],\n\t[bog_music_app_version] {\n\t\tdisplay: none;\n\t}\n\t[bog_music_app_brand_name] {\n\t\tfont-size: 1.25rem;\n\t}\n\t[bog_music_app] > [mol_page_head] {\n\t\tpadding-left: 0.25rem;\n\t\tpadding-right: 0.25rem;\n\t\t/* Шапка всегда в одну строку: инструменты не переносятся вниз, а\n\t\t   название при нехватке места режется многоточием. */\n\t\tflex-wrap: nowrap;\n\t\tgap: 0.25rem;\n\t}\n\t[bog_music_app_brand] {\n\t\tmin-width: 0;\n\t\tflex-shrink: 1;\n\t\tpadding-right: 0;\n\t}\n\t[bog_music_app_brand_name] {\n\t\tmin-width: 0;\n\t\toverflow: hidden;\n\t\ttext-overflow: ellipsis;\n\t}\n\t[bog_music_app_tools] {\n\t\tflex-shrink: 0;\n\t\tgap: 0;\n\t}\n}\n\n/* Огромный шрифт на телефоне: иконки шапки чуть меньше и без лишних полей,\n   иначе пять инструментов плюс название не влезают в 390px. */\n@media ( max-width: 40rem ) {\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tools] > * {\n\t\tpadding-left: 0.2rem;\n\t\tpadding-right: 0.2rem;\n\t\tmin-width: 0;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tools] [mol_icon] {\n\t\twidth: 1.25rem;\n\t\theight: 1.25rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_brand_image] {\n\t\twidth: 1.75rem;\n\t\theight: 1.75rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_brand_name] {\n\t\tfont-size: 1.1rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app] > [mol_page_head] {\n\t\tpadding-top: 0.25rem;\n\t\tpadding-bottom: 0.25rem;\n\t}\n}\n\n/* Огромный шрифт: контролы и навигация не раздуваются вместе с текстом. */\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_controls] {\n\tpadding: 0.125rem 0.5rem;\n\tgap: 0.25rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_center] {\n\tgap: 0;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_nav_item] {\n\tmin-height: 3rem;\n\tpadding: 0.25rem 0.125rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tabs] {\n\tpadding: 0.25rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] {\n\tgap: 0.5rem;\n\tpadding: 0.5rem 0.75rem 0.75rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_cover],\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_cover_placeholder] {\n\twidth: 45vw;\n\theight: 45vw;\n\tpadding: 2rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_left] {\n\tgap: 0.5rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_title] {\n\tfont-size: 1.25rem;\n}\n\n[bog_music_app] input,\n[bog_music_app] textarea,\n[bog_music_app] select {\n\tfont-size: max( 16px, 1rem );\n}\n\nhtml:has([bog_music_app][bog_music_font=\"large\"]) [bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_prev],\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_prev] {\n\tdisplay: none;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_cover],\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_cover_placeholder] {\n\twidth: 2.25rem;\n\theight: 2.25rem;\n}\n");
 })($ || ($ = {}));
 
 ;
@@ -38815,6 +39172,152 @@ var $;
 
 ;
 var $node = $node || {} ; $node[ "/bog/music/app/apple-touch-icon.png" ] = "data:image/png;base64,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"
+
+;
+	($.$mol_check_list) = class $mol_check_list extends ($.$mol_view) {
+		option_checked(id, next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		option_title(id){
+			return "";
+		}
+		option_label(id){
+			return [(this.option_title(id))];
+		}
+		enabled(){
+			return true;
+		}
+		option_enabled(id){
+			return (this.enabled());
+		}
+		option_hint(id){
+			return "";
+		}
+		items(){
+			return [];
+		}
+		dictionary(){
+			return {};
+		}
+		Option(id){
+			const obj = new this.$.$mol_check();
+			(obj.checked) = (next) => ((this.option_checked(id, next)));
+			(obj.label) = () => ((this.option_label(id)));
+			(obj.enabled) = () => ((this.option_enabled(id)));
+			(obj.hint) = () => ((this.option_hint(id)));
+			(obj.minimal_height) = () => (24);
+			return obj;
+		}
+		options(){
+			return {};
+		}
+		keys(){
+			return [];
+		}
+		sub(){
+			return (this.items());
+		}
+	};
+	($mol_mem_key(($.$mol_check_list.prototype), "option_checked"));
+	($mol_mem_key(($.$mol_check_list.prototype), "Option"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        /**
+         * List of checkboxes
+         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_check_list_demo
+         */
+        class $mol_check_list extends $.$mol_check_list {
+            options() {
+                return {};
+            }
+            dictionary(next) {
+                return next ?? {};
+            }
+            option_checked(id, next) {
+                const prev = this.dictionary();
+                if (next === undefined)
+                    return prev[id] ?? null;
+                const next_rec = { ...prev, [id]: next };
+                if (next === null)
+                    delete next_rec[id];
+                return this.dictionary(next_rec)[id] ?? null;
+            }
+            keys() {
+                return Object.keys(this.options());
+            }
+            items() {
+                return this.keys().map(key => this.Option(key));
+            }
+            option_title(key) {
+                return this.options()[key] || key;
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_check_list.prototype, "keys", null);
+        __decorate([
+            $mol_mem
+        ], $mol_check_list.prototype, "items", null);
+        $$.$mol_check_list = $mol_check_list;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/check/list/list.view.css", "[mol_check_list] {\n\tdisplay: flex;\n\tflex-wrap: wrap;\n\tflex: 1 1 auto;\n\tborder-radius: var(--mol_gap_round);\n\tgap: 1px;\n}\n\n[mol_check_list_option] {\n\tflex: 0 1 auto;\n}\n\n[mol_check_list_option]:where([mol_check_checked=\"true\"]) {\n\ttext-shadow: 0 0;\n\tcolor: var(--mol_theme_current);\n}\n\n[mol_check_list_option]:where([mol_check_checked=\"true\"][disabled]) {\n\tcolor: var(--mol_theme_text);\n}\n");
+})($ || ($ = {}));
+
+;
+	($.$mol_switch) = class $mol_switch extends ($.$mol_check_list) {
+		value(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+	};
+	($mol_mem(($.$mol_switch.prototype), "value"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        /**
+         * Buttons which switching the state
+         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_switch_demo
+         */
+        class $mol_switch extends $.$mol_switch {
+            value(next) {
+                return $mol_state_session.value(`${this}.value()`, next) ?? '';
+            }
+            option_checked(key, next) {
+                if (next === undefined)
+                    return this.value() == key;
+                this.value(next ? key : '');
+                return next;
+            }
+        }
+        $$.$mol_switch = $mol_switch;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
 
 ;
 	($.$mol_form_field) = class $mol_form_field extends ($.$mol_labeler) {
@@ -39585,6 +40088,18 @@ var $;
 
 
 ;
+	($.$mol_icon_playlist_plus) = class $mol_icon_playlist_plus extends ($.$mol_icon) {
+		path(){
+			return "M3 16H10V14H3M18 14V10H16V14H12V16H16V20H18V16H22V14M14 6H3V8H14M14 10H3V12H14V10Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
 	($.$mol_icon_restore) = class $mol_icon_restore extends ($.$mol_icon) {
 		path(){
 			return "M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z";
@@ -39758,6 +40273,47 @@ var $;
 			(obj.sub) = () => ([(this.Archive_icon()), (this.Archive_label())]);
 			return obj;
 		}
+		to_my_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		To_my_icon(){
+			const obj = new this.$.$mol_icon_playlist_music();
+			return obj;
+		}
+		To_my_label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => (["В Мою музыку"]);
+			return obj;
+		}
+		To_my(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.click) = (next) => ((this.to_my_click(next)));
+			(obj.sub) = () => ([(this.To_my_icon()), (this.To_my_label())]);
+			return obj;
+		}
+		move_click(id, next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Move_icon(id){
+			const obj = new this.$.$mol_icon_playlist_plus();
+			return obj;
+		}
+		move_label(id){
+			return "";
+		}
+		Move_label(id){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.move_label(id))]);
+			return obj;
+		}
+		Move(id){
+			const obj = new this.$.$mol_button_minor();
+			(obj.click) = (next) => ((this.move_click(id, next)));
+			(obj.sub) = () => ([(this.Move_icon(id)), (this.Move_label(id))]);
+			return obj;
+		}
 		restore_click(next){
 			if(next !== undefined) return next;
 			return null;
@@ -39801,6 +40357,8 @@ var $;
 				(this.Demote()), 
 				(this.Delete()), 
 				(this.Archive()), 
+				(this.To_my()), 
+				(this.Move("0")), 
 				(this.Restore()), 
 				(this.Delete_forever())
 			];
@@ -39958,6 +40516,14 @@ var $;
 	($mol_mem(($.$bog_music_track.prototype), "Archive_icon"));
 	($mol_mem(($.$bog_music_track.prototype), "Archive_label"));
 	($mol_mem(($.$bog_music_track.prototype), "Archive"));
+	($mol_mem(($.$bog_music_track.prototype), "to_my_click"));
+	($mol_mem(($.$bog_music_track.prototype), "To_my_icon"));
+	($mol_mem(($.$bog_music_track.prototype), "To_my_label"));
+	($mol_mem(($.$bog_music_track.prototype), "To_my"));
+	($mol_mem_key(($.$bog_music_track.prototype), "move_click"));
+	($mol_mem_key(($.$bog_music_track.prototype), "Move_icon"));
+	($mol_mem_key(($.$bog_music_track.prototype), "Move_label"));
+	($mol_mem_key(($.$bog_music_track.prototype), "Move"));
 	($mol_mem(($.$bog_music_track.prototype), "restore_click"));
 	($mol_mem(($.$bog_music_track.prototype), "Restore_icon"));
 	($mol_mem(($.$bog_music_track.prototype), "Restore_label"));
@@ -39983,49 +40549,6 @@ var $;
 	($mol_mem(($.$bog_music_track.prototype), "demote"));
 	($mol_mem(($.$bog_music_track.prototype), "Confirm"));
 
-
-;
-"use strict";
-var $;
-(function ($) {
-    const dismissed = new WeakSet();
-    /**
-     * Тап мимо панели закрывает её. Сам $mol_pop закрывается, только когда
-     * фокус уезжает на другой фокусируемый элемент, а тап по пустому месту
-     * на телефоне фокус никуда не переносит — панель висела бы на экране.
-     */
-    function $bog_music_pop_dismiss(pop) {
-        if (dismissed.has(pop))
-            return;
-        dismissed.add(pop);
-        window.addEventListener('pointerdown', event => {
-            if (!pop.showed())
-                return;
-            const target = event.target;
-            if (!target)
-                return;
-            if (pop.dom_node().contains(target))
-                return;
-            if (pop.Bubble().dom_node().contains(target))
-                return;
-            pop.showed(false);
-        }, true);
-    }
-    $.$bog_music_pop_dismiss = $bog_music_pop_dismiss;
-    /**
-     * Тап по якорю открывает и закрывает панель. $mol_pop_over для этого не
-     * годится: он показан, пока «в фокусе ИЛИ под курсором», а на телефоне
-     * фокус остаётся на кнопке, и повторный тап ничего не закрывает.
-     */
-    function $bog_music_pop_toggle(pop) {
-        const showed = pop.showed();
-        pop.showed(!showed);
-        if (!showed)
-            $bog_music_pop_dismiss(pop);
-        return !showed;
-    }
-    $.$bog_music_pop_toggle = $bog_music_pop_toggle;
-})($ || ($ = {}));
 
 ;
 "use strict";
@@ -40087,8 +40610,29 @@ var $;
                     : [
                         this.Demote(),
                         ...this.can_drop_cache() ? [this.Delete()] : [],
+                        ...this.move_targets().map(id => this.Move(id)),
+                        ...this.track()?.playlist() ? [this.To_my()] : [],
                         this.Archive(),
                     ];
+            }
+            move_targets() {
+                const own = this.track()?.playlist() ?? '';
+                return $bog_music_account_baza.home().playlists()
+                    .map(pl => pl.id)
+                    .filter(id => id !== own);
+            }
+            move_label(id) {
+                return `В «${$bog_music_account_baza.home().playlist_title(id)}»`;
+            }
+            move_click(id) {
+                this.Menu().showed(false);
+                $bog_music_account_baza.home().move_to_playlist(this.key(), id);
+                return null;
+            }
+            to_my_click() {
+                this.Menu().showed(false);
+                $bog_music_account_baza.home().move_to_playlist(this.key(), '');
+                return null;
             }
             /** Локальный файл с устройства больше взять неоткуда — кеш не сбрасываем. */
             can_drop_cache() {
@@ -40231,6 +40775,12 @@ var $;
         __decorate([
             $mol_action
         ], $bog_music_track.prototype, "menu_toggle", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_track.prototype, "move_click", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_track.prototype, "to_my_click", null);
         __decorate([
             $mol_mem
         ], $bog_music_track.prototype, "delete_asked", null);
@@ -40524,6 +41074,9 @@ var $;
     class $bog_music_tracks_dict extends $giper_baza_dict_to($bog_music_track_baza) {
     }
     $.$bog_music_tracks_dict = $bog_music_tracks_dict;
+    class $bog_music_playlists_dict extends $giper_baza_dict_to($giper_baza_atom_text) {
+    }
+    $.$bog_music_playlists_dict = $bog_music_playlists_dict;
 })($ || ($ = {}));
 
 ;
@@ -40651,6 +41204,8 @@ var $;
             Delete: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
             Archive: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
             Restore: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
+            To_my: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
+            Move: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
             Delete_forever: { justify: { content: 'flex-start' }, gap: $mol_gap.text, color: $mol_theme.special },
             Confirm: {
                 flex: { direction: 'column', grow: 1, shrink: 1 },
@@ -40853,6 +41408,7 @@ var $;
         Eq_on: $giper_baza_atom.of($mol_schema_boolean),
         Eq_gains: $giper_baza_atom.of($mol_schema_string),
         Tracks: $bog_music_tracks_dict,
+        Playlists: $bog_music_playlists_dict,
     }) {
         /** Модель текущего пользователя (home land). */
         static home() {
@@ -41126,6 +41682,44 @@ var $;
             $bog_music_log.act(`${key} → плейлист «${playlist || 'Моя музыка'}»`, this.land_id());
             track.Playlist('auto').val(playlist);
         }
+        playlists_dict() {
+            return this.Playlists(null);
+        }
+        playlists() {
+            const dict = this.playlists_dict();
+            const rows = [];
+            for (const id of (dict.keys() ?? [])) {
+                try {
+                    const title = dict.key(id)?.val();
+                    if (title == null)
+                        continue;
+                    rows.push({ id, title });
+                }
+                catch {
+                    continue;
+                }
+            }
+            return rows.sort((a, b) => a.title.localeCompare(b.title, 'ru', { numeric: true }));
+        }
+        playlist_title(id) {
+            return this.playlists_dict().key(id)?.val() ?? '';
+        }
+        playlist_create(title) {
+            const id = 'list:' + $mol_guid(8, id => this.playlists_dict().has(id));
+            $bog_music_log.act(`новый плейлист «${title}»`, this.land_id());
+            this.playlists_dict().key(id, 'auto').val(title);
+            return id;
+        }
+        playlist_rename(id, title) {
+            $bog_music_log.act(`плейлист ${id} → «${title}»`, this.land_id());
+            this.playlists_dict().key(id, 'auto').val(title);
+        }
+        playlist_delete(id) {
+            $bog_music_log.act(`удалён плейлист ${id}`, this.land_id());
+            for (const key of this.keys_in(id))
+                this.move_to_playlist(key, '');
+            this.playlists_dict().cut(id);
+        }
         delete_track(key) {
             $bog_music_log.act(`трек вырезан из фонотеки: ${key}`, this.land_id());
             this.tracks().cut(key);
@@ -41239,6 +41833,15 @@ var $;
     __decorate([
         $mol_action
     ], $bog_music_account_baza.prototype, "move_to_playlist", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "playlist_create", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "playlist_rename", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "playlist_delete", null);
     __decorate([
         $mol_action
     ], $bog_music_account_baza.prototype, "delete_track", null);
@@ -42661,6 +43264,9 @@ var $;
 			(obj.sub) = () => ([(this.Prev_icon())]);
 			return obj;
 		}
+		toggle_hint(){
+			return "";
+		}
 		toggle(next){
 			if(next !== undefined) return next;
 			return null;
@@ -42669,20 +43275,18 @@ var $;
 			const obj = new this.$.$mol_icon_play();
 			return obj;
 		}
-		Play(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.click) = (next) => ((this.toggle(next)));
-			(obj.sub) = () => ([(this.Play_icon())]);
-			return obj;
-		}
 		Pause_icon(){
 			const obj = new this.$.$mol_icon_pause();
 			return obj;
 		}
-		Pause(){
+		toggle_icons(){
+			return [(this.Play_icon()), (this.Pause_icon())];
+		}
+		Toggle(){
 			const obj = new this.$.$mol_button_minor();
+			(obj.hint) = () => ((this.toggle_hint()));
 			(obj.click) = (next) => ((this.toggle(next)));
-			(obj.sub) = () => ([(this.Pause_icon())]);
+			(obj.sub) = () => ((this.toggle_icons()));
 			return obj;
 		}
 		next(next){
@@ -42697,6 +43301,15 @@ var $;
 			const obj = new this.$.$mol_button_minor();
 			(obj.click) = (next) => ((this.next(next)));
 			(obj.sub) = () => ([(this.Next_icon())]);
+			return obj;
+		}
+		Center(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([
+				(this.Prev()), 
+				(this.Toggle()), 
+				(this.Next())
+			]);
 			return obj;
 		}
 		repeat_hint(){
@@ -42742,18 +43355,6 @@ var $;
 			(obj.hint) = () => ("Обрезать начало и конец");
 			(obj.Icon) = () => ((this.Trim_icon()));
 			(obj.checked) = (next) => ((this.trim_mode(next)));
-			return obj;
-		}
-		Center(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([
-				(this.Prev()), 
-				(this.Play()), 
-				(this.Pause()), 
-				(this.Next()), 
-				(this.Repeat()), 
-				(this.Trim_toggle())
-			]);
 			return obj;
 		}
 		eq_pop_toggle(next){
@@ -42919,6 +43520,31 @@ var $;
 			(obj.bubble_content) = () => ([(this.Volume_panel())]);
 			return obj;
 		}
+		Options(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([
+				(this.Repeat()), 
+				(this.Trim_toggle()), 
+				(this.Eq()), 
+				(this.Volume())
+			]);
+			return obj;
+		}
+		collapse(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Collapse_icon(){
+			const obj = new this.$.$mol_icon_chevron_down();
+			return obj;
+		}
+		Collapse(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.hint) = () => ("Свернуть плеер");
+			(obj.click) = (next) => ((this.collapse(next)));
+			(obj.sub) = () => ([(this.Collapse_icon())]);
+			return obj;
+		}
 		close(next){
 			if(next !== undefined) return next;
 			return null;
@@ -42939,8 +43565,8 @@ var $;
 			(obj.sub) = () => ([
 				(this.Left()), 
 				(this.Center()), 
-				(this.Eq()), 
-				(this.Volume()), 
+				(this.Options()), 
+				(this.Collapse()), 
 				(this.Close())
 			]);
 			return obj;
@@ -43015,12 +43641,12 @@ var $;
 	($mol_mem(($.$bog_music_player.prototype), "Prev"));
 	($mol_mem(($.$bog_music_player.prototype), "toggle"));
 	($mol_mem(($.$bog_music_player.prototype), "Play_icon"));
-	($mol_mem(($.$bog_music_player.prototype), "Play"));
 	($mol_mem(($.$bog_music_player.prototype), "Pause_icon"));
-	($mol_mem(($.$bog_music_player.prototype), "Pause"));
+	($mol_mem(($.$bog_music_player.prototype), "Toggle"));
 	($mol_mem(($.$bog_music_player.prototype), "next"));
 	($mol_mem(($.$bog_music_player.prototype), "Next_icon"));
 	($mol_mem(($.$bog_music_player.prototype), "Next"));
+	($mol_mem(($.$bog_music_player.prototype), "Center"));
 	($mol_mem(($.$bog_music_player.prototype), "repeat_cycle"));
 	($mol_mem(($.$bog_music_player.prototype), "Repeat_all_icon"));
 	($mol_mem(($.$bog_music_player.prototype), "Repeat_one_icon"));
@@ -43029,7 +43655,6 @@ var $;
 	($mol_mem(($.$bog_music_player.prototype), "Trim_icon"));
 	($mol_mem(($.$bog_music_player.prototype), "trim_mode"));
 	($mol_mem(($.$bog_music_player.prototype), "Trim_toggle"));
-	($mol_mem(($.$bog_music_player.prototype), "Center"));
 	($mol_mem(($.$bog_music_player.prototype), "eq_pop_toggle"));
 	($mol_mem(($.$bog_music_player.prototype), "Eq_icon"));
 	($mol_mem(($.$bog_music_player.prototype), "Eq_anchor"));
@@ -43058,6 +43683,10 @@ var $;
 	($mol_mem(($.$bog_music_player.prototype), "Volume_slider"));
 	($mol_mem(($.$bog_music_player.prototype), "Volume_panel"));
 	($mol_mem(($.$bog_music_player.prototype), "Volume"));
+	($mol_mem(($.$bog_music_player.prototype), "Options"));
+	($mol_mem(($.$bog_music_player.prototype), "collapse"));
+	($mol_mem(($.$bog_music_player.prototype), "Collapse_icon"));
+	($mol_mem(($.$bog_music_player.prototype), "Collapse"));
 	($mol_mem(($.$bog_music_player.prototype), "close"));
 	($mol_mem(($.$bog_music_player.prototype), "Close_icon"));
 	($mol_mem(($.$bog_music_player.prototype), "Close"));
@@ -43233,13 +43862,26 @@ var $;
                 return key ? this.account().track(key) : null;
             }
             current_audio() {
-                if (this._ext)
-                    return { id: 0, owner_id: 0, artist: this._ext.artist, title: this._ext.title, duration: 0, url: this._ext.url };
+                const ext = this.ext();
+                if (ext)
+                    return { id: 0, owner_id: 0, artist: ext.artist, title: ext.title, duration: 0, url: ext.url };
                 return this.current_track()?.audio() ?? null;
             }
             // Внешний источник (стрим tube-превью), играющий без записи в baza.
             // Пока задан — плеер работает по url, а не по ключу из baza.
             _ext = null;
+            _ext_seq = 0;
+            ext_rev(next) {
+                return next ?? 0;
+            }
+            ext(next) {
+                if (next !== undefined) {
+                    this._ext = next;
+                    this.ext_rev(++this._ext_seq);
+                }
+                this.ext_rev();
+                return this._ext;
+            }
             /** Прослушать по прямому URL, не сохраняя трек (tube-превью). */
             play_external(url, title, artist, cover = '') {
                 if (this.is_extension()) {
@@ -43247,7 +43889,7 @@ var $;
                     return;
                 }
                 $bog_music_log.act(`внешний стрим: ${artist} — ${title}`);
-                this._ext = { url, title, artist, cover };
+                this.ext({ url, title, artist, cover });
                 this.current_key('');
                 this.current_time(0);
                 this.duration(0);
@@ -44065,8 +44707,9 @@ var $;
                 return this.current_audio()?.artist ?? '';
             }
             cover() {
-                if (this._ext)
-                    return this._ext.cover;
+                const ext = this.ext();
+                if (ext)
+                    return ext.cover;
                 return this.current_track()?.cover() ?? '';
             }
             Cover() {
@@ -44429,7 +45072,7 @@ var $;
                     return;
                 }
                 $bog_music_log.act(`старт трека ${audio.artist} — ${audio.title} (${key})`);
-                this._ext = null; // возвращаемся к baza-треку, гасим tube-превью
+                this.ext(null); // возвращаемся к baza-треку, гасим tube-превью
                 $bog_music_mem.play_started();
                 // Предыдущий трек больше не нужен: отпускаем и его Blob, и object URL.
                 // Держать их дальше нечем оправдать — назад мотают через play_track,
@@ -44883,7 +45526,7 @@ var $;
             close() {
                 $bog_music_log.act('закрытие плеера');
                 this._dispatch_token++; // инвалидировать pending dispatch'и
-                this._ext = null;
+                this.ext(null);
                 this._planned_wave = null;
                 this._blob_cache.clear();
                 this._silent = false;
@@ -44929,7 +45572,7 @@ var $;
             }
             prev() {
                 // Тот же случай, что и в next(): играет выдача — шагаем по ней.
-                if (this._ext) {
+                if (this.ext()) {
                     $bog_music_log.act('предыдущий результат выдачи');
                     this.ext_step(-1);
                     return;
@@ -44979,9 +45622,9 @@ var $;
                 // Играет стрим из выдачи YouTube. Шагаем по выдаче, а не по фонотеке:
                 // у внешнего трека current_key пустой, и общий путь ниже взял бы
                 // queue[0] — по концу трека молча стартовал личный плейлист с начала.
-                if (this._ext) {
+                if (this.ext()) {
                     if (!manual && mode === 'one') {
-                        const ext = this._ext;
+                        const ext = this.ext();
                         this.play_external(ext.url, ext.title, ext.artist);
                         return;
                     }
@@ -45052,19 +45695,20 @@ var $;
                 this.play_track(queue[next_idx]);
             }
             sub() {
-                if (!this.current_key() && !this._ext)
+                if (!this.current_key() && !this.ext())
                     return this.full() ? [this.Empty()] : [];
                 return super.sub();
             }
-            Play() {
-                if (this.playing())
-                    return null;
-                return super.Play();
+            toggle_icons() {
+                return [this.playing() ? this.Pause_icon() : this.Play_icon()];
             }
-            Pause() {
-                if (!this.playing())
+            toggle_hint() {
+                return this.playing() ? 'Пауза' : 'Играть';
+            }
+            Collapse() {
+                if (!this.full())
                     return null;
-                return super.Pause();
+                return super.Collapse();
             }
             // ---------- обрез трека (trim handles на прогресс-баре) ----------
             /**
@@ -45314,6 +45958,9 @@ var $;
         }
         __decorate([
             $mol_mem
+        ], $bog_music_player.prototype, "ext_rev", null);
+        __decorate([
+            $mol_mem
         ], $bog_music_player.prototype, "normalize", null);
         __decorate([
             $mol_mem
@@ -45356,7 +46003,7 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    $mol_style_attach("bog/music/player/player.view.css", "[bog_music_player_full=\"true\"] [bog_music_player_left] {\n\torder: -1;\n}\n");
+    $mol_style_attach("bog/music/player/player.view.css", "[bog_music_player_full=\"true\"] [bog_music_player_left] {\n\torder: -1;\n}\n\n[bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_center] > [mol_button],\n[bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_close] {\n\tpadding-left: 0.25rem;\n\tpadding-right: 0.25rem;\n}\n");
 })($ || ($ = {}));
 
 ;
@@ -45619,6 +46266,11 @@ var $;
                 },
                 gap: '0.25rem',
             },
+            Options: {
+                flex: { direction: 'row' },
+                align: { items: 'center' },
+                gap: '0.25rem',
+            },
             Volume_panel: {
                 padding: {
                     top: '0.75rem',
@@ -45700,10 +46352,7 @@ var $;
                 },
             },
             ':not([bog_music_player_full="true"])': {
-                Repeat: { display: 'none' },
-                Volume: { display: 'none' },
-                Eq: { display: 'none' },
-                Trim_toggle: { display: 'none' },
+                Options: { display: 'none' },
             },
             '@': {
                 bog_music_player_full: {
@@ -45810,8 +46459,18 @@ var $;
                             font: { size: '0.875rem' },
                         },
                         Center: {
-                            flex: { wrap: 'wrap' },
+                            flex: { basis: '100%' },
                             justify: { content: 'center' },
+                            gap: '1.5rem',
+                        },
+                        Options: {
+                            flex: { basis: '100%' },
+                            justify: { content: 'center' },
+                        },
+                        Collapse: {
+                            position: 'absolute',
+                            top: '0.5rem',
+                            left: '0.5rem',
                         },
                         Close: {
                             position: 'absolute',
