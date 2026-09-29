@@ -261,4 +261,6 @@ namespace $ {
 
 	export class $bog_music_playlists_dict extends $giper_baza_dict_to($giper_baza_atom_text) {}
 
+	export class $bog_music_lists_dict extends $giper_baza_dict_to($giper_baza_list_str) {}
+
 }

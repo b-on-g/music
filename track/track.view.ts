@@ -64,33 +64,39 @@ namespace $.$$ {
 					this.Demote(),
 					... this.can_drop_cache() ? [ this.Delete() ] : [],
 					... this.move_targets().map( id => this.Move( id ) ),
-					... this.track()?.playlist() ? [ this.To_my() ] : [],
 					this.Archive(),
 				]
 		}
 
+		account() {
+			return $bog_music_account_baza.home()
+		}
+
 		move_targets() {
-			const own = this.track()?.playlist() ?? ''
-			return $bog_music_account_baza.home().playlists()
-				.map( pl => pl.id )
-				.filter( id => id !== own )
+			return this.account().playlists().map( pl => pl.id )
+		}
+
+		move_member( id: string ) {
+			return this.account().list_has( id, this.key() )
+		}
+
+		move_content( id: string ) {
+			return [
+				this.move_member( id ) ? this.Move_cut_icon( id ) : this.Move_add_icon( id ),
+				this.Move_label( id ),
+			]
 		}
 
 		move_label( id: string ) {
-			return `В «${ $bog_music_account_baza.home().playlist_title( id ) }»`
+			const title = this.account().playlist_title( id )
+			return this.move_member( id ) ? `Убрать из «${ title }»` : `В «${ title }»`
 		}
 
 		@$mol_action
 		move_click( id: string ) {
 			this.Menu().showed( false )
-			$bog_music_account_baza.home().move_to_playlist( this.key(), id )
-			return null
-		}
-
-		@$mol_action
-		to_my_click() {
-			this.Menu().showed( false )
-			$bog_music_account_baza.home().move_to_playlist( this.key(), '' )
+			if( this.move_member( id ) ) this.account().list_cut( id, this.key() )
+			else this.account().list_add( id, this.key() )
 			return null
 		}
 

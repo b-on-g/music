@@ -19,6 +19,7 @@ namespace $ {
 		Eq_gains: $giper_baza_atom.of( $mol_schema_string ),
 		Tracks: $bog_music_tracks_dict,
 		Playlists: $bog_music_playlists_dict,
+		Lists: $bog_music_lists_dict,
 	}) {
 
 		/** Модель текущего пользователя (home land). */
@@ -331,7 +332,68 @@ namespace $ {
 		playlist_delete(id: string): void {
 			$bog_music_log.act(`удалён плейлист ${id}`, this.land_id())
 			for (const key of this.keys_in(id)) this.move_to_playlist(key, '')
+			this.Lists(null)!.cut(id)
 			this.playlists_dict().cut(id)
+		}
+
+		list(id: string, auto?: 'auto') {
+			return this.Lists(null)!.key(id, auto)
+		}
+
+		list_raw(id: string): string[] {
+			return (this.list(id)?.items() ?? []) as string[]
+		}
+
+		list_keys(id: string): string[] {
+			const keys: string[] = []
+			for (const key of this.list_raw(id)) {
+				try {
+					const track = this.track(key)
+					if (!track?.audio()) continue
+					if (track.playlist() === 'archive') continue
+					keys.push(key)
+				} catch {
+					continue
+				}
+			}
+			return keys
+		}
+
+		list_has(id: string, key: string): boolean {
+			return this.list(id)?.has(key) ?? false
+		}
+
+		@$mol_action
+		list_add(id: string, key: string): void {
+			$bog_music_log.act(`${key} → в «${this.playlist_title(id)}»`, this.land_id())
+			this.list(id, 'auto')!.add(key)
+		}
+
+		@$mol_action
+		list_cut(id: string, key: string): void {
+			$bog_music_log.act(`${key} ← из «${this.playlist_title(id)}»`, this.land_id())
+			this.list(id)?.cut(key)
+		}
+
+		@$mol_action
+		list_move(id: string, key: string, to_key: string): void {
+			const raw = this.list_raw(id)
+			const from = raw.indexOf(key)
+			const to = raw.indexOf(to_key)
+			if (from < 0 || to < 0 || from === to) return
+			this.list(id, 'auto')!.move(from, to > from ? to + 1 : to)
+		}
+
+		@$mol_action
+		migrate_lists(): void {
+			const dict = this.tracks()
+			for (const key of (dict.keys() ?? []) as string[]) {
+				const track = dict.key(key)
+				const id = track?.playlist() ?? ''
+				if (!id.startsWith('list:')) continue
+				this.list(id, 'auto')!.add(key)
+				track!.Playlist('auto')!.val('')
+			}
 		}
 
 		@$mol_action

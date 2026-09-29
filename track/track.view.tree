@@ -75,16 +75,11 @@ $bog_music_track $mol_view
 								<= Archive_icon $mol_icon_archive
 								<= Archive_label $mol_view
 									sub / \В архив
-						<= To_my $mol_button_minor
-							click? <=> to_my_click? null
-							sub /
-								<= To_my_icon $mol_icon_playlist_music
-								<= To_my_label $mol_view
-									sub / \В Мою музыку
 						<= Move*0 $mol_button_minor
 							click? <=> move_click*? null
-							sub /
-								<= Move_icon* $mol_icon_playlist_plus
+							sub <= move_content* /
+								<= Move_add_icon* $mol_icon_playlist_plus
+								<= Move_cut_icon* $mol_icon_playlist_remove
 								<= Move_label* $mol_view
 									sub / <= move_label* \
 						<= Restore $mol_button_minor

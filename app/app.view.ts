@@ -55,6 +55,19 @@ namespace $.$$ {
 			return $mol_state_arg.value('page') ?? 'my'
 		}
 
+		list_id() {
+			const page = this.page()
+			return page.startsWith('list:') ? page : ''
+		}
+
+		private _lists_migrated = false
+
+		lists_migrate() {
+			if (this._lists_migrated) return
+			this._lists_migrated = true
+			$mol_wire_async(this.account()).migrate_lists()
+		}
+
 		archive_mode() {
 			return this.page() === 'archive'
 		}
@@ -64,7 +77,8 @@ namespace $.$$ {
 			const p = this.page()
 			if (p === 'share') return this.share().selection()
 			if (p === 'archive') return this.account().keys_in('archive')
-			if (p.startsWith('shared:') || p.startsWith('list:')) return this.account().keys_in(p)
+			if (p.startsWith('list:')) return this.account().list_keys(p)
+			if (p.startsWith('shared:')) return this.account().keys_in(p)
 			return this.account().keys_in('')
 		}
 
@@ -86,7 +100,7 @@ namespace $.$$ {
 				opts['share'] = n ? `Расшаренный ${n}` : 'Расшаренный'
 			}
 			for (const pl of this.account().playlists()) {
-				const n = this.account().keys_in(pl.id).length
+				const n = this.account().list_keys(pl.id).length
 				opts[pl.id] = n ? `${pl.title} ${n}` : pl.title
 			}
 			for (const pl of this.account().shared_playlists()) {
@@ -201,6 +215,8 @@ namespace $.$$ {
 			if (from < 0 || to < 0 || from >= keys.length || to >= keys.length) return
 			const moving = keys[from]
 			$bog_music_log.act(`перестановка ${moving}: ${from} → ${to}`)
+			const list = this.list_id()
+			if (list) return this.account().list_move(list, moving, keys[to])
 			const step = from < to ? 1 : -1
 			for (let i = from; i !== to; i += step) {
 				this.account().swap_order(moving, keys[i + step])
@@ -248,7 +264,9 @@ namespace $.$$ {
 			// это просто следующий за ним.
 			const follow = at < 0 ? '' : keys.slice(at + 1).find(k => k !== key) ?? ''
 
-			this.account().move_to_bottom(key)
+			const list = this.list_id()
+			if (list) this.account().list_move(list, key, keys[keys.length - 1])
+			else this.account().move_to_bottom(key)
 			if (at < 0) return // играет что-то не из этого списка — очередь не наша
 
 			const fresh = this.visible_keys()
@@ -908,6 +926,7 @@ namespace $.$$ {
 			$mol_wire_async(this).drain_pending()
 			$mol_wire_async(this).tg_drain()
 			$mol_wire_async(this).fm_refresh()
+			this.lists_migrate()
 			const token = $bog_music_boot.share_token
 			if (token) {
 				$bog_music_boot.share_token = ''
