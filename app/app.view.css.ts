@@ -47,8 +47,8 @@ namespace $.$$ {
 			},
 			List: {
 				Trigger: {
-					display: "flex",
-					justifyContent:'center'
+					display: 'flex',
+					justifyContent: 'space-around'
 				}
 			}
 		},
