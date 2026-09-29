@@ -26774,6 +26774,7 @@ var $;
                 'rkya36Pg_4GhW4PYB',
                 'xSwlxBfW_flwwJqOO',
                 '24q6G0lY_q0azSzlh',
+                'YsWOsMje_h6DAWt6n',
             ];
             Tab_logs() {
                 try {
@@ -38205,7 +38206,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.74';
+    $.$bog_music_version = 'v1.75';
 })($ || ($ = {}));
 
 ;
