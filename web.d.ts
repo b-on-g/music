@@ -39413,7 +39413,6 @@ declare namespace $ {
 declare namespace $ {
 
 	export class $bog_music_select extends $mol_select {
-		bubble_content( ): readonly(any)[]
 	}
 	
 }

@@ -25408,11 +25408,7 @@ var $;
 
 
 ;
-	($.$bog_music_select) = class $bog_music_select extends ($.$mol_select) {
-		bubble_content(){
-			return [(this.Filter()), (this.Menu())];
-		}
-	};
+	($.$bog_music_select) = class $bog_music_select extends ($.$mol_select) {};
 
 
 ;
@@ -25426,10 +25422,8 @@ var $;
     var $$;
     (function ($$) {
         $mol_style_define($bog_music_select, {
-            Menu: {
-                flex: { shrink: 1 },
-                minHeight: 0,
-                overflow: { y: 'auto' },
+            Bubble_pane: {
+                maxHeight: 'inherit',
             },
         });
     })($$ = $.$$ || ($.$$ = {}));
@@ -38206,7 +38200,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.75';
+    $.$bog_music_version = 'v1.76';
 })($ || ($ = {}));
 
 ;
