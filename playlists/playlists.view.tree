@@ -17,7 +17,7 @@ $bog_music_playlists $mol_view
 				^
 				bog_music_playlists_current <= list_active false
 			sub <= middle /
-				<= List $mol_select
+				<= List $bog_music_select
 					hint \Плейлисты
 					value? <=> list_current? \
 					dictionary <= list_dict

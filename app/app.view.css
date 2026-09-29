@@ -148,7 +148,11 @@ html:has([bog_music_app][bog_music_font="huge"]) [bog_music_player_full="true"] 
 [bog_music_app] input,
 [bog_music_app] textarea,
 [bog_music_app] select {
-	font-size: max( 16px, 1rem );
+	font-size: 16px;
+}
+html:has([bog_music_app][bog_music_font="large"]) [bog_music_app] input,
+html:has([bog_music_app][bog_music_font="huge"]) [bog_music_app] input {
+	font-size: 1rem;
 }
 
 html:has([bog_music_app][bog_music_font="large"]) [bog_music_player]:not([bog_music_player_full="true"]) [bog_music_player_prev],

@@ -17,6 +17,18 @@ namespace $ {
 			this.bridge_vk_token()
 			this.import_account_hash()
 			this.parse_share_hash()
+			this.ios_no_input_zoom()
+		}
+
+		static ios_no_input_zoom() {
+			const ios = /iPad|iPhone|iPod/.test(navigator.userAgent)
+				|| (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+			if (!ios) return
+			const meta = document.querySelector('meta[name="viewport"]')
+			if (!meta) return
+			const content = meta.getAttribute('content') ?? ''
+			if (content.includes('maximum-scale')) return
+			meta.setAttribute('content', content + ', maximum-scale=1')
 		}
 
 		static in_extension(): boolean {
