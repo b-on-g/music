@@ -52,6 +52,7 @@ $bog_music_app $mol_page
 			fm_link? <=> fm_link? null
 		<= Mem $bog_music_mem_view
 		<= Logs $bog_music_log_view
+			version <= version_label
 		<= Feedback $bog_feedback2_form
 			feedback_id \bog_music
 		<= Share_toast $mol_view

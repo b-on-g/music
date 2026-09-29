@@ -4,6 +4,8 @@ $bog_music_log_view $mol_list
 		sub /
 			<= Count $mol_view
 				sub / <= count_label \
+			<= Version $mol_view
+				sub / <= version \
 			<= Tools $mol_view
 				sub /
 					<= Sync $mol_check_box

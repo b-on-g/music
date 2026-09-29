@@ -71,13 +71,21 @@ namespace $ {
 
 		// ---------- статусы для тоста ----------
 
+		private status_logged = ''
+
 		@$mol_mem
 		status(next?: string): string {
+			if (next && next !== this.status_logged) $bog_music_log.act(`шар: ${next}`)
+			if (next !== undefined) this.status_logged = next
 			return next ?? ''
 		}
 
+		private import_logged = ''
+
 		@$mol_mem
 		import_status(next?: string): string {
+			if (next && next !== this.import_logged) $bog_music_log.act(`приём шара: ${next}`)
+			if (next !== undefined) this.import_logged = next
 			return next ?? ''
 		}
 
@@ -153,7 +161,7 @@ namespace $ {
 				if (to_gen > 0) {
 					this.status(`Генерирую ключи (${to_gen})…`)
 					const generated = await Promise.all(
-						Array.from({ length: to_gen }, () => auth_class.generate())
+						Array.from({ length: to_gen }, () => auth_class._generate())
 					)
 					for (const g of generated) {
 						auth_class.embryos.push(g.toString() + g.toStringPrivate())
@@ -183,8 +191,9 @@ namespace $ {
 				}
 
 				this.status('Заливаю в baza…')
+				const burn = await ($giper_baza_auth as any)._generate() as $giper_baza_auth
 				const land_link = await ($mol_wire_async(this) as any).write_in_fiber(
-					sender_cipher, verifier_cipher, ciphers
+					sender_cipher, verifier_cipher, ciphers, burn.pass()
 				) as string
 				if (!land_link) {
 					$bog_music_log.err('шар не залился: write_in_fiber не вернул ленд')
@@ -193,7 +202,7 @@ namespace $ {
 				}
 				$bog_music_log.act(`шар залит: ${ciphers.length} трек(ов)`, land_link)
 
-				const url = this.url_for(land_link, key.toString())
+				const url = this.url_for(land_link, key.toString(), burn.toString() + burn.toStringPrivate())
 				try {
 					navigator.clipboard.writeText(url)
 					this.status(`Скопировано: ${ciphers.length} ${$bog_music_share.plural_tracks(ciphers.length)}`)
@@ -217,8 +226,10 @@ namespace $ {
 			sender_cipher: Uint8Array,
 			verifier_cipher: Uint8Array,
 			ciphers: { audio: $bog_music_api_audio, mime: string, meta: Uint8Array, blob: Uint8Array }[],
+			burn: $giper_baza_auth_pass,
 		): string {
-			const land = $giper_baza_glob.land_grab([[null, $giper_baza_rank_post('fast')]])
+			const preset: $giper_baza_rank_preset = [[null, $giper_baza_rank_read], [burn, $giper_baza_rank_post('just')]]
+			const land = $giper_baza_glob.land_grab(preset)
 			const data = land.Data($bog_music_share_baza)
 			data.Sender('auto')!.val(sender_cipher as Uint8Array<ArrayBuffer>)
 			data.Verifier('auto')!.val(verifier_cipher as Uint8Array<ArrayBuffer>)
@@ -230,7 +241,7 @@ namespace $ {
 				const trk = tracks.key($bog_music_account_baza.key_of(c.audio), 'auto')
 				if (!trk) continue
 				trk.Meta('auto')!.val(c.meta as Uint8Array<ArrayBuffer>)
-				const file_store = trk.File('auto')!.ensure([[null, $giper_baza_rank_post('fast')]])
+				const file_store = trk.File('auto')!.ensure(preset)
 				if (!file_store) continue
 				file_store.buffer(c.blob as Uint8Array<ArrayBuffer>)
 				file_store.type(c.mime)
@@ -245,11 +256,11 @@ namespace $ {
 			return land.link().str
 		}
 
-		private url_for(link: string, key: string): string {
+		private url_for(link: string, key: string, burn: string): string {
 			const base = $bog_music_boot.in_extension()
 				? 'https://b-on-g.github.io/music/'
 				: location.origin + location.pathname + location.search
-			return base + '#share=' + link + '.' + key
+			return base + '#share=' + link + '.' + key + '.' + burn
 		}
 
 		// ---------- receiver ----------
@@ -263,15 +274,13 @@ namespace $ {
 		async import(token: string): Promise<string | null> {
 			if (!token || this.token_done(token)) return null
 
-			const dot = token.indexOf('.')
-			if (dot <= 0) {
+			const [link_str, key_str, burn_str = ''] = token.split('.')
+			if (!link_str || !key_str) {
 				$bog_music_log.err('импорт шара: битая ссылка, нет разделителя ленда и ключа')
 				this.import_status('Битая ссылка')
 				this.finish(token)
 				return null
 			}
-			const link_str = token.slice(0, dot)
-			const key_str = token.slice(dot + 1)
 
 			let key: $mol_crypto_sacred
 			try {
@@ -286,6 +295,7 @@ namespace $ {
 
 			try {
 				const land = $giper_baza_glob.Land(new $giper_baza_link(link_str))
+				this.keep(land)
 				this.import_status('Загружаю шар…')
 
 				// Land тянется с master'а асинхронно, а sender мог ещё не долить
@@ -369,12 +379,13 @@ namespace $ {
 					} catch (e: any) {
 						if (e instanceof Promise) throw e
 						console.warn('[share] track import failed:', e?.message ?? e)
+						$bog_music_log.err(`приём шара: трек ${k} не импортирован: ${e?.message ?? e}`, link_str)
 					}
 				}
 
 				if (imported) {
 					const burned = await ($mol_wire_async(this) as any)
-						.burn_in_fiber(land, header.keys).catch(() => false) as boolean
+						.burn_in_fiber(land, header.keys, burn_str).catch((e: any) => { $bog_music_log.err(`шар не сожжён: ${e?.message ?? e}`, link_str); return false }) as boolean
 					$bog_music_log.act(burned ? 'шар сожжён после импорта' : 'шар старый, сжечь нельзя', link_str)
 				}
 
@@ -388,6 +399,7 @@ namespace $ {
 			} catch (e: any) {
 				if (e instanceof Promise) throw e
 				console.warn('[share] import failed:', e?.message ?? e)
+				$bog_music_log.err(`приём шара не удался: ${e?.message ?? e}`, link_str)
 				this.import_status('Не получилось: ' + (e?.message ?? 'ошибка'))
 				return null
 			}
@@ -411,7 +423,11 @@ namespace $ {
 			atom.fresh()
 		}
 
-		burn_in_fiber(land: $giper_baza_land, keys: readonly string[]): boolean {
+		burn_in_fiber(land: $giper_baza_land, keys: readonly string[], burn_str: string): boolean {
+			if (!burn_str) return false
+			const burn = $giper_baza_auth.from(burn_str)
+			const sign = (target: $giper_baza_land) => Object.assign(target, { auth: () => burn })
+			sign(land)
 			const data = land.Data($bog_music_share_baza)
 			if (!data.can_change()) return false
 			data.Burned('auto')!.val(true)
@@ -419,6 +435,7 @@ namespace $ {
 			for (const key of keys) {
 				const file = tracks.key(key)?.File()?.remote()
 				try {
+					if (file) sign(file.land())
 					if (file?.can_change()) file.buffer(new Uint8Array())
 					if (file) this.keep(file.land())
 				} catch (error) {

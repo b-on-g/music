@@ -39,6 +39,12 @@ namespace $.$$ {
 			minWidth: 0,
 		},
 
+		Version: {
+			font: { size: '0.8125rem', family: 'monospace' },
+			color: $mol_theme.shade,
+			flex: { shrink: 0 },
+		},
+
 		Tools: {
 			flex: {
 				direction: 'row',
