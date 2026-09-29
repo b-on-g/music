@@ -1,9 +1,0 @@
-[bog_music_player_full="true"] [bog_music_player_left] {
-	order: -1;
-}
-
-[bog_music_player]:not([bog_music_player_full="true"]) [bog_music_player_center] > [mol_button],
-[bog_music_player]:not([bog_music_player_full="true"]) [bog_music_player_close] {
-	padding-left: 0.25rem;
-	padding-right: 0.25rem;
-}

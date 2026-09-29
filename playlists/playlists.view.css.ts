@@ -1,10 +1,29 @@
 namespace $.$$ {
 
+	const current = {
+		'[bog_music_playlists_current]': {
+			true: {
+				color: $mol_theme.current,
+				background: { color: $mol_theme.hover },
+			},
+		},
+	} as const
+
 	const cell = {
+		... current,
 		flex: { grow: 1, shrink: 1, basis: '0%' },
 		justify: { content: 'center' },
 		align: { items: 'center' },
 		minWidth: 0,
+	} as const
+
+	const label = {
+		display: 'block',
+		flex: { shrink: 1 },
+		minWidth: 0,
+		overflow: { x: 'hidden', y: 'hidden' },
+		whiteSpace: 'nowrap',
+		textOverflow: 'ellipsis',
 	} as const
 
 	$mol_style_define($bog_music_playlists, {
@@ -23,10 +42,14 @@ namespace $.$$ {
 			textAlign: 'center',
 		},
 
+		My_label: label,
+
 		Archive: {
 			... cell,
 			textAlign: 'center',
 		},
+
+		Archive_label: label,
 
 		Middle: {
 			... cell,
@@ -35,8 +58,14 @@ namespace $.$$ {
 		},
 
 		List: {
-			flex: { shrink: 1 },
+			flex: { grow: 1, shrink: 1, basis: 'auto' },
 			minWidth: 0,
+			Trigger: {
+				minWidth: 0,
+				maxWidth: '100%',
+				flex: { wrap: 'nowrap' },
+				$mol_dimmer: label,
+			},
 		},
 
 		Edit_panel: {
@@ -70,12 +99,13 @@ namespace $.$$ {
 			width: '16rem',
 			maxWidth: '80vw',
 		},
+
 		Add_anchor: {
-			paddingLeft: '0rem',
-			paddingRight: '0rem',
-			width:'24px',
-			height:'24px'
-		}
+			padding: { left: 0, right: 0 },
+			justify: { content: 'center' },
+			width: '24px',
+			height: '24px',
+		},
 
 	})
 

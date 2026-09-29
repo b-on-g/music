@@ -370,6 +370,14 @@ namespace $.$$ {
 
 		':not([bog_music_player_full="true"])': {
 			Options: { display: 'none' },
+			Center: {
+				$mol_button: {
+					padding: { left: '0.25rem', right: '0.25rem' },
+				},
+			},
+			Close: {
+				padding: { left: '0.25rem', right: '0.25rem' },
+			},
 		},
 
 		'@': {
@@ -395,6 +403,7 @@ namespace $.$$ {
 
 					Left: {
 						flex: { direction: 'column', basis: '100%', grow: 0 },
+						order: '-1',
 						overflow: { x: 'visible' },
 						gap: '1rem',
 					},
