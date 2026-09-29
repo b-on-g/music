@@ -39396,6 +39396,18 @@ declare namespace $ {
 
 //# sourceMappingURL=down.view.tree.d.ts.map
 declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $bog_music_select extends $mol_select {
+		bubble_content( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=select.view.tree.d.ts.map
+declare namespace $ {
 
 	export class $mol_icon_plus extends $mol_icon {
 		path( ): string
@@ -39452,35 +39464,35 @@ declare namespace $ {
 		,
 		ReturnType< $mol_button_minor['sub'] >
 	>
-	type $mol_select__hint_bog_music_playlists_5 = $mol_type_enforce<
+	type $bog_music_select__hint_bog_music_playlists_5 = $mol_type_enforce<
 		string
 		,
-		ReturnType< $mol_select['hint'] >
+		ReturnType< $bog_music_select['hint'] >
 	>
-	type $mol_select__value_bog_music_playlists_6 = $mol_type_enforce<
+	type $bog_music_select__value_bog_music_playlists_6 = $mol_type_enforce<
 		ReturnType< $bog_music_playlists['list_current'] >
 		,
-		ReturnType< $mol_select['value'] >
+		ReturnType< $bog_music_select['value'] >
 	>
-	type $mol_select__dictionary_bog_music_playlists_7 = $mol_type_enforce<
+	type $bog_music_select__dictionary_bog_music_playlists_7 = $mol_type_enforce<
 		ReturnType< $bog_music_playlists['list_dict'] >
 		,
-		ReturnType< $mol_select['dictionary'] >
+		ReturnType< $bog_music_select['dictionary'] >
 	>
-	type $mol_select__option_label_default_bog_music_playlists_8 = $mol_type_enforce<
+	type $bog_music_select__option_label_default_bog_music_playlists_8 = $mol_type_enforce<
 		string
 		,
-		ReturnType< $mol_select['option_label_default'] >
+		ReturnType< $bog_music_select['option_label_default'] >
 	>
-	type $mol_select__no_options_message_bog_music_playlists_9 = $mol_type_enforce<
+	type $bog_music_select__no_options_message_bog_music_playlists_9 = $mol_type_enforce<
 		string
 		,
-		ReturnType< $mol_select['no_options_message'] >
+		ReturnType< $bog_music_select['no_options_message'] >
 	>
-	type $mol_select__Trigger_icon_bog_music_playlists_10 = $mol_type_enforce<
+	type $bog_music_select__Trigger_icon_bog_music_playlists_10 = $mol_type_enforce<
 		ReturnType< $bog_music_playlists['List_icon'] >
 		,
-		ReturnType< $mol_select['Trigger_icon'] >
+		ReturnType< $bog_music_select['Trigger_icon'] >
 	>
 	type $mol_button_minor__hint_bog_music_playlists_11 = $mol_type_enforce<
 		string
@@ -39644,7 +39656,7 @@ declare namespace $ {
 		list_active( ): boolean
 		list_current( next?: string ): string
 		List_icon( ): $mol_icon_chevron_down
-		List( ): $mol_select
+		List( ): $bog_music_select
 		add_toggle( next?: any ): any
 		Add_icon( ): $mol_icon_plus
 		Add_anchor( ): $mol_button_minor
@@ -39692,7 +39704,7 @@ declare namespace $.$$ {
         my_click(): void;
         archive_click(): void;
         list_current(next?: string): string;
-        middle(): ($.$mol_pop | $.$mol_select)[];
+        middle(): ($.$mol_pop | $bog_music_select)[];
         add_title(next?: string): string;
         add_content(): $mol_view[];
         add_toggle(): void;
@@ -44936,6 +44948,7 @@ declare namespace $ {
         /** Токен шара из #share=… — забирается приложением один раз в auto(). */
         static share_token: string;
         static init(): void;
+        static ios_no_input_zoom(): void;
         static in_extension(): boolean;
         /** Мост `chrome.storage.local.vk_token` → `localStorage.vk_token`. */
         static bridge_vk_token(): void;

@@ -25355,6 +25355,25 @@ var $;
 
 
 ;
+	($.$bog_music_select) = class $bog_music_select extends ($.$mol_select) {
+		bubble_content(){
+			return [(this.Filter()), (this.Menu())];
+		}
+	};
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("bog/music/select/select.view.css", "[bog_music_select_bubble][mol_pop_bubble][mol_view] {\n\toverflow-y: auto;\n}\n");
+})($ || ($ = {}));
+
+;
+"use strict";
+
+
+;
 	($.$mol_icon_plus) = class $mol_icon_plus extends ($.$mol_icon) {
 		path(){
 			return "M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z";
@@ -25411,7 +25430,7 @@ var $;
 			return obj;
 		}
 		List(){
-			const obj = new this.$.$mol_select();
+			const obj = new this.$.$bog_music_select();
 			(obj.hint) = () => ("Плейлисты");
 			(obj.value) = (next) => ((this.list_current(next)));
 			(obj.dictionary) = () => ((this.list_dict()));
@@ -36251,6 +36270,20 @@ var $;
             this.bridge_vk_token();
             this.import_account_hash();
             this.parse_share_hash();
+            this.ios_no_input_zoom();
+        }
+        static ios_no_input_zoom() {
+            const ios = /iPad|iPhone|iPod/.test(navigator.userAgent)
+                || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            if (!ios)
+                return;
+            const meta = document.querySelector('meta[name="viewport"]');
+            if (!meta)
+                return;
+            const content = meta.getAttribute('content') ?? '';
+            if (content.includes('maximum-scale'))
+                return;
+            meta.setAttribute('content', content + ', maximum-scale=1');
         }
         static in_extension() {
             if (typeof location === 'undefined')
@@ -38055,7 +38088,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.65';
+    $.$bog_music_version = 'v1.66';
 })($ || ($ = {}));
 
 ;
@@ -39030,7 +39063,7 @@ var $node = $node || {} ; $node[ "/bog/music/app/favicon.svg" ] = "data:image/sv
 "use strict";
 var $;
 (function ($) {
-    $mol_style_attach("bog/music/app/app.view.css", "[bog_music_app][bog_builderui_base][bog_builderui_lights=\"light\"] {\n\t--bog_builderui_control: hsl( 210, 68%, 42% );\n\t--bog_builderui_focus: hsl( 210, 72%, 36% );\n\t--bog_builderui_current: hsl( 26, 82%, 44% );\n\t--bog_builderui_special: hsl( 26, 82%, 44% );\n\t--bog_builderui_back: #faf9f7;\n\t--bog_builderui_card: #ffffff;\n}\n[bog_music_app][bog_builderui_base][bog_builderui_lights=\"dark\"],\n[bog_music_app][bog_builderui_base][bog_builderui_lights=\"system\"] {\n\t--bog_builderui_control: hsl( 210, 72%, 64% );\n\t--bog_builderui_focus: hsl( 210, 76%, 72% );\n\t--bog_builderui_current: hsl( 30, 85%, 60% );\n\t--bog_builderui_special: hsl( 30, 85%, 60% );\n\t--bog_builderui_text: #d4d4d8;\n\t--bog_builderui_back: #18181b;\n\t--bog_builderui_card: #09090b;\n}\n@media ( prefers-color-scheme: light ) {\n\t[bog_music_app][bog_builderui_base][bog_builderui_lights=\"system\"] {\n\t\t--bog_builderui_control: hsl( 210, 68%, 42% );\n\t\t--bog_builderui_focus: hsl( 210, 72%, 36% );\n\t\t--bog_builderui_current: hsl( 26, 82%, 44% );\n\t\t--bog_builderui_special: hsl( 26, 82%, 44% );\n\t\t--bog_builderui_text: #09090b;\n\t\t--bog_builderui_back: #faf9f7;\n\t\t--bog_builderui_card: #ffffff;\n\t}\n}\n\n[bog_music_app][bog_builderui_lights] {\n\t--mol_theme_back: var(--bog_builderui_back);\n\t--mol_theme_card: var(--bog_builderui_card);\n\t--mol_theme_field: var(--bog_builderui_field);\n\t--mol_theme_hover: var(--bog_builderui_hover);\n\t--mol_theme_text: var(--bog_builderui_text);\n\t--mol_theme_shade: var(--bog_builderui_shade);\n\t--mol_theme_line: var(--bog_builderui_line);\n\t--mol_theme_focus: var(--bog_builderui_focus);\n\t--mol_theme_control: var(--bog_builderui_control);\n\t--mol_theme_current: var(--bog_builderui_current);\n\t--mol_theme_special: var(--bog_builderui_special);\n}\n\n/* $bog_popup распирает html и body до min-width: 20rem (иначе попап\n   расширения схлопывается). Размер шрифта тоже на html, и на Огромном этот\n   минимум вырастал до 440px — шире экрана телефона. Те же 20rem, но в px. */\nhtml:has([bog_music_app]),\nbody:has([bog_music_app]) {\n\tmin-width: 320px;\n}\nhtml:has([bog_music_app][bog_music_font=\"large\"]) {\n\tfont-size: 118.75%;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) {\n\tfont-size: 137.5%;\n}\n\n@media ( max-width: 40rem ) {\n\t[bog_music_app_nickname_label],\n\t[bog_music_app_version] {\n\t\tdisplay: none;\n\t}\n\t[bog_music_app_brand_name] {\n\t\tfont-size: 1.25rem;\n\t}\n\t[bog_music_app] > [mol_page_head] {\n\t\tpadding-left: 0.25rem;\n\t\tpadding-right: 0.25rem;\n\t\t/* Шапка всегда в одну строку: инструменты не переносятся вниз, а\n\t\t   название при нехватке места режется многоточием. */\n\t\tflex-wrap: nowrap;\n\t\tgap: 0.25rem;\n\t}\n\t[bog_music_app_brand] {\n\t\tmin-width: 0;\n\t\tflex-shrink: 1;\n\t\tpadding-right: 0;\n\t}\n\t[bog_music_app_brand_name] {\n\t\tmin-width: 0;\n\t\toverflow: hidden;\n\t\ttext-overflow: ellipsis;\n\t}\n\t[bog_music_app_tools] {\n\t\tflex-shrink: 0;\n\t\tgap: 0;\n\t}\n}\n\n/* Огромный шрифт на телефоне: иконки шапки чуть меньше и без лишних полей,\n   иначе пять инструментов плюс название не влезают в 390px. */\n@media ( max-width: 40rem ) {\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tools] > * {\n\t\tpadding-left: 0.2rem;\n\t\tpadding-right: 0.2rem;\n\t\tmin-width: 0;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tools] [mol_icon] {\n\t\twidth: 1.25rem;\n\t\theight: 1.25rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_brand_image] {\n\t\twidth: 1.75rem;\n\t\theight: 1.75rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_brand_name] {\n\t\tfont-size: 1.1rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app] > [mol_page_head] {\n\t\tpadding-top: 0.25rem;\n\t\tpadding-bottom: 0.25rem;\n\t}\n}\n\n/* Огромный шрифт: контролы и навигация не раздуваются вместе с текстом. */\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_controls] {\n\tpadding: 0.125rem 0.5rem;\n\tgap: 0.25rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_center] {\n\tgap: 0;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_nav_item] {\n\tmin-height: 3rem;\n\tpadding: 0.25rem 0.125rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tabs] {\n\tpadding: 0.25rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] {\n\tgap: 0.5rem;\n\tpadding: 0.5rem 0.75rem 0.75rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_cover],\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_cover_placeholder] {\n\twidth: 45vw;\n\theight: 45vw;\n\tpadding: 2rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_left] {\n\tgap: 0.5rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_title] {\n\tfont-size: 1.25rem;\n}\n\n[bog_music_app] input,\n[bog_music_app] textarea,\n[bog_music_app] select {\n\tfont-size: max( 16px, 1rem );\n}\n\nhtml:has([bog_music_app][bog_music_font=\"large\"]) [bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_prev],\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_prev] {\n\tdisplay: none;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_cover],\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_cover_placeholder] {\n\twidth: 2.25rem;\n\theight: 2.25rem;\n}\n");
+    $mol_style_attach("bog/music/app/app.view.css", "[bog_music_app][bog_builderui_base][bog_builderui_lights=\"light\"] {\n\t--bog_builderui_control: hsl( 210, 68%, 42% );\n\t--bog_builderui_focus: hsl( 210, 72%, 36% );\n\t--bog_builderui_current: hsl( 26, 82%, 44% );\n\t--bog_builderui_special: hsl( 26, 82%, 44% );\n\t--bog_builderui_back: #faf9f7;\n\t--bog_builderui_card: #ffffff;\n}\n[bog_music_app][bog_builderui_base][bog_builderui_lights=\"dark\"],\n[bog_music_app][bog_builderui_base][bog_builderui_lights=\"system\"] {\n\t--bog_builderui_control: hsl( 210, 72%, 64% );\n\t--bog_builderui_focus: hsl( 210, 76%, 72% );\n\t--bog_builderui_current: hsl( 30, 85%, 60% );\n\t--bog_builderui_special: hsl( 30, 85%, 60% );\n\t--bog_builderui_text: #d4d4d8;\n\t--bog_builderui_back: #18181b;\n\t--bog_builderui_card: #09090b;\n}\n@media ( prefers-color-scheme: light ) {\n\t[bog_music_app][bog_builderui_base][bog_builderui_lights=\"system\"] {\n\t\t--bog_builderui_control: hsl( 210, 68%, 42% );\n\t\t--bog_builderui_focus: hsl( 210, 72%, 36% );\n\t\t--bog_builderui_current: hsl( 26, 82%, 44% );\n\t\t--bog_builderui_special: hsl( 26, 82%, 44% );\n\t\t--bog_builderui_text: #09090b;\n\t\t--bog_builderui_back: #faf9f7;\n\t\t--bog_builderui_card: #ffffff;\n\t}\n}\n\n[bog_music_app][bog_builderui_lights] {\n\t--mol_theme_back: var(--bog_builderui_back);\n\t--mol_theme_card: var(--bog_builderui_card);\n\t--mol_theme_field: var(--bog_builderui_field);\n\t--mol_theme_hover: var(--bog_builderui_hover);\n\t--mol_theme_text: var(--bog_builderui_text);\n\t--mol_theme_shade: var(--bog_builderui_shade);\n\t--mol_theme_line: var(--bog_builderui_line);\n\t--mol_theme_focus: var(--bog_builderui_focus);\n\t--mol_theme_control: var(--bog_builderui_control);\n\t--mol_theme_current: var(--bog_builderui_current);\n\t--mol_theme_special: var(--bog_builderui_special);\n}\n\n/* $bog_popup распирает html и body до min-width: 20rem (иначе попап\n   расширения схлопывается). Размер шрифта тоже на html, и на Огромном этот\n   минимум вырастал до 440px — шире экрана телефона. Те же 20rem, но в px. */\nhtml:has([bog_music_app]),\nbody:has([bog_music_app]) {\n\tmin-width: 320px;\n}\nhtml:has([bog_music_app][bog_music_font=\"large\"]) {\n\tfont-size: 118.75%;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) {\n\tfont-size: 137.5%;\n}\n\n@media ( max-width: 40rem ) {\n\t[bog_music_app_nickname_label],\n\t[bog_music_app_version] {\n\t\tdisplay: none;\n\t}\n\t[bog_music_app_brand_name] {\n\t\tfont-size: 1.25rem;\n\t}\n\t[bog_music_app] > [mol_page_head] {\n\t\tpadding-left: 0.25rem;\n\t\tpadding-right: 0.25rem;\n\t\t/* Шапка всегда в одну строку: инструменты не переносятся вниз, а\n\t\t   название при нехватке места режется многоточием. */\n\t\tflex-wrap: nowrap;\n\t\tgap: 0.25rem;\n\t}\n\t[bog_music_app_brand] {\n\t\tmin-width: 0;\n\t\tflex-shrink: 1;\n\t\tpadding-right: 0;\n\t}\n\t[bog_music_app_brand_name] {\n\t\tmin-width: 0;\n\t\toverflow: hidden;\n\t\ttext-overflow: ellipsis;\n\t}\n\t[bog_music_app_tools] {\n\t\tflex-shrink: 0;\n\t\tgap: 0;\n\t}\n}\n\n/* Огромный шрифт на телефоне: иконки шапки чуть меньше и без лишних полей,\n   иначе пять инструментов плюс название не влезают в 390px. */\n@media ( max-width: 40rem ) {\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tools] > * {\n\t\tpadding-left: 0.2rem;\n\t\tpadding-right: 0.2rem;\n\t\tmin-width: 0;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tools] [mol_icon] {\n\t\twidth: 1.25rem;\n\t\theight: 1.25rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_brand_image] {\n\t\twidth: 1.75rem;\n\t\theight: 1.75rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_brand_name] {\n\t\tfont-size: 1.1rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app] > [mol_page_head] {\n\t\tpadding-top: 0.25rem;\n\t\tpadding-bottom: 0.25rem;\n\t}\n}\n\n/* Огромный шрифт: контролы и навигация не раздуваются вместе с текстом. */\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_controls] {\n\tpadding: 0.125rem 0.5rem;\n\tgap: 0.25rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_center] {\n\tgap: 0;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_nav_item] {\n\tmin-height: 3rem;\n\tpadding: 0.25rem 0.125rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tabs] {\n\tpadding: 0.25rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] {\n\tgap: 0.5rem;\n\tpadding: 0.5rem 0.75rem 0.75rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_cover],\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_cover_placeholder] {\n\twidth: 45vw;\n\theight: 45vw;\n\tpadding: 2rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_left] {\n\tgap: 0.5rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_title] {\n\tfont-size: 1.25rem;\n}\n\n[bog_music_app] input,\n[bog_music_app] textarea,\n[bog_music_app] select {\n\tfont-size: 16px;\n}\nhtml:has([bog_music_app][bog_music_font=\"large\"]) [bog_music_app] input,\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app] input {\n\tfont-size: 1rem;\n}\n\nhtml:has([bog_music_app][bog_music_font=\"large\"]) [bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_prev],\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_prev] {\n\tdisplay: none;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_cover],\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_cover_placeholder] {\n\twidth: 2.25rem;\n\theight: 2.25rem;\n}\n");
 })($ || ($ = {}));
 
 ;
