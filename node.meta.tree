@@ -117,6 +117,7 @@
 	pack rash git \https://github.com/b-on-g/rash.git
 	pack hub git \https://github.com/b-on-g/hub.git
 	pack atelier git \https://github.com/b-on-g/atelier.git
+	pack gtk git \https://github.com/b-on-g/gtk.git
 \/mol
 	pack icon git \https://github.com/nin-jin/mol_icon.git
 \/mol/view
