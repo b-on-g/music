@@ -51,9 +51,22 @@ namespace $.$$ {
 				}
 				$bog_music_log.act(`вкладка: ${next}`)
 				$mol_state_arg.value('page', next)
+				$mol_state_local.value('page', next)
 				return next
 			}
-			return $mol_state_arg.value('page') ?? 'my'
+			const page =
+				$mol_state_arg.value('page')
+				?? $mol_state_local.value('page')
+				?? 'my'
+			if (page.startsWith('list:')) {
+				const exists = this.account().playlists().some(pl => pl.id === page)
+			
+				if (!exists) {
+					$mol_state_local.value('page', 'my')
+					return 'my'
+				}
+			}
+			return page 
 		}
 
 		list_id() {
