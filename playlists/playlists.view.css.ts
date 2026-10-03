@@ -60,6 +60,9 @@ namespace $.$$ {
 		List: {
 			flex: { grow: 1, shrink: 1, basis: 'auto' },
 			minWidth: 0,
+			padding: {
+				left: '0.9rem',
+			},
 			Trigger: {
 				minWidth: 0,
 				maxWidth: '100%',
