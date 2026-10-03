@@ -27163,6 +27163,9 @@ var $;
             List: {
                 flex: { grow: 1, shrink: 1, basis: 'auto' },
                 minWidth: 0,
+                padding: {
+                    left: '0.9rem',
+                },
                 Trigger: {
                     minWidth: 0,
                     maxWidth: '100%',
@@ -30030,7 +30033,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.78';
+    $.$bog_music_version = 'v1.79';
 })($ || ($ = {}));
 
 ;
@@ -31049,8 +31052,6 @@ var $;
     (function ($$) {
         const { rem } = $mol_style_unit;
         $mol_style_define($bog_music_app, {
-            // В px, не в rem: на Огромном шрифте 20rem шире экрана телефона,
-            // и навигация уезжала за край.
             minWidth: '320px',
             maxWidth: '50rem',
             margin: {
