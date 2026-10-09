@@ -31665,6 +31665,7 @@ var $;
                     weight: 500,
                 },
                 whiteSpace: 'nowrap',
+                overflow: { x: 'visible', y: 'visible' },
             },
             Version: {
                 font: {
