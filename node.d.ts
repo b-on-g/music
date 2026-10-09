@@ -43583,13 +43583,15 @@ declare namespace $ {
         static readonly name = "bog-music-stream";
         private static _page_ready;
         private static _sw_ready;
-        /** Кеш meta в SW — иначе каждый Range снова round-trip на страницу. */
+        /** Meta (total/mime) — LRU, без байт. */
         private static _meta_cache;
-        /** Слить параллельные одинаковые Range (браузер часто дублирует). */
+        private static _meta_cache_max;
+        /** Одинаковые Range, пока ответ в полёте (после finally — delete). */
         private static _inflight;
-        /** Готовые окна в SW — повторные одинаковые Range без page round-trip. */
-        private static _range_cache;
-        private static _range_cache_max;
+        /** Сколько page↔SW Range одновременно (seek иначе держит N×окно в RAM). */
+        private static _ask_active;
+        private static _ask_max;
+        private static _ask_wait;
         /** URL для `<audio src>` / fetch. Stable string — sync play на iOS. */
         static url(key: string): string;
         static matches(request_url: string): string | null;
@@ -43622,13 +43624,15 @@ declare namespace $ {
         };
         private static sw_client;
         private static sw_call;
+        private static meta_cache_put;
         private static sw_meta;
-        private static range_cache_put;
+        private static ask_slot;
         private static sw_ask;
         /**
          * Потолок только для open-ended `bytes=N-`.
          * Явно запрошенный диапазон отдаём целиком — иначе Chromium
          * долбит один и тот же Range десятками повторов.
+         * 512KiB: пик ≈ ask_max×окно, не десятки МБ на seek.
          */
         private static open_ended_window;
         private static sw_respond;

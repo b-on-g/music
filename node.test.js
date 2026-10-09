@@ -28909,13 +28909,15 @@ var $;
         static name = 'bog-music-stream';
         static _page_ready = false;
         static _sw_ready = false;
-        /** Кеш meta в SW — иначе каждый Range снова round-trip на страницу. */
+        /** Meta (total/mime) — LRU, без байт. */
         static _meta_cache = new Map();
-        /** Слить параллельные одинаковые Range (браузер часто дублирует). */
+        static _meta_cache_max = 16;
+        /** Одинаковые Range, пока ответ в полёте (после finally — delete). */
         static _inflight = new Map();
-        /** Готовые окна в SW — повторные одинаковые Range без page round-trip. */
-        static _range_cache = new Map();
-        static _range_cache_max = 48;
+        /** Сколько page↔SW Range одновременно (seek иначе держит N×окно в RAM). */
+        static _ask_active = 0;
+        static _ask_max = 2;
+        static _ask_wait = [];
         /** URL для `<audio src>` / fetch. Stable string — sync play на iOS. */
         static url(key) {
             const url = new URL(typeof location !== 'undefined' ? location.href : 'http://localhost/');
@@ -29094,64 +29096,63 @@ var $;
                 client.postMessage(message, [channel.port2]);
             });
         }
+        static meta_cache_put(key, meta) {
+            if (this._meta_cache.has(key))
+                this._meta_cache.delete(key);
+            this._meta_cache.set(key, meta);
+            while (this._meta_cache.size > this._meta_cache_max) {
+                const oldest = this._meta_cache.keys().next().value;
+                if (oldest === undefined)
+                    break;
+                this._meta_cache.delete(oldest);
+            }
+        }
         static async sw_meta(key) {
             const cached = this._meta_cache.get(key);
-            if (cached)
+            if (cached) {
+                // LRU touch
+                this._meta_cache.delete(key);
+                this._meta_cache.set(key, cached);
                 return { ok: true, ...cached };
+            }
             const client = await this.sw_client();
             if (!client)
                 return { ok: false, error: 'stream: no page client' };
             const res = await this.sw_call(client, { type: 'bog_music_stream_meta', key });
             if (res.ok)
-                this._meta_cache.set(key, { total: res.total, mime: res.mime });
+                this.meta_cache_put(key, { total: res.total, mime: res.mime });
             return res;
         }
-        static range_cache_put(id, entry) {
-            if (this._range_cache.has(id))
-                this._range_cache.delete(id);
-            this._range_cache.set(id, entry);
-            while (this._range_cache.size > this._range_cache_max) {
-                const oldest = this._range_cache.keys().next().value;
-                if (oldest === undefined)
-                    break;
-                this._range_cache.delete(oldest);
+        static async ask_slot(run) {
+            if (this._ask_active >= this._ask_max) {
+                await new Promise(done => this._ask_wait.push(done));
+            }
+            this._ask_active++;
+            try {
+                return await run();
+            }
+            finally {
+                this._ask_active--;
+                const next = this._ask_wait.shift();
+                if (next)
+                    next();
             }
         }
         static async sw_ask(key, start, end) {
             const id = `${key}:${start}:${end}`;
-            const hit = this._range_cache.get(id);
-            if (hit) {
-                return {
-                    ok: true,
-                    bytes: hit.bytes.slice(0),
-                    total: hit.total,
-                    mime: hit.mime,
-                    start: hit.start,
-                    end: hit.end,
-                };
-            }
             const wait = this._inflight.get(id);
             if (wait)
                 return wait;
-            const client = await this.sw_client();
-            if (!client)
-                return { ok: false, error: 'stream: no page client' };
-            const task = this.sw_call(client, {
-                type: 'bog_music_stream_range',
-                key,
-                start,
-                end,
-            }).then(res => {
-                if (res.ok) {
-                    this.range_cache_put(id, {
-                        bytes: res.bytes.slice(0),
-                        total: res.total,
-                        mime: res.mime,
-                        start: res.start,
-                        end: res.end,
-                    });
-                }
-                return res;
+            const task = this.ask_slot(async () => {
+                const client = await this.sw_client();
+                if (!client)
+                    return { ok: false, error: 'stream: no page client' };
+                return this.sw_call(client, {
+                    type: 'bog_music_stream_range',
+                    key,
+                    start,
+                    end,
+                });
             }).finally(() => this._inflight.delete(id));
             this._inflight.set(id, task);
             return task;
@@ -29160,8 +29161,9 @@ var $;
          * Потолок только для open-ended `bytes=N-`.
          * Явно запрошенный диапазон отдаём целиком — иначе Chromium
          * долбит один и тот же Range десятками повторов.
+         * 512KiB: пик ≈ ask_max×окно, не десятки МБ на seek.
          */
-        static open_ended_window = 2 * 1024 * 1024;
+        static open_ended_window = 512 * 1024;
         static async sw_respond(request, key) {
             const range_hdr = request.headers.get('Range');
             // Без Range — progressive stream.
