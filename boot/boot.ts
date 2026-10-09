@@ -11,6 +11,12 @@ namespace $ {
 		static share_token = ''
 
 		static init() {
+			// Подмена file/land до любого baza: play-путь читает чанки потоком
+			// с unload (см. $mws_baza_file / $mws_baza_land), а не через
+			// sands_open на весь файл. Glob и File-link смотрят this.$ / $.
+			$.$giper_baza_land = $mws_baza_land
+			$.$giper_baza_file = $mws_baza_file
+			$bog_music_stream.install_page()
 			if (typeof location === 'undefined') return
 			$bog_music_log.init()
 			$bog_music_log.act('запуск приложения')

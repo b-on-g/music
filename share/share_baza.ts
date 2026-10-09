@@ -10,7 +10,7 @@ namespace $ {
 	 */
 	export class $bog_music_share_track_baza extends $giper_baza_dict.with({
 		Meta: $giper_baza_atom.of( Uint8Array ),
-		File: $bog_music_link_synced(() => $giper_baza_file),
+		File: $bog_music_link_synced(() => $.$giper_baza_file),
 	}) {}
 
 	export class $bog_music_share_tracks_dict extends $giper_baza_dict_to($bog_music_share_track_baza) {}

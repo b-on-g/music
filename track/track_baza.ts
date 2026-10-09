@@ -17,7 +17,7 @@ namespace $ {
 		Playlist: $giper_baza_atom.of( $mol_schema_string ),
 		// Blob лежит в отдельном land — синкается независимо от home land
 		// и не блокирует лёгкие метаданные большими паками.
-		File: $bog_music_link_synced(() => $giper_baza_file),
+		File: $bog_music_link_synced(() => $.$giper_baza_file),
 		// Персональный обрез песни (секунды). Trim_end = null — «без обреза».
 		Trim_start: $giper_baza_atom.of( $mol_schema_float ),
 		Trim_end: $giper_baza_atom.of( $mol_schema_float ),
@@ -76,17 +76,12 @@ namespace $ {
 		/**
 		 * Unit'ы чанков файла — БЕЗ чтения их содержимого.
 		 *
-		 * У sand-юнита две половины: 52-байтовый заголовок и `ball` с полезной
-		 * нагрузкой. В IndexedDB это разные сторы, и `units_load()` тянет только
-		 * заголовки; за нагрузкой ходит отдельный ленивый `ball_load`. Поэтому
-		 * структуру файла (сколько чанков, какого размера) видно, не подняв в
-		 * память ни байта звука: трек на 10 МБ — это 320 заголовков, ~17 КБ.
-		 *
-		 * Публичный `file.chunks()` для такого вопроса не годится: он идёт через
-		 * `pawn.units_of()`, а тот сразу зовёт `land.sands_open()` и материализует
-		 * ВСЮ нагрузку. Берём тот же `land.sand_ordered()`, но без `sands_open`.
+		 * После ambient в boot файл — `$mws_baza_file` с `chunk_units()`.
+		 * Fallback на sand_ordered без sands_open, если класс ещё базовый.
 		 */
 		static chunk_units(file: $giper_baza_file): readonly $giper_baza_unit_sand[] {
+			const streamed = file as $mws_baza_file
+			if (typeof streamed.chunk_units === 'function') return streamed.chunk_units()
 			const list = file.Chunks()
 			if (!list) return []
 			return list.land()
@@ -95,20 +90,20 @@ namespace $ {
 		}
 
 		/**
-		 * Blob поверх чанков, БЕЗ сплошной копии.
-		 *
-		 * `file.buffer()` склеивал бы все чанки в один Uint8Array (копия №1), а
-		 * `buf.buffer.slice()` делал из него ещё одну (копия №2) — и только потом
-		 * содержимое уезжало в Blob (копия №3). Blob принимает список кусков как
-		 * есть, поэтому копия остаётся одна, и та за пределами JS-кучи.
+		 * Blob из чанков через потоковое чтение (`$mws_baza_file.parts`):
+		 * один sand → копия → unload. Не зовём `file.chunks()` — тот делает
+		 * sands_open на весь файл и оставлял `_ball`/`_open` навсегда.
 		 */
 		private blob_of(file: $giper_baza_file): Blob | null {
-			const chunks = file.chunks()
-			if (!chunks.length) return null
+			const streamed = file as $mws_baza_file
+			const parts = typeof streamed.parts === 'function'
+				? streamed.parts()
+				: file.chunks()
+			if (!parts.length) return null
 			// baza отдаёт 'application/octet-stream', когда Type не проставлен;
 			// у нас такой файл — всегда звук из ранних версий.
 			const type = file.type()
-			const blob = new $mol_blob(chunks, {
+			const blob = new $mol_blob(parts, {
 				type: type === 'application/octet-stream' ? 'audio/mpeg' : type,
 			})
 			$bog_music_mem.blob_made(blob.size)

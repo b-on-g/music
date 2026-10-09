@@ -375,10 +375,19 @@ namespace $.$$ {
 
 		/** Поставить трек в очередь на одноразовый замер громкости. */
 		private analyze_gain(key: string) {
+			// TEMP: LUFS выключен — проверка зависания на 3-м переключении трека.
+			return
 			if (!key || this._gain_seen.has(key)) return
 			this._gain_seen.add(key)
 			this._gain_queue = this._gain_queue.then(() => this.measure_gain(key)).catch(() => {})
 		}
+
+		/**
+		 * Выше этого размера не декодируем в PCM ради LUFS: decodeAudioData
+		 * раздувает сжатый файл в десятки/сотни МБ float'ов и добивает OOM
+		 * на больших локальных треках. Play идёт с готового Blob без замера.
+		 */
+		private static LUFS_MAX_BYTES = 40 * 1024 * 1024
 
 		private async measure_gain(key: string) {
 			try {
@@ -386,6 +395,11 @@ namespace $.$$ {
 				const blob = await ($mol_wire_async(this) as any).blob_of(key) as Blob | null
 				if (!blob) {
 					this._gain_seen.delete(key) // ещё не докачался — вернёмся позже
+					return
+				}
+				// Замер с уже собранного Blob (sands после parts() выгружены).
+				if (blob.size > $bog_music_player.LUFS_MAX_BYTES) {
+					console.warn('[player] loudness skip: blob too large', blob.size)
 					return
 				}
 				const lufs = await $bog_music_gain.measure_lufs(await blob.arrayBuffer())
@@ -648,16 +662,25 @@ namespace $.$$ {
 
 		private async restore_local(session: { key: string, position: number, audio: $bog_music_api_audio }) {
 			const el = this.audio_el()
-			const blob = await ($mol_wire_async(this) as any).blob_of(session.key).catch(() => null) as Blob | null
-			if (blob) {
-				if (this._last_blob_url) URL.revokeObjectURL(this._last_blob_url)
-				const url = URL.createObjectURL(blob)
-				this._last_blob_url = url
-				this.set_track_src(el, url)
-			} else if (session.audio.url) {
-				this.set_track_src(el, session.audio.url)
+			if ($bog_music_stream.supported() && ( $bog_music_stream.active() || await $bog_music_stream.when_ready() )) {
+				await ($mol_wire_async(this) as any).track_file_ready(session.key).catch(() => null)
+				if (this._last_blob_url) {
+					URL.revokeObjectURL(this._last_blob_url)
+					this._last_blob_url = ''
+				}
+				this.set_track_src(el, $bog_music_stream.url(session.key))
 			} else {
-				return
+				const blob = await ($mol_wire_async(this) as any).blob_of(session.key).catch(() => null) as Blob | null
+				if (blob) {
+					if (this._last_blob_url) URL.revokeObjectURL(this._last_blob_url)
+					const url = URL.createObjectURL(blob)
+					this._last_blob_url = url
+					this.set_track_src(el, url)
+				} else if (session.audio.url) {
+					this.set_track_src(el, session.audio.url)
+				} else {
+					return
+				}
 			}
 			this.attach_seek_listener(el, session.position)
 		}
@@ -1224,33 +1247,33 @@ namespace $.$$ {
 
 			this.apply_media_metadata(audio)
 
-			// Фоновое одноразовое измерение громкости для выравнивания.
-			this.analyze_gain(key)
-
 			if (this.is_extension()) {
 				this.dispatch_play_offscreen(key, audio, start_at)
+				// LUFS в extension — после старта, не блокируя offscreen play.
+				setTimeout(() => this.analyze_gain(key), 3000)
 				return
 			}
 
 			// Клик — единственный шанс разлочить WebAudio-цепочку для iOS.
 			this.gain_chain_unlock()
 
-			// Предзагружаем blob следующего трека, чтобы к его 'ended'-переходу
-			// он был готов и play прошёл СИНХРОННО в continuation — иначе в фоне
-			// на iOS автопереход играет без звука (async-путь глушится).
+			// Предзагружаем следующий трек (Range warm / blob fallback).
 			this.prefetch_next(key)
 
 			const el = this.audio_el()
-			// iOS PWA: при заблокированном экране любой await перед el.play()
-			// рвёт audio-session continuation от ended-обработчика. Пробуем
-			// СИНХРОННО взять blob и запустить в том же tick.
-			if (this.try_play_local_sync(key, el, start_at)) return
+			// iOS PWA: sync play в том же tick. Stream URL — без сборки Blob.
+			if (this.try_play_local_sync(key, el, start_at)) {
+				// LUFS через parts() читает весь файл — только после старта звука.
+				setTimeout(() => this.analyze_gain(key), 3000)
+				return
+			}
 			if (audio.url) {
 				this.set_track_src(el, audio.url)
 				this.attach_seek_listener(el, start_at)
 				el.play().catch(() => {})
 			}
 			this.play_source_local(key, audio, el, start_at)
+			setTimeout(() => this.analyze_gain(key), 3000)
 		}
 
 		// Готовые Blob'ы в RAM. Критично для авто-next: на iOS звук в фоне даётся
@@ -1284,24 +1307,27 @@ namespace $.$$ {
 			}
 		}
 
-		/** Прогреть blob СЛЕДУЮЩЕГО трека в RAM-кеш (fire-and-forget). */
+		/** Прогреть следующий трек (stream Range или blob-кеш). */
 		private prefetch_next(key: string) {
 			try { ($mol_wire_async(this) as any).cache_next(key) } catch {}
 		}
 
 		/**
 		 * Sync-метод (через фибру): вычислить РЕАЛЬНЫЙ следующий трек с учётом
-		 * режима (repeat/shuffle/«Моя волна») и прогреть его blob. Раньше грелся
-		 * queue[idx+1], а next() при волне/shuffle выбирал другой трек → на
-		 * 'ended' cache miss → async-путь → в фоне на iOS тишина.
+		 * режима (repeat/shuffle/«Моя волна») и прогреть его. При SW+Range
+		 * достаточно warm первого окна; blob-кеш — fallback без SW / для iOS
+		 * без controller.
 		 */
 		cache_next(key: string): boolean {
 			const next_key = this.predict_next_key(key)
 			if (!next_key) return false
 			this.track_warm(next_key)
+			if ($bog_music_stream.supported()) {
+				$bog_music_stream.warm(next_key)
+				setTimeout(() => this.analyze_gain(next_key), 3000)
+				return true
+			}
 			const ready = this._blob_cache.has(next_key) || this.cache_blob(next_key)
-			// Мерим громкость заранее: иначе первые секунды следующего трека
-			// играют невыровненными.
 			if (ready) this.analyze_gain(next_key)
 			return ready
 		}
@@ -1414,12 +1440,33 @@ namespace $.$$ {
 			return this.account().track(key)?.blob_wait() ?? null
 		}
 
+		/** Land с байтами на месте — без материализации Blob (для SW+Range). */
+		track_file_ready(key: string): boolean {
+			return this.account().track(key)?.blob_ensure() ?? false
+		}
+
 		private try_play_local_sync(key: string, el: HTMLAudioElement, start_at: number): boolean {
+			// SW+Range: src — same-origin URL, play() синхронно. Полный Blob не собираем.
+			if ($bog_music_stream.active()) {
+				if (this._last_blob_url) {
+					URL.revokeObjectURL(this._last_blob_url)
+					this._last_blob_url = ''
+				}
+				this._dispatch_token++
+				this.set_track_src(el, $bog_music_stream.url(key))
+				this.attach_seek_listener(el, start_at)
+				el.play().catch(() => {})
+				return true
+			}
+			// SW есть, но controller ещё null (типично сразу после reload) —
+			// НЕ собираем parts() всего файла, уйдём в async и дождёмся ready.
+			if ($bog_music_stream.supported()) return false
+
 			let blob: Blob | null = null
 			try {
 				blob = this.blob_of(key)
 			} catch {
-				return false // Promise = blob ещё грузится, пойдём async-путём
+				return false
 			}
 			if (!blob) return false
 			if (this._last_blob_url) URL.revokeObjectURL(this._last_blob_url)
@@ -1547,6 +1594,21 @@ namespace $.$$ {
 				if (this._last_blob_url) {
 					URL.revokeObjectURL(this._last_blob_url)
 					this._last_blob_url = ''
+				}
+
+				// PWA: всегда stream, даже если controller ещё не прилип после reload.
+				if ($bog_music_stream.supported()) {
+					const ok = $bog_music_stream.active() || await $bog_music_stream.when_ready()
+					if (token !== this._dispatch_token || !this.is_current(key)) return
+					if (ok) {
+						await ($mol_wire_async(this) as any).track_file_ready(key).catch(() => null)
+						if (token !== this._dispatch_token || !this.is_current(key)) return
+						this.set_track_src(el, $bog_music_stream.url(key))
+						this.attach_seek_listener(el, start_at)
+						await this.safe_play(el)
+						return
+					}
+					console.warn('[player] SW not controlling page — stream unavailable')
 				}
 
 				const blob = await this.blob_ready(key, audio)
