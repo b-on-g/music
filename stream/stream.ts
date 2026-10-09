@@ -1,5 +1,20 @@
 namespace $ {
 
+	/** Sync API для SW→page; `$mol_wire_async` — только на границе MessagePort. */
+	export class $bog_music_stream_peer extends $mol_object {
+
+		@ $mol_action
+		meta( key: string ) {
+			return $bog_music_stream.meta_sync( key )
+		}
+
+		@ $mol_action
+		range( key: string, start: number, end: number ) {
+			return $bog_music_stream.range_sync( key, start, end )
+		}
+
+	}
+
 	/**
 	 * Стрим трека через Service Worker + HTTP Range.
 	 *
@@ -108,24 +123,7 @@ namespace $ {
 			else void this.when_ready().then( ok => { if( ok ) go() } )
 		}
 
-		
-		/**
-		 * Sync API для SW→page. `$mol_wire_async` — только на границе
-		 * (MessagePort); внутри — обычный pull / @$mol_action.
-		 */
-		static peer = new class extends $mol_object {
-
-			@ $mol_action
-			meta( key: string ) {
-				return $bog_music_stream.meta_sync( key )
-			}
-
-			@ $mol_action
-			range( key: string, start: number, end: number ) {
-				return $bog_music_stream.range_sync( key, start, end )
-			}
-
-		}
+		static peer = new $bog_music_stream_peer
 
 		private static async on_sw_message( event: MessageEvent ) {
 			const data = event.data
