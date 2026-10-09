@@ -29635,7 +29635,8 @@ var $;
         /** Клик по share-иконке вне режима выбора — мгновенный одиночный шар. */
         share_single(key) {
             $bog_music_log.act(`одиночный шар ${key}`);
-            $mol_wire_async(this).share_keys([key]);
+            // Не через $mol_wire_async(share_keys): async+wire глотает suspense неправильно.
+            void this.share_keys([key]);
         }
         /**
          * Клик по табу «Расшаренный» — финализирует мульти-шар.
@@ -29643,20 +29644,20 @@ var $;
          * пишет в мемы — делать это синхронно из тела мема нельзя.
          */
         submit() {
-            $mol_wire_async(this).submit_async();
+            void this.submit_async();
         }
         async submit_async() {
             const keys = [...this.selection()];
             this.exit();
             await this.share_keys(keys);
         }
-        /** Сбор метаданных и блобов. Sync-метод: зовётся через фибру, ретраится сам. */
+        /** Сбор мета+blob. `@$mol_action` + `$mol_wire_async` — suspend до готовности. */
         collect(keys) {
             const out = [];
             for (const key of keys) {
                 const track = this.account().track(key);
                 const audio = track?.audio();
-                const blob = track?.blob();
+                const blob = track?.blob_wait();
                 if (audio && blob)
                     out.push({ audio, blob });
             }
@@ -29675,14 +29676,30 @@ var $;
             }
             $bog_music_log.act(`сборка шара: ${keys.length} трек(ов)`);
             this.busy(true);
-            this.status('Готовлю шар…');
+            Promise.resolve().then(() => this.status('Готовлю шар…'));
             try {
-                const usable = await $mol_wire_async(this).collect(keys);
+                await this.share_build(keys);
+            }
+            catch (e) {
+                console.warn('[share] failed:', e?.message ?? e);
+                $bog_music_log.err(`шар не собрался: ${e?.message ?? e}`);
+                this.status('Ошибка: ' + (e?.message ?? 'неизвестно'));
+            }
+            finally {
+                this.busy(false);
+            }
+        }
+        async share_build(keys) {
+            const peer = $mol_wire_async(this);
+            let usable = [];
+            let ciphers = [];
+            try {
+                usable = await peer.collect(keys);
                 if (!usable.length) {
                     this.status('Нет локальных данных для шаринга');
                     return;
                 }
-                const sender = await $mol_wire_async(this).sender_name();
+                const sender = await peer.sender_name();
                 // Ключи новых lands генерим заранее и параллельно: PoW на каждый —
                 // секунды. `land_grab` дальше возьмёт готовые из embryos без PoW.
                 const auth_class = $giper_baza_auth;
@@ -29699,7 +29716,6 @@ var $;
                 const key = $mol_crypto_sacred.make();
                 const sender_cipher = await this.encrypt(key, $mol_charset_encode(sender));
                 const verifier_cipher = await this.encrypt(key, $mol_charset_encode($bog_music_share.verifier_plain));
-                const ciphers = [];
                 for (const { audio, blob } of usable) {
                     const meta_json = JSON.stringify({
                         artist: audio.artist ?? '',
@@ -29711,12 +29727,16 @@ var $;
                         cover: audio.cover ?? '',
                     });
                     const meta_cipher = await this.encrypt(key, $mol_charset_encode(meta_json));
-                    const blob_cipher = await this.encrypt(key, new Uint8Array(await blob.arrayBuffer()));
+                    const plain = new Uint8Array(await blob.arrayBuffer());
+                    const blob_cipher = await this.encrypt(key, plain);
+                    plain.fill(0);
                     ciphers.push({ audio, mime: blob.type || 'audio/mpeg', meta: meta_cipher, blob: blob_cipher });
                 }
+                // plaintext Blob больше не нужны — отпускаем до заливки.
+                usable = [];
                 this.status('Заливаю в baza…');
                 const burn = await $giper_baza_auth._generate();
-                const land_link = await $mol_wire_async(this).write_in_fiber(sender_cipher, verifier_cipher, ciphers, burn.pass());
+                const land_link = await peer.write_in_fiber(sender_cipher, verifier_cipher, ciphers, burn.pass());
                 if (!land_link) {
                     $bog_music_log.err('шар не залился: write_in_fiber не вернул ленд');
                     this.status('Не удалось залить треки');
@@ -29732,19 +29752,25 @@ var $;
                     this.status('Ссылка: ' + url);
                 }
             }
-            catch (e) {
-                if (e instanceof Promise) {
-                    try {
-                        await e;
-                    }
-                    catch { }
-                }
-                console.warn('[share] failed:', e?.message ?? e);
-                $bog_music_log.err(`шар не собрался: ${e?.message ?? e}`);
-                this.status('Ошибка: ' + (e?.message ?? 'неизвестно'));
-            }
             finally {
-                this.busy(false);
+                // Отпускаем plaintext/cipher из замыкания + unload source sands.
+                // Не zero-fill cipher: buffer()/val могли оставить ту же ссылку в land.
+                ciphers = [];
+                usable = [];
+                await peer.unload_keys(keys);
+            }
+        }
+        /** Сбросить `_ball`/`_open` у file-land треков после шара. */
+        unload_keys(keys) {
+            for (const key of keys) {
+                const file = this.account().track(key)?.File()?.remote();
+                if (!file || typeof file.chunk_units !== 'function')
+                    continue;
+                const land = file.land();
+                if (typeof land.sand_unload !== 'function')
+                    continue;
+                for (const unit of file.chunk_units())
+                    land.sand_unload(unit);
             }
         }
         /** Все записи шара одной фиброй: land_grab (PoW) + атомы + file-lands + sync. */
@@ -30031,6 +30057,18 @@ var $;
     __decorate([
         $mol_action
     ], $bog_music_share.prototype, "share_single", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_share.prototype, "collect", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_share.prototype, "sender_name", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_share.prototype, "unload_keys", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_share.prototype, "write_in_fiber", null);
     __decorate([
         $mol_mem_key
     ], $bog_music_share.prototype, "token_done", null);

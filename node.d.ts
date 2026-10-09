@@ -45078,13 +45078,16 @@ declare namespace $ {
          */
         submit(): void;
         submit_async(): Promise<void>;
-        /** Сбор метаданных и блобов. Sync-метод: зовётся через фибру, ретраится сам. */
+        /** Сбор мета+blob. `@$mol_action` + `$mol_wire_async` — suspend до готовности. */
         collect(keys: string[]): {
             audio: $bog_music_api_audio;
             blob: Blob;
         }[];
         sender_name(): string;
         share_keys(keys: string[]): Promise<void>;
+        private share_build;
+        /** Сбросить `_ball`/`_open` у file-land треков после шара. */
+        unload_keys(keys: string[]): void;
         /** Все записи шара одной фиброй: land_grab (PoW) + атомы + file-lands + sync. */
         write_in_fiber(sender_cipher: Uint8Array, verifier_cipher: Uint8Array, ciphers: {
             audio: $bog_music_api_audio;
