@@ -68,7 +68,9 @@ namespace $ {
 
 		/** SW-контекст (web.js как worker): отвечать на fetch Range. */
 		static install_sw() {
+			// Страница — window есть. Node-тесты — нет ни window, ни self.
 			if( typeof window !== 'undefined' ) return
+			if( typeof self === 'undefined' ) return
 			;( self as any ).addEventListener( 'fetch', ( event: any ) => {
 				const key = this.matches( event.request.url )
 				if( !key ) return
