@@ -90,14 +90,22 @@ namespace $ {
 		}
 
 		/**
-		 * Blob из чанков через потоковое чтение (`$mws_baza_file.parts`):
-		 * один sand → копия → unload. Не зовём `file.chunks()` — тот делает
-		 * sands_open на весь файл и оставлял `_ball`/`_open` навсегда.
+		 * Чанки с unload для шара/LUFS. Отдельно от `$mws_baza_file.parts`
+		 * (тот для стрима) — file.ts не трогаем.
 		 */
+		private parts_for_blob(file: $mws_baza_file): Uint8Array< ArrayBuffer >[] {
+			const units = file.chunk_units()
+			const out = [] as Uint8Array< ArrayBuffer >[]
+			for( const unit of units ) {
+				out.push( file.chunk_bytes_sync( unit ) )
+			}
+			return out
+		}
+
 		private blob_of(file: $giper_baza_file): Blob | null {
 			const streamed = file as $mws_baza_file
-			const parts = typeof streamed.parts === 'function'
-				? streamed.parts()
+			const parts = typeof streamed.chunk_bytes_sync === 'function'
+				? this.parts_for_blob( streamed )
 				: file.chunks()
 			if (!parts.length) return null
 			// baza отдаёт 'application/octet-stream', когда Type не проставлен;
