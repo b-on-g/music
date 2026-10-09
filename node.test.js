@@ -33556,14 +33556,21 @@ var $;
                 .filter(unit => !unit.dead() && unit.self().str !== '');
         }
         /**
-         * Blob из чанков через потоковое чтение (`$mws_baza_file.parts`):
-         * один sand → копия → unload. Не зовём `file.chunks()` — тот делает
-         * sands_open на весь файл и оставлял `_ball`/`_open` навсегда.
+         * Чанки с unload для шара/LUFS. Отдельно от `$mws_baza_file.parts`
+         * (тот для стрима) — file.ts не трогаем.
          */
+        parts_for_blob(file) {
+            const units = file.chunk_units();
+            const out = [];
+            for (const unit of units) {
+                out.push(file.chunk_bytes_sync(unit));
+            }
+            return out;
+        }
         blob_of(file) {
             const streamed = file;
-            const parts = typeof streamed.parts === 'function'
-                ? streamed.parts()
+            const parts = typeof streamed.chunk_bytes_sync === 'function'
+                ? this.parts_for_blob(streamed)
                 : file.chunks();
             if (!parts.length)
                 return null;

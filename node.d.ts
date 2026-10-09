@@ -61036,10 +61036,10 @@ declare namespace $ {
          */
         static chunk_units(file: $giper_baza_file): readonly $giper_baza_unit_sand[];
         /**
-         * Blob из чанков через потоковое чтение (`$mws_baza_file.parts`):
-         * один sand → копия → unload. Не зовём `file.chunks()` — тот делает
-         * sands_open на весь файл и оставлял `_ball`/`_open` навсегда.
+         * Чанки с unload для шара/LUFS. Отдельно от `$mws_baza_file.parts`
+         * (тот для стрима) — file.ts не трогаем.
          */
+        private parts_for_blob;
         private blob_of;
         /** Blob из baza. null если не закеширован. */
         blob(): Blob | null;
