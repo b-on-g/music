@@ -22261,6 +22261,34 @@ var $;
 var $;
 (function ($) {
     /**
+     * Land с выгрузкой нагрузки sand'ов.
+     *
+     * В базовом `$giper_baza_land` после `sand_open` / `sands_open` поля `_ball`
+     * и `_open` живут до конца жизни юнита — большие файлы (музыка) копят всю
+     * прослушанную сессию в JS-куче. Здесь можно отпустить payload, когда чанк
+     * уже скопирован в Blob / отдан стриму.
+     */
+    class $mws_baza_land extends $giper_baza_land {
+        /**
+         * Сбросить расшифрованную и (для big) сырую нагрузку.
+         * Заголовок unit'а остаётся; повторный `sand_open` снова подтянет ball из IDB.
+         */
+        sand_unload(sand) {
+            sand._open = null;
+            // Мелкие sand'ы держат data() во view на буфер заголовка — обнулять
+            // `_ball` нельзя: это не отдельный IDB-ball, а alias на data().
+            if (sand.big())
+                sand._ball = null;
+        }
+    }
+    $.$mws_baza_land = $mws_baza_land;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /**
      * Счётчики памяти для дебага «вся фонотека в оперативке».
      *
      * Без цифр правки не проверить: экономия здесь — это не сделанные копии, и
@@ -22307,9 +22335,10 @@ var $;
          * Сколько нагрузки чанков реально поднято в память.
          *
          * Заголовок sand-юнита живёт в ленде всегда, а нагрузка (`ball`)
-         * приезжает лениво и потом уже не отпускается. Так что «сколько байт
-         * звука висит в куче» — это ровно сумма по юнитам с проставленным
-         * `_ball`/`_open`, и считается она по заголовкам, ничего не подгружая.
+         * приезжает лениво. В music через `$mws_baza_land.sand_unload` её
+         * отпускают после копирования в Blob — поэтому после play цифра
+         * «поднято» по sands должна быть ≈ 0 (байты живут в Blob-кеше плеера,
+         * не в `_ball`/`_open`). Считается по заголовкам, ничего не подгружая.
          */
         static units_stat(units) {
             let loaded = 0;
@@ -28711,6 +28740,437 @@ var $;
 var $;
 (function ($) {
     /**
+     * File с потоковым чтением чанков без `sands_open` на весь список.
+     *
+     * Базовый `chunks()` / `buffer()` по-прежнему открывают все balls сразу —
+     * для CRUD это ок. Play-путь: `read_range` / `readable` / `parts` —
+     * open → copy → unload. Размер сырого чанка при записи — `raw_chunk` (2¹⁵),
+     * как в `$giper_baza_file.buffer()`.
+     */
+    class $mws_baza_file extends $giper_baza_file {
+        /** Размер полного сырого чанка при `buffer()` / записи. */
+        static raw_chunk = 2 ** 15;
+        buffer(next) {
+            if (next !== undefined)
+                this._byte_length = -1;
+            return super.buffer(next);
+        }
+        /**
+         * Unit'ы чанков — только заголовки, без `sands_open`.
+         * Трек на 10 МБ ≈ 320 заголовков (~17 КБ), без байта звука в куче.
+         */
+        chunk_units() {
+            const list = this.Chunks();
+            if (!list)
+                return [];
+            return list.land()
+                .sand_ordered({ head: list.head(), peer: $giper_baza_link.hole })
+                .filter(unit => !unit.dead() && unit.self().str !== '');
+        }
+        unpack(open) {
+            const raw = $giper_baza_vary.take(open)[0];
+            if (raw instanceof Uint8Array) {
+                return raw.slice();
+            }
+            return new Uint8Array(raw ?? []);
+        }
+        /**
+         * Байты одного чанка: open → unpack → unload.
+         * `sand_decode` не зовём — `@$mol_mem_key` держал бы чанк в кеше.
+         */
+        async chunk_bytes(unit) {
+            const land = this.land();
+            const open = await land.sand_open(unit);
+            try {
+                return this.unpack(open);
+            }
+            finally {
+                land.sand_unload(unit);
+            }
+        }
+        chunk_bytes_sync(unit) {
+            const land = this.land();
+            const open = $mol_wire_sync(land).sand_open(unit);
+            try {
+                return this.unpack(open);
+            }
+            finally {
+                land.sand_unload(unit);
+            }
+        }
+        _byte_length = -1;
+        /**
+         * Длина файла в сырых байтах.
+         * Полные чанки = raw_chunk; длину последнего узнаём одним open
+         * (не поднимая весь файл). Кеш — meta/Range не открывают last снова.
+         */
+        byte_length() {
+            if (this._byte_length >= 0)
+                return this._byte_length;
+            const units = this.chunk_units();
+            if (!units.length)
+                return this._byte_length = 0;
+            const last = this.chunk_bytes_sync(units[units.length - 1]);
+            return this._byte_length =
+                (units.length - 1) * $mws_baza_file.raw_chunk + last.byteLength;
+        }
+        /**
+         * Полуинтервал [start, end) сырых байт. Открывает только чанки,
+         * пересекающие окно; после каждого — unload.
+         */
+        read_range(start, end) {
+            const units = this.chunk_units();
+            const chunk = $mws_baza_file.raw_chunk;
+            const from = Math.max(0, start | 0);
+            const to = Math.max(from, end | 0);
+            if (!units.length || from >= to) {
+                return new Uint8Array(0);
+            }
+            const first = Math.floor(from / chunk);
+            const last = Math.min(units.length - 1, Math.floor((to - 1) / chunk));
+            const out = new Uint8Array(to - from);
+            let offset = 0;
+            for (let i = first; i <= last; i++) {
+                const bytes = this.chunk_bytes_sync(units[i]);
+                const base = i * chunk;
+                const a = Math.max(0, from - base);
+                const b = Math.min(bytes.byteLength, to - base);
+                if (b > a) {
+                    out.set(bytes.subarray(a, b), offset);
+                    offset += b - a;
+                }
+            }
+            return offset === out.byteLength ? out : out.subarray(0, offset);
+        }
+        /**
+         * Поток чанков с backpressure. Каждый pull поднимает один sand.
+         */
+        readable() {
+            const units = this.chunk_units();
+            let i = 0;
+            const file = this;
+            return new ReadableStream({
+                async pull(controller) {
+                    if (i >= units.length) {
+                        controller.close();
+                        return;
+                    }
+                    controller.enqueue(await file.chunk_bytes(units[i++]));
+                },
+            });
+        }
+        /**
+         * Все чанки как отдельные буферы — для сборки Blob (LUFS и т.п.).
+         */
+        parts() {
+            const units = this.chunk_units();
+            const parts = [];
+            for (const unit of units) {
+                parts.push(this.chunk_bytes_sync(unit));
+            }
+            return parts;
+        }
+    }
+    $.$mws_baza_file = $mws_baza_file;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /**
+     * Стрим трека через Service Worker + HTTP Range.
+     *
+     * `<audio src>` не умеет ReadableStream напрямую. SW перехватывает
+     * `bog-music-stream?key=…` (query — чтобы $mol_offline не кешировал),
+     * страница отдаёт только байты запрошенного окна из `$mws_baza_file.read_range`.
+     * Play стартует сразу; в RAM — окно чанков, не весь файл.
+     */
+    class $bog_music_stream extends $mol_object {
+        static name = 'bog-music-stream';
+        static _page_ready = false;
+        /** URL для `<audio src>` / fetch. Stable string — sync play на iOS. */
+        static url(key) {
+            const base = typeof location !== 'undefined' ? location.href : 'http://localhost/';
+            const url = new URL(this.name, base);
+            url.searchParams.set('key', key);
+            return url.href;
+        }
+        static matches(request_url) {
+            try {
+                const url = new URL(request_url);
+                if (!url.pathname.endsWith('/' + this.name) && !url.pathname.endsWith(this.name)) {
+                    return null;
+                }
+                return url.searchParams.get('key');
+            }
+            catch {
+                return null;
+            }
+        }
+        /** SW API есть (PWA). Не путать с controller — после reload он бывает null секунду. */
+        static supported() {
+            if (typeof navigator === 'undefined')
+                return false;
+            return Boolean(navigator.serviceWorker);
+        }
+        /** SW уже контролирует страницу — sync play без await. */
+        static active() {
+            return this.supported() && Boolean(navigator.serviceWorker.controller);
+        }
+        /** Дождаться controller (после reload / первой установки). */
+        static async when_ready() {
+            if (!this.supported())
+                return false;
+            try {
+                await navigator.serviceWorker.ready;
+                return Boolean(navigator.serviceWorker.controller);
+            }
+            catch {
+                return false;
+            }
+        }
+        /** Страница: слушать запросы Range от SW. */
+        static install_page() {
+            if (typeof window === 'undefined')
+                return;
+            if (this._page_ready)
+                return;
+            this._page_ready = true;
+            navigator.serviceWorker?.addEventListener('message', event => {
+                void this.on_sw_message(event);
+            });
+        }
+        /** SW-контекст (web.js как worker): отвечать на fetch Range. */
+        static install_sw() {
+            // Страница — window есть. Node-тесты — нет ни window, ни self.
+            if (typeof window !== 'undefined')
+                return;
+            if (typeof self === 'undefined')
+                return;
+            self.addEventListener('fetch', (event) => {
+                const key = this.matches(event.request.url);
+                if (!key)
+                    return;
+                event.respondWith(this.sw_respond(event.request, key));
+            });
+        }
+        /** Прогреть начало трека (первый кусок) — для авто-next. */
+        static warm(key) {
+            if (!this.supported() || !key)
+                return;
+            const go = () => fetch(this.url(key), {
+                headers: { Range: 'bytes=0-65535' },
+                credentials: 'same-origin',
+            }).catch(() => { });
+            if (this.active())
+                go();
+            else
+                void this.when_ready().then(ok => { if (ok)
+                    go(); });
+        }
+        static async on_sw_message(event) {
+            const data = event.data;
+            if (!data || (data.type !== 'bog_music_stream_range' && data.type !== 'bog_music_stream_meta')) {
+                return;
+            }
+            const port = event.ports?.[0];
+            if (!port)
+                return;
+            try {
+                if (data.type === 'bog_music_stream_meta') {
+                    const meta = await $mol_wire_async(this).meta_sync(data.key);
+                    port.postMessage({ ok: true, ...meta });
+                    return;
+                }
+                const result = await $mol_wire_async(this).range_sync(data.key, data.start, data.end);
+                port.postMessage({
+                    ok: true,
+                    total: result.total,
+                    mime: result.mime,
+                    start: result.start,
+                    end: result.end,
+                    bytes: result.bytes,
+                }, [result.bytes]);
+            }
+            catch (e) {
+                port.postMessage({
+                    ok: false,
+                    error: e?.message ?? String(e),
+                });
+            }
+        }
+        static file_of(key) {
+            const track = $bog_music_account_baza.home().track(key);
+            if (!track)
+                throw new Error(`stream: no track ${key}`);
+            let file = track.File()?.remote();
+            if (!file) {
+                track.land().sync();
+                file = track.File()?.remote();
+            }
+            if (!file)
+                throw new Error(`stream: no file ${key}`);
+            file.land().sync();
+            if (typeof file.byte_length !== 'function') {
+                throw new Error('stream: $mws_baza_file not installed');
+            }
+            return file;
+        }
+        static meta_sync(key) {
+            const file = this.file_of(key);
+            const mime_raw = file.type();
+            const mime = !mime_raw || mime_raw === 'application/octet-stream'
+                ? 'audio/mpeg'
+                : mime_raw;
+            return { total: file.byte_length(), mime };
+        }
+        /**
+         * Sync в фибре: окно байт из baza.
+         * end < 0 → до конца файла.
+         */
+        static range_sync(key, start, end) {
+            const file = this.file_of(key);
+            const total = file.byte_length();
+            const mime_raw = file.type();
+            const mime = !mime_raw || mime_raw === 'application/octet-stream'
+                ? 'audio/mpeg'
+                : mime_raw;
+            const from = Math.max(0, Math.min(total, start | 0));
+            const to = end < 0
+                ? total
+                : Math.max(from, Math.min(total, end | 0));
+            const slice = file.read_range(from, to);
+            const bytes = slice.buffer.slice(slice.byteOffset, slice.byteOffset + slice.byteLength);
+            return { bytes, total, mime, start: from, end: to };
+        }
+        static async sw_client() {
+            const list = await self.clients.matchAll({
+                type: 'window',
+                includeUncontrolled: true,
+            });
+            return list[0] ?? null;
+        }
+        static sw_call(client, message) {
+            return new Promise(resolve => {
+                const channel = new MessageChannel();
+                const timer = setTimeout(() => {
+                    resolve({ ok: false, error: 'stream: page timeout' });
+                }, 60000);
+                channel.port1.onmessage = (event) => {
+                    clearTimeout(timer);
+                    resolve(event.data);
+                };
+                client.postMessage(message, [channel.port2]);
+            });
+        }
+        static async sw_meta(key) {
+            const client = await this.sw_client();
+            if (!client)
+                return { ok: false, error: 'stream: no page client' };
+            return this.sw_call(client, { type: 'bog_music_stream_meta', key });
+        }
+        static async sw_ask(key, start, end) {
+            const client = await this.sw_client();
+            if (!client)
+                return { ok: false, error: 'stream: no page client' };
+            return this.sw_call(client, { type: 'bog_music_stream_range', key, start, end });
+        }
+        /** Максимум байт в одном 206-ответе — не держим весь трек в SW. */
+        static window_bytes = 512 * 1024;
+        static async sw_respond(request, key) {
+            const range_hdr = request.headers.get('Range');
+            // Без Range — progressive stream: чанки по одному, старт сразу.
+            if (!range_hdr) {
+                return this.sw_respond_stream(key);
+            }
+            let start = 0;
+            let end = -1; // exclusive; -1 = open-ended
+            const m = /^bytes=(\d*)-(\d*)$/i.exec(range_hdr.trim());
+            if (m) {
+                if (m[1] !== '')
+                    start = parseInt(m[1], 10);
+                if (m[2] !== '')
+                    end = parseInt(m[2], 10) + 1;
+            }
+            const meta = await this.sw_meta(key);
+            if (!meta.ok) {
+                return new Response(meta.error, { status: 503 });
+            }
+            const total = meta.total;
+            if (start >= total) {
+                return new Response(null, {
+                    status: 416,
+                    headers: { 'Content-Range': `bytes */${total}` },
+                });
+            }
+            if (end < 0)
+                end = Math.min(total, start + this.window_bytes);
+            else
+                end = Math.min(total, end, start + this.window_bytes);
+            const data = await this.sw_ask(key, start, end);
+            if (!data.ok) {
+                return new Response(data.error, { status: 503 });
+            }
+            return new Response(data.bytes, {
+                status: 206,
+                headers: {
+                    'Content-Type': data.mime || meta.mime,
+                    'Accept-Ranges': 'bytes',
+                    'Content-Length': String(data.bytes.byteLength),
+                    'Content-Range': `bytes ${data.start}-${data.end - 1}/${total}`,
+                    'Cache-Control': 'no-store',
+                },
+            });
+        }
+        /** GET без Range: тело — поток окон, Content-Length = полный размер. */
+        static async sw_respond_stream(key) {
+            const meta = await this.sw_meta(key);
+            if (!meta.ok) {
+                return new Response(meta.error, { status: 503 });
+            }
+            const total = meta.total;
+            const mime = meta.mime;
+            const win = this.window_bytes;
+            let pos = 0;
+            const stream = new ReadableStream({
+                async pull(controller) {
+                    if (pos >= total) {
+                        controller.close();
+                        return;
+                    }
+                    const next = Math.min(total, pos + win);
+                    const data = await $bog_music_stream.sw_ask(key, pos, next);
+                    if (!data.ok) {
+                        controller.error(new Error(data.error));
+                        return;
+                    }
+                    controller.enqueue(new Uint8Array(data.bytes));
+                    pos = data.end;
+                },
+            });
+            return new Response(stream, {
+                status: 200,
+                headers: {
+                    'Content-Type': mime,
+                    'Accept-Ranges': 'bytes',
+                    'Content-Length': String(total),
+                    'Cache-Control': 'no-store',
+                },
+            });
+        }
+    }
+    $.$bog_music_stream = $bog_music_stream;
+    // Регистрация на загрузке бандла (и страница, и SW — один web.js).
+    $bog_music_stream.install_sw();
+    $bog_music_stream.install_page();
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /**
      * Однократные фиксы окружения. Выполняются при загрузке бандла (init()
      * зовётся из app.view.ts на уровне модуля) — ДО первого обращения
      * к $giper_baza_auth / yard.
@@ -28719,6 +29179,12 @@ var $;
         /** Токен шара из #share=… — забирается приложением один раз в auto(). */
         static share_token = '';
         static init() {
+            // Подмена file/land до любого baza: play-путь читает чанки потоком
+            // с unload (см. $mws_baza_file / $mws_baza_land), а не через
+            // sands_open на весь файл. Glob и File-link смотрят this.$ / $.
+            $.$giper_baza_land = $mws_baza_land;
+            $.$giper_baza_file = $mws_baza_file;
+            $bog_music_stream.install_page();
             if (typeof location === 'undefined')
                 return;
             $bog_music_log.init();
@@ -29487,7 +29953,7 @@ var $;
      */
     class $bog_music_share_track_baza extends $giper_baza_dict.with({
         Meta: $giper_baza_atom.of(Uint8Array),
-        File: $bog_music_link_synced(() => $giper_baza_file),
+        File: $bog_music_link_synced(() => $.$giper_baza_file),
     }) {
     }
     $.$bog_music_share_track_baza = $bog_music_share_track_baza;
@@ -32891,7 +33357,7 @@ var $;
         Playlist: $giper_baza_atom.of($mol_schema_string),
         // Blob лежит в отдельном land — синкается независимо от home land
         // и не блокирует лёгкие метаданные большими паками.
-        File: $bog_music_link_synced(() => $giper_baza_file),
+        File: $bog_music_link_synced(() => $.$giper_baza_file),
         // Персональный обрез песни (секунды). Trim_end = null — «без обреза».
         Trim_start: $giper_baza_atom.of($mol_schema_float),
         Trim_end: $giper_baza_atom.of($mol_schema_float),
@@ -32944,17 +33410,13 @@ var $;
         /**
          * Unit'ы чанков файла — БЕЗ чтения их содержимого.
          *
-         * У sand-юнита две половины: 52-байтовый заголовок и `ball` с полезной
-         * нагрузкой. В IndexedDB это разные сторы, и `units_load()` тянет только
-         * заголовки; за нагрузкой ходит отдельный ленивый `ball_load`. Поэтому
-         * структуру файла (сколько чанков, какого размера) видно, не подняв в
-         * память ни байта звука: трек на 10 МБ — это 320 заголовков, ~17 КБ.
-         *
-         * Публичный `file.chunks()` для такого вопроса не годится: он идёт через
-         * `pawn.units_of()`, а тот сразу зовёт `land.sands_open()` и материализует
-         * ВСЮ нагрузку. Берём тот же `land.sand_ordered()`, но без `sands_open`.
+         * После ambient в boot файл — `$mws_baza_file` с `chunk_units()`.
+         * Fallback на sand_ordered без sands_open, если класс ещё базовый.
          */
         static chunk_units(file) {
+            const streamed = file;
+            if (typeof streamed.chunk_units === 'function')
+                return streamed.chunk_units();
             const list = file.Chunks();
             if (!list)
                 return [];
@@ -32963,21 +33425,21 @@ var $;
                 .filter(unit => !unit.dead() && unit.self().str !== '');
         }
         /**
-         * Blob поверх чанков, БЕЗ сплошной копии.
-         *
-         * `file.buffer()` склеивал бы все чанки в один Uint8Array (копия №1), а
-         * `buf.buffer.slice()` делал из него ещё одну (копия №2) — и только потом
-         * содержимое уезжало в Blob (копия №3). Blob принимает список кусков как
-         * есть, поэтому копия остаётся одна, и та за пределами JS-кучи.
+         * Blob из чанков через потоковое чтение (`$mws_baza_file.parts`):
+         * один sand → копия → unload. Не зовём `file.chunks()` — тот делает
+         * sands_open на весь файл и оставлял `_ball`/`_open` навсегда.
          */
         blob_of(file) {
-            const chunks = file.chunks();
-            if (!chunks.length)
+            const streamed = file;
+            const parts = typeof streamed.parts === 'function'
+                ? streamed.parts()
+                : file.chunks();
+            if (!parts.length)
                 return null;
             // baza отдаёт 'application/octet-stream', когда Type не проставлен;
             // у нас такой файл — всегда звук из ранних версий.
             const type = file.type();
-            const blob = new $mol_blob(chunks, {
+            const blob = new $mol_blob(parts, {
                 type: type === 'application/octet-stream' ? 'audio/mpeg' : type,
             });
             $bog_music_mem.blob_made(blob.size);
@@ -36354,11 +36816,19 @@ var $;
             _gain_queue = Promise.resolve();
             /** Поставить трек в очередь на одноразовый замер громкости. */
             analyze_gain(key) {
+                // TEMP: LUFS выключен — проверка зависания на 3-м переключении трека.
+                return;
                 if (!key || this._gain_seen.has(key))
                     return;
                 this._gain_seen.add(key);
                 this._gain_queue = this._gain_queue.then(() => this.measure_gain(key)).catch(() => { });
             }
+            /**
+             * Выше этого размера не декодируем в PCM ради LUFS: decodeAudioData
+             * раздувает сжатый файл в десятки/сотни МБ float'ов и добивает OOM
+             * на больших локальных треках. Play идёт с готового Blob без замера.
+             */
+            static LUFS_MAX_BYTES = 40 * 1024 * 1024;
             async measure_gain(key) {
                 try {
                     if (await $mol_wire_async(this).gain_known(key))
@@ -36366,6 +36836,11 @@ var $;
                     const blob = await $mol_wire_async(this).blob_of(key);
                     if (!blob) {
                         this._gain_seen.delete(key); // ещё не докачался — вернёмся позже
+                        return;
+                    }
+                    // Замер с уже собранного Blob (sands после parts() выгружены).
+                    if (blob.size > $bog_music_player.LUFS_MAX_BYTES) {
+                        console.warn('[player] loudness skip: blob too large', blob.size);
                         return;
                     }
                     const lufs = await $bog_music_gain.measure_lufs(await blob.arrayBuffer());
@@ -36667,19 +37142,29 @@ var $;
             }
             async restore_local(session) {
                 const el = this.audio_el();
-                const blob = await $mol_wire_async(this).blob_of(session.key).catch(() => null);
-                if (blob) {
-                    if (this._last_blob_url)
+                if ($bog_music_stream.supported() && ($bog_music_stream.active() || await $bog_music_stream.when_ready())) {
+                    await $mol_wire_async(this).track_file_ready(session.key).catch(() => null);
+                    if (this._last_blob_url) {
                         URL.revokeObjectURL(this._last_blob_url);
-                    const url = URL.createObjectURL(blob);
-                    this._last_blob_url = url;
-                    this.set_track_src(el, url);
-                }
-                else if (session.audio.url) {
-                    this.set_track_src(el, session.audio.url);
+                        this._last_blob_url = '';
+                    }
+                    this.set_track_src(el, $bog_music_stream.url(session.key));
                 }
                 else {
-                    return;
+                    const blob = await $mol_wire_async(this).blob_of(session.key).catch(() => null);
+                    if (blob) {
+                        if (this._last_blob_url)
+                            URL.revokeObjectURL(this._last_blob_url);
+                        const url = URL.createObjectURL(blob);
+                        this._last_blob_url = url;
+                        this.set_track_src(el, url);
+                    }
+                    else if (session.audio.url) {
+                        this.set_track_src(el, session.audio.url);
+                    }
+                    else {
+                        return;
+                    }
                 }
                 this.attach_seek_listener(el, session.position);
             }
@@ -37233,30 +37718,30 @@ var $;
                 }
                 catch { }
                 this.apply_media_metadata(audio);
-                // Фоновое одноразовое измерение громкости для выравнивания.
-                this.analyze_gain(key);
                 if (this.is_extension()) {
                     this.dispatch_play_offscreen(key, audio, start_at);
+                    // LUFS в extension — после старта, не блокируя offscreen play.
+                    setTimeout(() => this.analyze_gain(key), 3000);
                     return;
                 }
                 // Клик — единственный шанс разлочить WebAudio-цепочку для iOS.
                 this.gain_chain_unlock();
-                // Предзагружаем blob следующего трека, чтобы к его 'ended'-переходу
-                // он был готов и play прошёл СИНХРОННО в continuation — иначе в фоне
-                // на iOS автопереход играет без звука (async-путь глушится).
+                // Предзагружаем следующий трек (Range warm / blob fallback).
                 this.prefetch_next(key);
                 const el = this.audio_el();
-                // iOS PWA: при заблокированном экране любой await перед el.play()
-                // рвёт audio-session continuation от ended-обработчика. Пробуем
-                // СИНХРОННО взять blob и запустить в том же tick.
-                if (this.try_play_local_sync(key, el, start_at))
+                // iOS PWA: sync play в том же tick. Stream URL — без сборки Blob.
+                if (this.try_play_local_sync(key, el, start_at)) {
+                    // LUFS через parts() читает весь файл — только после старта звука.
+                    setTimeout(() => this.analyze_gain(key), 3000);
                     return;
+                }
                 if (audio.url) {
                     this.set_track_src(el, audio.url);
                     this.attach_seek_listener(el, start_at);
                     el.play().catch(() => { });
                 }
                 this.play_source_local(key, audio, el, start_at);
+                setTimeout(() => this.analyze_gain(key), 3000);
             }
             // Готовые Blob'ы в RAM. Критично для авто-next: на iOS звук в фоне даётся
             // только если el.play() вызван СИНХРОННО в обработчике 'ended'
@@ -37288,7 +37773,7 @@ var $;
                     this._blob_cache.delete(oldest);
                 }
             }
-            /** Прогреть blob СЛЕДУЮЩЕГО трека в RAM-кеш (fire-and-forget). */
+            /** Прогреть следующий трек (stream Range или blob-кеш). */
             prefetch_next(key) {
                 try {
                     $mol_wire_async(this).cache_next(key);
@@ -37297,18 +37782,21 @@ var $;
             }
             /**
              * Sync-метод (через фибру): вычислить РЕАЛЬНЫЙ следующий трек с учётом
-             * режима (repeat/shuffle/«Моя волна») и прогреть его blob. Раньше грелся
-             * queue[idx+1], а next() при волне/shuffle выбирал другой трек → на
-             * 'ended' cache miss → async-путь → в фоне на iOS тишина.
+             * режима (repeat/shuffle/«Моя волна») и прогреть его. При SW+Range
+             * достаточно warm первого окна; blob-кеш — fallback без SW / для iOS
+             * без controller.
              */
             cache_next(key) {
                 const next_key = this.predict_next_key(key);
                 if (!next_key)
                     return false;
                 this.track_warm(next_key);
+                if ($bog_music_stream.supported()) {
+                    $bog_music_stream.warm(next_key);
+                    setTimeout(() => this.analyze_gain(next_key), 3000);
+                    return true;
+                }
                 const ready = this._blob_cache.has(next_key) || this.cache_blob(next_key);
-                // Мерим громкость заранее: иначе первые секунды следующего трека
-                // играют невыровненными.
                 if (ready)
                     this.analyze_gain(next_key);
                 return ready;
@@ -37422,13 +37910,33 @@ var $;
             blob_of_wait(key) {
                 return this.account().track(key)?.blob_wait() ?? null;
             }
+            /** Land с байтами на месте — без материализации Blob (для SW+Range). */
+            track_file_ready(key) {
+                return this.account().track(key)?.blob_ensure() ?? false;
+            }
             try_play_local_sync(key, el, start_at) {
+                // SW+Range: src — same-origin URL, play() синхронно. Полный Blob не собираем.
+                if ($bog_music_stream.active()) {
+                    if (this._last_blob_url) {
+                        URL.revokeObjectURL(this._last_blob_url);
+                        this._last_blob_url = '';
+                    }
+                    this._dispatch_token++;
+                    this.set_track_src(el, $bog_music_stream.url(key));
+                    this.attach_seek_listener(el, start_at);
+                    el.play().catch(() => { });
+                    return true;
+                }
+                // SW есть, но controller ещё null (типично сразу после reload) —
+                // НЕ собираем parts() всего файла, уйдём в async и дождёмся ready.
+                if ($bog_music_stream.supported())
+                    return false;
                 let blob = null;
                 try {
                     blob = this.blob_of(key);
                 }
                 catch {
-                    return false; // Promise = blob ещё грузится, пойдём async-путём
+                    return false;
                 }
                 if (!blob)
                     return false;
@@ -37565,6 +38073,22 @@ var $;
                     if (this._last_blob_url) {
                         URL.revokeObjectURL(this._last_blob_url);
                         this._last_blob_url = '';
+                    }
+                    // PWA: всегда stream, даже если controller ещё не прилип после reload.
+                    if ($bog_music_stream.supported()) {
+                        const ok = $bog_music_stream.active() || await $bog_music_stream.when_ready();
+                        if (token !== this._dispatch_token || !this.is_current(key))
+                            return;
+                        if (ok) {
+                            await $mol_wire_async(this).track_file_ready(key).catch(() => null);
+                            if (token !== this._dispatch_token || !this.is_current(key))
+                                return;
+                            this.set_track_src(el, $bog_music_stream.url(key));
+                            this.attach_seek_listener(el, start_at);
+                            await this.safe_play(el);
+                            return;
+                        }
+                        console.warn('[player] SW not controlling page — stream unavailable');
                     }
                     const blob = await this.blob_ready(key, audio);
                     if (token !== this._dispatch_token || !this.is_current(key))
@@ -45805,6 +46329,61 @@ var $;
             },
         });
     })($$ = $_1.$$ || ($_1.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($_1) {
+    $mol_test_mocks.push($ => {
+        $.$giper_baza_land = $mws_baza_land;
+        $.$giper_baza_file = $mws_baza_file;
+    });
+    $mol_test({
+        async 'parts unloads sands after copy'($) {
+            const land = $.$giper_baza_land.make({ $ });
+            const file = land.Data($.$giper_baza_file);
+            const source = new Uint8Array(2 ** 15 + 100);
+            source[2 ** 15 + 50] = 255;
+            file.buffer(source);
+            const units = file.chunk_units();
+            $mol_assert_equal(units.length, 2);
+            // parts() зовёт sand_open через $mol_wire_sync — только из фибры
+            const parts = await $mol_wire_async(file).parts();
+            $mol_assert_equal(parts.length, 2);
+            const joined = new Uint8Array(parts.reduce((n, p) => n + p.byteLength, 0));
+            let offset = 0;
+            for (const part of parts) {
+                joined.set(part, offset);
+                offset += part.byteLength;
+            }
+            $mol_assert_equal(joined, source);
+            for (const unit of units) {
+                if (!unit.big())
+                    continue;
+                $mol_assert_equal(unit._ball, null);
+                $mol_assert_equal(unit._open, null);
+            }
+        },
+        async 'read_range returns window and unloads'($) {
+            const land = $.$giper_baza_land.make({ $ });
+            const file = land.Data($.$giper_baza_file);
+            const source = new Uint8Array(2 ** 15 + 100);
+            for (let i = 0; i < source.length; i++)
+                source[i] = i & 255;
+            file.buffer(source);
+            const slice = await $mol_wire_async(file).read_range(100, 200);
+            $mol_assert_equal(slice, source.subarray(100, 200));
+            const total = await $mol_wire_async(file).byte_length();
+            $mol_assert_equal(total, source.byteLength);
+            for (const unit of file.chunk_units()) {
+                if (!unit.big())
+                    continue;
+                $mol_assert_equal(unit._ball, null);
+                $mol_assert_equal(unit._open, null);
+            }
+        },
+    });
 })($ || ($ = {}));
 
 ;

@@ -40165,6 +40165,24 @@ declare namespace $ {
 
 declare namespace $ {
     /**
+     * Land с выгрузкой нагрузки sand'ов.
+     *
+     * В базовом `$giper_baza_land` после `sand_open` / `sands_open` поля `_ball`
+     * и `_open` живут до конца жизни юнита — большие файлы (музыка) копят всю
+     * прослушанную сессию в JS-куче. Здесь можно отпустить payload, когда чанк
+     * уже скопирован в Blob / отдан стриму.
+     */
+    class $mws_baza_land extends $giper_baza_land {
+        /**
+         * Сбросить расшифрованную и (для big) сырую нагрузку.
+         * Заголовок unit'а остаётся; повторный `sand_open` снова подтянет ball из IDB.
+         */
+        sand_unload(sand: $giper_baza_unit_sand): void;
+    }
+}
+
+declare namespace $ {
+    /**
      * Счётчики памяти для дебага «вся фонотека в оперативке».
      *
      * Без цифр правки не проверить: экономия здесь — это не сделанные копии, и
@@ -40198,9 +40216,10 @@ declare namespace $ {
          * Сколько нагрузки чанков реально поднято в память.
          *
          * Заголовок sand-юнита живёт в ленде всегда, а нагрузка (`ball`)
-         * приезжает лениво и потом уже не отпускается. Так что «сколько байт
-         * звука висит в куче» — это ровно сумма по юнитам с проставленным
-         * `_ball`/`_open`, и считается она по заголовкам, ничего не подгружая.
+         * приезжает лениво. В music через `$mws_baza_land.sand_unload` её
+         * отпускают после копирования в Blob — поэтому после play цифра
+         * «поднято» по sands должна быть ≈ 0 (байты живут в Blob-кеше плеера,
+         * не в `_ball`/`_open`). Считается по заголовкам, ничего не подгружая.
          */
         static units_stat(units: readonly $giper_baza_unit_sand[]): {
             units: number;
@@ -43489,6 +43508,110 @@ declare namespace $.$$ {
 }
 
 declare namespace $ {
+}
+
+declare namespace $ {
+    /**
+     * File с потоковым чтением чанков без `sands_open` на весь список.
+     *
+     * Базовый `chunks()` / `buffer()` по-прежнему открывают все balls сразу —
+     * для CRUD это ок. Play-путь: `read_range` / `readable` / `parts` —
+     * open → copy → unload. Размер сырого чанка при записи — `raw_chunk` (2¹⁵),
+     * как в `$giper_baza_file.buffer()`.
+     */
+    class $mws_baza_file extends $giper_baza_file {
+        /** Размер полного сырого чанка при `buffer()` / записи. */
+        static raw_chunk: number;
+        buffer(next?: Uint8Array<ArrayBuffer>): Uint8Array<ArrayBuffer>;
+        /**
+         * Unit'ы чанков — только заголовки, без `sands_open`.
+         * Трек на 10 МБ ≈ 320 заголовков (~17 КБ), без байта звука в куче.
+         */
+        chunk_units(): readonly $giper_baza_unit_sand[];
+        private unpack;
+        /**
+         * Байты одного чанка: open → unpack → unload.
+         * `sand_decode` не зовём — `@$mol_mem_key` держал бы чанк в кеше.
+         */
+        chunk_bytes(unit: $giper_baza_unit_sand): Promise<Uint8Array<ArrayBuffer>>;
+        chunk_bytes_sync(unit: $giper_baza_unit_sand): Uint8Array<ArrayBuffer>;
+        private _byte_length;
+        /**
+         * Длина файла в сырых байтах.
+         * Полные чанки = raw_chunk; длину последнего узнаём одним open
+         * (не поднимая весь файл). Кеш — meta/Range не открывают last снова.
+         */
+        byte_length(): number;
+        /**
+         * Полуинтервал [start, end) сырых байт. Открывает только чанки,
+         * пересекающие окно; после каждого — unload.
+         */
+        read_range(start: number, end: number): Uint8Array<ArrayBuffer>;
+        /**
+         * Поток чанков с backpressure. Каждый pull поднимает один sand.
+         */
+        readable(): ReadableStream<Uint8Array<ArrayBuffer>>;
+        /**
+         * Все чанки как отдельные буферы — для сборки Blob (LUFS и т.п.).
+         */
+        parts(): Uint8Array<ArrayBuffer>[];
+    }
+}
+
+declare namespace $ {
+    /**
+     * Стрим трека через Service Worker + HTTP Range.
+     *
+     * `<audio src>` не умеет ReadableStream напрямую. SW перехватывает
+     * `bog-music-stream?key=…` (query — чтобы $mol_offline не кешировал),
+     * страница отдаёт только байты запрошенного окна из `$mws_baza_file.read_range`.
+     * Play стартует сразу; в RAM — окно чанков, не весь файл.
+     */
+    class $bog_music_stream extends $mol_object {
+        static readonly name = "bog-music-stream";
+        private static _page_ready;
+        /** URL для `<audio src>` / fetch. Stable string — sync play на iOS. */
+        static url(key: string): string;
+        static matches(request_url: string): string | null;
+        /** SW API есть (PWA). Не путать с controller — после reload он бывает null секунду. */
+        static supported(): boolean;
+        /** SW уже контролирует страницу — sync play без await. */
+        static active(): boolean;
+        /** Дождаться controller (после reload / первой установки). */
+        static when_ready(): Promise<boolean>;
+        /** Страница: слушать запросы Range от SW. */
+        static install_page(): void;
+        /** SW-контекст (web.js как worker): отвечать на fetch Range. */
+        static install_sw(): void;
+        /** Прогреть начало трека (первый кусок) — для авто-next. */
+        static warm(key: string): void;
+        private static on_sw_message;
+        private static file_of;
+        static meta_sync(key: string): {
+            total: number;
+            mime: string;
+        };
+        /**
+         * Sync в фибре: окно байт из baza.
+         * end < 0 → до конца файла.
+         */
+        static range_sync(key: string, start: number, end: number): {
+            bytes: ArrayBuffer;
+            total: number;
+            mime: string;
+            start: number;
+            end: number;
+        };
+        private static sw_client;
+        private static sw_call;
+        private static sw_meta;
+        private static sw_ask;
+        /** Максимум байт в одном 206-ответе — не держим весь трек в SW. */
+        private static window_bytes;
+        private static sw_respond;
+        /** GET без Range: тело — поток окон, Content-Length = полный размер. */
+        private static sw_respond_stream;
+    }
 }
 
 declare namespace $ {
@@ -60878,24 +61001,14 @@ declare namespace $ {
         /**
          * Unit'ы чанков файла — БЕЗ чтения их содержимого.
          *
-         * У sand-юнита две половины: 52-байтовый заголовок и `ball` с полезной
-         * нагрузкой. В IndexedDB это разные сторы, и `units_load()` тянет только
-         * заголовки; за нагрузкой ходит отдельный ленивый `ball_load`. Поэтому
-         * структуру файла (сколько чанков, какого размера) видно, не подняв в
-         * память ни байта звука: трек на 10 МБ — это 320 заголовков, ~17 КБ.
-         *
-         * Публичный `file.chunks()` для такого вопроса не годится: он идёт через
-         * `pawn.units_of()`, а тот сразу зовёт `land.sands_open()` и материализует
-         * ВСЮ нагрузку. Берём тот же `land.sand_ordered()`, но без `sands_open`.
+         * После ambient в boot файл — `$mws_baza_file` с `chunk_units()`.
+         * Fallback на sand_ordered без sands_open, если класс ещё базовый.
          */
         static chunk_units(file: $giper_baza_file): readonly $giper_baza_unit_sand[];
         /**
-         * Blob поверх чанков, БЕЗ сплошной копии.
-         *
-         * `file.buffer()` склеивал бы все чанки в один Uint8Array (копия №1), а
-         * `buf.buffer.slice()` делал из него ещё одну (копия №2) — и только потом
-         * содержимое уезжало в Blob (копия №3). Blob принимает список кусков как
-         * есть, поэтому копия остаётся одна, и та за пределами JS-кучи.
+         * Blob из чанков через потоковое чтение (`$mws_baza_file.parts`):
+         * один sand → копия → unload. Не зовём `file.chunks()` — тот делает
+         * sands_open на весь файл и оставлял `_ball`/`_open` навсегда.
          */
         private blob_of;
         /** Blob из baza. null если не закеширован. */
@@ -66566,6 +66679,12 @@ declare namespace $.$$ {
         private _gain_queue;
         /** Поставить трек в очередь на одноразовый замер громкости. */
         private analyze_gain;
+        /**
+         * Выше этого размера не декодируем в PCM ради LUFS: decodeAudioData
+         * раздувает сжатый файл в десятки/сотни МБ float'ов и добивает OOM
+         * на больших локальных треках. Play идёт с готового Blob без замера.
+         */
+        private static LUFS_MAX_BYTES;
         private measure_gain;
         private _audio_el?;
         private _last_blob_url;
@@ -66713,13 +66832,13 @@ declare namespace $.$$ {
          * длину прослушанного за сессию.
          */
         private blob_cache_keep;
-        /** Прогреть blob СЛЕДУЮЩЕГО трека в RAM-кеш (fire-and-forget). */
+        /** Прогреть следующий трек (stream Range или blob-кеш). */
         private prefetch_next;
         /**
          * Sync-метод (через фибру): вычислить РЕАЛЬНЫЙ следующий трек с учётом
-         * режима (repeat/shuffle/«Моя волна») и прогреть его blob. Раньше грелся
-         * queue[idx+1], а next() при волне/shuffle выбирал другой трек → на
-         * 'ended' cache miss → async-путь → в фоне на iOS тишина.
+         * режима (repeat/shuffle/«Моя волна») и прогреть его. При SW+Range
+         * достаточно warm первого окна; blob-кеш — fallback без SW / для iOS
+         * без controller.
          */
         cache_next(key: string): boolean;
         /**
@@ -66760,6 +66879,8 @@ declare namespace $.$$ {
         blob_of(key: string): Blob | null;
         /** Блоб, ДОЖИДАЯСЬ докачки land (suspend). Для проигрывания через фибру. */
         blob_of_wait(key: string): Blob | null;
+        /** Land с байтами на месте — без материализации Blob (для SW+Range). */
+        track_file_ready(key: string): boolean;
         private try_play_local_sync;
         private attach_seek_listener;
         private seek_to;

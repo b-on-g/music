@@ -119,6 +119,7 @@
 	pack atelier git \https://github.com/b-on-g/atelier.git
 	pack gtk git \https://github.com/b-on-g/gtk.git
 	pack birthdaycase git \https://github.com/b-on-g/birthday-case.git
+	pack nka git \https://github.com/b-on-g/nyaftul_kitten_art.git
 \/mol
 	pack icon git \https://github.com/nin-jin/mol_icon.git
 \/mol/view
@@ -225,6 +226,15 @@
 	deploy \/giper/baza/diagram/jepsen.png
 	deploy \/giper/baza/docker/deploy.sh
 	deploy \/giper/baza/docker/autopull_and_restart.sh
+\/mws/baza/file
+	include \/mws/baza/land
+\/bog/music/stream
+	include \/mws/baza/file
+	include \/bog/music/account
+\/bog/music/boot
+	include \/mws/baza/file
+	include \/mws/baza/land
+	include \/bog/music/stream
 \/bog/music/app
 	include \/mol/offline/install
 	deploy \/bog/music/app/favicon.svg
