@@ -43515,9 +43515,7 @@ declare namespace $ {
      * File с потоковым чтением чанков без `sands_open` на весь список.
      *
      * Базовый `chunks()` / `buffer()` по-прежнему открывают все balls сразу —
-     * для CRUD это ок. Play-путь: `read_range` / `readable` / `parts` —
-     * open → copy → unload. Размер сырого чанка при записи — `raw_chunk` (2¹⁵),
-     * как в `$giper_baza_file.buffer()`.
+     
      */
     class $mws_baza_file extends $giper_baza_file {
         /** Размер полного сырого чанка при `buffer()` / записи. */
@@ -43531,7 +43529,7 @@ declare namespace $ {
         private unpack;
         /**
          * Байты одного чанка: open → unpack → unload.
-         * `sand_decode` не зовём — `@$mol_mem_key` держал бы чанк в кеше.
+         *
          */
         chunk_bytes(unit: $giper_baza_unit_sand): Promise<Uint8Array<ArrayBuffer>>;
         chunk_bytes_sync(unit: $giper_baza_unit_sand): Uint8Array<ArrayBuffer>;
@@ -43543,8 +43541,8 @@ declare namespace $ {
          */
         byte_length(): number;
         /**
-         * Полуинтервал [start, end) сырых байт. Открывает только чанки,
-         * пересекающие окно; после каждого — unload.
+         * Полуинтервал [start, end) сырых байт.
+         * Open окна через `sands_open` (один suspend), copy, unload.
          */
         read_range(start: number, end: number): Uint8Array<ArrayBuffer>;
         /**
@@ -43559,17 +43557,39 @@ declare namespace $ {
 }
 
 declare namespace $ {
+    /** Sync API для SW→page; `$mol_wire_async` — только на границе MessagePort. */
+    class $bog_music_stream_peer extends $mol_object {
+        meta(key: string): {
+            total: number;
+            mime: string;
+        };
+        range(key: string, start: number, end: number): {
+            bytes: ArrayBuffer;
+            total: number;
+            mime: string;
+            start: number;
+            end: number;
+        };
+    }
     /**
      * Стрим трека через Service Worker + HTTP Range.
      *
      * `<audio src>` не умеет ReadableStream напрямую. SW перехватывает
      * `bog-music-stream?key=…` (query — чтобы $mol_offline не кешировал),
-     * страница отдаёт только байты запрошенного окна из `$mws_baza_file.read_range`.
+     * страница отдаёт окно из `$mws_baza_file.read_range` через peer.@$mol_action.
      * Play стартует сразу; в RAM — окно чанков, не весь файл.
      */
     class $bog_music_stream extends $mol_object {
         static readonly name = "bog-music-stream";
         private static _page_ready;
+        private static _sw_ready;
+        /** Кеш meta в SW — иначе каждый Range снова round-trip на страницу. */
+        private static _meta_cache;
+        /** Слить параллельные одинаковые Range (браузер часто дублирует). */
+        private static _inflight;
+        /** Готовые окна в SW — повторные одинаковые Range без page round-trip. */
+        private static _range_cache;
+        private static _range_cache_max;
         /** URL для `<audio src>` / fetch. Stable string — sync play на iOS. */
         static url(key: string): string;
         static matches(request_url: string): string | null;
@@ -43585,16 +43605,14 @@ declare namespace $ {
         static install_sw(): void;
         /** Прогреть начало трека (первый кусок) — для авто-next. */
         static warm(key: string): void;
+        static peer: $bog_music_stream_peer;
         private static on_sw_message;
         private static file_of;
         static meta_sync(key: string): {
             total: number;
             mime: string;
         };
-        /**
-         * Sync в фибре: окно байт из baza.
-         * end < 0 → до конца файла.
-         */
+        /** Байты [start, end); звать из peer.@$mol_action. */
         static range_sync(key: string, start: number, end: number): {
             bytes: ArrayBuffer;
             total: number;
@@ -43605,9 +43623,14 @@ declare namespace $ {
         private static sw_client;
         private static sw_call;
         private static sw_meta;
+        private static range_cache_put;
         private static sw_ask;
-        /** Максимум байт в одном 206-ответе — не держим весь трек в SW. */
-        private static window_bytes;
+        /**
+         * Потолок только для open-ended `bytes=N-`.
+         * Явно запрошенный диапазон отдаём целиком — иначе Chromium
+         * долбит один и тот же Range десятками повторов.
+         */
+        private static open_ended_window;
         private static sw_respond;
         /** GET без Range: тело — поток окон, Content-Length = полный размер. */
         private static sw_respond_stream;

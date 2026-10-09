@@ -28743,9 +28743,7 @@ var $;
      * File с потоковым чтением чанков без `sands_open` на весь список.
      *
      * Базовый `chunks()` / `buffer()` по-прежнему открывают все balls сразу —
-     * для CRUD это ок. Play-путь: `read_range` / `readable` / `parts` —
-     * open → copy → unload. Размер сырого чанка при записи — `raw_chunk` (2¹⁵),
-     * как в `$giper_baza_file.buffer()`.
+     
      */
     class $mws_baza_file extends $giper_baza_file {
         /** Размер полного сырого чанка при `buffer()` / записи. */
@@ -28776,7 +28774,7 @@ var $;
         }
         /**
          * Байты одного чанка: open → unpack → unload.
-         * `sand_decode` не зовём — `@$mol_mem_key` держал бы чанк в кеше.
+         *
          */
         async chunk_bytes(unit) {
             const land = this.land();
@@ -28791,12 +28789,9 @@ var $;
         chunk_bytes_sync(unit) {
             const land = this.land();
             const open = $mol_wire_sync(land).sand_open(unit);
-            try {
-                return this.unpack(open);
-            }
-            finally {
-                land.sand_unload(unit);
-            }
+            const bytes = this.unpack(open);
+            land.sand_unload(unit);
+            return bytes;
         }
         _byte_length = -1;
         /**
@@ -28815,8 +28810,8 @@ var $;
                 (units.length - 1) * $mws_baza_file.raw_chunk + last.byteLength;
         }
         /**
-         * Полуинтервал [start, end) сырых байт. Открывает только чанки,
-         * пересекающие окно; после каждого — unload.
+         * Полуинтервал [start, end) сырых байт.
+         * Open окна через `sands_open` (один suspend), copy, unload.
          */
         read_range(start, end) {
             const units = this.chunk_units();
@@ -28828,10 +28823,13 @@ var $;
             }
             const first = Math.floor(from / chunk);
             const last = Math.min(units.length - 1, Math.floor((to - 1) / chunk));
+            const slice_units = units.slice(first, last + 1);
+            const land = this.land();
+            land.sands_open(slice_units);
             const out = new Uint8Array(to - from);
             let offset = 0;
             for (let i = first; i <= last; i++) {
-                const bytes = this.chunk_bytes_sync(units[i]);
+                const bytes = this.unpack(units[i]._open);
                 const base = i * chunk;
                 const a = Math.max(0, from - base);
                 const b = Math.min(bytes.byteLength, to - base);
@@ -28840,6 +28838,8 @@ var $;
                     offset += b - a;
                 }
             }
+            for (const unit of slice_units)
+                land.sand_unload(unit);
             return offset === out.byteLength ? out : out.subarray(0, offset);
         }
         /**
@@ -28864,10 +28864,13 @@ var $;
          */
         parts() {
             const units = this.chunk_units();
-            const parts = [];
-            for (const unit of units) {
-                parts.push(this.chunk_bytes_sync(unit));
-            }
+            if (!units.length)
+                return [];
+            const land = this.land();
+            land.sands_open(units);
+            const parts = units.map(unit => this.unpack(unit._open));
+            for (const unit of units)
+                land.sand_unload(unit);
             return parts;
         }
     }
@@ -28878,21 +28881,47 @@ var $;
 "use strict";
 var $;
 (function ($) {
+    /** Sync API для SW→page; `$mol_wire_async` — только на границе MessagePort. */
+    class $bog_music_stream_peer extends $mol_object {
+        meta(key) {
+            return $bog_music_stream.meta_sync(key);
+        }
+        range(key, start, end) {
+            return $bog_music_stream.range_sync(key, start, end);
+        }
+    }
+    __decorate([
+        $mol_action
+    ], $bog_music_stream_peer.prototype, "meta", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_stream_peer.prototype, "range", null);
+    $.$bog_music_stream_peer = $bog_music_stream_peer;
     /**
      * Стрим трека через Service Worker + HTTP Range.
      *
      * `<audio src>` не умеет ReadableStream напрямую. SW перехватывает
      * `bog-music-stream?key=…` (query — чтобы $mol_offline не кешировал),
-     * страница отдаёт только байты запрошенного окна из `$mws_baza_file.read_range`.
+     * страница отдаёт окно из `$mws_baza_file.read_range` через peer.@$mol_action.
      * Play стартует сразу; в RAM — окно чанков, не весь файл.
      */
     class $bog_music_stream extends $mol_object {
         static name = 'bog-music-stream';
         static _page_ready = false;
+        static _sw_ready = false;
+        /** Кеш meta в SW — иначе каждый Range снова round-trip на страницу. */
+        static _meta_cache = new Map();
+        /** Слить параллельные одинаковые Range (браузер часто дублирует). */
+        static _inflight = new Map();
+        /** Готовые окна в SW — повторные одинаковые Range без page round-trip. */
+        static _range_cache = new Map();
+        static _range_cache_max = 48;
         /** URL для `<audio src>` / fetch. Stable string — sync play на iOS. */
         static url(key) {
-            const base = typeof location !== 'undefined' ? location.href : 'http://localhost/';
-            const url = new URL(this.name, base);
+            const url = new URL(typeof location !== 'undefined' ? location.href : 'http://localhost/');
+            url.hash = '';
+            url.search = '';
+            url.pathname = url.pathname.replace(/[^/]*$/, this.name);
             url.searchParams.set('key', key);
             return url.href;
         }
@@ -28948,6 +28977,9 @@ var $;
                 return;
             if (typeof self === 'undefined')
                 return;
+            if (this._sw_ready)
+                return;
+            this._sw_ready = true;
             self.addEventListener('fetch', (event) => {
                 const key = this.matches(event.request.url);
                 if (!key)
@@ -28969,6 +29001,7 @@ var $;
                 void this.when_ready().then(ok => { if (ok)
                     go(); });
         }
+        static peer = new $bog_music_stream_peer;
         static async on_sw_message(event) {
             const data = event.data;
             if (!data || (data.type !== 'bog_music_stream_range' && data.type !== 'bog_music_stream_meta')) {
@@ -28979,11 +29012,11 @@ var $;
                 return;
             try {
                 if (data.type === 'bog_music_stream_meta') {
-                    const meta = await $mol_wire_async(this).meta_sync(data.key);
+                    const meta = await $mol_wire_async(this.peer).meta(data.key);
                     port.postMessage({ ok: true, ...meta });
                     return;
                 }
-                const result = await $mol_wire_async(this).range_sync(data.key, data.start, data.end);
+                const result = await $mol_wire_async(this.peer).range(data.key, data.start, data.end);
                 port.postMessage({
                     ok: true,
                     total: result.total,
@@ -29025,10 +29058,7 @@ var $;
                 : mime_raw;
             return { total: file.byte_length(), mime };
         }
-        /**
-         * Sync в фибре: окно байт из baza.
-         * end < 0 → до конца файла.
-         */
+        /** Байты [start, end); звать из peer.@$mol_action. */
         static range_sync(key, start, end) {
             const file = this.file_of(key);
             const total = file.byte_length();
@@ -29065,33 +29095,90 @@ var $;
             });
         }
         static async sw_meta(key) {
+            const cached = this._meta_cache.get(key);
+            if (cached)
+                return { ok: true, ...cached };
             const client = await this.sw_client();
             if (!client)
                 return { ok: false, error: 'stream: no page client' };
-            return this.sw_call(client, { type: 'bog_music_stream_meta', key });
+            const res = await this.sw_call(client, { type: 'bog_music_stream_meta', key });
+            if (res.ok)
+                this._meta_cache.set(key, { total: res.total, mime: res.mime });
+            return res;
+        }
+        static range_cache_put(id, entry) {
+            if (this._range_cache.has(id))
+                this._range_cache.delete(id);
+            this._range_cache.set(id, entry);
+            while (this._range_cache.size > this._range_cache_max) {
+                const oldest = this._range_cache.keys().next().value;
+                if (oldest === undefined)
+                    break;
+                this._range_cache.delete(oldest);
+            }
         }
         static async sw_ask(key, start, end) {
+            const id = `${key}:${start}:${end}`;
+            const hit = this._range_cache.get(id);
+            if (hit) {
+                return {
+                    ok: true,
+                    bytes: hit.bytes.slice(0),
+                    total: hit.total,
+                    mime: hit.mime,
+                    start: hit.start,
+                    end: hit.end,
+                };
+            }
+            const wait = this._inflight.get(id);
+            if (wait)
+                return wait;
             const client = await this.sw_client();
             if (!client)
                 return { ok: false, error: 'stream: no page client' };
-            return this.sw_call(client, { type: 'bog_music_stream_range', key, start, end });
+            const task = this.sw_call(client, {
+                type: 'bog_music_stream_range',
+                key,
+                start,
+                end,
+            }).then(res => {
+                if (res.ok) {
+                    this.range_cache_put(id, {
+                        bytes: res.bytes.slice(0),
+                        total: res.total,
+                        mime: res.mime,
+                        start: res.start,
+                        end: res.end,
+                    });
+                }
+                return res;
+            }).finally(() => this._inflight.delete(id));
+            this._inflight.set(id, task);
+            return task;
         }
-        /** Максимум байт в одном 206-ответе — не держим весь трек в SW. */
-        static window_bytes = 512 * 1024;
+        /**
+         * Потолок только для open-ended `bytes=N-`.
+         * Явно запрошенный диапазон отдаём целиком — иначе Chromium
+         * долбит один и тот же Range десятками повторов.
+         */
+        static open_ended_window = 2 * 1024 * 1024;
         static async sw_respond(request, key) {
             const range_hdr = request.headers.get('Range');
-            // Без Range — progressive stream: чанки по одному, старт сразу.
+            // Без Range — progressive stream.
             if (!range_hdr) {
                 return this.sw_respond_stream(key);
             }
             let start = 0;
             let end = -1; // exclusive; -1 = open-ended
+            let open_ended = false;
             const m = /^bytes=(\d*)-(\d*)$/i.exec(range_hdr.trim());
             if (m) {
                 if (m[1] !== '')
                     start = parseInt(m[1], 10);
                 if (m[2] !== '')
                     end = parseInt(m[2], 10) + 1;
+                else
+                    open_ended = true;
             }
             const meta = await this.sw_meta(key);
             if (!meta.ok) {
@@ -29104,10 +29191,13 @@ var $;
                     headers: { 'Content-Range': `bytes */${total}` },
                 });
             }
-            if (end < 0)
-                end = Math.min(total, start + this.window_bytes);
-            else
-                end = Math.min(total, end, start + this.window_bytes);
+            if (open_ended || end < 0) {
+                end = Math.min(total, start + this.open_ended_window);
+            }
+            else {
+                // Явный Range — как просили (медиа-пробы обычно крошечные).
+                end = Math.min(total, end);
+            }
             const data = await this.sw_ask(key, start, end);
             if (!data.ok) {
                 return new Response(data.error, { status: 503 });
@@ -29131,7 +29221,7 @@ var $;
             }
             const total = meta.total;
             const mime = meta.mime;
-            const win = this.window_bytes;
+            const win = this.open_ended_window;
             let pos = 0;
             const stream = new ReadableStream({
                 async pull(controller) {
@@ -36582,15 +36672,28 @@ var $;
              * защищает флаг _switching ниже.
              */
             set_track_src(el, url) {
+                // Тот же URL повторно — браузер начинает загрузку заново (ливень Range).
+                // el.src — resolved absolute; сравниваем через URL, не строками 1:1.
+                if (!this._silent && this._track_src === url) {
+                    try {
+                        if (el.src && new URL(el.src).href === new URL(url).href)
+                            return;
+                    }
+                    catch {
+                        if (el.src === url)
+                            return;
+                    }
+                }
                 this._silent = false;
                 this._track_src = url;
-                // WebAudio отдаёт тишину, если источник с чужого домена и не прислал
-                // CORS-заголовки. Для не-blob адресов (превью с tube-сервера) просим
-                // CORS явно, иначе после подключения гейн-цепочки звук пропадёт.
-                // Проверять _gain_ready мало: Safari подключает цепочку отложенно, и
-                // источник, взятый до подключения, замолчал бы задним числом.
+                // WebAudio + CORS: только для чужого origin (tube). same-origin stream
+                // и blob: — без crossOrigin, иначе лишний reload медиаэлемента.
                 if (!this._gain_dead && this.normalize()) {
-                    el.crossOrigin = url.startsWith('blob:') ? null : 'anonymous';
+                    const same = url.startsWith('blob:')
+                        || (typeof location !== 'undefined' && url.startsWith(location.origin));
+                    const next = same ? null : 'anonymous';
+                    if (el.crossOrigin !== next)
+                        el.crossOrigin = next;
                 }
                 el.loop = false;
                 el.src = url;
