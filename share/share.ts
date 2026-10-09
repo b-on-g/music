@@ -97,10 +97,11 @@ namespace $ {
 		// ---------- sender ----------
 
 		/** Клик по share-иконке вне режима выбора — мгновенный одиночный шар. */
-		@$mol_action
+		@ $mol_action
 		share_single(key: string) {
 			$bog_music_log.act(`одиночный шар ${key}`)
-			$mol_wire_async(this).share_keys([key])
+			// Не через $mol_wire_async(share_keys): async+wire глотает suspense неправильно.
+			void this.share_keys([ key ])
 		}
 
 		/**
@@ -109,7 +110,7 @@ namespace $ {
 		 * пишет в мемы — делать это синхронно из тела мема нельзя.
 		 */
 		submit() {
-			$mol_wire_async(this).submit_async()
+			void this.submit_async()
 		}
 
 		async submit_async() {
@@ -118,18 +119,20 @@ namespace $ {
 			await this.share_keys(keys)
 		}
 
-		/** Сбор метаданных и блобов. Sync-метод: зовётся через фибру, ретраится сам. */
+		/** Сбор мета+blob. `@$mol_action` + `$mol_wire_async` — suspend до готовности. */
+		@ $mol_action
 		collect(keys: string[]): { audio: $bog_music_api_audio, blob: Blob }[] {
 			const out: { audio: $bog_music_api_audio, blob: Blob }[] = []
 			for (const key of keys) {
 				const track = this.account().track(key)
 				const audio = track?.audio()
-				const blob = track?.blob()
+				const blob = track?.blob_wait()
 				if (audio && blob) out.push({ audio, blob })
 			}
 			return out
 		}
 
+		@ $mol_action
 		sender_name(): string {
 			return (this.account().nickname() || '').trim() || 'Расшаренный'
 		}
@@ -143,15 +146,44 @@ namespace $ {
 			}
 			$bog_music_log.act(`сборка шара: ${keys.length} трек(ов)`)
 			this.busy(true)
-			this.status('Готовлю шар…')
+			Promise.resolve().then(() => this.status('Готовлю шар…'))
 			try {
-				const usable = await ($mol_wire_async(this) as any).collect(keys) as
-					{ audio: $bog_music_api_audio, blob: Blob }[]
+				
+						await this.share_build( keys )
+						
+			} catch (e: any) {
+				console.warn('[share] failed:', e?.message ?? e)
+				$bog_music_log.err(`шар не собрался: ${e?.message ?? e}`)
+				this.status('Ошибка: ' + (e?.message ?? 'неизвестно'))
+			} finally {
+				this.busy(false)
+			}
+		}
+
+		private async share_build( keys: string[] ) {
+			const peer = $mol_wire_async( this ) as {
+				collect( keys: string[] ): Promise<{ audio: $bog_music_api_audio, blob: Blob }[]>
+				sender_name(): Promise< string >
+				write_in_fiber(
+					sender_cipher: Uint8Array,
+					verifier_cipher: Uint8Array,
+					ciphers: { audio: $bog_music_api_audio, mime: string, meta: Uint8Array, blob: Uint8Array }[],
+					burn: $giper_baza_auth_pass,
+				): Promise< string >
+				unload_keys( keys: string[] ): Promise< void >
+			}
+
+			type Cipher = { audio: $bog_music_api_audio, mime: string, meta: Uint8Array, blob: Uint8Array }
+			let usable: { audio: $bog_music_api_audio, blob: Blob }[] = []
+			let ciphers: Cipher[] = []
+
+			try {
+				usable = await peer.collect( keys )
 				if (!usable.length) {
 					this.status('Нет локальных данных для шаринга')
 					return
 				}
-				const sender = await ($mol_wire_async(this) as any).sender_name() as string
+				const sender = await peer.sender_name()
 
 				// Ключи новых lands генерим заранее и параллельно: PoW на каждый —
 				// секунды. `land_grab` дальше возьмёт готовые из embryos без PoW.
@@ -173,8 +205,6 @@ namespace $ {
 				const sender_cipher = await this.encrypt(key, $mol_charset_encode(sender))
 				const verifier_cipher = await this.encrypt(key, $mol_charset_encode($bog_music_share.verifier_plain))
 
-				type Cipher = { audio: $bog_music_api_audio, mime: string, meta: Uint8Array, blob: Uint8Array }
-				const ciphers: Cipher[] = []
 				for (const { audio, blob } of usable) {
 					const meta_json = JSON.stringify({
 						artist: audio.artist ?? '',
@@ -186,15 +216,19 @@ namespace $ {
 						cover: audio.cover ?? '',
 					})
 					const meta_cipher = await this.encrypt(key, $mol_charset_encode(meta_json))
-					const blob_cipher = await this.encrypt(key, new Uint8Array(await blob.arrayBuffer()))
+					const plain = new Uint8Array( await blob.arrayBuffer() )
+					const blob_cipher = await this.encrypt( key, plain )
+					plain.fill( 0 )
 					ciphers.push({ audio, mime: blob.type || 'audio/mpeg', meta: meta_cipher, blob: blob_cipher })
 				}
+				// plaintext Blob больше не нужны — отпускаем до заливки.
+				usable = []
 
 				this.status('Заливаю в baza…')
 				const burn = await ($giper_baza_auth as any)._generate() as $giper_baza_auth
-				const land_link = await ($mol_wire_async(this) as any).write_in_fiber(
-					sender_cipher, verifier_cipher, ciphers, burn.pass()
-				) as string
+				const land_link = await peer.write_in_fiber(
+					sender_cipher, verifier_cipher, ciphers, burn.pass(),
+				)
 				if (!land_link) {
 					$bog_music_log.err('шар не залился: write_in_fiber не вернул ленд')
 					this.status('Не удалось залить треки')
@@ -209,19 +243,29 @@ namespace $ {
 				} catch {
 					this.status('Ссылка: ' + url)
 				}
-			} catch (e: any) {
-				if (e instanceof Promise) {
-					try { await e } catch {}
-				}
-				console.warn('[share] failed:', e?.message ?? e)
-				$bog_music_log.err(`шар не собрался: ${e?.message ?? e}`)
-				this.status('Ошибка: ' + (e?.message ?? 'неизвестно'))
 			} finally {
-				this.busy(false)
+				// Отпускаем plaintext/cipher из замыкания + unload source sands.
+				// Не zero-fill cipher: buffer()/val могли оставить ту же ссылку в land.
+				ciphers = []
+				usable = []
+				await peer.unload_keys( keys )
+			}
+		}
+
+		/** Сбросить `_ball`/`_open` у file-land треков после шара. */
+		@ $mol_action
+		unload_keys( keys: string[] ) {
+			for( const key of keys ) {
+				const file = this.account().track( key )?.File()?.remote() as $mws_baza_file | null
+				if( !file || typeof file.chunk_units !== 'function' ) continue
+				const land = file.land() as $mws_baza_land
+				if( typeof land.sand_unload !== 'function' ) continue
+				for( const unit of file.chunk_units() ) land.sand_unload( unit )
 			}
 		}
 
 		/** Все записи шара одной фиброй: land_grab (PoW) + атомы + file-lands + sync. */
+		@ $mol_action
 		write_in_fiber(
 			sender_cipher: Uint8Array,
 			verifier_cipher: Uint8Array,
