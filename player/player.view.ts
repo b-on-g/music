@@ -152,15 +152,25 @@ namespace $.$$ {
 		 * защищает флаг _switching ниже.
 		 */
 		private set_track_src(el: HTMLAudioElement, url: string) {
+			// Тот же URL повторно — браузер начинает загрузку заново (ливень Range).
+			// el.src — resolved absolute; сравниваем через URL, не строками 1:1.
+			if (!this._silent && this._track_src === url) {
+				try {
+					if (el.src && new URL(el.src).href === new URL(url).href) return
+				} catch {
+					if (el.src === url) return
+				}
+			}
+
 			this._silent = false
 			this._track_src = url
-			// WebAudio отдаёт тишину, если источник с чужого домена и не прислал
-			// CORS-заголовки. Для не-blob адресов (превью с tube-сервера) просим
-			// CORS явно, иначе после подключения гейн-цепочки звук пропадёт.
-			// Проверять _gain_ready мало: Safari подключает цепочку отложенно, и
-			// источник, взятый до подключения, замолчал бы задним числом.
+			// WebAudio + CORS: только для чужого origin (tube). same-origin stream
+			// и blob: — без crossOrigin, иначе лишний reload медиаэлемента.
 			if (!this._gain_dead && this.normalize()) {
-				el.crossOrigin = url.startsWith('blob:') ? null : 'anonymous'
+				const same = url.startsWith('blob:')
+					|| (typeof location !== 'undefined' && url.startsWith(location.origin))
+				const next = same ? null : 'anonymous'
+				if (el.crossOrigin !== next) el.crossOrigin = next
 			}
 			el.loop = false
 			el.src = url
