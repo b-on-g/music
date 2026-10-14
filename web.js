@@ -3865,14 +3865,11 @@ var $;
                 basis: 'auto',
                 direction: 'column',
             },
-            position: 'relative',
             alignSelf: 'stretch',
             maxWidth: per(100),
             maxHeight: per(100),
             boxSizing: 'border-box',
             color: $mol_theme.text,
-            // backdropFilter: blur( `3px` ), enforces layering
-            // zIndex: 0 ,
             ':focus': {
                 outline: 'none',
             },
@@ -3881,7 +3878,6 @@ var $;
                 flexWrap: 'wrap',
                 justifyContent: 'flex-end',
                 flex: 'none',
-                position: 'relative',
                 margin: 0,
                 minHeight: rem(4),
                 padding: $mol_gap.block,
@@ -3897,7 +3893,6 @@ var $;
                         [0, `0.5rem`, `0.5rem`, `-0.5rem`, hsla(0, 0, 0, .25)],
                     ],
                 },
-                zIndex: 2,
                 '@media': {
                     'print': {
                         box: {
@@ -3976,7 +3971,6 @@ var $;
                         [0, `0.5rem`, `0.5rem`, `-0.5rem`, hsla(0, 0, 0, .25)],
                     ],
                 },
-                zIndex: 1,
                 padding: $mol_gap.block,
                 ':empty': {
                     display: 'none',
@@ -31289,6 +31283,12 @@ var $;
         [Symbol.iterator]() {
             return [this.node, this.pos].values();
         }
+        /** Point before the node. */
+        static nose(node) {
+            return node.previousSibling
+                ? new this(node.previousSibling, -1)
+                : new this(node.parentNode, 0);
+        }
         /** Point after start of the node. */
         static head(node) {
             return new this(node, 0);
@@ -31298,7 +31298,7 @@ var $;
             const length = node.nodeValue?.length ?? node.childNodes.length;
             return new this(node, length);
         }
-        /** Point after end of the node. */
+        /** Point after the node. */
         static tail(node) {
             return new this(node, -1);
         }
@@ -31333,12 +31333,20 @@ var $;
             return $mol_dom_point.tail(this.node);
         }
         native() {
-            if (this.is_tail())
-                return [
-                    this.node.parentNode,
-                    [...this.node.parentNode.childNodes].indexOf(this.node) + 1,
-                ];
-            return [this.node, this.pos];
+            if (!this.is_tail())
+                return [this.node, this.pos];
+            return [
+                this.node.parentNode,
+                [...this.node.parentNode.childNodes].indexOf(this.node) + 1,
+            ];
+        }
+        /** Finds child of container which contains this point. */
+        lifted_to(container) {
+            if (this.node === container)
+                return container;
+            if (this.node.parentNode === container)
+                return this.node;
+            return $mol_dom_point.head(this.node.parentNode).lifted_to(container);
         }
         /** Point near the node. -1: before, +1: after. */
         static near(node, axis) {
@@ -31428,7 +31436,7 @@ var $;
     class $mol_dom_range extends Object {
         anchor;
         extend;
-        constructor(anchor, extend) {
+        constructor(anchor, extend = anchor) {
             super();
             this.anchor = anchor;
             this.extend = extend;
@@ -31460,6 +31468,17 @@ var $;
         /** Deeper Element which contain whole selection. */
         container() {
             return this.native().commonAncestorContainer;
+        }
+        /** Returns range with points ordered in document order. */
+        ordered() {
+            const anchor = new $mol_dom_range(this.anchor);
+            return anchor.point_compare(this.extend) >= 0 ? this : this.swap();
+        }
+        /** Raises range boundaries to a common parent. */
+        lifted() {
+            const ordered = this.ordered();
+            const container = ordered.container();
+            return new $mol_dom_range($mol_dom_point.nose(ordered.anchor.lifted_to(container)), $mol_dom_point.tail(ordered.extend.lifted_to(container)));
         }
         /** Has now content. */
         is_empty() {
@@ -31712,26 +31731,32 @@ var $;
             }
             block_unwrap(event) {
                 const sel = $mol_dom_range.from_selection();
-                if (!sel.is_empty())
-                    return;
-                let box = sel.container();
-                if (box.nodeType !== box.ELEMENT_NODE)
-                    box = box.parentNode;
-                while (box) {
-                    if (box === this.Content().dom_node())
-                        return;
-                    if (box.localName === 'p') {
-                        const parent = box.parentNode;
-                        if (parent === this.Content().dom_node())
-                            return;
-                        // $mol_dom_range.around( box ).split() ???
-                        while (parent.firstChild)
-                            parent.parentNode.insertBefore(parent.firstChild, parent);
-                        parent.remove();
-                        break;
-                    }
-                    box = box.parentNode;
+                const root = this.Content().dom_node();
+                let range = sel.lifted();
+                let container = range.container();
+                const paragraph = container.closest('p');
+                if (paragraph) {
+                    range = $mol_dom_range.around(paragraph);
+                    container = paragraph.parentElement;
                 }
+                if (container === root)
+                    return;
+                if (range.anchor.pos !== 0) {
+                    const prev = container.cloneNode();
+                    while (range.anchor.node.previousSibling)
+                        prev.insertBefore(range.anchor.node.previousSibling, prev.firstChild);
+                    prev.insertBefore(range.anchor.node, null);
+                    container.before(prev);
+                }
+                if (range.extend.node.nextSibling) {
+                    const next = container.cloneNode();
+                    while (range.extend.node.nextSibling)
+                        next.appendChild(range.extend.node.nextSibling);
+                    container.after(next);
+                }
+                while (container.firstChild)
+                    container.before(container.firstChild);
+                container.remove();
                 this.selection_load();
                 this.save();
                 event.preventDefault();
