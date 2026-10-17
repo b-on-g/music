@@ -3587,7 +3587,7 @@ var $;
                         }
                     }
                 }
-                else if (key === '@media' || key === '@container') {
+                else if (key === '@media' || key === '@container' || key === '@supports') {
                     const media = config[key];
                     for (let query of Object.keys(media).reverse()) {
                         rules.push('}\n');
@@ -11250,7 +11250,7 @@ var $;
     $mol_style_define($mol_link, {
         textDecoration: 'none',
         color: $mol_theme.control,
-        stroke: 'currentcolor',
+        stroke: 'currentColor',
         cursor: 'pointer',
         padding: $mol_gap.text,
         boxSizing: 'border-box',
@@ -11438,6 +11438,7 @@ var $;
         send_code(code) { }
         send_type(mime) { }
         send_name(name) { }
+        send_prop(name, value) { }
         origin() { return 'unknown'; }
         address() { return 'unknown'; }
         send_data(data) {
@@ -16741,6 +16742,8 @@ var $;
         }
         encrypted(next) {
             $mol_wire_solid();
+            if (!this._gift.size)
+                this.loading();
             const gift = this._gift.get(this.link().str);
             const prev = gift?.code_exists() ?? false;
             if (next === undefined)
@@ -36892,12 +36895,10 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    function $giper_baza_file_mime_safe(type) {
-        return ['audio', 'video', 'image', 'font'].includes(type.replace(/\/.*$/, ''))
-            ? type
-            : 'application/octet-stream';
-    }
-    $.$giper_baza_file_mime_safe = $giper_baza_file_mime_safe;
+    $.$giper_baza_file_csp = [
+        'Content-Security-Policy',
+        "sandbox; default-src 'none'; script-src 'none'; style-src 'unsafe-inline'; img-src data:; media-src data:; form-action 'none'",
+    ];
     $.$giper_baza_file_query = $hyoo_harp_scheme({
         BAZA: $hyoo_harp_scheme({}),
         file: $hyoo_harp_scheme({}, $mol_data_string),
@@ -36912,7 +36913,7 @@ var $;
     }) {
         /** Persistent URI to file content */
         uri() {
-            return `?BAZA:file=${this.link()};name=${this.name()}`;
+            return `${this.name()}?BAZA:file=${this.link()}`;
         }
         /** File name */
         name(next) {
@@ -37128,16 +37129,19 @@ var $;
             const id = query.file['=']?.[0][0];
             if (!id)
                 return;
-            const link = new $giper_baza_link(id);
+            const link = $giper_baza_link.check(id);
+            if (!link)
+                return event.respondWith(new Response(null, { status: 400 }));
             const file = $.$giper_baza_glob.Pawn(link, $giper_baza_file);
             return event.respondWith($mol_wire_async(file).blob().then(blob => {
                 return new Response(blob, {
                     status: file.filled() ? 200 : 404,
                     statusText: file.filled() ? 'OK' : 'Not Filled',
                     headers: {
-                        'Content-Type': $giper_baza_file_mime_safe(file.type()),
+                        'Content-Type': file.type(),
                         'X-Content-Type-Options': 'nosniff',
                         'X-Powered-By': '$giper_baza_file',
+                        ...Object.fromEntries([$giper_baza_file_csp]),
                     },
                 });
             }));
