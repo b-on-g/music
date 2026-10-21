@@ -16006,11 +16006,12 @@ var $;
             for (const gift of this._gift.values()) {
                 collect(gift);
                 if (gift.mate().str) {
-                    if (skip_faces.has(gift.lord().peer().str))
+                    if (skip_faces.has(gift.mate().peer().str))
                         continue;
                     const mate_pass = this.lord_pass(gift.mate());
-                    if (mate_pass)
-                        passes.add(mate_pass);
+                    if (!mate_pass)
+                        return $mol_fail(new Error('No pass for mate'));
+                    passes.add(mate_pass);
                 }
             }
             for (const kids of this._sand.values()) {
@@ -16742,8 +16743,7 @@ var $;
         }
         encrypted(next) {
             $mol_wire_solid();
-            if (!this._gift.size)
-                this.loading();
+            // if( !this._gift.size ) this.loading()
             const gift = this._gift.get(this.link().str);
             const prev = gift?.code_exists() ?? false;
             if (next === undefined)
@@ -16999,7 +16999,10 @@ var $;
                     graph.link(seal, nodes.get(seal.lord().str) ?? null, 0); // seal -> lord
                     graph.link(seal, null, 0); // seal -> every
                     for (const hash of seal.hash_list()) {
-                        graph.link(nodes.get(hash.str) ?? null, seal, 1); // unit => seal
+                        const node = nodes.get(hash.str);
+                        if (!node)
+                            continue;
+                        graph.link(node, seal, 1); // unit => seal
                     }
                 }
             });
@@ -24444,7 +24447,6 @@ var $;
 		}
 		View(){
 			const obj = new this.$.$mol_text_code();
-			(obj.attr) = () => ({...(this.$.$mol_text_code.prototype.attr.call(obj)), "inert": ""});
 			(obj.text) = () => ((this.value()));
 			(obj.render_visible_only) = () => (false);
 			(obj.row_numb) = (id) => ((this.row_numb(id)));
@@ -24643,7 +24645,7 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    $mol_style_attach("mol/textarea/textarea.view.css", "[mol_textarea] {\n\tflex: 1 0 auto;\n\tflex-direction: column;\n\tvertical-align: top;\n\tmin-height: max-content;\n\twhite-space: pre-wrap;\n\tword-break: break-word;\n\tborder-radius: var(--mol_gap_round);\n\tfont-family: monospace;\n\tposition: relative;\n\ttab-size: 4;\n}\n\n[mol_textarea_view] {\n\tpointer-events: none;\n\twhite-space: inherit;\n\tfont-family: inherit;\n\ttab-size: inherit;\n\tuser-select: none;\n}\n\n[mol_textarea_view_copy] {\n\tpointer-events: all;\n}\n\n[mol_textarea_clickable] > [mol_textarea_view] {\n\tpointer-events: all;\n\tuser-select: auto;\n}\n\n[mol_textarea_clickable] > [mol_textarea_edit] {\n\tuser-select: none;\n}\n\n[mol_textarea_edit] {\n\tfont-family: inherit;\n\tpadding: var(--mol_gap_text);\n\tcolor: transparent !important;\n\tcaret-color: var(--mol_theme_text);\n\tresize: none;\n\ttext-align: inherit;\n\twhite-space: inherit;\n\tborder-radius: inherit;\n\toverflow-anchor: none;\n\tposition: absolute;\n\theight: 100%;\n\twidth: 100%;\n\ttab-size: inherit;\n}\n\n[mol_textarea_sidebar_showed] [mol_textarea_edit] {\n\tleft: 1.75rem;\n\twidth: calc( 100% - 1.75rem );\n}\n\n[mol_textarea_edit]:hover + [mol_textarea_view] {\n\tz-index: var(--mol_layer_hover);\n}\n\n[mol_textarea_edit]:focus + [mol_textarea_view] {\n\tz-index: var(--mol_layer_focus);\n}\n");
+    $mol_style_attach("mol/textarea/textarea.view.css", "[mol_textarea] {\n\tflex: 1 0 auto;\n\tflex-direction: column;\n\tvertical-align: top;\n\tmin-height: max-content;\n\twhite-space: pre-wrap;\n\tword-break: break-word;\n\tborder-radius: var(--mol_gap_round);\n\tfont-family: monospace;\n\tposition: relative;\n\ttab-size: 4;\n}\n\n[mol_textarea_view] {\n    interactivity: inert;\n\twhite-space: inherit;\n\tfont-family: inherit;\n\ttab-size: inherit;\n}\n\n[mol_textarea_view_copy] {\n    interactivity: initial;\n}\n\n[mol_textarea_clickable] > [mol_textarea_view] {\n    interactivity: initial;\n}\n\n[mol_textarea_clickable] > [mol_textarea_edit] {\n    interactivity: inert;\n}\n\n[mol_textarea_edit] {\n\tfont-family: inherit;\n\tpadding: var(--mol_gap_text);\n\tcolor: transparent !important;\n\tcaret-color: var(--mol_theme_text);\n\tresize: none;\n\ttext-align: inherit;\n\twhite-space: inherit;\n\tborder-radius: inherit;\n\toverflow-anchor: none;\n\tposition: absolute;\n\theight: 100%;\n\twidth: 100%;\n\ttab-size: inherit;\n}\n\n[mol_textarea_sidebar_showed] [mol_textarea_edit] {\n\tleft: 1.75rem;\n\twidth: calc( 100% - 1.75rem );\n}\n\n[mol_textarea_edit]:hover + [mol_textarea_view] {\n\tz-index: var(--mol_layer_hover);\n}\n\n[mol_textarea_edit]:focus + [mol_textarea_view] {\n\tz-index: var(--mol_layer_focus);\n}\n");
 })($ || ($ = {}));
 
 ;
@@ -26867,6 +26869,139 @@ var $;
         background: { color: $bog_builderui_tokens.card },
         border: { top: { width: '1px', style: 'solid', color: $bog_builderui_tokens.line } },
     });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    function $mol_offline() { }
+    $.$mol_offline = $mol_offline;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    const blacklist = new Set([
+        '//cse.google.com/adsense/search/async-ads.js'
+    ]);
+    /** Installs service worker proxy, which caches all requests and respond from cache on http errors. */
+    function $mol_offline_web() {
+        if (typeof window === 'undefined') {
+            self.addEventListener('install', (event) => {
+                ;
+                self.skipWaiting();
+            });
+            self.addEventListener('activate', (event) => {
+                // caches.delete( '$mol_offline' )
+                ;
+                self.clients.claim();
+                $$.$mol_log3_done({
+                    place: '$mol_offline',
+                    message: 'Activated',
+                });
+            });
+            self.addEventListener('fetch', (event) => {
+                const request = event.request;
+                // console.log( 'FETCH', request.mode, request.cache, request.url )
+                if (blacklist.has(request.url.replace(/^https?:/, ''))) {
+                    return event.respondWith(new Response(null, {
+                        status: 418,
+                        statusText: 'Blocked'
+                    }));
+                }
+                if (request.method !== 'GET')
+                    return;
+                if (!/^https?:/.test(request.url))
+                    return;
+                if (/\?/.test(request.url))
+                    return;
+                if (request.cache === 'no-store')
+                    return;
+                const fetch_data = () => fetch(new Request(request, { credentials: 'omit' })).then(response => {
+                    if (response.status !== 200)
+                        return response;
+                    event.waitUntil(caches.open('$mol_offline').then(cache => cache.put(request, response)));
+                    return response.clone();
+                });
+                const enrich = (response) => {
+                    // console.log( 'ENRICH', response.status, response.url )
+                    if (!response.status)
+                        return response;
+                    const headers = new Headers(response.headers);
+                    headers.set("$mol_offline", "");
+                    headers.set("Origin-Agent-Cluster", "?1"); // prevent thread sharing
+                    // headers.set( "Cross-Origin-Embedder-Policy", "credentialless" )
+                    // headers.set( "Cross-Origin-Resource-Policy", "cross-origin" )
+                    // headers.set( "Cross-Origin-Opener-Policy", "same-origin" )
+                    return new Response(response.body, {
+                        status: response.status,
+                        statusText: response.statusText,
+                        headers,
+                    });
+                };
+                const fresh = request.cache === 'force-cache' ? null : fetch_data();
+                if (fresh)
+                    event.waitUntil(fresh.then(enrich));
+                event.respondWith(caches.match(request).then(cached => request.cache === 'no-cache' || request.cache === 'reload'
+                    ? (cached
+                        ? fresh
+                            .then(actual => {
+                            if (actual.status === cached.status)
+                                return actual;
+                            throw new Error(`${actual.status}${actual.statusText ? ` ${actual.statusText}` : ''}`, { cause: actual });
+                        })
+                            .catch((err) => {
+                            const cloned = cached.clone();
+                            const message = `${err.cause instanceof Response ? '' : '500 '}${err.message} $mol_offline fallback to cache`;
+                            cloned.headers.set('$mol_offline_remote_status', message);
+                            return cloned;
+                        })
+                        : fresh)
+                    : (cached || fresh || fetch_data())).then(enrich));
+            });
+            self.addEventListener('beforeinstallprompt', (event) => event.prompt());
+        }
+        else if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+            console.warn('HTTPS or localhost is required for service workers.');
+        }
+        else if (!navigator.serviceWorker) {
+            console.warn('Service Worker is not supported.');
+        }
+        else {
+            $mol_dom.addEventListener('DOMContentLoaded', () => {
+                navigator.serviceWorker.register('web.js').then(reg => {
+                    reg.addEventListener('updatefound', () => {
+                        $$.$mol_log3_rise({
+                            place: '$mol_offline',
+                            message: 'Outdated',
+                        });
+                        const worker = reg.installing;
+                        worker.addEventListener('statechange', () => {
+                            if (worker.state !== 'activated')
+                                return;
+                            window.location.reload();
+                        });
+                    });
+                });
+            });
+        }
+    }
+    $.$mol_offline_web = $mol_offline_web;
+    $.$mol_offline = $mol_offline_web;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    try {
+        $mol_offline();
+    }
+    catch (error) {
+        console.error(error);
+    }
 })($ || ($ = {}));
 
 ;
@@ -36978,139 +37113,6 @@ var $;
         }
     }
     $.$giper_baza_file = $giper_baza_file;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    function $mol_offline() { }
-    $.$mol_offline = $mol_offline;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    const blacklist = new Set([
-        '//cse.google.com/adsense/search/async-ads.js'
-    ]);
-    /** Installs service worker proxy, which caches all requests and respond from cache on http errors. */
-    function $mol_offline_web() {
-        if (typeof window === 'undefined') {
-            self.addEventListener('install', (event) => {
-                ;
-                self.skipWaiting();
-            });
-            self.addEventListener('activate', (event) => {
-                // caches.delete( '$mol_offline' )
-                ;
-                self.clients.claim();
-                $$.$mol_log3_done({
-                    place: '$mol_offline',
-                    message: 'Activated',
-                });
-            });
-            self.addEventListener('fetch', (event) => {
-                const request = event.request;
-                // console.log( 'FETCH', request.mode, request.cache, request.url )
-                if (blacklist.has(request.url.replace(/^https?:/, ''))) {
-                    return event.respondWith(new Response(null, {
-                        status: 418,
-                        statusText: 'Blocked'
-                    }));
-                }
-                if (request.method !== 'GET')
-                    return;
-                if (!/^https?:/.test(request.url))
-                    return;
-                if (/\?/.test(request.url))
-                    return;
-                if (request.cache === 'no-store')
-                    return;
-                const fetch_data = () => fetch(new Request(request, { credentials: 'omit' })).then(response => {
-                    if (response.status !== 200)
-                        return response;
-                    event.waitUntil(caches.open('$mol_offline').then(cache => cache.put(request, response)));
-                    return response.clone();
-                });
-                const enrich = (response) => {
-                    // console.log( 'ENRICH', response.status, response.url )
-                    if (!response.status)
-                        return response;
-                    const headers = new Headers(response.headers);
-                    headers.set("$mol_offline", "");
-                    headers.set("Origin-Agent-Cluster", "?1"); // prevent thread sharing
-                    // headers.set( "Cross-Origin-Embedder-Policy", "credentialless" )
-                    // headers.set( "Cross-Origin-Resource-Policy", "cross-origin" )
-                    // headers.set( "Cross-Origin-Opener-Policy", "same-origin" )
-                    return new Response(response.body, {
-                        status: response.status,
-                        statusText: response.statusText,
-                        headers,
-                    });
-                };
-                const fresh = request.cache === 'force-cache' ? null : fetch_data();
-                if (fresh)
-                    event.waitUntil(fresh.then(enrich));
-                event.respondWith(caches.match(request).then(cached => request.cache === 'no-cache' || request.cache === 'reload'
-                    ? (cached
-                        ? fresh
-                            .then(actual => {
-                            if (actual.status === cached.status)
-                                return actual;
-                            throw new Error(`${actual.status}${actual.statusText ? ` ${actual.statusText}` : ''}`, { cause: actual });
-                        })
-                            .catch((err) => {
-                            const cloned = cached.clone();
-                            const message = `${err.cause instanceof Response ? '' : '500 '}${err.message} $mol_offline fallback to cache`;
-                            cloned.headers.set('$mol_offline_remote_status', message);
-                            return cloned;
-                        })
-                        : fresh)
-                    : (cached || fresh || fetch_data())).then(enrich));
-            });
-            self.addEventListener('beforeinstallprompt', (event) => event.prompt());
-        }
-        else if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
-            console.warn('HTTPS or localhost is required for service workers.');
-        }
-        else if (!navigator.serviceWorker) {
-            console.warn('Service Worker is not supported.');
-        }
-        else {
-            $mol_dom.addEventListener('DOMContentLoaded', () => {
-                navigator.serviceWorker.register('web.js').then(reg => {
-                    reg.addEventListener('updatefound', () => {
-                        $$.$mol_log3_rise({
-                            place: '$mol_offline',
-                            message: 'Outdated',
-                        });
-                        const worker = reg.installing;
-                        worker.addEventListener('statechange', () => {
-                            if (worker.state !== 'activated')
-                                return;
-                            window.location.reload();
-                        });
-                    });
-                });
-            });
-        }
-    }
-    $.$mol_offline_web = $mol_offline_web;
-    $.$mol_offline = $mol_offline_web;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    try {
-        $mol_offline();
-    }
-    catch (error) {
-        console.error(error);
-    }
 })($ || ($ = {}));
 
 ;

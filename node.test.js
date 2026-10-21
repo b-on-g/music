@@ -16257,11 +16257,12 @@ var $;
             for (const gift of this._gift.values()) {
                 collect(gift);
                 if (gift.mate().str) {
-                    if (skip_faces.has(gift.lord().peer().str))
+                    if (skip_faces.has(gift.mate().peer().str))
                         continue;
                     const mate_pass = this.lord_pass(gift.mate());
-                    if (mate_pass)
-                        passes.add(mate_pass);
+                    if (!mate_pass)
+                        return $mol_fail(new Error('No pass for mate'));
+                    passes.add(mate_pass);
                 }
             }
             for (const kids of this._sand.values()) {
@@ -16993,8 +16994,7 @@ var $;
         }
         encrypted(next) {
             $mol_wire_solid();
-            if (!this._gift.size)
-                this.loading();
+            // if( !this._gift.size ) this.loading()
             const gift = this._gift.get(this.link().str);
             const prev = gift?.code_exists() ?? false;
             if (next === undefined)
@@ -17250,7 +17250,10 @@ var $;
                     graph.link(seal, nodes.get(seal.lord().str) ?? null, 0); // seal -> lord
                     graph.link(seal, null, 0); // seal -> every
                     for (const hash of seal.hash_list()) {
-                        graph.link(nodes.get(hash.str) ?? null, seal, 1); // unit => seal
+                        const node = nodes.get(hash.str);
+                        if (!node)
+                            continue;
+                        graph.link(node, seal, 1); // unit => seal
                     }
                 }
             });
@@ -20388,6 +20391,9 @@ var $;
                     origin: msg.origin(),
                     remote: req.socket.remoteAddress + ':' + req.socket.remotePort
                 });
+            if (Number(req.headers['content-length']) > this.message_limit) {
+                return port.send_code($mol_rest_code["Request Entity Too Large"]);
+            }
             $mol_wire_sync(res).setHeader('Access-Control-Allow-Origin', '*');
             $mol_wire_sync(res).setHeader('Access-Control-Allow-Methods', '*');
             $mol_wire_sync(res).setHeader('Access-Control-Allow-Headers', '*');
@@ -20487,7 +20493,7 @@ var $;
         }
         _ws_income_chunks = new WeakMap;
         _ws_income_frames = new WeakMap;
-        ws_message_size_max = 64 * 1024 * 1024; // 64MiB
+        message_limit = 16 * 1024 * 1024; // 16MiB
         async ws_income(chunk, upgrade, sock) {
             sock.pause();
             try {
@@ -20513,10 +20519,10 @@ var $;
                 for (const frame of frames) {
                     total_size += typeof frame === 'string' ? frame.length : frame.byteLength;
                 }
-                if (total_size > this.ws_message_size_max)
+                if (total_size > this.message_limit)
                     throw new Error('WebSocket message too large', { cause: {
                             size: total_size,
-                            limit: this.ws_message_size_max,
+                            limit: this.message_limit,
                         } });
                 const msg_size = header_size + frame_size;
                 const partial_size = chunks.reduce((sum, buf) => sum + buf.byteLength, 0);
@@ -21242,6 +21248,7 @@ var $;
             if (!link)
                 return msg.port.send_code(400);
             const land = this.$.$giper_baza_glob.Land(link.land());
+            land.loading();
             if (land.encrypted())
                 return msg.port.send_code(403);
             const file = land.Pawn($giper_baza_file).Head(link.head());
@@ -25710,7 +25717,6 @@ var $;
 		}
 		View(){
 			const obj = new this.$.$mol_text_code();
-			(obj.attr) = () => ({...(this.$.$mol_text_code.prototype.attr.call(obj)), "inert": ""});
 			(obj.text) = () => ((this.value()));
 			(obj.render_visible_only) = () => (false);
 			(obj.row_numb) = (id) => ((this.row_numb(id)));
@@ -25909,7 +25915,7 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    $mol_style_attach("mol/textarea/textarea.view.css", "[mol_textarea] {\n\tflex: 1 0 auto;\n\tflex-direction: column;\n\tvertical-align: top;\n\tmin-height: max-content;\n\twhite-space: pre-wrap;\n\tword-break: break-word;\n\tborder-radius: var(--mol_gap_round);\n\tfont-family: monospace;\n\tposition: relative;\n\ttab-size: 4;\n}\n\n[mol_textarea_view] {\n\tpointer-events: none;\n\twhite-space: inherit;\n\tfont-family: inherit;\n\ttab-size: inherit;\n\tuser-select: none;\n}\n\n[mol_textarea_view_copy] {\n\tpointer-events: all;\n}\n\n[mol_textarea_clickable] > [mol_textarea_view] {\n\tpointer-events: all;\n\tuser-select: auto;\n}\n\n[mol_textarea_clickable] > [mol_textarea_edit] {\n\tuser-select: none;\n}\n\n[mol_textarea_edit] {\n\tfont-family: inherit;\n\tpadding: var(--mol_gap_text);\n\tcolor: transparent !important;\n\tcaret-color: var(--mol_theme_text);\n\tresize: none;\n\ttext-align: inherit;\n\twhite-space: inherit;\n\tborder-radius: inherit;\n\toverflow-anchor: none;\n\tposition: absolute;\n\theight: 100%;\n\twidth: 100%;\n\ttab-size: inherit;\n}\n\n[mol_textarea_sidebar_showed] [mol_textarea_edit] {\n\tleft: 1.75rem;\n\twidth: calc( 100% - 1.75rem );\n}\n\n[mol_textarea_edit]:hover + [mol_textarea_view] {\n\tz-index: var(--mol_layer_hover);\n}\n\n[mol_textarea_edit]:focus + [mol_textarea_view] {\n\tz-index: var(--mol_layer_focus);\n}\n");
+    $mol_style_attach("mol/textarea/textarea.view.css", "[mol_textarea] {\n\tflex: 1 0 auto;\n\tflex-direction: column;\n\tvertical-align: top;\n\tmin-height: max-content;\n\twhite-space: pre-wrap;\n\tword-break: break-word;\n\tborder-radius: var(--mol_gap_round);\n\tfont-family: monospace;\n\tposition: relative;\n\ttab-size: 4;\n}\n\n[mol_textarea_view] {\n    interactivity: inert;\n\twhite-space: inherit;\n\tfont-family: inherit;\n\ttab-size: inherit;\n}\n\n[mol_textarea_view_copy] {\n    interactivity: initial;\n}\n\n[mol_textarea_clickable] > [mol_textarea_view] {\n    interactivity: initial;\n}\n\n[mol_textarea_clickable] > [mol_textarea_edit] {\n    interactivity: inert;\n}\n\n[mol_textarea_edit] {\n\tfont-family: inherit;\n\tpadding: var(--mol_gap_text);\n\tcolor: transparent !important;\n\tcaret-color: var(--mol_theme_text);\n\tresize: none;\n\ttext-align: inherit;\n\twhite-space: inherit;\n\tborder-radius: inherit;\n\toverflow-anchor: none;\n\tposition: absolute;\n\theight: 100%;\n\twidth: 100%;\n\ttab-size: inherit;\n}\n\n[mol_textarea_sidebar_showed] [mol_textarea_edit] {\n\tleft: 1.75rem;\n\twidth: calc( 100% - 1.75rem );\n}\n\n[mol_textarea_edit]:hover + [mol_textarea_view] {\n\tz-index: var(--mol_layer_hover);\n}\n\n[mol_textarea_edit]:focus + [mol_textarea_view] {\n\tz-index: var(--mol_layer_focus);\n}\n");
 })($ || ($ = {}));
 
 ;
@@ -44820,6 +44826,20 @@ var $;
             $mol_assert_equal(area.pass_rank(area.auth().pass()), $giper_baza_rank_rule);
             $mol_assert_equal(area.lord_rank($giper_baza_link.hole), $giper_baza_rank_post('just'));
         },
+        async 'Gift to new Mate reaches Peer which knows Lord'($) {
+            const auth0 = $.$giper_baza_auth.grab();
+            const auth1 = $.$giper_baza_auth.grab();
+            const auth2 = $.$giper_baza_auth.grab();
+            const land0 = $giper_baza_land.make({ $, auth: () => auth0 });
+            const land1 = $giper_baza_land.make({ $, link: () => land0.link(), auth: () => auth1 });
+            land0.post($giper_baza_link.hole, $giper_baza_link.hole, new $giper_baza_link('AA111111'), new Uint8Array([1]));
+            await $mol_wire_async(land1).units_steal(land0);
+            const face = land1.faces.clone();
+            land0.give(auth2.pass(), $giper_baza_rank_post('just'));
+            const delta = await $mol_wire_async(land0).diff_units(face);
+            await $mol_wire_async(land1).diff_apply(delta);
+            $mol_assert_equal(land1.lord_rank(auth2.pass().lord()), $giper_baza_rank_post('just'));
+        },
         // async 'Merge text changes'() {
         // 	const base = new $giper_baza_land( 1n, 1 )
         // 	base.chief.as( $hyoo_crowd_text ).str( 'Hello World and fun!' )
@@ -45937,7 +45957,7 @@ var $;
     $mol_test({
         async 'Close socket on oversized fragmented WebSocket message'($) {
             const server = $mol_rest_server.make({
-                ws_message_size_max: 5
+                message_limit: 5
             });
             let closed = false;
             const socket = {

@@ -206,6 +206,7 @@
 \/giper/baza/file
 	include \/mol/offline/install
 \/giper/baza/app
+	include \/mol/offline/install
 	deploy \/giper/baza/logo/logo.svg
 	deploy \/giper/baza/logo/logo-512.png
 	deploy \/giper/baza/logo/bg.webp
@@ -222,11 +223,10 @@
 	deploy \/giper/baza/diagram/pass.png
 	deploy \/giper/baza/diagram/gift.png
 	deploy \/giper/baza/diagram/sand.png
+	deploy \/giper/baza/diagram/seal.png
 	deploy \/giper/baza/diagram/files.png
 	deploy \/giper/baza/diagram/network.png
 	deploy \/giper/baza/diagram/jepsen.png
-	deploy \/giper/baza/docker/deploy.sh
-	deploy \/giper/baza/docker/autopull_and_restart.sh
 \/mws/baza/file
 	include \/mws/baza/land
 \/bog/music/stream
