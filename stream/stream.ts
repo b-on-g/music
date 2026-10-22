@@ -29,6 +29,10 @@ namespace $ {
 
 		private static _page_ready = false
 		private static _sw_ready = false
+		private static _served = null as null | boolean
+		private static _served_wait = null as null | Promise< boolean >
+
+		static readonly ping = '~ping'
 
 		/** Meta (total/mime) — LRU, без байт. */
 		private static _meta_cache = new Map< string, { total: number, mime: string } >()
@@ -70,7 +74,19 @@ namespace $ {
 
 		/** SW уже контролирует страницу — sync play без await. */
 		static active(): boolean {
-			return this.supported() && Boolean( navigator.serviceWorker!.controller )
+			return this.supported() && Boolean( navigator.serviceWorker!.controller ) && this._served === true
+		}
+
+		static served(): Promise< boolean > {
+			if( this._served_wait ) return this._served_wait
+			return this._served_wait = fetch( this.url( this.ping ), { cache: 'no-store' } )
+				.then( res => res.status === 204 )
+				.catch( () => false )
+				.then( ok => {
+					this._served = ok
+					if( !ok ) void navigator.serviceWorker!.getRegistration().then( reg => reg?.update() ).catch( () => {} )
+					return ok
+				} )
 		}
 
 		/** Дождаться controller (после reload / первой установки). */
@@ -78,7 +94,8 @@ namespace $ {
 			if( !this.supported() ) return false
 			try {
 				await navigator.serviceWorker!.ready
-				return Boolean( navigator.serviceWorker!.controller )
+				if( !navigator.serviceWorker!.controller ) return false
+				return await this.served()
 			} catch {
 				return false
 			}
@@ -92,6 +109,12 @@ namespace $ {
 			navigator.serviceWorker?.addEventListener( 'message', event => {
 				void this.on_sw_message( event )
 			} )
+			navigator.serviceWorker?.addEventListener( 'controllerchange', () => {
+				this._served = null
+				this._served_wait = null
+				void this.served()
+			} )
+			if( navigator.serviceWorker?.controller ) void this.served()
 		}
 
 		/** SW-контекст (web.js как worker): отвечать на fetch Range. */
@@ -104,6 +127,7 @@ namespace $ {
 			;( self as any ).addEventListener( 'fetch', ( event: any ) => {
 				const key = this.matches( event.request.url )
 				if( !key ) return
+				if( key === this.ping ) return event.respondWith( new Response( null, { status: 204 } ) )
 				event.respondWith( this.sw_respond( event.request, key ) )
 			} )
 		}
