@@ -28944,6 +28944,9 @@ var $;
         static name = 'bog-music-stream';
         static _page_ready = false;
         static _sw_ready = false;
+        static _served = null;
+        static _served_wait = null;
+        static ping = '~ping';
         /** Meta (total/mime) — LRU, без байт. */
         static _meta_cache = new Map();
         static _meta_cache_max = 16;
@@ -28982,7 +28985,20 @@ var $;
         }
         /** SW уже контролирует страницу — sync play без await. */
         static active() {
-            return this.supported() && Boolean(navigator.serviceWorker.controller);
+            return this.supported() && Boolean(navigator.serviceWorker.controller) && this._served === true;
+        }
+        static served() {
+            if (this._served_wait)
+                return this._served_wait;
+            return this._served_wait = fetch(this.url(this.ping), { cache: 'no-store' })
+                .then(res => res.status === 204)
+                .catch(() => false)
+                .then(ok => {
+                this._served = ok;
+                if (!ok)
+                    void navigator.serviceWorker.getRegistration().then(reg => reg?.update()).catch(() => { });
+                return ok;
+            });
         }
         /** Дождаться controller (после reload / первой установки). */
         static async when_ready() {
@@ -28990,7 +29006,9 @@ var $;
                 return false;
             try {
                 await navigator.serviceWorker.ready;
-                return Boolean(navigator.serviceWorker.controller);
+                if (!navigator.serviceWorker.controller)
+                    return false;
+                return await this.served();
             }
             catch {
                 return false;
@@ -29006,6 +29024,13 @@ var $;
             navigator.serviceWorker?.addEventListener('message', event => {
                 void this.on_sw_message(event);
             });
+            navigator.serviceWorker?.addEventListener('controllerchange', () => {
+                this._served = null;
+                this._served_wait = null;
+                void this.served();
+            });
+            if (navigator.serviceWorker?.controller)
+                void this.served();
         }
         /** SW-контекст (web.js как worker): отвечать на fetch Range. */
         static install_sw() {
@@ -29021,6 +29046,8 @@ var $;
                 const key = this.matches(event.request.url);
                 if (!key)
                     return;
+                if (key === this.ping)
+                    return event.respondWith(new Response(null, { status: 204 }));
                 event.respondWith(this.sw_respond(event.request, key));
             });
         }
@@ -30655,7 +30682,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.79';
+    $.$bog_music_version = 'v1.80';
 })($ || ($ = {}));
 
 ;

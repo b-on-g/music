@@ -43583,6 +43583,9 @@ declare namespace $ {
         static readonly name = "bog-music-stream";
         private static _page_ready;
         private static _sw_ready;
+        private static _served;
+        private static _served_wait;
+        static readonly ping = "~ping";
         /** Meta (total/mime) — LRU, без байт. */
         private static _meta_cache;
         private static _meta_cache_max;
@@ -43599,6 +43602,7 @@ declare namespace $ {
         static supported(): boolean;
         /** SW уже контролирует страницу — sync play без await. */
         static active(): boolean;
+        static served(): Promise<boolean>;
         /** Дождаться controller (после reload / первой установки). */
         static when_ready(): Promise<boolean>;
         /** Страница: слушать запросы Range от SW. */
