@@ -637,8 +637,13 @@ namespace $.$$ {
 			)
 		}
 
+		tube_status_text(index: number): string {
+			const item = this.tube_item(index)
+			return item ? this.tube_status(item.id) : ''
+		}
+
 		@$mol_mem_key
-		tube_status_text(index: number, next?: string): string {
+		tube_status(id: string, next?: string): string {
 			return next ?? ''
 		}
 
@@ -652,12 +657,12 @@ namespace $.$$ {
 			const item = this.tube_item(index)
 			if (!item) return
 			$bog_music_log.act(`скачивание с YouTube: ${item.title ?? index}`)
-			;($mol_wire_async(this) as any).tube_download(index, item)
+			;($mol_wire_async(this) as any).tube_download(item)
 		}
 
-		async tube_download(index: number, item: $bog_music_tube_item) {
-			if (this.tube_status_text(index)) return
-			this.tube_status_text(index, 'Качаю…')
+		async tube_download(item: $bog_music_tube_item) {
+			if (this.tube_status(item.id)) return
+			this.tube_status(item.id, 'Качаю…')
 			try {
 				const bytes = await $bog_music_tube.audio_bytes(item.id)
 				const audio: $bog_music_api_audio = {
@@ -671,13 +676,13 @@ namespace $.$$ {
 				}
 				await ($mol_wire_async(this.account()) as any).import_audio(audio, bytes, 'audio/mp4')
 				$bog_music_log.act(`скачано с YouTube: ${item.title} (${bytes.length} байт)`)
-				this.tube_status_text(index, '✓ в Моей музыке')
+				this.tube_status(item.id, '✓ в Моей музыке')
 			} catch (e: any) {
 				if (e instanceof Promise) throw e
 				console.warn('[tube] download failed:', e?.message ?? e)
 				$bog_music_log.err(`скачивание с YouTube не удалось: ${item.title}: ${e?.message ?? e}`)
-				this.tube_status_text(index, 'Ошибка')
-				setTimeout(() => this.tube_status_text(index, ''), 4000)
+				this.tube_status(item.id, 'Ошибка')
+				setTimeout(() => this.tube_status(item.id, ''), 4000)
 			}
 		}
 
