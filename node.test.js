@@ -30682,7 +30682,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.80';
+    $.$bog_music_version = 'v1.81';
 })($ || ($ = {}));
 
 ;
@@ -31267,7 +31267,11 @@ var $;
                 this.tube_current(index);
                 this.Player().play_external($bog_music_tube.audio_url(item.id), item.title, item.channel, $bog_music_tube.cover_url(item.id));
             }
-            tube_status_text(index, next) {
+            tube_status_text(index) {
+                const item = this.tube_item(index);
+                return item ? this.tube_status(item.id) : '';
+            }
+            tube_status(id, next) {
                 return next ?? '';
             }
             /** Идёт ли скачивание этой строки — для мигания кнопки Get. */
@@ -31279,12 +31283,12 @@ var $;
                 if (!item)
                     return;
                 $bog_music_log.act(`скачивание с YouTube: ${item.title ?? index}`);
-                $mol_wire_async(this).tube_download(index, item);
+                $mol_wire_async(this).tube_download(item);
             }
-            async tube_download(index, item) {
-                if (this.tube_status_text(index))
+            async tube_download(item) {
+                if (this.tube_status(item.id))
                     return;
-                this.tube_status_text(index, 'Качаю…');
+                this.tube_status(item.id, 'Качаю…');
                 try {
                     const bytes = await $bog_music_tube.audio_bytes(item.id);
                     const audio = {
@@ -31298,15 +31302,15 @@ var $;
                     };
                     await $mol_wire_async(this.account()).import_audio(audio, bytes, 'audio/mp4');
                     $bog_music_log.act(`скачано с YouTube: ${item.title} (${bytes.length} байт)`);
-                    this.tube_status_text(index, '✓ в Моей музыке');
+                    this.tube_status(item.id, '✓ в Моей музыке');
                 }
                 catch (e) {
                     if (e instanceof Promise)
                         throw e;
                     console.warn('[tube] download failed:', e?.message ?? e);
                     $bog_music_log.err(`скачивание с YouTube не удалось: ${item.title}: ${e?.message ?? e}`);
-                    this.tube_status_text(index, 'Ошибка');
-                    setTimeout(() => this.tube_status_text(index, ''), 4000);
+                    this.tube_status(item.id, 'Ошибка');
+                    setTimeout(() => this.tube_status(item.id, ''), 4000);
                 }
             }
             // =====================================================================
@@ -31657,7 +31661,7 @@ var $;
         ], $bog_music_app.prototype, "tube_play", null);
         __decorate([
             $mol_mem_key
-        ], $bog_music_app.prototype, "tube_status_text", null);
+        ], $bog_music_app.prototype, "tube_status", null);
         __decorate([
             $mol_action
         ], $bog_music_app.prototype, "tube_get", null);

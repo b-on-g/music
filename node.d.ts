@@ -50822,11 +50822,12 @@ declare namespace $.$$ {
         tube_step(step: number): boolean;
         /** Прослушать трек стримом с сервера, не скачивая в baza. */
         tube_play(index: number): void;
-        tube_status_text(index: number, next?: string): string;
+        tube_status_text(index: number): string;
+        tube_status(id: string, next?: string): string;
         /** Идёт ли скачивание этой строки — для мигания кнопки Get. */
         tube_busy(index: number): boolean;
         tube_get(index: number): void;
-        tube_download(index: number, item: $bog_music_tube_item): Promise<void>;
+        tube_download(item: $bog_music_tube_item): Promise<void>;
         tg_state(next?: {
             linked: boolean;
             name: string;
