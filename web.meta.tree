@@ -121,6 +121,7 @@
 	pack birthdaycase git \https://github.com/b-on-g/birthday-case.git
 	pack nka git \https://github.com/b-on-g/nyaftul_kitten_art.git
 	pack fragile git \https://github.com/b-on-g/fragile.git
+	pack gipergram git \https://github.com/b-on-g/gipergram.git
 \/mol
 	pack icon git \https://github.com/nin-jin/mol_icon.git
 \/mol/view
