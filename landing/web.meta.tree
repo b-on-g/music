@@ -119,7 +119,7 @@
 	pack atelier git \https://github.com/b-on-g/atelier.git
 	pack gtk git \https://github.com/b-on-g/gtk.git
 	pack birthdaycase git \https://github.com/b-on-g/birthday-case.git
-	pack nka git \https://github.com/b-on-g/nyaftul_kitten_art.git
+	pack merchquarium git \https://github.com/b-on-g/merchquarium.git
 	pack fragile git \https://github.com/b-on-g/fragile.git
 	pack gipergram git \https://github.com/b-on-g/gipergram.git
 \/mol
