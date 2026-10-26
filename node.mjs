@@ -4301,7 +4301,7 @@ var $;
             boxSizing: 'border-box',
             willChange: 'scroll-position',
             scroll: {
-                padding: [rem(.75), 0],
+                padding: ['2.5rem', 0],
             },
             maxHeight: per(100),
             maxWidth: per(100),
@@ -8620,8 +8620,40 @@ var $;
 "use strict";
 var $;
 (function ($) {
+    class $mol_dom_transfer extends $mol_object {
+        native;
+        static wrap(native) {
+            return new this(native);
+        }
+        constructor(native) {
+            super();
+            this.native = native;
+        }
+        get(type) {
+            return this.native.getData(type);
+        }
+        files() {
+            return $mol_wire_sync(this.native.files);
+        }
+    }
+    __decorate([
+        $mol_action
+    ], $mol_dom_transfer.prototype, "files", null);
+    __decorate([
+        $mol_action
+    ], $mol_dom_transfer, "wrap", null);
+    $.$mol_dom_transfer = $mol_dom_transfer;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
     class $mol_dom_event extends $mol_object {
         native;
+        static wrap(event) {
+            return new this(event);
+        }
         constructor(native) {
             super();
             this.native = native;
@@ -8631,13 +8663,19 @@ var $;
                 this.native.preventDefault();
             return this.native.defaultPrevented;
         }
-        static wrap(event) {
-            return new this.$.$mol_dom_event(event);
+        transfer() {
+            const transfer = this.native instanceof ClipboardEvent ? this.native.clipboardData
+                : this.native instanceof DragEvent ? this.native.dataTransfer
+                    : null;
+            return transfer && $mol_dom_transfer.wrap(transfer);
         }
     }
     __decorate([
         $mol_action
     ], $mol_dom_event.prototype, "prevented", null);
+    __decorate([
+        $mol_action
+    ], $mol_dom_event.prototype, "transfer", null);
     __decorate([
         $mol_action
     ], $mol_dom_event, "wrap", null);
@@ -11444,7 +11482,11 @@ var $;
         '': { id: $mol_dom_safe_attr },
         // special
         a: { href: $mol_dom_safe_uri },
-        img: { src: $mol_dom_safe_uri },
+        img: {
+            src: $mol_dom_safe_uri,
+            width: $mol_dom_safe_attr,
+            height: $mol_dom_safe_attr,
+        },
         object: { src: $mol_dom_safe_uri },
         // blocks
         div: {},
@@ -20049,6 +20091,7 @@ var $;
             return land.Pawn(Pawn).Head(link.head());
         }
         static Seed() {
+            $mol_wire_solid();
             const link = $giper_baza_flex_deck_link.lord();
             const seed = this.Pawn(link, $giper_baza_flex_seed);
             // if( !$mol_wire_sync( seed ).meta() )
@@ -20296,6 +20339,7 @@ var $;
         'zip': 'application/zip',
         '7z': 'application/x-7z-compressed',
     };
+    $.$mol_file_extensions_mime = Object.fromEntries(Object.entries($.$mol_file_extensions).map(([ext, mime]) => [mime, ext]));
 })($ || ($ = {}));
 
 ;
@@ -21127,15 +21171,16 @@ var $;
     }) {
         /** Persistent URI to file content */
         uri() {
-            return `${this.name()}?BAZA:file=${this.link()}`;
+            const time = this.last_change()?.valueOf() ?? 0;
+            return `${this.name()}?BAZA:file=${this.link()};time=${time}`;
         }
         /** File name */
         name(next) {
-            const ext = {
-                'text/plain': 'txt',
-                'application/json': 'json',
-            }[this.type()] ?? 'bin';
-            return this.Name(next)?.val(next) ?? `${this.link()}.${ext}`;
+            const name = this.Name(next)?.val(next);
+            if (name)
+                return name.replaceAll(/(\/|\.\.|:)/g, '_');
+            const ext = $mol_file_extensions_mime[this.type()] ?? 'bin';
+            return `${this.link()}.${ext}`;
         }
         /** Mime type */
         type(next) {
@@ -21191,6 +21236,9 @@ var $;
             return next;
         }
     }
+    __decorate([
+        $mol_mem
+    ], $giper_baza_file.prototype, "uri", null);
     $.$giper_baza_file = $giper_baza_file;
 })($ || ($ = {}));
 

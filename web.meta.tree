@@ -119,7 +119,7 @@
 	pack atelier git \https://github.com/b-on-g/atelier.git
 	pack gtk git \https://github.com/b-on-g/gtk.git
 	pack birthdaycase git \https://github.com/b-on-g/birthday-case.git
-	pack nka git \https://github.com/b-on-g/nyaftul_kitten_art.git
+	pack merchquarium git \https://github.com/b-on-g/merchquarium.git
 	pack fragile git \https://github.com/b-on-g/fragile.git
 	pack gipergram git \https://github.com/b-on-g/gipergram.git
 \/mol
@@ -139,28 +139,6 @@
 	pack web git \https://github.com/giper-dev/web.git
 \/giper/baza/glob
 	deploy \giper/baza/glob/glob.baza
-\/giper/baza/app
-	include \/mol/offline/install
-	deploy \/giper/baza/logo/logo.svg
-	deploy \/giper/baza/logo/logo-512.png
-	deploy \/giper/baza/logo/bg.webp
-	deploy \/giper/baza/diagram/reg.png
-	deploy \/giper/baza/diagram/list.png
-	deploy \/giper/baza/diagram/dict.png
-	deploy \/giper/baza/diagram/tree.png
-	deploy \/giper/baza/diagram/text.png
-	deploy \/giper/baza/diagram/rich.png
-	deploy \/giper/baza/diagram/json.png
-	deploy \/giper/baza/diagram/sync.png
-	deploy \/giper/baza/diagram/pack.png
-	deploy \/giper/baza/diagram/units.png
-	deploy \/giper/baza/diagram/pass.png
-	deploy \/giper/baza/diagram/gift.png
-	deploy \/giper/baza/diagram/sand.png
-	deploy \/giper/baza/diagram/seal.png
-	deploy \/giper/baza/diagram/files.png
-	deploy \/giper/baza/diagram/network.png
-	deploy \/giper/baza/diagram/jepsen.png
 \/hyoo
 	pack about git \https://github.com/hyoo-ru/about.hyoo.ru.git
 	pack artist git \https://github.com/hyoo-ru/artist.hyoo.ru.git
@@ -228,6 +206,28 @@
 	pack intern git \https://github.com/hyoo-ru/intern.hyoo.ru.git
 \/giper/baza/file
 	include \/mol/offline/install
+\/giper/baza/app
+	include \/mol/offline/install
+	deploy \/giper/baza/logo/logo.svg
+	deploy \/giper/baza/logo/logo-512.png
+	deploy \/giper/baza/logo/bg.webp
+	deploy \/giper/baza/diagram/reg.png
+	deploy \/giper/baza/diagram/list.png
+	deploy \/giper/baza/diagram/dict.png
+	deploy \/giper/baza/diagram/tree.png
+	deploy \/giper/baza/diagram/text.png
+	deploy \/giper/baza/diagram/rich.png
+	deploy \/giper/baza/diagram/json.png
+	deploy \/giper/baza/diagram/sync.png
+	deploy \/giper/baza/diagram/pack.png
+	deploy \/giper/baza/diagram/units.png
+	deploy \/giper/baza/diagram/pass.png
+	deploy \/giper/baza/diagram/gift.png
+	deploy \/giper/baza/diagram/sand.png
+	deploy \/giper/baza/diagram/seal.png
+	deploy \/giper/baza/diagram/files.png
+	deploy \/giper/baza/diagram/network.png
+	deploy \/giper/baza/diagram/jepsen.png
 \/mws/baza/file
 	include \/mws/baza/land
 \/bog/music/stream

@@ -7086,86 +7086,6 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    $mol_test({
-        'Special'() {
-            $mol_assert_equal($mol_si_short(0), '0');
-            $mol_assert_equal($mol_si_short(1 / 0), '∞');
-            $mol_assert_equal($mol_si_short(-1 / 0), '-∞');
-            $mol_assert_equal($mol_si_short(0 / 0), '∅');
-        },
-        'M'() {
-            $mol_assert_equal($mol_si_short(0), '0');
-            $mol_assert_equal($mol_si_short(0.999500), '1.00');
-            $mol_assert_equal($mol_si_short(-0.999600), '-1.00');
-            $mol_assert_equal($mol_si_short(999.4), '999');
-            $mol_assert_equal($mol_si_short(-999.4), '-999');
-        },
-        'L'() {
-            $mol_assert_equal($mol_si_short(999.5), '1.00k');
-            $mol_assert_equal($mol_si_short(-999.5), '-1.00k');
-            $mol_assert_equal($mol_si_short(999_400), '999k');
-            $mol_assert_equal($mol_si_short(-999_400), '-999k');
-        },
-        'XL'() {
-            $mol_assert_equal($mol_si_short(999_500), '1.00M');
-            $mol_assert_equal($mol_si_short(-999_600), '-1.00M');
-            $mol_assert_equal($mol_si_short(999_400_000), '999M');
-            $mol_assert_equal($mol_si_short(-999_400_000), '-999M');
-        },
-        'S'() {
-            $mol_assert_equal($mol_si_short(0.999400), '999m');
-            $mol_assert_equal($mol_si_short(-0.999400), '-999m');
-            $mol_assert_equal($mol_si_short(0.000_999_500), '1.00m');
-            $mol_assert_equal($mol_si_short(-0.000_999_500), '-1.00m');
-        },
-        'XS'() {
-            $mol_assert_equal($mol_si_short(0.000_999_400), '999µ');
-            $mol_assert_equal($mol_si_short(-0.000_999_400), '-999µ');
-            $mol_assert_equal($mol_si_short(0.000_000_999_600), '1.00µ');
-            $mol_assert_equal($mol_si_short(-0.000_000_999_600), '-1.00µ');
-        },
-        'With unit'() {
-            $mol_assert_equal($mol_si_short(0, 's'), '0 s');
-            $mol_assert_equal($mol_si_short(1 / 0, 's'), '∞ s');
-            $mol_assert_equal($mol_si_short(0 / 0, 's'), '∅ s');
-            $mol_assert_equal($mol_si_short(123, 'Hz'), '123 Hz');
-            $mol_assert_equal($mol_si_short(1234, 'g'), '1.23 kg');
-        },
-    });
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_test({
-        'simple sort'() {
-            const list = ['abc', 'ac', 'ab'];
-            list.sort($mol_compare_text());
-            $mol_assert_equal(`${list}`, 'ab,abc,ac');
-        },
-        'sort ignoring spaces around'() {
-            const list = [' a', '\tb', ' b'];
-            list.sort($mol_compare_text());
-            $mol_assert_equal(`${list}`, ' a,\tb, b');
-        },
-        'sort ignoring letter case'() {
-            const list = ['A', 'B', 'a'];
-            list.sort($mol_compare_text());
-            $mol_assert_equal(`${list}`, 'A,a,B');
-        },
-        'sort with custom serializer'() {
-            const list = ['abc', 'ab', 'ac'];
-            list.sort($mol_compare_text(str => str.split('').reverse().join('')));
-            $mol_assert_equal(`${list}`, 'ab,ac,abc');
-        },
-    });
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
     function check(str, query) {
         $mol_assert_like(str, $hyoo_harp_to_string(query));
         $mol_assert_like(query, $hyoo_harp_from_string(str));
@@ -7645,6 +7565,86 @@ var $;
             await $mol_wire_async(file).blob(new $mol_blob([source], { type: 'test/test' }));
             $mol_assert_equal('test/test', file.blob().type);
             $mol_assert_equal(source, new Uint8Array(await file.blob().arrayBuffer()));
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_test({
+        'Special'() {
+            $mol_assert_equal($mol_si_short(0), '0');
+            $mol_assert_equal($mol_si_short(1 / 0), '∞');
+            $mol_assert_equal($mol_si_short(-1 / 0), '-∞');
+            $mol_assert_equal($mol_si_short(0 / 0), '∅');
+        },
+        'M'() {
+            $mol_assert_equal($mol_si_short(0), '0');
+            $mol_assert_equal($mol_si_short(0.999500), '1.00');
+            $mol_assert_equal($mol_si_short(-0.999600), '-1.00');
+            $mol_assert_equal($mol_si_short(999.4), '999');
+            $mol_assert_equal($mol_si_short(-999.4), '-999');
+        },
+        'L'() {
+            $mol_assert_equal($mol_si_short(999.5), '1.00k');
+            $mol_assert_equal($mol_si_short(-999.5), '-1.00k');
+            $mol_assert_equal($mol_si_short(999_400), '999k');
+            $mol_assert_equal($mol_si_short(-999_400), '-999k');
+        },
+        'XL'() {
+            $mol_assert_equal($mol_si_short(999_500), '1.00M');
+            $mol_assert_equal($mol_si_short(-999_600), '-1.00M');
+            $mol_assert_equal($mol_si_short(999_400_000), '999M');
+            $mol_assert_equal($mol_si_short(-999_400_000), '-999M');
+        },
+        'S'() {
+            $mol_assert_equal($mol_si_short(0.999400), '999m');
+            $mol_assert_equal($mol_si_short(-0.999400), '-999m');
+            $mol_assert_equal($mol_si_short(0.000_999_500), '1.00m');
+            $mol_assert_equal($mol_si_short(-0.000_999_500), '-1.00m');
+        },
+        'XS'() {
+            $mol_assert_equal($mol_si_short(0.000_999_400), '999µ');
+            $mol_assert_equal($mol_si_short(-0.000_999_400), '-999µ');
+            $mol_assert_equal($mol_si_short(0.000_000_999_600), '1.00µ');
+            $mol_assert_equal($mol_si_short(-0.000_000_999_600), '-1.00µ');
+        },
+        'With unit'() {
+            $mol_assert_equal($mol_si_short(0, 's'), '0 s');
+            $mol_assert_equal($mol_si_short(1 / 0, 's'), '∞ s');
+            $mol_assert_equal($mol_si_short(0 / 0, 's'), '∅ s');
+            $mol_assert_equal($mol_si_short(123, 'Hz'), '123 Hz');
+            $mol_assert_equal($mol_si_short(1234, 'g'), '1.23 kg');
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_test({
+        'simple sort'() {
+            const list = ['abc', 'ac', 'ab'];
+            list.sort($mol_compare_text());
+            $mol_assert_equal(`${list}`, 'ab,abc,ac');
+        },
+        'sort ignoring spaces around'() {
+            const list = [' a', '\tb', ' b'];
+            list.sort($mol_compare_text());
+            $mol_assert_equal(`${list}`, ' a,\tb, b');
+        },
+        'sort ignoring letter case'() {
+            const list = ['A', 'B', 'a'];
+            list.sort($mol_compare_text());
+            $mol_assert_equal(`${list}`, 'A,a,B');
+        },
+        'sort with custom serializer'() {
+            const list = ['abc', 'ab', 'ac'];
+            list.sort($mol_compare_text(str => str.split('').reverse().join('')));
+            $mol_assert_equal(`${list}`, 'ab,ac,abc');
         },
     });
 })($ || ($ = {}));

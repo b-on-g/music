@@ -2068,10 +2068,6 @@ $giper_baza_unit_sand_dump $giper_baza_vary_edit
 
 $mol_icon_content_paste $mol_icon path \M19,20H5V4H7V7H17V4H19M12,2A1,1 0 0,1 13,3A1,1 0 0,1 12,4A1,1 0 0,1 11,3A1,1 0 0,1 12,2M19,2H14.82C14.4,0.84 13.3,0 12,0C10.7,0 9.6,0.84 9.18,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z
 
-$mol_icon_undo $mol_icon path \M12.5,8C9.85,8 7.45,9 5.6,10.6L2,7V16H11L7.38,12.38C8.77,11.22 10.54,10.5 12.5,10.5C16.04,10.5 19.05,12.81 20.1,16L22.47,15.22C21.08,11.03 17.15,8 12.5,8Z
-
-$mol_icon_redo $mol_icon path \M18.4,10.6C16.55,9 14.15,8 11.5,8C6.85,8 2.92,11.03 1.54,15.22L3.9,16C4.95,12.81 7.95,10.5 11.5,10.5C13.45,10.5 15.23,11.22 16.62,12.38L13,16H22V7L18.4,10.6Z
-
 $mol_icon_arrow_collapse $mol_icon path \M19.5,3.09L15,7.59V4H13V11H20V9H16.41L20.91,4.5L19.5,3.09M4,13V15H7.59L3.09,19.5L4.5,20.91L9,16.41V20H11V13H4Z
 
 $mol_icon_arrow_collapse_left $mol_icon path \M11.92,19.92L4,12L11.92,4.08L13.33,5.5L7.83,11H22V13H7.83L13.34,18.5L11.92,19.92M4,12V2H2V22H4V12Z
@@ -2123,13 +2119,13 @@ $giper_baza_rich_edit $mol_view
 	sub /
 		<= Tools $mol_float sub <= tools /
 			<= Main $mol_bar sub /
-				<= Undo_button $mol_button_minor
+				- <= Undo_button $mol_button_minor
 					hint @ \Undo (Ctrl+Z)
 					enabled? <=> selected? false
 					click? <=> undo?
 					sub /
 						<= Undo_icon $mol_icon_undo
-				<= Redo_button $mol_button_minor
+				- <= Redo_button $mol_button_minor
 					hint @ \Redo (Ctrl+Shift+Z)
 					enabled? <=> selected? false
 					click? <=> redo?
@@ -2173,6 +2169,7 @@ $giper_baza_rich_edit $mol_view
 						<= Preformat_icon $mol_icon_xml
 				<= Inline_format_menu $mol_pick
 					hint @ \Inline Formating
+					trigger_enabled? <=> selected? false
 					trigger_content /
 						<= Inline_format_menu_icon $mol_icon_marker
 					bubble_content /
@@ -2201,7 +2198,7 @@ $giper_baza_rich_edit $mol_view
 							hint \Alt+C
 							enabled? <=> selected? false
 							click? <=> inline_toggle*code?
-				<= Search_toggle $mol_check_icon
+				- <= Search_toggle $mol_check_icon
 					hint @ \Search / Replace
 					checked? <=> search_active? false
 					sub /
