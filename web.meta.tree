@@ -122,6 +122,7 @@
 	pack merchquarium git \https://github.com/b-on-g/merchquarium.git
 	pack fragile git \https://github.com/b-on-g/fragile.git
 	pack gipergram git \https://github.com/b-on-g/gipergram.git
+	pack pair git \https://github.com/b-on-g/pair.git
 \/mol
 	pack icon git \https://github.com/nin-jin/mol_icon.git
 \/mol/view
