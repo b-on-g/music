@@ -1256,6 +1256,7 @@ namespace $.$$ {
 			try { this.account().save_last_session(key, start_at) } catch {}
 
 			this.apply_media_metadata(audio)
+			this.heap_release()
 
 			if (this.is_extension()) {
 				this.dispatch_play_offscreen(key, audio, start_at)
@@ -1284,6 +1285,10 @@ namespace $.$$ {
 			}
 			this.play_source_local(key, audio, el, start_at)
 			setTimeout(() => this.analyze_gain(key), 3000)
+		}
+
+		private heap_release() {
+			setTimeout(() => $mol_wire_async($bog_music_land).release_all().catch($mol_fail_log), 5000)
 		}
 
 		// Готовые Blob'ы в RAM. Критично для авто-next: на iOS звук в фоне даётся

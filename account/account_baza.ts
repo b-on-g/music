@@ -135,6 +135,8 @@ namespace $ {
 			const track = this.track(key)
 			if (!track) return
 			$mol_wire_sync(track).blob_ensure()
+			const land = track.File()?.remote()?.land()
+			if (land instanceof $bog_music_land) $mol_wire_async(land).sands_release().catch($mol_fail_log)
 		}
 
 		/** Плейлисты, импортированные из шаров, с числом треков. */
