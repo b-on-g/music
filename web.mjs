@@ -37309,6 +37309,56 @@ var $;
 "use strict";
 var $;
 (function ($) {
+    class $bog_music_land extends $mws_baza_land {
+        static release_all() {
+            for (const land of this.$.$giper_baza_glob.yard().lands_alive()) {
+                if (!(land instanceof $bog_music_land))
+                    continue;
+                try {
+                    land.sands_release();
+                }
+                catch (error) {
+                    if ($mol_promise_like(error))
+                        $mol_fail_hidden(error);
+                    $mol_fail_log(error);
+                }
+            }
+        }
+        sand_load(sand) { }
+        diff_units(skip_faces) {
+            const units = super.diff_units(skip_faces);
+            for (const unit of units) {
+                if (!(unit instanceof $giper_baza_unit_sand))
+                    continue;
+                if (!unit.big() || unit._ball)
+                    continue;
+                unit._ball = $mol_wire_sync(this.mine()).ball_load(unit);
+            }
+            return units;
+        }
+        sands_release() {
+            this.units_saving();
+            const mine = this.mine();
+            for (const peers of this._sand.values()) {
+                for (const sands of peers.values()) {
+                    for (const sand of sands.values()) {
+                        if (!sand.big() || !sand._ball)
+                            continue;
+                        if (!mine.units_persisted.has(sand))
+                            continue;
+                        this.sand_unload(sand);
+                    }
+                }
+            }
+        }
+    }
+    $.$bog_music_land = $bog_music_land;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
     /**
      * File с потоковым чтением чанков без `sands_open` на весь список.
      *
@@ -37871,7 +37921,7 @@ var $;
             // Подмена file/land до любого baza: play-путь читает чанки потоком
             // с unload (см. $mws_baza_file / $mws_baza_land), а не через
             // sands_open на весь файл. Glob и File-link смотрят this.$ / $.
-            $.$giper_baza_land = $mws_baza_land;
+            $.$giper_baza_land = $bog_music_land;
             $.$giper_baza_file = $mws_baza_file;
             $bog_music_stream.install_page();
             if (typeof location === 'undefined')
@@ -39217,7 +39267,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.81';
+    $.$bog_music_version = 'v1.82';
 })($ || ($ = {}));
 
 ;
@@ -41151,6 +41201,162 @@ var $;
 var $;
 (function ($) {
     /**
+     * Выравнивание громкости треков по EBU R128 (ITU-R BS.1770): интегральная
+     * громкость записи в LUFS меряется один раз, при добавлении файла,
+     * и хранится в baza; при воспроизведении все треки приводятся к
+     * target_lufs.
+     *
+     * Раньше мерили обычный RMS. Он не совпадает с восприятием: басовитая
+     * запись по RMS громче, чем звучит, и после «выравнивания» оказывалась
+     * тише соседней. R128 сначала прогоняет сигнал через K-взвешивание
+     * (подъём верха + обрез низа), потом усредняет по 400-мс блокам с
+     * отсечкой тишины — по этому же стандарту нормализуют Spotify и YouTube.
+     */
+    class $bog_music_gain extends $mol_object {
+        /** Целевая громкость (LUFS). -14 — как у Spotify/YouTube Music. */
+        static target_lufs = -14;
+        /** Потолок усиления (dB): выше вытащим шум и дыхание зала. */
+        static gain_max_db = 12;
+        /** Предел приглушения (dB). */
+        static gain_min_db = -20;
+        /** Абсолютный гейт: блоки тише этого — тишина, в среднее не идут. */
+        static gate_abs = -70;
+        /** Считаем на 48 кГц — частота, для которой BS.1770 задаёт фильтры. */
+        static rate = 48000;
+        /**
+         * Коэффициенты K-взвешивания из BS.1770 для 48 кГц.
+         * Первый каскад — шельф +4 dB от ~1.5 кГц (голова и ушная раковина
+         * подчёркивают верх), второй — обрез ниже ~40 Гц (низы весят по
+         * энергии больше, чем слышны).
+         */
+        static shelf = [1.53512485958697, -2.69169618940638, 1.19839281085285, -1.69065929318241, 0.73248077421585];
+        static cut = [1.0, -2.0, 1.0, -1.99004745483398, 0.99007225036621];
+        /**
+         * Интегральная громкость записи в LUFS. null — мерить нечего:
+         * запись короче 400 мс или сплошная тишина.
+         */
+        static async measure_lufs(buf) {
+            const audio = await this.decode(buf);
+            const hop = Math.round(audio.sampleRate / 10); // 100 мс
+            const hops = Math.floor(audio.length / hop);
+            if (hops < 4)
+                return null;
+            // Сумма квадратов по каждому 100-мс куску, взвешенная по каналам.
+            const power = new Float64Array(hops);
+            for (let ch = 0; ch < audio.numberOfChannels; ch++) {
+                // Фильтруем на месте: копия целого трека на телефоне лишняя,
+                // декодированный буфер всё равно выбрасываем сразу после замера.
+                const data = audio.getChannelData(ch);
+                // Между проходами отпускаем поток: каждый — это десятки
+                // миллионов операций, и без пауз отрисовка встала бы колом.
+                this.biquad(data, this.shelf);
+                await this.breathe();
+                this.biquad(data, this.cut);
+                await this.breathe();
+                const weight = ch < 3 ? 1 : 1.41; // тыловые каналы весят больше
+                for (let h = 0; h < hops; h++) {
+                    let sum = 0;
+                    const end = (h + 1) * hop;
+                    for (let i = h * hop; i < end; i++)
+                        sum += data[i] * data[i];
+                    power[h] += weight * sum;
+                }
+                await this.breathe();
+            }
+            return this.integrated(power, hop);
+        }
+        /**
+         * Интегральная громкость по мощности 100-мс кусков. Блок — 400 мс
+         * (4 куска) с шагом в один кусок, дальше двойной гейт: сначала
+         * выкидываем тишину, потом всё, что на 10 LU тише среднего по
+         * оставшемуся — иначе долгие тихие проигрыши тянут оценку вниз.
+         */
+        static integrated(power, hop) {
+            const size = hop * 4;
+            const blocks = [];
+            for (let h = 0; h + 4 <= power.length; h++) {
+                const mean = (power[h] + power[h + 1] + power[h + 2] + power[h + 3]) / size;
+                if (mean > 0)
+                    blocks.push(mean);
+            }
+            if (!blocks.length)
+                return null;
+            const loud = (mean) => -0.691 + 10 * Math.log10(mean);
+            const mean_of = (list) => list.reduce((sum, mean) => sum + mean, 0) / list.length;
+            const heard = blocks.filter(mean => loud(mean) > this.gate_abs);
+            if (!heard.length)
+                return null;
+            const gate_rel = loud(mean_of(heard)) - 10;
+            const rest = heard.filter(mean => loud(mean) > gate_rel);
+            if (!rest.length)
+                return null;
+            return loud(mean_of(rest));
+        }
+        /**
+         * Выше этого размера не декодируем в PCM: decodeAudioData раздувает
+         * сжатый файл в сотни МБ float'ов и добивает OOM на телефоне.
+         */
+        static max_bytes = 40 * 1024 * 1024;
+        /** Замеры идут по одному: декодированный трек занимает десятки мегабайт. */
+        static queue = Promise.resolve();
+        /** Поставить файл в очередь на замер, результат отдать в done. */
+        static measure_later(buffer, done) {
+            if (buffer.byteLength > this.max_bytes)
+                return;
+            this.queue = this.queue.then(async () => {
+                // decodeAudioData отбирает буфер, а этот же байтовый массив лежит в baza.
+                const lufs = await this.measure_lufs(buffer.slice().buffer);
+                if (lufs != null)
+                    await done(lufs);
+            }).catch(error => console.warn('[gain] loudness measure failed:', error?.message ?? error));
+        }
+        /** Линейный множитель приведения записи к target_lufs. */
+        static factor(lufs) {
+            if (lufs == null || !Number.isFinite(lufs))
+                return 1;
+            const db = Math.max(this.gain_min_db, Math.min(this.gain_max_db, this.target_lufs - lufs));
+            return Math.pow(10, db / 20);
+        }
+        /** Отпустить поток, чтобы браузер успел отрисовать кадр. */
+        static breathe() {
+            return new Promise(done => setTimeout(done, 0));
+        }
+        /** Каскад БИХ-фильтра (direct form I) по сэмплам, на месте. */
+        static biquad(data, c) {
+            let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+            for (let i = 0; i < data.length; i++) {
+                const x = data[i];
+                const y = c[0] * x + c[1] * x1 + c[2] * x2 - c[3] * y1 - c[4] * y2;
+                x2 = x1;
+                x1 = x;
+                y2 = y1;
+                y1 = y;
+                data[i] = y;
+            }
+        }
+        /**
+         * Декод в 48 кГц: decodeAudioData отдаёт сэмплы на частоте контекста,
+         * так что коэффициенты фильтров подходят без пересчёта. Safari отдаёт
+         * результат колбэком, остальные — промисом.
+         */
+        static decode(buf) {
+            const OAC = globalThis.OfflineAudioContext ?? globalThis.webkitOfflineAudioContext;
+            const ctx = new OAC(1, 1, this.rate);
+            return new Promise((done, fail) => {
+                const ret = ctx.decodeAudioData(buf, done, fail);
+                if (ret && typeof ret.then === 'function')
+                    ret.then(done, fail);
+            });
+        }
+    }
+    $.$bog_music_gain = $bog_music_gain;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /**
      * Шестиполосный эквалайзер. Раскладка и названия пресетов — как в Я.Музыке
      * на Android: 60 / 150 / 400 / 1.0k / 2.4k / 15k Гц.
      *
@@ -42046,7 +42252,7 @@ var $;
         // поле оставлено, чтобы не спотыкаться о данные ранних версий.
         Loudness: $giper_baza_atom.of($mol_schema_float),
         // Интегральная громкость записи (LUFS по EBU R128), меряется один раз
-        // при первом проигрывании — для выравнивания треков между собой
+        // при добавлении файла — для выравнивания треков между собой
         // ($bog_music_gain).
         Lufs: $giper_baza_atom.of($mol_schema_float),
         // URL обложки (превью YouTube, альбом VK). Пусто — заглушка-нота.
@@ -42742,6 +42948,9 @@ var $;
             if (!track)
                 return;
             $mol_wire_sync(track).blob_ensure();
+            const land = track.File()?.remote()?.land();
+            if (land instanceof $bog_music_land)
+                $mol_wire_async(land).sands_release().catch($mol_fail_log);
         }
         /** Плейлисты, импортированные из шаров, с числом треков. */
         shared_playlists() {
@@ -42853,6 +43062,7 @@ var $;
             if (playlist)
                 this.move_to_playlist($bog_music_account_baza.key_of(audio), playlist);
             this.save_blob(audio, buffer, mime);
+            this.lufs_measure($bog_music_account_baza.key_of(audio), buffer);
         }
         /** Загрузка локального файла с устройства. */
         save_local_track(file, buffer, order) {
@@ -42876,6 +43086,7 @@ var $;
                 if (file.name)
                     store.name(file.name);
                 track.File('auto').remote(store);
+                this.lufs_measure($bog_music_account_baza.key_of(audio), buffer);
             }
             return audio;
         }
@@ -43001,6 +43212,10 @@ var $;
         }
         save_lufs(key, lufs) {
             this.track(key)?.lufs(lufs);
+        }
+        /** Громкость меряется один раз, при добавлении файла. */
+        lufs_measure(key, buffer) {
+            $bog_music_gain.measure_later(buffer, lufs => $mol_wire_async(this).save_lufs(key, lufs));
         }
         // ---------- последняя сессия (трек + позиция) ----------
         last_session() {
@@ -44978,144 +45193,6 @@ var $;
 
 ;
 "use strict";
-var $;
-(function ($) {
-    /**
-     * Выравнивание громкости треков по EBU R128 (ITU-R BS.1770): интегральная
-     * громкость записи в LUFS меряется один раз, лениво, при первом
-     * проигрывании и хранится в baza; при воспроизведении все треки
-     * приводятся к target_lufs.
-     *
-     * Раньше мерили обычный RMS. Он не совпадает с восприятием: басовитая
-     * запись по RMS громче, чем звучит, и после «выравнивания» оказывалась
-     * тише соседней. R128 сначала прогоняет сигнал через K-взвешивание
-     * (подъём верха + обрез низа), потом усредняет по 400-мс блокам с
-     * отсечкой тишины — по этому же стандарту нормализуют Spotify и YouTube.
-     */
-    class $bog_music_gain extends $mol_object {
-        /** Целевая громкость (LUFS). -14 — как у Spotify/YouTube Music. */
-        static target_lufs = -14;
-        /** Потолок усиления (dB): выше вытащим шум и дыхание зала. */
-        static gain_max_db = 12;
-        /** Предел приглушения (dB). */
-        static gain_min_db = -20;
-        /** Абсолютный гейт: блоки тише этого — тишина, в среднее не идут. */
-        static gate_abs = -70;
-        /** Считаем на 48 кГц — частота, для которой BS.1770 задаёт фильтры. */
-        static rate = 48000;
-        /**
-         * Коэффициенты K-взвешивания из BS.1770 для 48 кГц.
-         * Первый каскад — шельф +4 dB от ~1.5 кГц (голова и ушная раковина
-         * подчёркивают верх), второй — обрез ниже ~40 Гц (низы весят по
-         * энергии больше, чем слышны).
-         */
-        static shelf = [1.53512485958697, -2.69169618940638, 1.19839281085285, -1.69065929318241, 0.73248077421585];
-        static cut = [1.0, -2.0, 1.0, -1.99004745483398, 0.99007225036621];
-        /**
-         * Интегральная громкость записи в LUFS. null — мерить нечего:
-         * запись короче 400 мс или сплошная тишина.
-         */
-        static async measure_lufs(buf) {
-            const audio = await this.decode(buf);
-            const hop = Math.round(audio.sampleRate / 10); // 100 мс
-            const hops = Math.floor(audio.length / hop);
-            if (hops < 4)
-                return null;
-            // Сумма квадратов по каждому 100-мс куску, взвешенная по каналам.
-            const power = new Float64Array(hops);
-            for (let ch = 0; ch < audio.numberOfChannels; ch++) {
-                // Фильтруем на месте: копия целого трека на телефоне лишняя,
-                // декодированный буфер всё равно выбрасываем сразу после замера.
-                const data = audio.getChannelData(ch);
-                // Между проходами отпускаем поток: каждый — это десятки
-                // миллионов операций, и без пауз отрисовка встала бы колом.
-                this.biquad(data, this.shelf);
-                await this.breathe();
-                this.biquad(data, this.cut);
-                await this.breathe();
-                const weight = ch < 3 ? 1 : 1.41; // тыловые каналы весят больше
-                for (let h = 0; h < hops; h++) {
-                    let sum = 0;
-                    const end = (h + 1) * hop;
-                    for (let i = h * hop; i < end; i++)
-                        sum += data[i] * data[i];
-                    power[h] += weight * sum;
-                }
-                await this.breathe();
-            }
-            return this.integrated(power, hop);
-        }
-        /**
-         * Интегральная громкость по мощности 100-мс кусков. Блок — 400 мс
-         * (4 куска) с шагом в один кусок, дальше двойной гейт: сначала
-         * выкидываем тишину, потом всё, что на 10 LU тише среднего по
-         * оставшемуся — иначе долгие тихие проигрыши тянут оценку вниз.
-         */
-        static integrated(power, hop) {
-            const size = hop * 4;
-            const blocks = [];
-            for (let h = 0; h + 4 <= power.length; h++) {
-                const mean = (power[h] + power[h + 1] + power[h + 2] + power[h + 3]) / size;
-                if (mean > 0)
-                    blocks.push(mean);
-            }
-            if (!blocks.length)
-                return null;
-            const loud = (mean) => -0.691 + 10 * Math.log10(mean);
-            const mean_of = (list) => list.reduce((sum, mean) => sum + mean, 0) / list.length;
-            const heard = blocks.filter(mean => loud(mean) > this.gate_abs);
-            if (!heard.length)
-                return null;
-            const gate_rel = loud(mean_of(heard)) - 10;
-            const rest = heard.filter(mean => loud(mean) > gate_rel);
-            if (!rest.length)
-                return null;
-            return loud(mean_of(rest));
-        }
-        /** Линейный множитель приведения записи к target_lufs. */
-        static factor(lufs) {
-            if (lufs == null || !Number.isFinite(lufs))
-                return 1;
-            const db = Math.max(this.gain_min_db, Math.min(this.gain_max_db, this.target_lufs - lufs));
-            return Math.pow(10, db / 20);
-        }
-        /** Отпустить поток, чтобы браузер успел отрисовать кадр. */
-        static breathe() {
-            return new Promise(done => setTimeout(done, 0));
-        }
-        /** Каскад БИХ-фильтра (direct form I) по сэмплам, на месте. */
-        static biquad(data, c) {
-            let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
-            for (let i = 0; i < data.length; i++) {
-                const x = data[i];
-                const y = c[0] * x + c[1] * x1 + c[2] * x2 - c[3] * y1 - c[4] * y2;
-                x2 = x1;
-                x1 = x;
-                y2 = y1;
-                y1 = y;
-                data[i] = y;
-            }
-        }
-        /**
-         * Декод в 48 кГц: decodeAudioData отдаёт сэмплы на частоте контекста,
-         * так что коэффициенты фильтров подходят без пересчёта. Safari отдаёт
-         * результат колбэком, остальные — промисом.
-         */
-        static decode(buf) {
-            const OAC = globalThis.OfflineAudioContext ?? globalThis.webkitOfflineAudioContext;
-            const ctx = new OAC(1, 1, this.rate);
-            return new Promise((done, fail) => {
-                const ret = ctx.decodeAudioData(buf, done, fail);
-                if (ret && typeof ret.then === 'function')
-                    ret.then(done, fail);
-            });
-        }
-    }
-    $.$bog_music_gain = $bog_music_gain;
-})($ || ($ = {}));
-
-;
-"use strict";
 
 
 ;
@@ -45507,52 +45584,6 @@ var $;
                 if (!this.normalize())
                     return 1;
                 return $bog_music_gain.factor(this.current_track()?.lufs() ?? null);
-            }
-            gain_known(key) {
-                return this.account().track(key)?.lufs() != null;
-            }
-            /** Уже брались за этот трек в этой сессии — второй раз не декодируем. */
-            _gain_seen = new Set();
-            /** Замеры идут по одному: декодированный трек занимает десятки мегабайт. */
-            _gain_queue = Promise.resolve();
-            /** Поставить трек в очередь на одноразовый замер громкости. */
-            analyze_gain(key) {
-                // TEMP: LUFS выключен — проверка зависания на 3-м переключении трека.
-                return;
-                if (!key || this._gain_seen.has(key))
-                    return;
-                this._gain_seen.add(key);
-                this._gain_queue = this._gain_queue.then(() => this.measure_gain(key)).catch(() => { });
-            }
-            /**
-             * Выше этого размера не декодируем в PCM ради LUFS: decodeAudioData
-             * раздувает сжатый файл в десятки/сотни МБ float'ов и добивает OOM
-             * на больших локальных треках. Play идёт с готового Blob без замера.
-             */
-            static LUFS_MAX_BYTES = 40 * 1024 * 1024;
-            async measure_gain(key) {
-                try {
-                    if (await $mol_wire_async(this).gain_known(key))
-                        return;
-                    const blob = await $mol_wire_async(this).blob_of(key);
-                    if (!blob) {
-                        this._gain_seen.delete(key); // ещё не докачался — вернёмся позже
-                        return;
-                    }
-                    // Замер с уже собранного Blob (sands после parts() выгружены).
-                    if (blob.size > $bog_music_player.LUFS_MAX_BYTES) {
-                        console.warn('[player] loudness skip: blob too large', blob.size);
-                        return;
-                    }
-                    const lufs = await $bog_music_gain.measure_lufs(await blob.arrayBuffer());
-                    if (lufs == null)
-                        return;
-                    await $mol_wire_async(this.account()).save_lufs(key, lufs);
-                }
-                catch (e) {
-                    this._gain_seen.delete(key);
-                    console.warn('[player] loudness analyze failed:', e?.message ?? e);
-                }
             }
             // ---------- <audio> для PWA-режима ----------
             _audio_el;
@@ -46419,10 +46450,9 @@ var $;
                 }
                 catch { }
                 this.apply_media_metadata(audio);
+                this.heap_release();
                 if (this.is_extension()) {
                     this.dispatch_play_offscreen(key, audio, start_at);
-                    // LUFS в extension — после старта, не блокируя offscreen play.
-                    setTimeout(() => this.analyze_gain(key), 3000);
                     return;
                 }
                 // Клик — единственный шанс разлочить WebAudio-цепочку для iOS.
@@ -46431,18 +46461,17 @@ var $;
                 this.prefetch_next(key);
                 const el = this.audio_el();
                 // iOS PWA: sync play в том же tick. Stream URL — без сборки Blob.
-                if (this.try_play_local_sync(key, el, start_at)) {
-                    // LUFS через parts() читает весь файл — только после старта звука.
-                    setTimeout(() => this.analyze_gain(key), 3000);
+                if (this.try_play_local_sync(key, el, start_at))
                     return;
-                }
                 if (audio.url) {
                     this.set_track_src(el, audio.url);
                     this.attach_seek_listener(el, start_at);
                     el.play().catch(() => { });
                 }
                 this.play_source_local(key, audio, el, start_at);
-                setTimeout(() => this.analyze_gain(key), 3000);
+            }
+            heap_release() {
+                setTimeout(() => $mol_wire_async($bog_music_land).release_all().catch($mol_fail_log), 5000);
             }
             // Готовые Blob'ы в RAM. Критично для авто-next: на iOS звук в фоне даётся
             // только если el.play() вызван СИНХРОННО в обработчике 'ended'
@@ -46494,13 +46523,9 @@ var $;
                 this.track_warm(next_key);
                 if ($bog_music_stream.supported()) {
                     $bog_music_stream.warm(next_key);
-                    setTimeout(() => this.analyze_gain(next_key), 3000);
                     return true;
                 }
-                const ready = this._blob_cache.has(next_key) || this.cache_blob(next_key);
-                if (ready)
-                    this.analyze_gain(next_key);
-                return ready;
+                return this._blob_cache.has(next_key) || this.cache_blob(next_key);
             }
             /**
              * Прогрев холодных baza-атомов трека. Обрез и метаданные для НЕтекущего

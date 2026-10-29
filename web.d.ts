@@ -48263,6 +48263,15 @@ declare namespace $.$$ {
 }
 
 declare namespace $ {
+    class $bog_music_land extends $mws_baza_land {
+        static release_all(): void;
+        sand_load(sand: $giper_baza_unit_sand): void;
+        diff_units(skip_faces?: $giper_baza_face_map): $giper_baza_unit[];
+        sands_release(): void;
+    }
+}
+
+declare namespace $ {
     /**
      * File с потоковым чтением чанков без `sands_open` на весь список.
      *
@@ -55861,6 +55870,74 @@ declare namespace $.$$ {
         result(next?: string | Error): string;
         buttons(): ($.$mol_status | $mol_button_major)[];
         submit(next?: Event): boolean;
+    }
+}
+
+declare namespace $ {
+    /**
+     * Выравнивание громкости треков по EBU R128 (ITU-R BS.1770): интегральная
+     * громкость записи в LUFS меряется один раз, при добавлении файла,
+     * и хранится в baza; при воспроизведении все треки приводятся к
+     * target_lufs.
+     *
+     * Раньше мерили обычный RMS. Он не совпадает с восприятием: басовитая
+     * запись по RMS громче, чем звучит, и после «выравнивания» оказывалась
+     * тише соседней. R128 сначала прогоняет сигнал через K-взвешивание
+     * (подъём верха + обрез низа), потом усредняет по 400-мс блокам с
+     * отсечкой тишины — по этому же стандарту нормализуют Spotify и YouTube.
+     */
+    class $bog_music_gain extends $mol_object {
+        /** Целевая громкость (LUFS). -14 — как у Spotify/YouTube Music. */
+        static target_lufs: number;
+        /** Потолок усиления (dB): выше вытащим шум и дыхание зала. */
+        static gain_max_db: number;
+        /** Предел приглушения (dB). */
+        static gain_min_db: number;
+        /** Абсолютный гейт: блоки тише этого — тишина, в среднее не идут. */
+        static gate_abs: number;
+        /** Считаем на 48 кГц — частота, для которой BS.1770 задаёт фильтры. */
+        static rate: number;
+        /**
+         * Коэффициенты K-взвешивания из BS.1770 для 48 кГц.
+         * Первый каскад — шельф +4 dB от ~1.5 кГц (голова и ушная раковина
+         * подчёркивают верх), второй — обрез ниже ~40 Гц (низы весят по
+         * энергии больше, чем слышны).
+         */
+        static shelf: readonly number[];
+        static cut: readonly number[];
+        /**
+         * Интегральная громкость записи в LUFS. null — мерить нечего:
+         * запись короче 400 мс или сплошная тишина.
+         */
+        static measure_lufs(buf: ArrayBuffer): Promise<number | null>;
+        /**
+         * Интегральная громкость по мощности 100-мс кусков. Блок — 400 мс
+         * (4 куска) с шагом в один кусок, дальше двойной гейт: сначала
+         * выкидываем тишину, потом всё, что на 10 LU тише среднего по
+         * оставшемуся — иначе долгие тихие проигрыши тянут оценку вниз.
+         */
+        static integrated(power: Float64Array, hop: number): number | null;
+        /**
+         * Выше этого размера не декодируем в PCM: decodeAudioData раздувает
+         * сжатый файл в сотни МБ float'ов и добивает OOM на телефоне.
+         */
+        static max_bytes: number;
+        /** Замеры идут по одному: декодированный трек занимает десятки мегабайт. */
+        static queue: Promise<unknown>;
+        /** Поставить файл в очередь на замер, результат отдать в done. */
+        static measure_later(buffer: Uint8Array, done: (lufs: number) => unknown): void;
+        /** Линейный множитель приведения записи к target_lufs. */
+        static factor(lufs: number | null): number;
+        /** Отпустить поток, чтобы браузер успел отрисовать кадр. */
+        static breathe(): Promise<void>;
+        /** Каскад БИХ-фильтра (direct form I) по сэмплам, на месте. */
+        static biquad(data: Float32Array, c: readonly number[]): void;
+        /**
+         * Декод в 48 кГц: decodeAudioData отдаёт сэмплы на частоте контекста,
+         * так что коэффициенты фильтров подходят без пересчёта. Safari отдаёт
+         * результат колбэком, остальные — промисом.
+         */
+        static decode(buf: ArrayBuffer): Promise<AudioBuffer>;
     }
 }
 
@@ -70248,6 +70325,8 @@ declare namespace $ {
         /** Убирает только blob-кеш, метаданные остаются. */
         drop_blob(key: string): void;
         save_lufs(key: string, lufs: number): void;
+        /** Громкость меряется один раз, при добавлении файла. */
+        lufs_measure(key: string, buffer: Uint8Array): void;
         last_session(): {
             key: string;
             position: number;
@@ -70731,65 +70810,6 @@ declare namespace $ {
 }
 
 //# sourceMappingURL=equalizer.view.tree.d.ts.map
-declare namespace $ {
-    /**
-     * Выравнивание громкости треков по EBU R128 (ITU-R BS.1770): интегральная
-     * громкость записи в LUFS меряется один раз, лениво, при первом
-     * проигрывании и хранится в baza; при воспроизведении все треки
-     * приводятся к target_lufs.
-     *
-     * Раньше мерили обычный RMS. Он не совпадает с восприятием: басовитая
-     * запись по RMS громче, чем звучит, и после «выравнивания» оказывалась
-     * тише соседней. R128 сначала прогоняет сигнал через K-взвешивание
-     * (подъём верха + обрез низа), потом усредняет по 400-мс блокам с
-     * отсечкой тишины — по этому же стандарту нормализуют Spotify и YouTube.
-     */
-    class $bog_music_gain extends $mol_object {
-        /** Целевая громкость (LUFS). -14 — как у Spotify/YouTube Music. */
-        static target_lufs: number;
-        /** Потолок усиления (dB): выше вытащим шум и дыхание зала. */
-        static gain_max_db: number;
-        /** Предел приглушения (dB). */
-        static gain_min_db: number;
-        /** Абсолютный гейт: блоки тише этого — тишина, в среднее не идут. */
-        static gate_abs: number;
-        /** Считаем на 48 кГц — частота, для которой BS.1770 задаёт фильтры. */
-        static rate: number;
-        /**
-         * Коэффициенты K-взвешивания из BS.1770 для 48 кГц.
-         * Первый каскад — шельф +4 dB от ~1.5 кГц (голова и ушная раковина
-         * подчёркивают верх), второй — обрез ниже ~40 Гц (низы весят по
-         * энергии больше, чем слышны).
-         */
-        static shelf: readonly number[];
-        static cut: readonly number[];
-        /**
-         * Интегральная громкость записи в LUFS. null — мерить нечего:
-         * запись короче 400 мс или сплошная тишина.
-         */
-        static measure_lufs(buf: ArrayBuffer): Promise<number | null>;
-        /**
-         * Интегральная громкость по мощности 100-мс кусков. Блок — 400 мс
-         * (4 куска) с шагом в один кусок, дальше двойной гейт: сначала
-         * выкидываем тишину, потом всё, что на 10 LU тише среднего по
-         * оставшемуся — иначе долгие тихие проигрыши тянут оценку вниз.
-         */
-        static integrated(power: Float64Array, hop: number): number | null;
-        /** Линейный множитель приведения записи к target_lufs. */
-        static factor(lufs: number | null): number;
-        /** Отпустить поток, чтобы браузер успел отрисовать кадр. */
-        static breathe(): Promise<void>;
-        /** Каскад БИХ-фильтра (direct form I) по сэмплам, на месте. */
-        static biquad(data: Float32Array, c: readonly number[]): void;
-        /**
-         * Декод в 48 кГц: decodeAudioData отдаёт сэмплы на частоте контекста,
-         * так что коэффициенты фильтров подходят без пересчёта. Safari отдаёт
-         * результат колбэком, остальные — промисом.
-         */
-        static decode(buf: ArrayBuffer): Promise<AudioBuffer>;
-    }
-}
-
 declare namespace $ {
 
 	type $mol_view__sub_bog_music_player_1 = $mol_type_enforce<
@@ -71414,20 +71434,6 @@ declare namespace $.$$ {
         normalize(next?: boolean): boolean;
         /** Множитель выравнивания текущего трека. 1 пока громкость не измерена. */
         track_gain(): number;
-        gain_known(key: string): boolean;
-        /** Уже брались за этот трек в этой сессии — второй раз не декодируем. */
-        private _gain_seen;
-        /** Замеры идут по одному: декодированный трек занимает десятки мегабайт. */
-        private _gain_queue;
-        /** Поставить трек в очередь на одноразовый замер громкости. */
-        private analyze_gain;
-        /**
-         * Выше этого размера не декодируем в PCM ради LUFS: decodeAudioData
-         * раздувает сжатый файл в десятки/сотни МБ float'ов и добивает OOM
-         * на больших локальных треках. Play идёт с готового Blob без замера.
-         */
-        private static LUFS_MAX_BYTES;
-        private measure_gain;
         private _audio_el?;
         private _last_blob_url;
         audio_el(): HTMLAudioElement;
@@ -71561,6 +71567,7 @@ declare namespace $.$$ {
         private _shuffle_last_key;
         private ensure_shuffle_bag;
         play_track(key?: string | null): void;
+        private heap_release;
         private _blob_cache;
         /**
          * Потолок кеша: текущий трек и один прогретый следующий. Больше держать

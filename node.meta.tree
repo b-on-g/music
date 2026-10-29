@@ -238,6 +238,7 @@
 	include \/mws/baza/file
 	include \/mws/baza/land
 	include \/bog/music/stream
+	include \/bog/music/land
 \/bog/music/app
 	include \/mol/offline/install
 	deploy \/bog/music/app/favicon.svg
