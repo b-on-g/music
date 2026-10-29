@@ -162,10 +162,28 @@ namespace $ {
 			try {
 				fs.mkdirSync(dir, { recursive: true })
 				this.cache_made = true
+				// Недокачки прошлого запуска: качалки, на которых они начаты, уже нет.
+				this.parts_clean(dir, '')
 				return dir
 			} catch (e: any) {
 				console.warn('[tube] cache dir:', e?.message)
 				return ''
+			}
+		}
+
+		/**
+		 * Удалить недокачанные файлы id (все, если id пуст). Кроме нашего
+		 * `<id>.part.m4a` yt-dlp пишет свои `<id>.part.mp4.part` и т.п., и
+		 * cache_trim их не видит: в октябре они заняли гигабайт и забили диск.
+		 */
+		private parts_clean(dir: string, id: string) {
+			try {
+				for (const name of fs.readdirSync(dir)) {
+					if (!name.startsWith(`${id}`) || !name.includes('.part')) continue
+					fs.rmSync(path.join(dir, name), { force: true })
+				}
+			} catch (e: any) {
+				console.warn('[tube] parts clean:', e?.message)
 			}
 		}
 
@@ -272,7 +290,7 @@ namespace $ {
 					this.free_slot()
 					if (code !== 0 || !fs.existsSync(part)) {
 						console.error('[tube] audio fail:', id, err.slice(0, 300))
-						try { fs.rmSync(part, { force: true }) } catch {}
+						this.parts_clean(tmp_dir, `${id}.part`)
 						return fail(new Error('yt-dlp failed'))
 					}
 					if (target !== part) {
