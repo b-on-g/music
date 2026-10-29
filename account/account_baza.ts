@@ -247,6 +247,7 @@ namespace $ {
 			this.save_track(audio)
 			if (playlist) this.move_to_playlist($bog_music_account_baza.key_of(audio), playlist)
 			this.save_blob(audio, buffer, mime)
+			this.lufs_measure($bog_music_account_baza.key_of(audio), buffer)
 		}
 
 		/** Загрузка локального файла с устройства. */
@@ -271,6 +272,7 @@ namespace $ {
 				store.type(file.type || 'audio/mpeg')
 				if (file.name) store.name(file.name)
 				track.File('auto')!.remote(store)
+				this.lufs_measure($bog_music_account_baza.key_of(audio), buffer)
 			}
 			return audio
 		}
@@ -416,6 +418,11 @@ namespace $ {
 		@$mol_action
 		save_lufs(key: string, lufs: number): void {
 			this.track(key)?.lufs(lufs)
+		}
+
+		/** Громкость меряется один раз, при добавлении файла. */
+		lufs_measure(key: string, buffer: Uint8Array): void {
+			$bog_music_gain.measure_later(buffer, lufs => $mol_wire_async(this).save_lufs(key, lufs))
 		}
 
 		// ---------- последняя сессия (трек + позиция) ----------

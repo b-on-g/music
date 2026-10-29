@@ -374,53 +374,6 @@ namespace $.$$ {
 			return $bog_music_gain.factor(this.current_track()?.lufs() ?? null)
 		}
 
-		gain_known(key: string): boolean {
-			return this.account().track(key)?.lufs() != null
-		}
-
-		/** Уже брались за этот трек в этой сессии — второй раз не декодируем. */
-		private _gain_seen = new Set<string>()
-		/** Замеры идут по одному: декодированный трек занимает десятки мегабайт. */
-		private _gain_queue: Promise<unknown> = Promise.resolve()
-
-		/** Поставить трек в очередь на одноразовый замер громкости. */
-		private analyze_gain(key: string) {
-			// TEMP: LUFS выключен — проверка зависания на 3-м переключении трека.
-			return
-			if (!key || this._gain_seen.has(key)) return
-			this._gain_seen.add(key)
-			this._gain_queue = this._gain_queue.then(() => this.measure_gain(key)).catch(() => {})
-		}
-
-		/**
-		 * Выше этого размера не декодируем в PCM ради LUFS: decodeAudioData
-		 * раздувает сжатый файл в десятки/сотни МБ float'ов и добивает OOM
-		 * на больших локальных треках. Play идёт с готового Blob без замера.
-		 */
-		private static LUFS_MAX_BYTES = 40 * 1024 * 1024
-
-		private async measure_gain(key: string) {
-			try {
-				if (await ($mol_wire_async(this) as any).gain_known(key)) return
-				const blob = await ($mol_wire_async(this) as any).blob_of(key) as Blob | null
-				if (!blob) {
-					this._gain_seen.delete(key) // ещё не докачался — вернёмся позже
-					return
-				}
-				// Замер с уже собранного Blob (sands после parts() выгружены).
-				if (blob.size > $bog_music_player.LUFS_MAX_BYTES) {
-					console.warn('[player] loudness skip: blob too large', blob.size)
-					return
-				}
-				const lufs = await $bog_music_gain.measure_lufs(await blob.arrayBuffer())
-				if (lufs == null) return
-				await ($mol_wire_async(this.account()) as any).save_lufs(key, lufs)
-			} catch (e: any) {
-				this._gain_seen.delete(key)
-				console.warn('[player] loudness analyze failed:', e?.message ?? e)
-			}
-		}
-
 		// ---------- <audio> для PWA-режима ----------
 
 		private _audio_el?: HTMLAudioElement
@@ -1260,8 +1213,6 @@ namespace $.$$ {
 
 			if (this.is_extension()) {
 				this.dispatch_play_offscreen(key, audio, start_at)
-				// LUFS в extension — после старта, не блокируя offscreen play.
-				setTimeout(() => this.analyze_gain(key), 3000)
 				return
 			}
 
@@ -1273,18 +1224,13 @@ namespace $.$$ {
 
 			const el = this.audio_el()
 			// iOS PWA: sync play в том же tick. Stream URL — без сборки Blob.
-			if (this.try_play_local_sync(key, el, start_at)) {
-				// LUFS через parts() читает весь файл — только после старта звука.
-				setTimeout(() => this.analyze_gain(key), 3000)
-				return
-			}
+			if (this.try_play_local_sync(key, el, start_at)) return
 			if (audio.url) {
 				this.set_track_src(el, audio.url)
 				this.attach_seek_listener(el, start_at)
 				el.play().catch(() => {})
 			}
 			this.play_source_local(key, audio, el, start_at)
-			setTimeout(() => this.analyze_gain(key), 3000)
 		}
 
 		private heap_release() {
@@ -1339,12 +1285,9 @@ namespace $.$$ {
 			this.track_warm(next_key)
 			if ($bog_music_stream.supported()) {
 				$bog_music_stream.warm(next_key)
-				setTimeout(() => this.analyze_gain(next_key), 3000)
 				return true
 			}
-			const ready = this._blob_cache.has(next_key) || this.cache_blob(next_key)
-			if (ready) this.analyze_gain(next_key)
-			return ready
+			return this._blob_cache.has(next_key) || this.cache_blob(next_key)
 		}
 
 		/**

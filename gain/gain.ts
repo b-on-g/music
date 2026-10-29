@@ -2,9 +2,9 @@ namespace $ {
 
 	/**
 	 * Выравнивание громкости треков по EBU R128 (ITU-R BS.1770): интегральная
-	 * громкость записи в LUFS меряется один раз, лениво, при первом
-	 * проигрывании и хранится в baza; при воспроизведении все треки
-	 * приводятся к target_lufs.
+	 * громкость записи в LUFS меряется один раз, при добавлении файла,
+	 * и хранится в baza; при воспроизведении все треки приводятся к
+	 * target_lufs.
 	 *
 	 * Раньше мерили обычный RMS. Он не совпадает с восприятием: басовитая
 	 * запись по RMS громче, чем звучит, и после «выравнивания» оказывалась
@@ -97,6 +97,25 @@ namespace $ {
 			const rest = heard.filter( mean => loud( mean ) > gate_rel )
 			if( !rest.length ) return null
 			return loud( mean_of( rest ) )
+		}
+
+		/**
+		 * Выше этого размера не декодируем в PCM: decodeAudioData раздувает
+		 * сжатый файл в сотни МБ float'ов и добивает OOM на телефоне.
+		 */
+		static max_bytes = 40 * 1024 * 1024
+
+		/** Замеры идут по одному: декодированный трек занимает десятки мегабайт. */
+		static queue: Promise<unknown> = Promise.resolve()
+
+		/** Поставить файл в очередь на замер, результат отдать в done. */
+		static measure_later( buffer: Uint8Array, done: ( lufs: number ) => unknown ) {
+			if( buffer.byteLength > this.max_bytes ) return
+			this.queue = this.queue.then( async ()=> {
+				// decodeAudioData отбирает буфер, а этот же байтовый массив лежит в baza.
+				const lufs = await this.measure_lufs( buffer.slice().buffer )
+				if( lufs != null ) await done( lufs )
+			} ).catch( error => console.warn( '[gain] loudness measure failed:', error?.message ?? error ) )
 		}
 
 		/** Линейный множитель приведения записи к target_lufs. */
