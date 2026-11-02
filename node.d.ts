@@ -3321,32 +3321,37 @@ declare namespace $ {
 
 declare namespace $ {
 
-	type $mol_pop_bubble__content_mol_pop_1 = $mol_type_enforce<
+	type $mol_pop_bubble__visible_mol_pop_1 = $mol_type_enforce<
+		ReturnType< $mol_pop['anchor_visible'] >
+		,
+		ReturnType< $mol_pop_bubble['visible'] >
+	>
+	type $mol_pop_bubble__content_mol_pop_2 = $mol_type_enforce<
 		ReturnType< $mol_pop['bubble_content'] >
 		,
 		ReturnType< $mol_pop_bubble['content'] >
 	>
-	type $mol_pop_bubble__height_max_mol_pop_2 = $mol_type_enforce<
+	type $mol_pop_bubble__height_max_mol_pop_3 = $mol_type_enforce<
 		ReturnType< $mol_pop['height_max'] >
 		,
 		ReturnType< $mol_pop_bubble['height_max'] >
 	>
-	type $mol_follower__offset_mol_pop_3 = $mol_type_enforce<
+	type $mol_follower__offset_mol_pop_4 = $mol_type_enforce<
 		ReturnType< $mol_pop['bubble_offset'] >
 		,
 		ReturnType< $mol_follower['offset'] >
 	>
-	type $mol_follower__align_mol_pop_4 = $mol_type_enforce<
+	type $mol_follower__align_mol_pop_5 = $mol_type_enforce<
 		ReturnType< $mol_pop['bubble_align'] >
 		,
 		ReturnType< $mol_follower['align'] >
 	>
-	type $mol_follower__Anchor_mol_pop_5 = $mol_type_enforce<
+	type $mol_follower__Anchor_mol_pop_6 = $mol_type_enforce<
 		ReturnType< $mol_pop['Anchor'] >
 		,
 		ReturnType< $mol_follower['Anchor'] >
 	>
-	type $mol_follower__Sub_mol_pop_6 = $mol_type_enforce<
+	type $mol_follower__Sub_mol_pop_7 = $mol_type_enforce<
 		ReturnType< $mol_pop['Bubble'] >
 		,
 		ReturnType< $mol_follower['Sub'] >
@@ -3357,6 +3362,7 @@ declare namespace $ {
 		Anchor( ): any
 		bubble_offset( ): readonly(number)[]
 		bubble_align( ): readonly(number)[]
+		anchor_visible( ): boolean
 		bubble_content( ): readonly($mol_view_content)[]
 		height_max( ): number
 		Bubble( ): $mol_pop_bubble
@@ -3375,11 +3381,13 @@ declare namespace $ {
 	export class $mol_pop_bubble extends $mol_view {
 		content( ): readonly($mol_view_content)[]
 		height_max( ): number
+		visible( ): boolean
 		sub( ): ReturnType< $mol_pop_bubble['content'] >
 		style( ): ({ 
 			'maxHeight': ReturnType< $mol_pop_bubble['height_max'] >,
 		})  & ReturnType< $mol_view['style'] >
 		attr( ): ({ 
+			'mol_pop_bubble_visible': ReturnType< $mol_pop_bubble['visible'] >,
 			'tabindex': number,
 			'popover': string,
 		})  & ReturnType< $mol_view['attr'] >
@@ -3395,6 +3403,7 @@ declare namespace $.$$ {
      */
     class $mol_pop extends $.$mol_pop {
         showed(next?: boolean): boolean;
+        anchor_visible(): boolean;
         sub_visible(): any[];
         height_max(): number;
         align(): string;
@@ -5317,38 +5326,27 @@ declare namespace $ {
 }
 
 declare namespace $ {
-    /** @deprecated Use $mol_crypto2_nonce */
-    let $mol_crypto_salt: typeof $mol_crypto2_nonce;
-}
-
-declare namespace $ {
     type BufferSource = ArrayBufferView<ArrayBuffer> | ArrayBuffer;
-    /** Symmetric cipher with shortest payload. */
-    export class $mol_crypto_sacred extends $mol_buffer {
-        /** Key size in bytes. */
+    /** Symmetric AES-CTR secret. */
+    export class $mol_crypto2_secret extends $mol_buffer {
         static size: 16;
         /** Makes new random secret. */
-        static make(): $mol_crypto_sacred;
-        /** Makes from string of buffer view. */
+        static make(): $mol_crypto2_secret;
+        /** Makes from string or buffer view. */
         static from<This extends typeof $mol_buffer>(this: This, serial: string | ArrayBufferView<ArrayBuffer>): InstanceType<This>;
-        static from_native(native: CryptoKey): Promise<$mol_crypto_sacred>;
-        constructor(buffer: ArrayBuffer, byteOffset?: number, byteLength?: number);
+        static from_native(native: CryptoKey): Promise<$mol_crypto2_secret>;
         toString(): string;
         _native: undefined | CryptoKey & {
             type: 'secret';
         };
-        /** Native crypto secret */
+        /** Native crypto secret. */
         native(): Promise<CryptoKey & {
             type: "secret";
         }>;
-        /** Encrypt any binary message. 16n bytes */
-        encrypt(open: BufferSource, salt: BufferSource): Promise<Uint8Array<ArrayBuffer>>;
-        /** Decrypt any binary message. */
-        decrypt(closed: BufferSource, salt: BufferSource): Promise<Uint8Array<ArrayBuffer>>;
-        /** Encrypts 0xFF prefixed buffer. 16 bytes */
-        close(opened: DataView<ArrayBuffer>, salt: BufferSource): Promise<Uint8Array<ArrayBuffer>>;
-        /** Decrypts 0xFF prefixed buffer. 16 bytes */
-        open(closed: Uint8Array<ArrayBuffer>, salt: BufferSource): Promise<Uint8Array<ArrayBuffer>>;
+        /** Encrypts data without changing its length. */
+        encrypt(open: BufferSource, nonce: BufferSource): Promise<Uint8Array<ArrayBuffer>>;
+        /** Decrypts data without changing its length. */
+        decrypt(closed: BufferSource, nonce: BufferSource): Promise<Uint8Array<ArrayBuffer>>;
     }
     export {};
 }
@@ -5368,7 +5366,7 @@ declare namespace $ {
         /** Returns Socket from this Chipher. */
         socket(): $mol_crypto2_socket;
         /** Makes shared secret for combination of Chiper and Socket. */
-        secret(pub: $mol_crypto2_socket): Promise<$mol_crypto_sacred>;
+        secret(pub: $mol_crypto2_socket): Promise<$mol_crypto2_secret>;
     }
 }
 
@@ -5411,7 +5409,7 @@ declare namespace $ {
         static grab(): $giper_baza_auth;
         static _generate(): Promise<$giper_baza_auth>;
         pass(): $giper_baza_auth_pass;
-        secret_mutual(pass: $giper_baza_auth_pass): $mol_crypto_sacred;
+        secret_mutual(pass: $giper_baza_auth_pass): $mol_crypto2_secret;
         [$mol_dev_format_head](): any[];
     }
 }
@@ -6251,7 +6249,7 @@ declare namespace $ {
         sand_open(sand: $giper_baza_unit_sand): Promise<Uint8Array<ArrayBuffer>>;
         encryptable(): boolean;
         encrypted(next?: boolean): boolean;
-        secret(): $mol_crypto_sacred | null;
+        secret(): $mol_crypto2_secret | null;
         dump(): {
             land: $giper_baza_link;
             units: $giper_baza_unit_base[];
@@ -43748,6 +43746,43 @@ declare namespace $ {
         count: number;
         items: $bog_music_api_audio[];
     }
+}
+
+declare namespace $ {
+    /** @deprecated Use $mol_crypto2_nonce */
+    let $mol_crypto_salt: typeof $mol_crypto2_nonce;
+}
+
+declare namespace $ {
+    type BufferSource = ArrayBufferView<ArrayBuffer> | ArrayBuffer;
+    /** Symmetric cipher with shortest payload. */
+    export class $mol_crypto_sacred extends $mol_buffer {
+        /** Key size in bytes. */
+        static size: 16;
+        /** Makes new random secret. */
+        static make(): $mol_crypto_sacred;
+        /** Makes from string of buffer view. */
+        static from<This extends typeof $mol_buffer>(this: This, serial: string | ArrayBufferView<ArrayBuffer>): InstanceType<This>;
+        static from_native(native: CryptoKey): Promise<$mol_crypto_sacred>;
+        constructor(buffer: ArrayBuffer, byteOffset?: number, byteLength?: number);
+        toString(): string;
+        _native: undefined | CryptoKey & {
+            type: 'secret';
+        };
+        /** Native crypto secret */
+        native(): Promise<CryptoKey & {
+            type: "secret";
+        }>;
+        /** Encrypt any binary message. 16n bytes */
+        encrypt(open: BufferSource, salt: BufferSource): Promise<Uint8Array<ArrayBuffer>>;
+        /** Decrypt any binary message. */
+        decrypt(closed: BufferSource, salt: BufferSource): Promise<Uint8Array<ArrayBuffer>>;
+        /** Encrypts 0xFF prefixed buffer. 16 bytes */
+        close(opened: DataView<ArrayBuffer>, salt: BufferSource): Promise<Uint8Array<ArrayBuffer>>;
+        /** Decrypts 0xFF prefixed buffer. 16 bytes */
+        open(closed: Uint8Array<ArrayBuffer>, salt: BufferSource): Promise<Uint8Array<ArrayBuffer>>;
+    }
+    export {};
 }
 
 declare namespace $ {
