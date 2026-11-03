@@ -37026,6 +37026,371 @@ declare namespace $ {
 }
 
 declare namespace $ {
+    /** Dynamic sources import. */
+    class $mol_import extends $mol_object2 {
+        static module(uri: string): any;
+        static module_async(uri: string): Promise<any>;
+        static script(uri: string): any;
+        static script_async(uri: string): Promise<any>;
+        static style(uri: string): any;
+        static style_async(uri: string): any;
+    }
+}
+
+declare namespace $ {
+
+	type $mol_svg__dom_name_bog_qr_1 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_svg['dom_name'] >
+	>
+	type $mol_svg__attr_bog_qr_2 = $mol_type_enforce<
+		({ 
+			'id': ReturnType< $bog_qr['gradient_id'] >,
+			'x1': ReturnType< $bog_qr['grad_x1'] >,
+			'y1': ReturnType< $bog_qr['grad_y1'] >,
+			'x2': ReturnType< $bog_qr['grad_x2'] >,
+			'y2': ReturnType< $bog_qr['grad_y2'] >,
+		})  & ReturnType< $mol_svg['attr'] >
+		,
+		ReturnType< $mol_svg['attr'] >
+	>
+	type $mol_svg__sub_bog_qr_3 = $mol_type_enforce<
+		ReturnType< $bog_qr['gradient_stop_list'] >
+		,
+		ReturnType< $mol_svg['sub'] >
+	>
+	type $mol_svg__dom_name_bog_qr_4 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_svg['dom_name'] >
+	>
+	type $mol_svg__sub_bog_qr_5 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_svg['sub'] >
+	>
+	type $mol_svg_path__geometry_bog_qr_6 = $mol_type_enforce<
+		ReturnType< $bog_qr['modules_d'] >
+		,
+		ReturnType< $mol_svg_path['geometry'] >
+	>
+	type $mol_svg_path__attr_bog_qr_7 = $mol_type_enforce<
+		({ 
+			'fill': ReturnType< $bog_qr['gradient_fill'] >,
+		})  & ReturnType< $mol_svg_path['attr'] >
+		,
+		ReturnType< $mol_svg_path['attr'] >
+	>
+	type $mol_svg_path__geometry_bog_qr_8 = $mol_type_enforce<
+		ReturnType< $bog_qr['rings_d'] >
+		,
+		ReturnType< $mol_svg_path['geometry'] >
+	>
+	type $mol_svg_path__attr_bog_qr_9 = $mol_type_enforce<
+		({ 
+			'fill': ReturnType< $bog_qr['gradient_fill'] >,
+			'fill-rule': string,
+		})  & ReturnType< $mol_svg_path['attr'] >
+		,
+		ReturnType< $mol_svg_path['attr'] >
+	>
+	type $mol_svg_path__geometry_bog_qr_10 = $mol_type_enforce<
+		ReturnType< $bog_qr['centers_d'] >
+		,
+		ReturnType< $mol_svg_path['geometry'] >
+	>
+	type $mol_svg_path__attr_bog_qr_11 = $mol_type_enforce<
+		({ 
+			'fill': ReturnType< $bog_qr['gradient_fill'] >,
+		})  & ReturnType< $mol_svg_path['attr'] >
+		,
+		ReturnType< $mol_svg_path['attr'] >
+	>
+	type $mol_view__sub_bog_qr_12 = $mol_type_enforce<
+		ReturnType< $bog_qr['center'] >
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_svg__dom_name_bog_qr_13 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_svg['dom_name'] >
+	>
+	type $mol_svg__attr_bog_qr_14 = $mol_type_enforce<
+		({ 
+			'x': ReturnType< $bog_qr['center_x'] >,
+			'y': ReturnType< $bog_qr['center_y'] >,
+			'width': ReturnType< $bog_qr['center_size'] >,
+			'height': ReturnType< $bog_qr['center_size'] >,
+		})  & ReturnType< $mol_svg['attr'] >
+		,
+		ReturnType< $mol_svg['attr'] >
+	>
+	type $mol_svg__sub_bog_qr_15 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_svg['sub'] >
+	>
+	type $mol_svg__dom_name_bog_qr_16 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_svg['dom_name'] >
+	>
+	type $mol_svg__attr_bog_qr_17 = $mol_type_enforce<
+		({ 
+			'offset': ReturnType< $bog_qr['stop_offset'] >,
+			'stop-color': ReturnType< $bog_qr['stop_color'] >,
+		})  & ReturnType< $mol_svg['attr'] >
+		,
+		ReturnType< $mol_svg['attr'] >
+	>
+	export class $bog_qr extends $mol_svg_root {
+		stop_offset( id: any): string
+		stop_color( id: any): string
+		qr_view_box( ): string
+		grad_x1( ): string
+		grad_y1( ): string
+		grad_x2( ): string
+		grad_y2( ): string
+		gradient_stop_list( ): readonly(any)[]
+		Gradient( ): $mol_svg
+		Defs( ): $mol_svg
+		modules_d( ): string
+		Modules( ): $mol_svg_path
+		rings_d( ): string
+		Rings( ): $mol_svg_path
+		centers_d( ): string
+		Centers( ): $mol_svg_path
+		center_x( ): string
+		center_y( ): string
+		center_size( ): string
+		Center_body( ): $mol_view
+		Center_wrap( ): $mol_svg
+		uri( ): string
+		module_radius( ): number
+		finder_radius( ): number
+		gradient_angle( ): number
+		error_correction( ): string
+		quiet_zone( ): number
+		center( ): readonly(any)[]
+		gradient_id( ): string
+		gradient_fill( ): string
+		gradient_stops( ): readonly(any)[]
+		Stop( id: any): $mol_svg
+		view_box( ): ReturnType< $bog_qr['qr_view_box'] >
+		sub( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=qr.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $bog_qr extends $.$bog_qr {
+        gradient_id(): string;
+        gradient_fill(): string;
+        grad_x1(): string;
+        grad_y1(): string;
+        grad_x2(): string;
+        grad_y2(): string;
+        gradient_stop_list(): $.$mol_svg[];
+        stop_offset(index: number): string;
+        stop_color(index: number): any;
+        qr_lib(): any;
+        qr_matrix(): boolean[][] | null;
+        qr_view_box(): string;
+        qr_paths(): {
+            modules: string;
+            rings: string;
+            centers: string;
+        };
+        center_area(): {
+            x: number;
+            y: number;
+            size: number;
+        };
+        center_x(): string;
+        center_y(): string;
+        center_size(): string;
+        modules_d(): string;
+        rings_d(): string;
+        centers_d(): string;
+        rect_path(x: number, y: number, w: number, h: number, tl: number, tr: number, br: number, bl: number): string;
+    }
+}
+
+declare namespace $.$$ {
+}
+
+declare namespace $ {
+
+	export class $mol_video_player extends $mol_view {
+		uri( ): string
+		controls( ): boolean
+		autoplay( ): boolean
+		inline( ): boolean
+		loop( ): boolean
+		muted( ): boolean
+		poster( ): string
+		stream( ): any
+		revolume( next?: any ): any
+		retime( next?: any ): any
+		redurate( next?: any ): any
+		playing_event( next?: any ): any
+		play_event( next?: any ): any
+		pause_event( next?: any ): any
+		dom_name( ): string
+		playing( next?: boolean ): boolean
+		play( ): any
+		pause( ): any
+		volume( next?: number ): number
+		time( next?: number ): number
+		duration( ): number
+		attr( ): ({ 
+			'src': ReturnType< $mol_video_player['uri'] >,
+			'controls': ReturnType< $mol_video_player['controls'] >,
+			'autoplay': ReturnType< $mol_video_player['autoplay'] >,
+			'playsinline': ReturnType< $mol_video_player['inline'] >,
+			'loop': ReturnType< $mol_video_player['loop'] >,
+			'muted': ReturnType< $mol_video_player['muted'] >,
+			'poster': ReturnType< $mol_video_player['poster'] >,
+		}) 
+		field( ): ({ 
+			'srcObject': ReturnType< $mol_video_player['stream'] >,
+		}) 
+		event( ): ({ 
+			volumechange( next?: ReturnType< $mol_video_player['revolume'] > ): ReturnType< $mol_video_player['revolume'] >,
+			timeupdate( next?: ReturnType< $mol_video_player['retime'] > ): ReturnType< $mol_video_player['retime'] >,
+			durationchange( next?: ReturnType< $mol_video_player['redurate'] > ): ReturnType< $mol_video_player['redurate'] >,
+			playing( next?: ReturnType< $mol_video_player['playing_event'] > ): ReturnType< $mol_video_player['playing_event'] >,
+			play( next?: ReturnType< $mol_video_player['play_event'] > ): ReturnType< $mol_video_player['play_event'] >,
+			pause( next?: ReturnType< $mol_video_player['pause_event'] > ): ReturnType< $mol_video_player['pause_event'] >,
+		}) 
+	}
+	
+}
+
+//# sourceMappingURL=player.view.tree.d.ts.map
+declare namespace $.$$ {
+    /**
+     * Video player component
+     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_video_player_demo
+     */
+    class $mol_video_player extends $.$mol_video_player {
+        dom_node(): HTMLVideoElement;
+        volume(next?: number): number;
+        time(next?: number): number;
+        duration(): number;
+        playing(next?: boolean): boolean;
+        play(): void;
+        pause(): void;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
+
+	export class $mol_video_camera extends $mol_video_player {
+		transform( ): string
+		facing( ): string
+		aspect( ): number
+		size( ): number
+		width( ): ReturnType< $mol_video_camera['size'] >
+		height( ): ReturnType< $mol_video_camera['size'] >
+		brightness( ): number
+		sharpness( ): number
+		contrast( ): number
+		saturation( ): number
+		temperature( ): number
+		torch( ): boolean
+		controls( ): boolean
+		style( ): ({ 
+			'transform': ReturnType< $mol_video_camera['transform'] >,
+		}) 
+		video_constraints( ): ({ 
+			'facingMode': ReturnType< $mol_video_camera['facing'] >,
+			'aspectRatio': ReturnType< $mol_video_camera['aspect'] >,
+			'width': ({ 
+				'ideal': ReturnType< $mol_video_camera['width'] >,
+			}) ,
+			'height': ({ 
+				'ideal': ReturnType< $mol_video_camera['height'] >,
+			}) ,
+		}) 
+		video_settings( ): ({ 
+			'brightness': ReturnType< $mol_video_camera['brightness'] >,
+			'sharpness': ReturnType< $mol_video_camera['sharpness'] >,
+			'contrast': ReturnType< $mol_video_camera['contrast'] >,
+			'saturation': ReturnType< $mol_video_camera['saturation'] >,
+			'advanced': readonly(any)[],
+		}) 
+	}
+	
+}
+
+//# sourceMappingURL=camera.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $mol_video_camera extends $.$mol_video_camera {
+        stream_raw(): MediaStream & {
+            destructor: () => void;
+        };
+        stream(): MediaStream & {
+            destructor: () => void;
+        };
+        dom_node_actual(): HTMLVideoElement;
+        transform(): string;
+    }
+}
+
+declare namespace $ {
+
+	type $mol_check__title_bog_music_qrscan_1 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_check['title'] >
+	>
+	type $mol_check__checked_bog_music_qrscan_2 = $mol_type_enforce<
+		ReturnType< $bog_music_qrscan['scanning'] >
+		,
+		ReturnType< $mol_check['checked'] >
+	>
+	type $mol_video_camera__facing_bog_music_qrscan_3 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_video_camera['facing'] >
+	>
+	type $mol_video_camera__muted_bog_music_qrscan_4 = $mol_type_enforce<
+		boolean
+		,
+		ReturnType< $mol_video_camera['muted'] >
+	>
+	export class $bog_music_qrscan extends $mol_view {
+		Toggle( ): $mol_check
+		Camera( ): $mol_video_camera
+		scanning( next?: boolean ): boolean
+		prefix( ): string
+		found( next?: string ): string
+		sub( ): readonly(any)[]
+	}
+	
+}
+
+//# sourceMappingURL=qrscan.view.tree.d.ts.map
+declare namespace $.$$ {
+    class $bog_music_qrscan extends $.$bog_music_qrscan {
+        sub(): ($.$mol_check | $.$mol_video_camera)[];
+        canvas(): HTMLCanvasElement;
+        tick(): string | null;
+        auto(): void;
+    }
+}
+
+declare namespace $.$$ {
+}
+
+declare namespace $ {
 }
 
 declare namespace $ {
@@ -50492,50 +50857,50 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_account_34 = $mol_type_enforce<
+	type $mol_check__title_bog_music_account_34 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_check['title'] >
+	>
+	type $mol_check__checked_bog_music_account_35 = $mol_type_enforce<
+		ReturnType< $bog_music_account['qr_showed'] >
+		,
+		ReturnType< $mol_check['checked'] >
+	>
+	type $bog_qr__uri_bog_music_account_36 = $mol_type_enforce<
+		ReturnType< $bog_music_account['account_link'] >
+		,
+		ReturnType< $bog_qr['uri'] >
+	>
+	type $bog_qr__error_correction_bog_music_account_37 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $bog_qr['error_correction'] >
+	>
+	type $bog_qr__gradient_stops_bog_music_account_38 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $bog_qr['gradient_stops'] >
+	>
+	type $mol_view__sub_bog_music_account_39 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_paragraph__title_bog_music_account_35 = $mol_type_enforce<
+	type $mol_paragraph__title_bog_music_account_40 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_string__hint_bog_music_account_36 = $mol_type_enforce<
+	type $mol_string__hint_bog_music_account_41 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_string['hint'] >
 	>
-	type $mol_string__value_bog_music_account_37 = $mol_type_enforce<
+	type $mol_string__value_bog_music_account_42 = $mol_type_enforce<
 		ReturnType< $bog_music_account['import_link'] >
 		,
 		ReturnType< $mol_string['value'] >
-	>
-	type $mol_button_minor__title_bog_music_account_38 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_button_minor['title'] >
-	>
-	type $mol_button_minor__click_bog_music_account_39 = $mol_type_enforce<
-		ReturnType< $bog_music_account['apply_import'] >
-		,
-		ReturnType< $mol_button_minor['click'] >
-	>
-	type $mol_view__sub_bog_music_account_40 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_view['sub'] >
-	>
-	type $mol_view__sub_bog_music_account_41 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_view['sub'] >
-	>
-	type $mol_paragraph__title_bog_music_account_42 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_paragraph['title'] >
 	>
 	type $mol_button_minor__title_bog_music_account_43 = $mol_type_enforce<
 		string
@@ -50543,16 +50908,51 @@ declare namespace $ {
 		ReturnType< $mol_button_minor['title'] >
 	>
 	type $mol_button_minor__click_bog_music_account_44 = $mol_type_enforce<
-		ReturnType< $bog_music_account['reset_account'] >
+		ReturnType< $bog_music_account['apply_import'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_view__sub_bog_music_account_45 = $mol_type_enforce<
+	type $bog_music_qrscan__prefix_bog_music_account_45 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $bog_music_qrscan['prefix'] >
+	>
+	type $bog_music_qrscan__found_bog_music_account_46 = $mol_type_enforce<
+		ReturnType< $bog_music_account['qr_found'] >
+		,
+		ReturnType< $bog_music_qrscan['found'] >
+	>
+	type $mol_view__sub_bog_music_account_47 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_account_46 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_account_48 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_paragraph__title_bog_music_account_49 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_paragraph['title'] >
+	>
+	type $mol_button_minor__title_bog_music_account_50 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['title'] >
+	>
+	type $mol_button_minor__click_bog_music_account_51 = $mol_type_enforce<
+		ReturnType< $bog_music_account['reset_account'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_view__sub_bog_music_account_52 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__sub_bog_music_account_53 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
@@ -50598,12 +50998,18 @@ declare namespace $ {
 		Copy( ): $mol_button_minor
 		copy_status( ): string
 		Copy_status( ): $mol_view
+		qr_showed( next?: boolean ): boolean
+		Qr_show( ): $mol_check
+		account_link( ): string
+		Qr( ): $bog_qr
 		Export( ): $mol_view
 		Import_hint( ): $mol_paragraph
 		import_link( next?: string ): string
 		Import_input( ): $mol_string
 		apply_import( next?: any ): any
 		Import_apply( ): $mol_button_minor
+		qr_found( next?: string ): string
+		Import_scan( ): $bog_music_qrscan
 		import_status( ): string
 		Import_status( ): $mol_view
 		Import( ): $mol_view
@@ -50626,6 +51032,8 @@ declare namespace $.$$ {
         lord_text(): string;
         account_key(): string;
         account_link(): string;
+        Qr(): any;
+        qr_found(next?: string): string;
         copy_status(next?: string): string;
         copy(): void;
         import_link(next?: string): string;

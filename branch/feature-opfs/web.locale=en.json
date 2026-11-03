@@ -20,6 +20,8 @@
 	"$bog_feedback2_form_submit_update": "Update feedback",
 	"$bog_feedback2_form_title": "Feedback ( one per user )",
 	"$bog_music_account_Download_playlist_hint": "Упаковать файлы видимого плейлиста с этого устройства в zip",
+	"$bog_music_account_Qr_show_title": "Показать QR для переноса",
+	"$bog_music_qrscan_Toggle_title": "Сканировать QR",
 	"$bog_theme_picker_Search_hint": "Just start typing",
 	"$giper_baza_flex_field_Link_new_dictionary_deny": "🔐 Private",
 	"$giper_baza_flex_field_Link_new_dictionary_local": "💼 Local",

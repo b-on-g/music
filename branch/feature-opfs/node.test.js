@@ -22477,6 +22477,906 @@ var $;
 })($ || ($ = {}));
 
 ;
+	($.$bog_qr) = class $bog_qr extends ($.$mol_svg_root) {
+		stop_offset(id){
+			return "0%";
+		}
+		stop_color(id){
+			return "";
+		}
+		qr_view_box(){
+			return "0 0 1 1";
+		}
+		grad_x1(){
+			return "0";
+		}
+		grad_y1(){
+			return "0";
+		}
+		grad_x2(){
+			return "1";
+		}
+		grad_y2(){
+			return "1";
+		}
+		gradient_stop_list(){
+			return [];
+		}
+		Gradient(){
+			const obj = new this.$.$mol_svg();
+			(obj.dom_name) = () => ("linearGradient");
+			(obj.attr) = () => ({
+				...(this.$.$mol_svg.prototype.attr.call(obj)), 
+				"id": (this.gradient_id()), 
+				"x1": (this.grad_x1()), 
+				"y1": (this.grad_y1()), 
+				"x2": (this.grad_x2()), 
+				"y2": (this.grad_y2())
+			});
+			(obj.sub) = () => ((this.gradient_stop_list()));
+			return obj;
+		}
+		Defs(){
+			const obj = new this.$.$mol_svg();
+			(obj.dom_name) = () => ("defs");
+			(obj.sub) = () => ([(this.Gradient())]);
+			return obj;
+		}
+		modules_d(){
+			return "";
+		}
+		Modules(){
+			const obj = new this.$.$mol_svg_path();
+			(obj.geometry) = () => ((this.modules_d()));
+			(obj.attr) = () => ({...(this.$.$mol_svg_path.prototype.attr.call(obj)), "fill": (this.gradient_fill())});
+			return obj;
+		}
+		rings_d(){
+			return "";
+		}
+		Rings(){
+			const obj = new this.$.$mol_svg_path();
+			(obj.geometry) = () => ((this.rings_d()));
+			(obj.attr) = () => ({
+				...(this.$.$mol_svg_path.prototype.attr.call(obj)), 
+				"fill": (this.gradient_fill()), 
+				"fill-rule": "evenodd"
+			});
+			return obj;
+		}
+		centers_d(){
+			return "";
+		}
+		Centers(){
+			const obj = new this.$.$mol_svg_path();
+			(obj.geometry) = () => ((this.centers_d()));
+			(obj.attr) = () => ({...(this.$.$mol_svg_path.prototype.attr.call(obj)), "fill": (this.gradient_fill())});
+			return obj;
+		}
+		center_x(){
+			return "0";
+		}
+		center_y(){
+			return "0";
+		}
+		center_size(){
+			return "0";
+		}
+		Center_body(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ((this.center()));
+			return obj;
+		}
+		Center_wrap(){
+			const obj = new this.$.$mol_svg();
+			(obj.dom_name) = () => ("foreignObject");
+			(obj.attr) = () => ({
+				...(this.$.$mol_svg.prototype.attr.call(obj)), 
+				"x": (this.center_x()), 
+				"y": (this.center_y()), 
+				"width": (this.center_size()), 
+				"height": (this.center_size())
+			});
+			(obj.sub) = () => ([(this.Center_body())]);
+			return obj;
+		}
+		uri(){
+			return "";
+		}
+		module_radius(){
+			return 0.35;
+		}
+		finder_radius(){
+			return 1.2;
+		}
+		gradient_angle(){
+			return 45;
+		}
+		error_correction(){
+			return "M";
+		}
+		quiet_zone(){
+			return 2;
+		}
+		center(){
+			return [];
+		}
+		gradient_id(){
+			return "qr-grad";
+		}
+		gradient_fill(){
+			return "url(#qr-grad)";
+		}
+		gradient_stops(){
+			return ["var(--mol_theme_special)", "var(--mol_theme_focus)"];
+		}
+		Stop(id){
+			const obj = new this.$.$mol_svg();
+			(obj.dom_name) = () => ("stop");
+			(obj.attr) = () => ({
+				...(this.$.$mol_svg.prototype.attr.call(obj)), 
+				"offset": (this.stop_offset(id)), 
+				"stop-color": (this.stop_color(id))
+			});
+			return obj;
+		}
+		view_box(){
+			return (this.qr_view_box());
+		}
+		sub(){
+			return [
+				(this.Defs()), 
+				(this.Modules()), 
+				(this.Rings()), 
+				(this.Centers()), 
+				(this.Center_wrap())
+			];
+		}
+	};
+	($mol_mem(($.$bog_qr.prototype), "Gradient"));
+	($mol_mem(($.$bog_qr.prototype), "Defs"));
+	($mol_mem(($.$bog_qr.prototype), "Modules"));
+	($mol_mem(($.$bog_qr.prototype), "Rings"));
+	($mol_mem(($.$bog_qr.prototype), "Centers"));
+	($mol_mem(($.$bog_qr.prototype), "Center_body"));
+	($mol_mem(($.$bog_qr.prototype), "Center_wrap"));
+	($mol_mem_key(($.$bog_qr.prototype), "Stop"));
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    /** Dynamic sources import. */
+    class $mol_import extends $mol_object2 {
+        static module(uri) {
+            $mol_wire_solid();
+            return $mol_wire_sync(this).module_async(uri);
+        }
+        static module_async(uri) {
+            return import(uri);
+        }
+        static script(uri) {
+            $mol_wire_solid();
+            return $mol_wire_sync(this).script_async(uri);
+        }
+        static script_async(uri) {
+            const doc = $mol_dom_context.document;
+            const script = doc.createElement('script');
+            script.src = uri;
+            doc.head.appendChild(script);
+            return new Promise((done, fail) => {
+                script.onload = () => done($mol_dom_context);
+                script.onerror = () => fail(new Error(`Can not import ${uri}`));
+            });
+        }
+        static style(uri) {
+            return $mol_wire_sync(this).style_async(uri);
+        }
+        static style_async(uri) {
+            const doc = $mol_dom_context.document;
+            const style = doc.createElement('link');
+            style.rel = 'stylesheet';
+            style.href = uri;
+            doc.head.appendChild(style);
+            return new Promise((done, fail) => {
+                style.onload = () => done(style.sheet);
+                style.onerror = () => fail(new Error(`Can not import ${uri}`));
+            });
+        }
+    }
+    __decorate([
+        $mol_mem_key
+    ], $mol_import, "module", null);
+    __decorate([
+        $mol_mem_key
+    ], $mol_import, "script", null);
+    __decorate([
+        $mol_mem_key
+    ], $mol_import, "style", null);
+    $.$mol_import = $mol_import;
+})($ || ($ = {}));
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        let grad_counter = 0;
+        class $bog_qr extends $.$bog_qr {
+            gradient_id() {
+                return 'qr-grad-' + (++grad_counter);
+            }
+            gradient_fill() {
+                return `url(#${this.gradient_id()})`;
+            }
+            grad_x1() {
+                const a = this.gradient_angle() * Math.PI / 180;
+                return String(0.5 - Math.cos(a) * 0.5);
+            }
+            grad_y1() {
+                const a = this.gradient_angle() * Math.PI / 180;
+                return String(0.5 - Math.sin(a) * 0.5);
+            }
+            grad_x2() {
+                const a = this.gradient_angle() * Math.PI / 180;
+                return String(0.5 + Math.cos(a) * 0.5);
+            }
+            grad_y2() {
+                const a = this.gradient_angle() * Math.PI / 180;
+                return String(0.5 + Math.sin(a) * 0.5);
+            }
+            gradient_stop_list() {
+                const colors = this.gradient_stops();
+                return colors.map((_, i) => this.Stop(i));
+            }
+            stop_offset(index) {
+                const colors = this.gradient_stops();
+                if (colors.length <= 1)
+                    return '0%';
+                return Math.round(index / (colors.length - 1) * 100) + '%';
+            }
+            stop_color(index) {
+                return this.gradient_stops()[index];
+            }
+            qr_lib() {
+                return $mol_import.script('https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js');
+            }
+            qr_matrix() {
+                this.qr_lib();
+                const data = this.uri();
+                if (!data)
+                    return null;
+                const qr = qrcode(0, this.error_correction());
+                qr.addData(data);
+                qr.make();
+                const count = qr.getModuleCount();
+                const matrix = [];
+                for (let r = 0; r < count; r++) {
+                    matrix[r] = [];
+                    for (let c = 0; c < count; c++) {
+                        matrix[r][c] = qr.isDark(r, c);
+                    }
+                }
+                return matrix;
+            }
+            qr_view_box() {
+                const matrix = this.qr_matrix();
+                if (!matrix)
+                    return '0 0 1 1';
+                const total = matrix.length + this.quiet_zone() * 2;
+                return `0 0 ${total} ${total}`;
+            }
+            qr_paths() {
+                const matrix = this.qr_matrix();
+                if (!matrix)
+                    return { modules: '', rings: '', centers: '' };
+                const count = matrix.length;
+                const quiet = this.quiet_zone();
+                const r = this.module_radius();
+                const dark = (row, col) => row >= 0 && row < count && col >= 0 && col < count && matrix[row][col];
+                const isFinder = (row, col) => (row < 7 && col < 7) || (row < 7 && col >= count - 7) || (row >= count - 7 && col < 7);
+                const hasCenter = this.center().length > 0;
+                const centerRadius = hasCenter ? count * 0.15 : 0;
+                const centerMid = count / 2;
+                const isCenter = (row, col) => {
+                    if (!hasCenter)
+                        return false;
+                    const dx = col + 0.5 - centerMid;
+                    const dy = row + 0.5 - centerMid;
+                    return dx * dx + dy * dy < centerRadius * centerRadius;
+                };
+                let modules = '';
+                for (let row = 0; row < count; row++) {
+                    for (let col = 0; col < count; col++) {
+                        if (!matrix[row][col])
+                            continue;
+                        if (isFinder(row, col))
+                            continue;
+                        if (isCenter(row, col))
+                            continue;
+                        const x = col + quiet;
+                        const y = row + quiet;
+                        const top = dark(row - 1, col);
+                        const bottom = dark(row + 1, col);
+                        const left = dark(row, col - 1);
+                        const right = dark(row, col + 1);
+                        const alone = !top && !bottom && !left && !right;
+                        if (alone) {
+                            const cx = x + 0.5;
+                            const cy = y + 0.5;
+                            const cr = 0.5;
+                            modules += `M${cx - cr},${cy}A${cr},${cr},0,1,1,${cx + cr},${cy}A${cr},${cr},0,1,1,${cx - cr},${cy}Z`;
+                        }
+                        else {
+                            const tl = !top && !left ? r : 0;
+                            const tr = !top && !right ? r : 0;
+                            const br = !bottom && !right ? r : 0;
+                            const bl = !bottom && !left ? r : 0;
+                            modules += this.rect_path(x, y, 1, 1, tl, tr, br, bl);
+                        }
+                    }
+                }
+                const fr = this.finder_radius();
+                const finders = [
+                    [quiet, quiet],
+                    [count - 7 + quiet, quiet],
+                    [quiet, count - 7 + quiet],
+                ];
+                let rings = '';
+                let centers = '';
+                for (const [fx, fy] of finders) {
+                    rings += this.rect_path(fx, fy, 7, 7, fr, fr, fr, fr);
+                    rings += this.rect_path(fx + 1, fy + 1, 5, 5, fr * 0.7, fr * 0.7, fr * 0.7, fr * 0.7);
+                    centers += this.rect_path(fx + 2, fy + 2, 3, 3, fr * 0.5, fr * 0.5, fr * 0.5, fr * 0.5);
+                }
+                return { modules, rings, centers };
+            }
+            center_area() {
+                const matrix = this.qr_matrix();
+                if (!matrix || this.center().length === 0)
+                    return { x: 0, y: 0, size: 0 };
+                const count = matrix.length;
+                const quiet = this.quiet_zone();
+                const centerSize = count * 0.3;
+                const total = count + quiet * 2;
+                return {
+                    x: (total - centerSize) / 2,
+                    y: (total - centerSize) / 2,
+                    size: centerSize,
+                };
+            }
+            center_x() {
+                return String(this.center_area().x);
+            }
+            center_y() {
+                return String(this.center_area().y);
+            }
+            center_size() {
+                return String(this.center_area().size);
+            }
+            modules_d() {
+                return this.qr_paths().modules;
+            }
+            rings_d() {
+                return this.qr_paths().rings;
+            }
+            centers_d() {
+                return this.qr_paths().centers;
+            }
+            rect_path(x, y, w, h, tl, tr, br, bl) {
+                return [
+                    `M${x + tl},${y}`,
+                    `H${x + w - tr}`,
+                    tr ? `A${tr},${tr},0,0,1,${x + w},${y + tr}` : '',
+                    `V${y + h - br}`,
+                    br ? `A${br},${br},0,0,1,${x + w - br},${y + h}` : '',
+                    `H${x + bl}`,
+                    bl ? `A${bl},${bl},0,0,1,${x},${y + h - bl}` : '',
+                    `V${y + tl}`,
+                    tl ? `A${tl},${tl},0,0,1,${x + tl},${y}` : '',
+                    'Z',
+                ]
+                    .filter(Boolean)
+                    .join('');
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "gradient_id", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "gradient_fill", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "grad_x1", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "grad_y1", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "grad_x2", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "grad_y2", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "gradient_stop_list", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "qr_lib", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "qr_matrix", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "qr_view_box", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "qr_paths", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "center_area", null);
+        $$.$bog_qr = $bog_qr;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $mol_style_define($bog_qr, {
+            width: '300px',
+            height: '300px',
+            Center_body: {
+                width: '80%',
+                height: '80%',
+                position: 'absolute',
+                top: '10%',
+                left: '10%',
+            },
+        });
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$mol_video_player) = class $mol_video_player extends ($.$mol_view) {
+		uri(){
+			return "";
+		}
+		controls(){
+			return true;
+		}
+		autoplay(){
+			return true;
+		}
+		inline(){
+			return true;
+		}
+		loop(){
+			return false;
+		}
+		muted(){
+			return false;
+		}
+		poster(){
+			return "";
+		}
+		stream(){
+			return null;
+		}
+		revolume(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		retime(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		redurate(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		playing_event(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		play_event(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		pause_event(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		dom_name(){
+			return "video";
+		}
+		playing(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		play(){
+			return null;
+		}
+		pause(){
+			return null;
+		}
+		volume(next){
+			if(next !== undefined) return next;
+			return 0;
+		}
+		time(next){
+			if(next !== undefined) return next;
+			return 0;
+		}
+		duration(){
+			return 0;
+		}
+		attr(){
+			return {
+				"src": (this.uri()), 
+				"controls": (this.controls()), 
+				"autoplay": (this.autoplay()), 
+				"playsinline": (this.inline()), 
+				"loop": (this.loop()), 
+				"muted": (this.muted()), 
+				"poster": (this.poster())
+			};
+		}
+		field(){
+			return {"srcObject": (this.stream())};
+		}
+		event(){
+			return {
+				"volumechange": (next) => (this.revolume(next)), 
+				"timeupdate": (next) => (this.retime(next)), 
+				"durationchange": (next) => (this.redurate(next)), 
+				"playing": (next) => (this.playing_event(next)), 
+				"play": (next) => (this.play_event(next)), 
+				"pause": (next) => (this.pause_event(next))
+			};
+		}
+	};
+	($mol_mem(($.$mol_video_player.prototype), "revolume"));
+	($mol_mem(($.$mol_video_player.prototype), "retime"));
+	($mol_mem(($.$mol_video_player.prototype), "redurate"));
+	($mol_mem(($.$mol_video_player.prototype), "playing_event"));
+	($mol_mem(($.$mol_video_player.prototype), "play_event"));
+	($mol_mem(($.$mol_video_player.prototype), "pause_event"));
+	($mol_mem(($.$mol_video_player.prototype), "playing"));
+	($mol_mem(($.$mol_video_player.prototype), "volume"));
+	($mol_mem(($.$mol_video_player.prototype), "time"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        /**
+         * Video player component
+         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_video_player_demo
+         */
+        class $mol_video_player extends $.$mol_video_player {
+            dom_node() {
+                return super.dom_node();
+            }
+            volume(next) {
+                this.revolume();
+                if (next === undefined) {
+                    return this.dom_node().volume;
+                }
+                else {
+                    return this.dom_node().volume = Math.max(0, Math.min(next, 1));
+                }
+            }
+            time(next) {
+                this.retime();
+                if (next === undefined) {
+                    return this.dom_node().currentTime;
+                }
+                else {
+                    return this.dom_node().currentTime = Math.max(0, Math.min(next, this.duration()));
+                }
+            }
+            duration() {
+                this.redurate();
+                return this.dom_node().duration;
+            }
+            playing(next) {
+                const node = this.dom_node();
+                this.playing_event();
+                this.play_event();
+                if (next === undefined)
+                    return !node.paused;
+                if (next && node.paused)
+                    $mol_wire_sync(node).play();
+                if (!next && !node.paused)
+                    node.pause();
+                return !node.paused;
+            }
+            play() {
+                this.playing(true);
+            }
+            pause() {
+                this.playing(false);
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_video_player.prototype, "volume", null);
+        __decorate([
+            $mol_mem
+        ], $mol_video_player.prototype, "time", null);
+        __decorate([
+            $mol_mem
+        ], $mol_video_player.prototype, "duration", null);
+        __decorate([
+            $mol_mem
+        ], $mol_video_player.prototype, "playing", null);
+        $$.$mol_video_player = $mol_video_player;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/video/player/player.view.css", "[mol_video_player] {\n\tflex: 1 1 auto;\n}\n");
+})($ || ($ = {}));
+
+;
+	($.$mol_video_camera) = class $mol_video_camera extends ($.$mol_video_player) {
+		transform(){
+			return "";
+		}
+		facing(){
+			return "user";
+		}
+		aspect(){
+			return 1;
+		}
+		size(){
+			return 720;
+		}
+		width(){
+			return (this.size());
+		}
+		height(){
+			return (this.size());
+		}
+		brightness(){
+			return 128;
+		}
+		sharpness(){
+			return 2;
+		}
+		contrast(){
+			return 32;
+		}
+		saturation(){
+			return 64;
+		}
+		temperature(){
+			return 4000;
+		}
+		torch(){
+			return false;
+		}
+		controls(){
+			return false;
+		}
+		style(){
+			return {"transform": (this.transform())};
+		}
+		video_constraints(){
+			return {
+				"facingMode": (this.facing()), 
+				"aspectRatio": (this.aspect()), 
+				"width": {"ideal": (this.width())}, 
+				"height": {"ideal": (this.height())}
+			};
+		}
+		video_settings(){
+			return {
+				"brightness": (this.brightness()), 
+				"sharpness": (this.sharpness()), 
+				"contrast": (this.contrast()), 
+				"saturation": (this.saturation()), 
+				"advanced": [{"colorTemperature": (this.temperature())}, {"torch": (this.torch())}]
+			};
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $mol_video_camera extends $.$mol_video_camera {
+            stream_raw() {
+                const stream = $mol_wire_sync(navigator.mediaDevices).getUserMedia({
+                    video: this.video_constraints(),
+                });
+                return Object.assign(stream, {
+                    destructor: () => stream.getTracks().forEach(track => track.stop())
+                });
+            }
+            stream() {
+                const settings = this.video_settings();
+                const stream = this.stream_raw();
+                for (const track of stream.getVideoTracks()) {
+                    for (const param in settings) {
+                        if (param === 'advanced') {
+                            for (const constraint of settings.advanced) {
+                                try {
+                                    track.applyConstraints({ advanced: [constraint] });
+                                }
+                                catch (error) {
+                                    $mol_fail_log(error);
+                                }
+                            }
+                        }
+                        else if (settings[param] !== null) {
+                            try {
+                                track.applyConstraints({ [param]: settings[param] });
+                            }
+                            catch (error) {
+                                $mol_fail_log(error);
+                            }
+                        }
+                    }
+                }
+                return stream;
+            }
+            dom_node_actual() {
+                return super.dom_node_actual();
+            }
+            transform() {
+                return this.facing() === 'user' ? 'scaleX(-1)' : '';
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_video_camera.prototype, "stream_raw", null);
+        __decorate([
+            $mol_mem
+        ], $mol_video_camera.prototype, "stream", null);
+        $$.$mol_video_camera = $mol_video_camera;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$bog_music_qrscan) = class $bog_music_qrscan extends ($.$mol_view) {
+		Toggle(){
+			const obj = new this.$.$mol_check();
+			(obj.title) = () => ((this.$.$mol_locale.text("$bog_music_qrscan_Toggle_title")));
+			(obj.checked) = (next) => ((this.scanning(next)));
+			return obj;
+		}
+		Camera(){
+			const obj = new this.$.$mol_video_camera();
+			(obj.facing) = () => ("environment");
+			(obj.muted) = () => (true);
+			return obj;
+		}
+		scanning(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		prefix(){
+			return "";
+		}
+		found(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		sub(){
+			return [(this.Toggle()), (this.Camera())];
+		}
+	};
+	($mol_mem(($.$bog_music_qrscan.prototype), "Toggle"));
+	($mol_mem(($.$bog_music_qrscan.prototype), "Camera"));
+	($mol_mem(($.$bog_music_qrscan.prototype), "scanning"));
+	($mol_mem(($.$bog_music_qrscan.prototype), "found"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        const qr_module = require('jsqr/dist/jsQR.js');
+        const qr_read = qr_module.default ?? qr_module;
+        class $bog_music_qrscan extends $.$bog_music_qrscan {
+            sub() {
+                return this.scanning() ? [this.Toggle(), this.Camera()] : [this.Toggle()];
+            }
+            canvas() {
+                return $mol_dom_context.document.createElement('canvas');
+            }
+            tick() {
+                if (!this.scanning())
+                    return null;
+                $mol_state_time.now(250);
+                const video = this.Camera().dom_node();
+                const width = video.videoWidth;
+                const height = video.videoHeight;
+                if (!width || !height)
+                    return null;
+                const canvas = this.canvas();
+                canvas.width = width;
+                canvas.height = height;
+                const context = canvas.getContext('2d', { willReadFrequently: true });
+                context.drawImage(video, 0, 0, width, height);
+                const found = qr_read(context.getImageData(0, 0, width, height).data, width, height);
+                if (!found?.data.includes(this.prefix()))
+                    return null;
+                setTimeout(() => {
+                    this.scanning(false);
+                    this.found(found.data);
+                });
+                return found.data;
+            }
+            auto() {
+                this.tick();
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $bog_music_qrscan.prototype, "canvas", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_qrscan.prototype, "tick", null);
+        $$.$bog_music_qrscan = $bog_music_qrscan;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $mol_style_define($bog_music_qrscan, {
+            flex: { direction: 'column' },
+            gap: $mol_gap.text,
+            Camera: {
+                width: '100%',
+                maxWidth: '20rem',
+                aspectRatio: 1,
+                objectFit: 'cover',
+                border: { radius: $mol_gap.round },
+            },
+        });
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
 	($.$mol_button_major) = class $mol_button_major extends ($.$mol_button_minor) {
 		theme(){
 			return "$mol_theme_base";
@@ -22941,12 +23841,34 @@ var $;
 			(obj.sub) = () => ([(this.copy_status())]);
 			return obj;
 		}
+		qr_showed(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		Qr_show(){
+			const obj = new this.$.$mol_check();
+			(obj.title) = () => ((this.$.$mol_locale.text("$bog_music_account_Qr_show_title")));
+			(obj.checked) = (next) => ((this.qr_showed(next)));
+			return obj;
+		}
+		account_link(){
+			return "";
+		}
+		Qr(){
+			const obj = new this.$.$bog_qr();
+			(obj.uri) = () => ((this.account_link()));
+			(obj.error_correction) = () => ("L");
+			(obj.gradient_stops) = () => (["#111827", "#1e3a8a"]);
+			return obj;
+		}
 		Export(){
 			const obj = new this.$.$mol_view();
 			(obj.sub) = () => ([
 				(this.Warning()), 
 				(this.Copy()), 
-				(this.Copy_status())
+				(this.Copy_status()), 
+				(this.Qr_show()), 
+				(this.Qr())
 			]);
 			return obj;
 		}
@@ -22975,6 +23897,16 @@ var $;
 			(obj.click) = (next) => ((this.apply_import(next)));
 			return obj;
 		}
+		qr_found(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		Import_scan(){
+			const obj = new this.$.$bog_music_qrscan();
+			(obj.prefix) = () => ("#account=");
+			(obj.found) = (next) => ((this.qr_found(next)));
+			return obj;
+		}
 		import_status(){
 			return "";
 		}
@@ -22989,6 +23921,7 @@ var $;
 				(this.Import_hint()), 
 				(this.Import_input()), 
 				(this.Import_apply()), 
+				(this.Import_scan()), 
 				(this.Import_status())
 			]);
 			return obj;
@@ -23068,12 +24001,17 @@ var $;
 	($mol_mem(($.$bog_music_account.prototype), "copy"));
 	($mol_mem(($.$bog_music_account.prototype), "Copy"));
 	($mol_mem(($.$bog_music_account.prototype), "Copy_status"));
+	($mol_mem(($.$bog_music_account.prototype), "qr_showed"));
+	($mol_mem(($.$bog_music_account.prototype), "Qr_show"));
+	($mol_mem(($.$bog_music_account.prototype), "Qr"));
 	($mol_mem(($.$bog_music_account.prototype), "Export"));
 	($mol_mem(($.$bog_music_account.prototype), "Import_hint"));
 	($mol_mem(($.$bog_music_account.prototype), "import_link"));
 	($mol_mem(($.$bog_music_account.prototype), "Import_input"));
 	($mol_mem(($.$bog_music_account.prototype), "apply_import"));
 	($mol_mem(($.$bog_music_account.prototype), "Import_apply"));
+	($mol_mem(($.$bog_music_account.prototype), "qr_found"));
+	($mol_mem(($.$bog_music_account.prototype), "Import_scan"));
 	($mol_mem(($.$bog_music_account.prototype), "Import_status"));
 	($mol_mem(($.$bog_music_account.prototype), "Import"));
 	($mol_mem(($.$bog_music_account.prototype), "Reset_hint"));
@@ -23805,6 +24743,16 @@ var $;
                     return '';
                 return location.origin + location.pathname + location.search + '#account=' + encodeURIComponent(key);
             }
+            Qr() {
+                return this.qr_showed() ? super.Qr() : null;
+            }
+            qr_found(next) {
+                if (next) {
+                    this.import_link(next);
+                    this.apply_import();
+                }
+                return next ?? '';
+            }
             copy_status(next) {
                 return next ?? '';
             }
@@ -23867,6 +24815,9 @@ var $;
         __decorate([
             $mol_mem
         ], $bog_music_account.prototype, "lord_text", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_account.prototype, "qr_found", null);
         __decorate([
             $mol_mem
         ], $bog_music_account.prototype, "copy_status", null);
@@ -24466,6 +25417,14 @@ var $;
                 font: { size: '0.8125rem' },
                 color: $mol_theme.shade,
                 minHeight: '1rem',
+            },
+            Qr: {
+                width: '16rem',
+                maxWidth: '100%',
+                aspectRatio: 1,
+                alignSelf: 'center',
+                background: { color: 'white' },
+                border: { radius: $mol_gap.round },
             },
             Import: {
                 flex: { direction: 'column' },
@@ -35521,7 +36480,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.87';
+    $.$bog_music_version = 'v1.88';
 })($ || ($ = {}));
 
 ;
