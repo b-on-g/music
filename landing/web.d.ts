@@ -4387,24 +4387,6 @@ declare namespace $ {
 
 declare namespace $ {
 
-	export class $mol_icon_puzzle extends $mol_icon {
-		path( ): string
-	}
-	
-}
-
-//# sourceMappingURL=puzzle.view.tree.d.ts.map
-declare namespace $ {
-
-	export class $mol_icon_download extends $mol_icon {
-		path( ): string
-	}
-	
-}
-
-//# sourceMappingURL=download.view.tree.d.ts.map
-declare namespace $ {
-
 	export class $mol_icon_magnify extends $mol_icon {
 		path( ): string
 	}
@@ -4572,38 +4554,38 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_link__uri_bog_music_landing_14 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $mol_link['uri'] >
-	>
-	type $mol_link__sub_bog_music_landing_15 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_landing_14 = $mol_type_enforce<
 		readonly(any)[]
 		,
-		ReturnType< $mol_link['sub'] >
+		ReturnType< $mol_view['sub'] >
+	>
+	type $mol_view__dom_name_bog_music_landing_15 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_view['dom_name'] >
 	>
 	type $mol_view__sub_bog_music_landing_16 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_landing_17 = $mol_type_enforce<
-		readonly(any)[]
+	type $bog_music_landing_feature__Icon_bog_music_landing_17 = $mol_type_enforce<
+		ReturnType< $bog_music_landing['Feature_tube_icon'] >
 		,
-		ReturnType< $mol_view['sub'] >
+		ReturnType< $bog_music_landing_feature['Icon'] >
 	>
-	type $mol_view__dom_name_bog_music_landing_18 = $mol_type_enforce<
+	type $bog_music_landing_feature__title_bog_music_landing_18 = $mol_type_enforce<
 		string
 		,
-		ReturnType< $mol_view['dom_name'] >
+		ReturnType< $bog_music_landing_feature['title'] >
 	>
-	type $mol_view__sub_bog_music_landing_19 = $mol_type_enforce<
-		readonly(any)[]
+	type $bog_music_landing_feature__text_bog_music_landing_19 = $mol_type_enforce<
+		string
 		,
-		ReturnType< $mol_view['sub'] >
+		ReturnType< $bog_music_landing_feature['text'] >
 	>
 	type $bog_music_landing_feature__Icon_bog_music_landing_20 = $mol_type_enforce<
-		ReturnType< $bog_music_landing['Feature_vk_icon'] >
+		ReturnType< $bog_music_landing['Feature_tg_icon'] >
 		,
 		ReturnType< $bog_music_landing_feature['Icon'] >
 	>
@@ -4618,7 +4600,7 @@ declare namespace $ {
 		ReturnType< $bog_music_landing_feature['text'] >
 	>
 	type $bog_music_landing_feature__Icon_bog_music_landing_23 = $mol_type_enforce<
-		ReturnType< $bog_music_landing['Feature_tube_icon'] >
+		ReturnType< $bog_music_landing['Feature_offline_icon'] >
 		,
 		ReturnType< $bog_music_landing_feature['Icon'] >
 	>
@@ -4633,7 +4615,7 @@ declare namespace $ {
 		ReturnType< $bog_music_landing_feature['text'] >
 	>
 	type $bog_music_landing_feature__Icon_bog_music_landing_26 = $mol_type_enforce<
-		ReturnType< $bog_music_landing['Feature_tg_icon'] >
+		ReturnType< $bog_music_landing['Feature_sync_icon'] >
 		,
 		ReturnType< $bog_music_landing_feature['Icon'] >
 	>
@@ -4648,7 +4630,7 @@ declare namespace $ {
 		ReturnType< $bog_music_landing_feature['text'] >
 	>
 	type $bog_music_landing_feature__Icon_bog_music_landing_29 = $mol_type_enforce<
-		ReturnType< $bog_music_landing['Feature_offline_icon'] >
+		ReturnType< $bog_music_landing['Feature_loud_icon'] >
 		,
 		ReturnType< $bog_music_landing_feature['Icon'] >
 	>
@@ -4663,7 +4645,7 @@ declare namespace $ {
 		ReturnType< $bog_music_landing_feature['text'] >
 	>
 	type $bog_music_landing_feature__Icon_bog_music_landing_32 = $mol_type_enforce<
-		ReturnType< $bog_music_landing['Feature_sync_icon'] >
+		ReturnType< $bog_music_landing['Feature_share_icon'] >
 		,
 		ReturnType< $bog_music_landing_feature['Icon'] >
 	>
@@ -4678,7 +4660,7 @@ declare namespace $ {
 		ReturnType< $bog_music_landing_feature['text'] >
 	>
 	type $bog_music_landing_feature__Icon_bog_music_landing_35 = $mol_type_enforce<
-		ReturnType< $bog_music_landing['Feature_loud_icon'] >
+		ReturnType< $bog_music_landing['Feature_font_icon'] >
 		,
 		ReturnType< $bog_music_landing_feature['Icon'] >
 	>
@@ -4692,142 +4674,112 @@ declare namespace $ {
 		,
 		ReturnType< $bog_music_landing_feature['text'] >
 	>
-	type $bog_music_landing_feature__Icon_bog_music_landing_38 = $mol_type_enforce<
-		ReturnType< $bog_music_landing['Feature_share_icon'] >
-		,
-		ReturnType< $bog_music_landing_feature['Icon'] >
-	>
-	type $bog_music_landing_feature__title_bog_music_landing_39 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $bog_music_landing_feature['title'] >
-	>
-	type $bog_music_landing_feature__text_bog_music_landing_40 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $bog_music_landing_feature['text'] >
-	>
-	type $bog_music_landing_feature__Icon_bog_music_landing_41 = $mol_type_enforce<
-		ReturnType< $bog_music_landing['Feature_font_icon'] >
-		,
-		ReturnType< $bog_music_landing_feature['Icon'] >
-	>
-	type $bog_music_landing_feature__title_bog_music_landing_42 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $bog_music_landing_feature['title'] >
-	>
-	type $bog_music_landing_feature__text_bog_music_landing_43 = $mol_type_enforce<
-		string
-		,
-		ReturnType< $bog_music_landing_feature['text'] >
-	>
-	type $mol_view__sub_bog_music_landing_44 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_landing_38 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_landing_45 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_landing_39 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__dom_name_bog_music_landing_46 = $mol_type_enforce<
+	type $mol_view__dom_name_bog_music_landing_40 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_view['dom_name'] >
 	>
-	type $mol_view__sub_bog_music_landing_47 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_landing_41 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__dom_name_bog_music_landing_48 = $mol_type_enforce<
+	type $mol_view__dom_name_bog_music_landing_42 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_view['dom_name'] >
 	>
-	type $mol_view__sub_bog_music_landing_49 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_landing_43 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $bog_music_landing_feature__Icon_bog_music_landing_50 = $mol_type_enforce<
+	type $bog_music_landing_feature__Icon_bog_music_landing_44 = $mol_type_enforce<
 		ReturnType< $bog_music_landing['Install_android_icon'] >
 		,
 		ReturnType< $bog_music_landing_feature['Icon'] >
 	>
-	type $bog_music_landing_feature__title_bog_music_landing_51 = $mol_type_enforce<
+	type $bog_music_landing_feature__title_bog_music_landing_45 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $bog_music_landing_feature['title'] >
 	>
-	type $bog_music_landing_feature__text_bog_music_landing_52 = $mol_type_enforce<
+	type $bog_music_landing_feature__text_bog_music_landing_46 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $bog_music_landing_feature['text'] >
 	>
-	type $bog_music_landing_feature__Icon_bog_music_landing_53 = $mol_type_enforce<
+	type $bog_music_landing_feature__Icon_bog_music_landing_47 = $mol_type_enforce<
 		ReturnType< $bog_music_landing['Install_ios_icon'] >
 		,
 		ReturnType< $bog_music_landing_feature['Icon'] >
 	>
-	type $bog_music_landing_feature__title_bog_music_landing_54 = $mol_type_enforce<
+	type $bog_music_landing_feature__title_bog_music_landing_48 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $bog_music_landing_feature['title'] >
 	>
-	type $bog_music_landing_feature__text_bog_music_landing_55 = $mol_type_enforce<
+	type $bog_music_landing_feature__text_bog_music_landing_49 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $bog_music_landing_feature['text'] >
 	>
-	type $mol_view__sub_bog_music_landing_56 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_landing_50 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_view__sub_bog_music_landing_57 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_landing_51 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_link__uri_bog_music_landing_58 = $mol_type_enforce<
+	type $mol_link__uri_bog_music_landing_52 = $mol_type_enforce<
 		ReturnType< $bog_music_landing['app_uri'] >
 		,
 		ReturnType< $mol_link['uri'] >
 	>
-	type $mol_link__sub_bog_music_landing_59 = $mol_type_enforce<
+	type $mol_link__sub_bog_music_landing_53 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_link['sub'] >
 	>
-	type $mol_view__sub_bog_music_landing_60 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_landing_54 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
 	>
-	type $mol_link__uri_bog_music_landing_61 = $mol_type_enforce<
+	type $mol_link__uri_bog_music_landing_55 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_link['uri'] >
 	>
-	type $mol_link__sub_bog_music_landing_62 = $mol_type_enforce<
+	type $mol_link__sub_bog_music_landing_56 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_link['sub'] >
 	>
-	type $mol_link__uri_bog_music_landing_63 = $mol_type_enforce<
+	type $mol_link__uri_bog_music_landing_57 = $mol_type_enforce<
 		string
 		,
 		ReturnType< $mol_link['uri'] >
 	>
-	type $mol_link__sub_bog_music_landing_64 = $mol_type_enforce<
+	type $mol_link__sub_bog_music_landing_58 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_link['sub'] >
 	>
-	type $mol_view__sub_bog_music_landing_65 = $mol_type_enforce<
+	type $mol_view__sub_bog_music_landing_59 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_view['sub'] >
@@ -4840,14 +4792,9 @@ declare namespace $ {
 		Open_icon( ): $mol_icon_play
 		Open_label( ): $mol_view
 		Open( ): $mol_link
-		Extension_icon( ): $mol_icon_puzzle
-		Extension_label( ): $mol_view
-		Extension( ): $mol_link
 		Hero_actions( ): $mol_view
 		Hero( ): $mol_view
 		Features_title( ): $mol_view
-		Feature_vk_icon( ): $mol_icon_download
-		Feature_vk( ): $bog_music_landing_feature
 		Feature_tube_icon( ): $mol_icon_magnify
 		Feature_tube( ): $bog_music_landing_feature
 		Feature_tg_icon( ): $mol_icon_send

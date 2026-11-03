@@ -10889,30 +10889,6 @@ var $;
 })($ || ($ = {}));
 
 ;
-	($.$mol_icon_puzzle) = class $mol_icon_puzzle extends ($.$mol_icon) {
-		path(){
-			return "M20.5,11H19V7C19,5.89 18.1,5 17,5H13V3.5A2.5,2.5 0 0,0 10.5,1A2.5,2.5 0 0,0 8,3.5V5H4A2,2 0 0,0 2,7V10.8H3.5C5,10.8 6.2,12 6.2,13.5C6.2,15 5,16.2 3.5,16.2H2V20A2,2 0 0,0 4,22H7.8V20.5C7.8,19 9,17.8 10.5,17.8C12,17.8 13.2,19 13.2,20.5V22H17A2,2 0 0,0 19,20V16H20.5A2.5,2.5 0 0,0 23,13.5A2.5,2.5 0 0,0 20.5,11Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_download) = class $mol_icon_download extends ($.$mol_icon) {
-		path(){
-			return "M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
 	($.$mol_icon_magnify) = class $mol_icon_magnify extends ($.$mol_icon) {
 		path(){
 			return "M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z";
@@ -11086,24 +11062,9 @@ var $;
 			(obj.sub) = () => ([(this.Open_icon()), (this.Open_label())]);
 			return obj;
 		}
-		Extension_icon(){
-			const obj = new this.$.$mol_icon_puzzle();
-			return obj;
-		}
-		Extension_label(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => (["Расширение для Chrome"]);
-			return obj;
-		}
-		Extension(){
-			const obj = new this.$.$mol_link();
-			(obj.uri) = () => ("https://github.com/b-on-g/music/releases/latest");
-			(obj.sub) = () => ([(this.Extension_icon()), (this.Extension_label())]);
-			return obj;
-		}
 		Hero_actions(){
 			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.Open()), (this.Extension())]);
+			(obj.sub) = () => ([(this.Open())]);
 			return obj;
 		}
 		Hero(){
@@ -11120,17 +11081,6 @@ var $;
 			const obj = new this.$.$mol_view();
 			(obj.dom_name) = () => ("h2");
 			(obj.sub) = () => (["Что умеет"]);
-			return obj;
-		}
-		Feature_vk_icon(){
-			const obj = new this.$.$mol_icon_download();
-			return obj;
-		}
-		Feature_vk(){
-			const obj = new this.$.$bog_music_landing_feature();
-			(obj.Icon) = () => ((this.Feature_vk_icon()));
-			(obj.title) = () => ("Сохраняет из VK");
-			(obj.text) = () => ("Одна кнопка прямо в списке аудио на vk.com — трек уезжает в твою фонотеку.");
 			return obj;
 		}
 		Feature_tube_icon(){
@@ -11163,7 +11113,7 @@ var $;
 			const obj = new this.$.$bog_music_landing_feature();
 			(obj.Icon) = () => ((this.Feature_offline_icon()));
 			(obj.title) = () => ("Играет офлайн");
-			(obj.text) = () => ("Треки лежат на устройстве. Метро, самолёт, дача — музыка есть.");
+			(obj.text) = () => ("Файлы лежат на самом устройстве, а не на сервере. Метро, самолёт, дача — музыка есть.");
 			return obj;
 		}
 		Feature_sync_icon(){
@@ -11174,7 +11124,7 @@ var $;
 			const obj = new this.$.$bog_music_landing_feature();
 			(obj.Icon) = () => ((this.Feature_sync_icon()));
 			(obj.title) = () => ("Синхронизирует между устройствами");
-			(obj.text) = () => ("Телефон и компьютер видят одну фонотеку. Перенос аккаунта — одной ссылкой.");
+			(obj.text) = () => ("Телефон и компьютер видят одну фонотеку, а файлы переносятся напрямую между ними. Перенос аккаунта — одной ссылкой.");
 			return obj;
 		}
 		Feature_loud_icon(){
@@ -11196,7 +11146,7 @@ var $;
 			const obj = new this.$.$bog_music_landing_feature();
 			(obj.Icon) = () => ((this.Feature_share_icon()));
 			(obj.title) = () => ("Делится ссылкой");
-			(obj.text) = () => ("Трек шифруется, ключ живёт только в ссылке. Получатель откроет — и заиграет.");
+			(obj.text) = () => ("Одноразовая ссылка: треки идут напрямую от тебя к другу, без сервера. Открыл — ссылка сгорела.");
 			return obj;
 		}
 		Feature_font_icon(){
@@ -11213,7 +11163,6 @@ var $;
 		Features_list(){
 			const obj = new this.$.$mol_view();
 			(obj.sub) = () => ([
-				(this.Feature_vk()), 
 				(this.Feature_tube()), 
 				(this.Feature_tg()), 
 				(this.Feature_offline()), 
@@ -11328,14 +11277,9 @@ var $;
 	($mol_mem(($.$bog_music_landing.prototype), "Open_icon"));
 	($mol_mem(($.$bog_music_landing.prototype), "Open_label"));
 	($mol_mem(($.$bog_music_landing.prototype), "Open"));
-	($mol_mem(($.$bog_music_landing.prototype), "Extension_icon"));
-	($mol_mem(($.$bog_music_landing.prototype), "Extension_label"));
-	($mol_mem(($.$bog_music_landing.prototype), "Extension"));
 	($mol_mem(($.$bog_music_landing.prototype), "Hero_actions"));
 	($mol_mem(($.$bog_music_landing.prototype), "Hero"));
 	($mol_mem(($.$bog_music_landing.prototype), "Features_title"));
-	($mol_mem(($.$bog_music_landing.prototype), "Feature_vk_icon"));
-	($mol_mem(($.$bog_music_landing.prototype), "Feature_vk"));
 	($mol_mem(($.$bog_music_landing.prototype), "Feature_tube_icon"));
 	($mol_mem(($.$bog_music_landing.prototype), "Feature_tube"));
 	($mol_mem(($.$bog_music_landing.prototype), "Feature_tg_icon"));
@@ -11484,19 +11428,6 @@ var $;
                 background: { color: $bog_builderui_tokens.control },
                 color: $bog_builderui_tokens.back,
                 font: { weight: 600 },
-                textDecoration: 'none',
-            },
-            Extension: {
-                align: { items: 'center' },
-                gap: $mol_gap.text,
-                padding: {
-                    top: '0.75rem',
-                    bottom: '0.75rem',
-                    left: '1.5rem',
-                    right: '1.5rem',
-                },
-                border: { radius: $bog_builderui_tokens.radius, width: '1px', style: 'solid', color: $bog_builderui_tokens.line },
-                color: $bog_builderui_tokens.text,
                 textDecoration: 'none',
             },
             Features: {

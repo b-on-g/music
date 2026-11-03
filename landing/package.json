@@ -213,8 +213,6 @@
     "$mol_link",
     "$mol_state_arg",
     "$mol_dom_safe",
-    "$mol_icon_puzzle",
-    "$mol_icon_download",
     "$mol_icon_magnify",
     "$mol_icon_send",
     "$mol_icon_cloud_off_outline",
