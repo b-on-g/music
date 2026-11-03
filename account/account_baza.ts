@@ -360,7 +360,7 @@ namespace $ {
 		@ $mol_action
 		device_beat(): void {
 			const device = this.devices().key( $bog_music_device.id(), 'auto' )!
-			const name = $bog_music_device.name()
+			const name = $bog_music_device.title()
 			if( device.Name()?.val() !== name ) device.Name( 'auto' )!.val( name )
 			device.Beat( 'auto' )!.val( Date.now() )
 		}

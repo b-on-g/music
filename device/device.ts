@@ -11,7 +11,7 @@ namespace $ {
 			return id
 		}
 
-		static name_of( agent: string ) {
+		static title_of( agent: string ) {
 			const os = /iPhone/.test( agent ) ? 'iPhone'
 				: /iPad/.test( agent ) ? 'iPad'
 				: /Android/.test( agent ) ? 'Android'
@@ -27,8 +27,8 @@ namespace $ {
 			return browser ? `${ os } · ${ browser }` : os
 		}
 
-		static name() {
-			return this.name_of( typeof navigator === 'undefined' ? '' : navigator.userAgent )
+		static title() {
+			return this.title_of( typeof navigator === 'undefined' ? '' : navigator.userAgent )
 		}
 
 	}

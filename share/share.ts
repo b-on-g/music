@@ -99,7 +99,7 @@ namespace $ {
 		}
 
 		sender_name() {
-			return this.account().nickname() || $bog_music_device.name()
+			return this.account().nickname() || $bog_music_device.title()
 		}
 
 		async share_keys( keys: string[] ) {
