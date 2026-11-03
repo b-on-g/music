@@ -60,10 +60,16 @@ namespace $ {
 				} )
 		}
 
+		static ready_limit = 3000
+
 		static async when_ready(): Promise< boolean > {
 			if( !this.supported() ) return false
 			try {
-				await navigator.serviceWorker!.ready
+				const ready = await Promise.race([
+					navigator.serviceWorker!.ready.then( () => true ),
+					new Promise< boolean >( done => setTimeout( () => done( false ), this.ready_limit ) ),
+				])
+				if( !ready ) return false
 				if( !navigator.serviceWorker!.controller ) return false
 				return await this.served()
 			} catch {
