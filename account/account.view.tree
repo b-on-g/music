@@ -14,11 +14,11 @@ $bog_music_account $mol_view
 		<= Sync_row $mol_view
 			sub /
 				<= Download_playlist $mol_button_minor
-					hint <= download_playlist_hint \
+					hint @ \Упаковать файлы видимого плейлиста с этого устройства в zip
 					click? <=> download_playlist? null
 					sub /
 						<= Download_playlist_icon $mol_icon_download
-						<= Download_playlist_label $mol_view sub / <= download_playlist_label \
+						<= Download_playlist_label $mol_view sub / \Скачать плейлист zip-архивом
 				<= Download_playlist_status $mol_view sub / <= download_playlist_status \
 		<= Cards $mol_view
 			sub /
@@ -79,7 +79,3 @@ $bog_music_account $mol_view
 						<= Reset_button $mol_button_minor
 							title \Сбросить локальный аккаунт
 							click? <=> reset_account? null
-	ext_label @ \Скачать плейлист в расширение
-	ext_hint @ \Скачать треки видимого плейлиста в расширение
-	pwa_label @ \Скачать плейлист zip-архивом
-	pwa_hint @ \Упаковать локально засинканные треки в zip и скачать на устройство

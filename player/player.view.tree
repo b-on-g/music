@@ -14,6 +14,13 @@ $bog_music_player $mol_view
 			<= Empty_text $mol_view
 				sub / \Ничего не играет
 	sub /
+		<= Missing $mol_view
+			sub /
+				<= Missing_text $mol_view
+					sub / <= missing \
+				<= Missing_pull $mol_button_minor
+					title \Перенести
+					click? <=> missing_pull? null
 		<= Progress_row $mol_view
 			sub /
 				<= Progress $mol_view

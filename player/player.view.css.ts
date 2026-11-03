@@ -14,6 +14,18 @@ namespace $.$$ {
 		position: 'sticky',
 		bottom: 0,
 
+		Missing: {
+			align: { items: 'center' },
+			gap: '0.5rem',
+			padding: { left: '0.75rem', right: '0.5rem' },
+			font: { size: '0.875rem' },
+		},
+
+		Missing_text: {
+			flex: { grow: 1, shrink: 1 },
+			color: $mol_theme.shade,
+		},
+
 		Progress_row: {
 			flex: {
 				direction: 'row',

@@ -1,22 +1,10 @@
 namespace $.$$ {
-	/**
-	 * Единственный мастер синхронизации — свой болгарский узел.
-	 *
-	 * Список мастеров задаётся ПОЛНОЙ заменой, а не дополнением. Штатный
-	 * `masters()` склеивает `masters_default` с пирами из бандленного сида,
-	 * а там зашит чужой публичный мастер: чистки одного `masters_default`
-	 * мало, надо глушить сам `masters()`. Поэтому сначала обнуляем список по
-	 * умолчанию, затем подменяем функцию — ничего от Гипер Базы не остаётся.
-	 */
 	const local = typeof location !== 'undefined' && /^(localhost|127\.0\.0\.1|\[::1\])$/.test( location.hostname )
 	const master = local ? 'http://localhost:9090/' : 'https://cmyser-bg-pony.87.120.36.150.ip.giper.dev/'
 
 	$giper_baza_yard.masters_default.length = 0
 	$giper_baza_yard.masters = (): string[] => [ master ]
 
-
-	// Фиксы окружения (yard masters, vk_token bridge, #account/#share из URL) —
-	// до первого обращения к baza.
 	$bog_music_boot.init()
 	$bog_music_log.act( `мастер синка: ${ master }` )
 
@@ -26,7 +14,6 @@ namespace $.$$ {
 			return 'Bog Music'
 		}
 
-		/** Доменная модель: home land пользователя. */
 		account() {
 			return $bog_music_account_baza.home()
 		}
@@ -35,15 +22,9 @@ namespace $.$$ {
 			return $bog_music_share.instance()
 		}
 
-		// =====================================================================
-		// Страницы
-		// =====================================================================
-
 		@$mol_mem
 		page(next?: string) {
 			if (next !== undefined) {
-				// Клик на табе «Расшаренный» в режиме шаринга финализирует шар,
-				// не переключая страницу.
 				if (next === 'share') {
 					$bog_music_log.act('финализация шара по клику на табе')
 					this.share().submit()
@@ -123,26 +104,13 @@ namespace $.$$ {
 			return opts
 		}
 
-		// =====================================================================
-		// Воспроизведение
-		// =====================================================================
-
 		@$mol_mem
 		current_key(next?: string): string {
 			return next ?? ''
 		}
 
-		/**
-		 * Сколько треков держим докачанными вперёд от текущего. Слушают по
-		 * одной песне: пары следующих хватает, чтобы переход не ждал сети, а
-		 * дальше докачка только тащила бы фонотеку на устройство и в память.
-		 */
 		static prefetch_ahead = 3
 
-		/**
-		 * Окно префетча: текущий трек и несколько следующих из видимого списка.
-		 * Играет что-то не из этого списка (или ничего) — греем его начало.
-		 */
 		prefetch_window(): readonly string[] {
 			const keys = this.visible_keys()
 			if (!keys.length) return []
@@ -152,28 +120,53 @@ namespace $.$$ {
 			return keys.slice(from, from + $bog_music_app.prefetch_ahead)
 		}
 
-		/**
-		 * Фоновый драйвер докачки blob'ов «по одной песне». Detached-атом (как
-		 * land.sync_yard): его suspend'ы на текущем blob'е не блокируют рендер UI.
-		 * @$mol_mem здесь — во view-слое (на baza-объекте @$mol_mem запрещён).
-		 * Востребован из auto(), пока приложение открыто.
-		 *
-		 * Окно читается ВНУТРИ атома, поэтому смена трека сама перенацеливает
-		 * докачку на новых соседей.
-		 */
-		@$mol_mem
-		prefetch() {
+		static migrate_limit = 30
+
+		_migrate_busy = false
+
+		_migrate_done = 0
+
+		legacy_keys(): string[] {
 			const account = this.account()
-			const root = new $mol_wire_atom('bog_music_prefetch', () => account.prefetch_step(this.prefetch_window()))
-			setTimeout(() => root.fresh())
-			return root
+			const window = this.prefetch_window()
+			const all = [ ... window, ... account.keys_in( '' ), ... account.keys_in( 'archive' ) ]
+			return [ ... new Set( all ) ].filter( key => account.place( key ) === 'legacy' )
+		}
+
+		async migrate() {
+			if( this._migrate_busy ) return
+			this._migrate_busy = true
+			try {
+				while( this._migrate_done < $bog_music_app.migrate_limit ) {
+					const keys = await $mol_wire_async( this ).legacy_keys()
+					if( !keys.length ) break
+					const ok = await Promise.race([
+						this.account().migrate( keys[ 0 ] ),
+						new Promise< boolean >( ( done, fail ) => setTimeout( () => fail( new Error( 'Ленд не доехал за минуту' ) ), 60000 ) ),
+					]).catch( ( error: any ) => {
+						$bog_music_log.err( `перенос из Базы не удался: ${ keys[ 0 ] }: ${ error?.message ?? error }` )
+						return false
+					} )
+					this._migrate_done++
+					if( !ok ) break
+				}
+			} finally {
+				this._migrate_busy = false
+			}
+		}
+
+		@ $mol_mem
+		migrate_watch() {
+			this.prefetch_window()
+			setTimeout( () => void this.migrate() )
+			return null
 		}
 
 		@$mol_action
 		play_key(key?: string | null) {
 			if (!key) return
 			$bog_music_log.act(`воспроизведение ${key}`)
-			this.tube_current(-1) // ушли в фонотеку — выдача больше не очередь
+			this.tube_current(-1)
 			const keys = this.visible_keys()
 			const idx = keys.indexOf(key)
 			this.Player().queue_index(idx >= 0 ? idx : 0)
@@ -181,8 +174,8 @@ namespace $.$$ {
 
 			const item = this.recsys_item(key)
 			if (item) {
-				$bog_recsys.namespace('vk') // исторический id, на нём накоплена статистика
-				try { $bog_recsys.feedback(item, 'play') } catch {}
+				$bog_recsys.namespace('music')
+				$bog_recsys.feedback(item, 'play')
 			}
 		}
 
@@ -193,19 +186,18 @@ namespace $.$$ {
 		}
 
 		recsys_item(key: string) {
-			const audio = this.account().track(key)?.audio()
-			if (!audio) return null
+			const meta = this.account().info(key)
+			if (!meta) return null
 			const tags: string[] = []
-			if (audio.artist) tags.push('artist:' + audio.artist.toLowerCase().trim())
+			if (meta.artist) tags.push('artist:' + meta.artist.toLowerCase().trim())
 			return { id: key, tags }
 		}
 
-		/** «Моя волна»: следующий трек от рекомендалки. null = обычный порядок. */
 		player_pick_next(current?: string | null): string | null {
 			if (!this.wave_mode()) return null
 			const pool = this.visible_keys()
 			if (!pool.length) return null
-			$bog_recsys.namespace('vk')
+			$bog_recsys.namespace('music')
 			const items = pool.map(k => this.recsys_item(k)).filter(Boolean) as { id: string, tags: string[] }[]
 			const seed = current ? this.recsys_item(current) : null
 			const picked = $bog_recsys.recommend(items, {
@@ -215,10 +207,6 @@ namespace $.$$ {
 			})[0]
 			return picked?.id ?? null
 		}
-
-		// =====================================================================
-		// Редактирование списка
-		// =====================================================================
 
 		@$mol_action
 		reorder_to(args?: { from: number, to: number } | null) {
@@ -251,42 +239,25 @@ namespace $.$$ {
 			this.account().move_to_playlist(key, '')
 		}
 
-		/**
-		 * Трек уезжает в самый низ списка — «надоело, но выбрасывать жалко».
-		 *
-		 * Очередь при этом не должна дёрнуться. queue_index у плеера — это
-		 * позиция ТЕКУЩЕГО трека, следующий берётся как +1, а список после
-		 * переезда весь сдвигается, и без правки индекса песня бы перескочила.
-		 * Поэтому запоминаем, что должно заиграть следом, и после переезда
-		 * ставим индекс так, чтобы +1 указал ровно на него.
-		 *
-		 * Отдельный случай — скинуть тот трек, который сейчас играет. Он и сам
-		 * уедет в конец, но доиграть обязан здесь и сейчас, а дальше пойти на
-		 * своего прежнего соседа: слушаю 1 2 3, скинул 2 — дальше 3, а не 4.
-		 */
 		@$mol_action
 		demote_key(key?: string | null) {
 			if (!key) return
 			const keys = this.visible_keys()
 			const from = keys.indexOf(key)
-			if (from < 0 || from === keys.length - 1) return // уже внизу
+			if (from < 0 || from === keys.length - 1) return
 			$bog_music_log.act(`вниз списка ${key}`)
 
 			const current = this.current_key()
 			const at = current ? keys.indexOf(current) : -1
-			// Первый за текущим, минуя уезжающий. Если уезжает сам текущий —
-			// это просто следующий за ним.
 			const follow = at < 0 ? '' : keys.slice(at + 1).find(k => k !== key) ?? ''
 
 			const list = this.list_id()
 			if (list) this.account().list_move(list, key, keys[keys.length - 1])
 			else this.account().move_to_bottom(key)
-			if (at < 0) return // играет что-то не из этого списка — очередь не наша
+			if (at < 0) return
 
 			const fresh = this.visible_keys()
 			const follow_at = follow ? fresh.indexOf(follow) : -1
-			// Крутим по кругу, а не уходим в -1: prev() смотрит на idx > 0, и
-			// отрицательный индекс сломал бы ему шаг назад.
 			this.Player().queue_index(
 				follow_at >= 0
 					? ( follow_at - 1 + fresh.length ) % fresh.length
@@ -298,40 +269,23 @@ namespace $.$$ {
 		delete_key(key?: string | null) {
 			if (!key) return
 			$bog_music_log.act(`удаление ${key}`)
-			this.account().delete_track(key)
+			void this.account().delete_track(key)
 		}
-
-		// =====================================================================
-		// Загрузка файлов с устройства
-		// =====================================================================
 
 		@$mol_mem
 		upload_files(next?: File[]) {
 			if (next?.length) {
 				$bog_music_log.act(`загрузка с устройства: ${next.length} файл(ов)`)
 				const files = [...next].sort((a, b) => a.name.localeCompare(b.name, 'ru', { numeric: true }))
-				files.forEach((file, index) => {
-					const buffer = new Uint8Array(($mol_wire_sync(file) as any).arrayBuffer())
-					this.account().save_local_track(file, buffer, index + 1)
-				})
+				void ( async () => {
+					for( const [ index, file ] of files.entries() ) {
+						await this.account().save_local_track( file, index + 1 ).catch( ( error: any ) => {
+							$bog_music_log.err( `файл не загружен: ${ file.name }: ${ error?.message ?? error }` )
+						} )
+					}
+				} )()
 			}
 			return next ?? []
-		}
-
-		// =====================================================================
-		// VK: список моих аудио и докачка плейлиста
-		// =====================================================================
-
-		@$mol_mem
-		vk_audios(): $bog_music_api_audio[] {
-			if (!$bog_music_api.in_extension()) return []
-			if (!$bog_music_api.token()) return []
-			return $bog_music_api.my_audios()?.items ?? []
-		}
-
-		@$mol_mem
-		prefetch_state(next?: { total: number, done: number, failed: number }) {
-			return next ?? { total: 0, done: 0, failed: 0 }
 		}
 
 		@$mol_mem
@@ -339,81 +293,14 @@ namespace $.$$ {
 			return next ?? ''
 		}
 
-		/** Кнопка в аккаунте: extension качает с VK в baza, PWA отдаёт zip. */
 		@$mol_action
 		download_playlist() {
-			$bog_music_log.act('скачивание плейлиста')
-			$mol_wire_async(this).download_playlist_async()
+			$bog_music_log.act('скачивание плейлиста zip')
+			void this.download_zip_async()
 		}
 
-		async download_playlist_async() {
-			if (!$bog_music_api.in_extension()) {
-				await this.download_zip_async()
-				return
-			}
-			const items: $bog_music_api_audio[] = this.page() === 'my'
-				? await ($mol_wire_async(this) as any).vk_audios()
-				: await ($mol_wire_async(this) as any).visible_audios()
-			if (!items.length) {
-				this.download_playlist_status('Плейлист пуст')
-				return
-			}
-			this.download_playlist_status(`Скачиваю ${items.length}…`)
-			await this.prefetch_blobs(items)
-			const s = this.prefetch_state()
-			$bog_music_log.act(`плейлист скачан: ${s.done}/${s.total}, ошибок ${s.failed}`)
-			this.download_playlist_status(`Готово: ${s.done}/${s.total}${s.failed ? `, ошибок ${s.failed}` : ''}`)
-		}
-
-		/** Sync-хелперы для чтения baza из async-кода через фибру. */
-		visible_audios(): $bog_music_api_audio[] {
-			return this.visible_keys()
-				.map(key => this.account().track(key)?.audio())
-				.filter(Boolean) as $bog_music_api_audio[]
-		}
-
-		track_blob(key: string): Blob | null {
-			return this.account().track(key)?.blob() ?? null
-		}
-
-		/** Качает блобы треков в baza по одному, с прогрессом. */
-		async prefetch_blobs(items: $bog_music_api_audio[]) {
-			if (!items?.length) return
-			this.prefetch_state({ total: items.length, done: 0, failed: 0 })
-			let done = 0, failed = 0
-			for (const audio of items) {
-				try {
-					const account = $mol_wire_async(this.account()) as any
-					await account.save_track(audio)
-					const key = $bog_music_account_baza.key_of(audio)
-					if (await account.track_cached(key)) { done++; continue }
-					let target = audio
-					if (!target.url) {
-						const id = `${audio.owner_id}_${audio.id}${audio.access_key ? '_' + audio.access_key : ''}`
-						const fresh = await $bog_music_api.fetch_vk_direct('audio.getById', { audios: id })
-							.then((r: $bog_music_api_audio[]) => r?.[0]).catch(() => null)
-						if (!fresh?.url) {
-							failed++
-							this.prefetch_state({ total: items.length, done, failed })
-							continue
-						}
-						target = { ...audio, url: fresh.url }
-					}
-					await this.account().save_hls(target)
-					done++
-				} catch (e: any) {
-					failed++
-					const name = `${audio.artist} — ${audio.title}`
-					console.warn('[app] prefetch failed:', name, '|', e?.message ?? String(e))
-					$bog_music_log.err(`докачка не удалась: ${name}: ${e?.message ?? String(e)}`)
-				}
-				this.prefetch_state({ total: items.length, done, failed })
-			}
-		}
-
-		/** PWA-путь: локально засинканные блобы → zip → браузерный download. */
 		async download_zip_async() {
-			const keys = await ($mol_wire_async(this) as any).visible_keys() as string[]
+			const keys = await $mol_wire_async(this).visible_keys()
 			if (!keys.length) {
 				this.download_playlist_status('Плейлист пуст')
 				return
@@ -422,21 +309,21 @@ namespace $.$$ {
 			let skipped = 0
 			for (const key of keys) {
 				this.download_playlist_status(`Архивирую ${files.length}/${keys.length}…`)
-				const blob = await ($mol_wire_async(this) as any).track_blob(key).catch(() => null) as Blob | null
-				const audio = this.account().track(key)?.audio()
-				if (!blob || !audio) { skipped++; continue }
-				const data = new Uint8Array(await blob.arrayBuffer())
+				const file = await $bog_music_disk.file(key)
+				const meta = await $mol_wire_async(this.account()).info(key)
+				if (!file || !meta) { skipped++; continue }
+				const data = new Uint8Array(await file.arrayBuffer())
 				files.push({
-					name: $bog_music_zip.entry_name(files.length + 1, audio.artist, audio.title, blob.type),
+					name: $bog_music_zip.entry_name(files.length + 1, meta.artist, meta.title, $bog_music_disk.mime(data.subarray(0, 12))),
 					data,
 				})
 			}
 			if (!files.length) {
-				this.download_playlist_status('Нет локально доступных треков для архива')
+				this.download_playlist_status('На этом устройстве нет файлов этого списка')
 				return
 			}
 			this.download_playlist_status('Собираю zip…')
-			const blob = new Blob([$bog_music_zip.build(files)], { type: 'application/zip' })
+			const blob = new Blob([$bog_music_zip.build(files) as BlobPart], { type: 'application/zip' })
 			const url = URL.createObjectURL(blob)
 			const a = document.createElement('a')
 			a.href = url
@@ -450,9 +337,42 @@ namespace $.$$ {
 			this.download_playlist_status(`Готово: ${files.length} ${$bog_music_share.plural_tracks(files.length)}${skipped_note}`)
 		}
 
-		// =====================================================================
-		// Тулбар, панели, тосты
-		// =====================================================================
+		beam() {
+			return $bog_music_beam.instance()
+		}
+
+		beam_groups() {
+			return this.beam().remote_groups(this.visible_keys())
+		}
+
+		beam_text() {
+			const summary = this.beam().summary()
+			if (summary) return summary
+			const groups = [...this.beam_groups()]
+			if (!groups.length) return ''
+			return groups
+				.map(([from, keys]) => `${keys.length} ${$bog_music_share.plural_tracks(keys.length)} только на «${this.account().device_name(from)}»`)
+				.join(', ')
+		}
+
+		beam_button() {
+			return this.beam_groups().size ? 'Перенести сюда' : ''
+		}
+
+		@$mol_action
+		beam_pull() {
+			this.beam().pull_all(this.visible_keys())
+		}
+
+		Beam_bar() {
+			if (!this.beam_text()) return null as any
+			return super.Beam_bar()
+		}
+
+		Beam_pull() {
+			if (!this.beam_button() || this.beam().summary()) return null as any
+			return super.Beam_pull()
+		}
 
 		version_label() {
 			return $bog_music_version
@@ -469,7 +389,6 @@ namespace $.$$ {
 			return this.$.$mol_state_local.value( 'bog_music_font_size', next ) ?? 'normal'
 		}
 
-		/** Нижняя навигация: search / music / player / account / logs. */
 		@$mol_mem
 		section(next?: string): string {
 			if (next !== undefined) $bog_music_log.act(`раздел: ${next}`)
@@ -496,13 +415,14 @@ namespace $.$$ {
 
 		body() {
 			switch (this.section()) {
-				case 'logs': return [this.Mem(), this.Logs()]
+				case 'logs': return [this.Logs()]
 				case 'account': return [this.Account(), this.Feedback()]
 				case 'player': return [this.Player()]
 				case 'search': return [this.Tube_bar(), this.Tube_list()]
 			}
 			return [
 				this.Share_toast(),
+				this.Beam_bar(),
 				this.Tabs(),
 				this.Tracks(),
 			]
@@ -515,24 +435,12 @@ namespace $.$$ {
 			]
 		}
 
-		// =====================================================================
-		// Поиск и скачивание из YouTube (сервер bog/music/tube)
-		// =====================================================================
-
-		/**
-		 * Поле ввода. Дефолт — из committed (URL), чтобы при возврате на
-		 * секцию/заходе по ссылке в поле был текущий запрос, а не пусто.
-		 */
 		@$mol_mem
 		tube_query(next?: string): string {
 			if (next !== undefined) return next
 			return this.tube_committed()
 		}
 
-		/**
-		 * Запрос, по которому реально ищем. Хранится в URL (`?q=`) — переживает
-		 * переключение вкладок и перезагрузку, шарится ссылкой.
-		 */
 		@$mol_mem
 		tube_committed(next?: string): string {
 			return $mol_state_arg.value('q', next) ?? ''
@@ -590,16 +498,6 @@ namespace $.$$ {
 			return item ? $bog_music_tube.cover_url(item.id) : ''
 		}
 
-		/**
-		 * Индекс играющего результата выдачи. -1 — играет не из выдачи.
-		 * Нужен, чтобы плеер мог шагнуть на соседний результат, а не свалиться
-		 * в личную фонотеку.
-		 *
-		 * Обычное поле, а не @$mol_mem: значение не участвует в рендере, никто
-		 * его не читает как зависимость — и неиспользуемую ячейку $mol сметает.
-		 * На меме индекс сам откатывался к -1 через секунду после установки,
-		 * из-за чего «назад» по выдаче переставал работать.
-		 */
 		private _tube_at = -1
 
 		tube_current(next?: number): number {
@@ -607,11 +505,6 @@ namespace $.$$ {
 			return this._tube_at
 		}
 
-		/**
-		 * Шаг по выдаче YouTube. Зовётся плеером: он знает только то, что играет
-		 * внешний стрим, и просит соседа — про tube ему знать незачем.
-		 * false — выдача кончилась, дальше идти некуда.
-		 */
 		@$mol_action
 		tube_step(step: number): boolean {
 			const at = this.tube_current()
@@ -622,7 +515,6 @@ namespace $.$$ {
 			return true
 		}
 
-		/** Прослушать трек стримом с сервера, не скачивая в baza. */
 		@$mol_action
 		tube_play(index: number) {
 			const item = this.tube_item(index)
@@ -647,7 +539,6 @@ namespace $.$$ {
 			return next ?? ''
 		}
 
-		/** Идёт ли скачивание этой строки — для мигания кнопки Get. */
 		tube_busy(index: number): boolean {
 			return this.tube_status_text(index).startsWith('Качаю')
 		}
@@ -665,16 +556,16 @@ namespace $.$$ {
 			this.tube_status(item.id, 'Качаю…')
 			try {
 				const bytes = await $bog_music_tube.audio_bytes(item.id)
-				const audio: $bog_music_api_audio = {
-					id: $bog_music_account_baza.hash_str('yt:' + item.id),
-					owner_id: 0,
-					artist: item.channel,
-					title: item.title,
-					duration: item.duration,
-					url: '',
-					cover: $bog_music_tube.cover_url(item.id),
-				}
-				await ($mol_wire_async(this.account()) as any).import_audio(audio, bytes, 'audio/mp4')
+				await this.account().import_audio(
+					$bog_music_account_baza.key_make('yt:' + item.id),
+					{
+						artist: item.channel,
+						title: item.title,
+						duration: item.duration,
+						cover: $bog_music_tube.cover_url(item.id),
+					},
+					bytes,
+				)
 				$bog_music_log.act(`скачано с YouTube: ${item.title} (${bytes.length} байт)`)
 				this.tube_status(item.id, '✓ в Моей музыке')
 			} catch (e: any) {
@@ -685,10 +576,6 @@ namespace $.$$ {
 				setTimeout(() => this.tube_status(item.id, ''), 4000)
 			}
 		}
-
-		// =====================================================================
-		// Телеграм: треки, пересланные боту (сервер bog/music/tg)
-		// =====================================================================
 
 		@$mol_mem
 		tg_state(next?: { linked: boolean, name: string, pending: number, done: number, error: string }) {
@@ -718,7 +605,6 @@ namespace $.$$ {
 			return parts.join(' · ')
 		}
 
-		/** Код связки создаётся при первом клике и уходит в диплинк бота. */
 		@$mol_action
 		tg_link() {
 			const code = $bog_music_tg.code_ensure()
@@ -727,12 +613,7 @@ namespace $.$$ {
 			$mol_wire_async(this).tg_drain()
 		}
 
-		/**
-		 * Метаданные трека из Телеграма. Тегов там часто нет — тогда разбираем
-		 * имя файла тем же парсером, что и локальную загрузку. `uid` стабилен
-		 * для файла в любом чате: пересланный дважды трек перезапишет сам себя.
-		 */
-		tg_audio(row: $bog_music_tg_row): $bog_music_api_audio {
+		tg_meta(row: $bog_music_tg_row): $bog_music_track_baza_info {
 			let artist = row.performer
 			let title = row.title
 			if (!title) {
@@ -740,22 +621,11 @@ namespace $.$$ {
 				title = parsed.title
 				if (!artist) artist = parsed.artist
 			}
-			return {
-				id: $bog_music_account_baza.hash_str('tg:' + (row.uid || row.id)),
-				owner_id: 0,
-				artist,
-				title,
-				duration: row.duration,
-				url: '',
-			}
+			return { artist, title, duration: row.duration, cover: '' }
 		}
 
 		private _tg_busy = false
 
-		/**
-		 * Забирает пересланное боту и складывает в baza. Каждый трек — своя
-		 * фибра на import_audio (blob-land с PoW), как в drain_pending.
-		 */
 		async tg_drain() {
 			const code = $bog_music_tg.code()
 			if (!code || this._tg_busy) return
@@ -775,8 +645,11 @@ namespace $.$$ {
 				for (const row of await $bog_music_tg.inbox(code)) {
 					try {
 						const bytes = await $bog_music_tg.file(code, row.id)
-						await ($mol_wire_async(this.account()) as any)
-							.import_audio(this.tg_audio(row), bytes, row.mime || 'audio/mpeg')
+						await this.account().import_audio(
+							$bog_music_account_baza.key_make('tg:' + (row.uid || row.id)),
+							this.tg_meta(row),
+							bytes,
+						)
 						await $bog_music_tg.ack(code, row.id)
 					} catch (e: any) {
 						if (e instanceof Promise) throw e
@@ -799,7 +672,6 @@ namespace $.$$ {
 
 		private _tg_timer: any = 0
 
-		/** Опрос очереди, пока приложение открыто. Таймер живёт в ячейке. */
 		@$mol_mem
 		private tg_poller() {
 			if (this._tg_timer) {
@@ -811,11 +683,6 @@ namespace $.$$ {
 			return null
 		}
 
-		// =====================================================================
-		// Last.fm: скробблинг прослушанного
-		// =====================================================================
-
-		/** Имя на last.fm, '' — не подключено. Пишется после ответа сервера. */
 		fm_user() {
 			return $bog_music_scrobble.user()
 		}
@@ -850,7 +717,6 @@ namespace $.$$ {
 			window.open($bog_music_scrobble.login_url($bog_music_scrobble.code_ensure()), '_blank')
 		}
 
-		/** Кто подключён — знает только сервер: спрашиваем на старте. */
 		async fm_refresh() {
 			if (!$bog_music_scrobble.code()) return
 			try {
@@ -877,79 +743,23 @@ namespace $.$$ {
 			return super.Share_toast()
 		}
 
-		// =====================================================================
-		// Фоновые процессы
-		// =====================================================================
-
-		private _drain_busy = false
-
-		/**
-		 * Разбор очереди треков, сохранённых со страницы vk.com (см. ext/).
-		 * Запись каждого — своя фибра: save_blob создаёт blob-land с PoW,
-		 * и только внутри фибры PoW-task кешируется между ретраями.
-		 */
-		async drain_pending() {
-			if (this._drain_busy) return
-			this._drain_busy = true
-			try {
-				while (true) {
-					const entries = await $bog_music_pending.all()
-					if (!entries.length) break
-					for (const entry of entries) {
-						const raw = entry.buf
-						const buf = raw instanceof Uint8Array ? raw : new Uint8Array(raw)
-						try {
-							await ($mol_wire_async(this.account()) as any)
-								.import_audio(entry.audio, buf, entry.mime || 'audio/aac')
-						} catch (e: any) {
-							console.warn('[app] pending save failed:', entry.key, e?.message ?? e)
-							$bog_music_log.err(`сохранение из очереди не удалось: ${entry.key}: ${e?.message ?? e}`)
-							continue
-						}
-						$bog_music_log.act(`трек из очереди сохранён: ${entry.key}`)
-						await $bog_music_pending.remove(entry.key)
-					}
-				}
-			} finally {
-				this._drain_busy = false
-			}
-		}
-
-		/** Однократная подписка на сигнал от background.js о новом pending-треке. */
-		@$mol_mem
-		private pending_listener() {
-			const ext = (globalThis as any).chrome
-			if (!ext?.runtime?.onMessage?.addListener) return null
-			ext.runtime.onMessage.addListener((msg: any) => {
-				if (msg?.target !== 'popup' || msg.type !== 'pending_added') return
-				$mol_wire_async(this).drain_pending()
-			})
-			return null
-		}
-
 		async import_share(token: string) {
-			$bog_music_log.act('импорт расшаренного плейлиста по ссылке')
 			const playlist = await this.share().import(token)
-			if (playlist) {
-				$bog_music_log.act(`расшаренный плейлист импортирован: ${playlist}`)
-				this.page(playlist)
-			} else {
-				$bog_music_log.err('импорт расшаренного плейлиста ничего не вернул')
-			}
+			if (playlist) this.page(playlist)
 		}
 
 		auto() {
-			this.pending_listener()
-			this.prefetch() // фоновая докачка blob'ов по одной песне
+			this.migrate_watch()
+			this.beam().watch()
+			this.share().watch()
 			this.tg_poller()
-			$mol_wire_async(this).drain_pending()
 			$mol_wire_async(this).tg_drain()
 			$mol_wire_async(this).fm_refresh()
 			this.lists_migrate()
 			const token = $bog_music_boot.share_token
 			if (token) {
 				$bog_music_boot.share_token = ''
-				$mol_wire_async(this).import_share(token)
+				void this.import_share(token)
 			}
 			return super.auto()
 		}

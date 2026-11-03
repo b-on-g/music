@@ -147,6 +147,25 @@ namespace $.$$ {
 			border: { radius: $bog_builderui_tokens.radius },
 			font: { size: '0.875rem' },
 		},
+
+		Beam_bar: {
+			margin: {
+				left: '0.5rem',
+				right: '0.5rem',
+				top: '0.5rem',
+			},
+			align: { items: 'center' },
+			gap: '0.5rem',
+			flex: { wrap: 'wrap' },
+			border: { radius: $bog_builderui_tokens.radius },
+			background: { color: $mol_theme.card },
+		},
+
+		Beam_text: {
+			flex: { grow: 1, shrink: 1, basis: '12rem' },
+			padding: { left: '0.75rem' },
+			font: { size: '0.875rem' },
+		},
 	})
 
 }

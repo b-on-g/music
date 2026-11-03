@@ -74,20 +74,6 @@ namespace $.$$ {
 			textDecoration: 'none',
 		},
 
-		Extension: {
-			align: { items: 'center' },
-			gap: $mol_gap.text,
-			padding: {
-				top: '0.75rem',
-				bottom: '0.75rem',
-				left: '1.5rem',
-				right: '1.5rem',
-			},
-			border: { radius: $bog_builderui_tokens.radius, width: '1px', style: 'solid', color: $bog_builderui_tokens.line },
-			color: $bog_builderui_tokens.text,
-			textDecoration: 'none',
-		},
-
 		Features: {
 			flex: { direction: 'column' },
 			gap: '1.5rem',

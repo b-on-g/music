@@ -1,15 +1,12 @@
 {
-	"manifest_version": 3,
 	"scope": "./",
+	"start_url": "./",
+	"display": "standalone",
 	"name": "Bog Music",
 	"short_name": "Bog Music",
-	"description": "Music player with offline cache and Giper Baza sync",
-	"version": "1.2.2.1",
-	"action": {
-		"default_title": "Bog Music",
-		"default_icon": "bog/music/app/favicon.svg"
-	},
-	"permissions": ["storage", "cookies", "offscreen", "tabs"],
+	"description": "Music player with offline files and Giper Baza sync",
+	"background_color": "#1a1a2e",
+	"theme_color": "#1a1a2e",
 	"icons": [
 		{
 			"src": "bog/music/app/favicon.svg",
@@ -23,5 +20,5 @@
 			"type": "image/svg+xml",
 			"purpose": "maskable"
 		}
-	],
+	]
 }

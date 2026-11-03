@@ -17,19 +17,6 @@ namespace $.$$ {
 			return auth.pass().lord().str
 		}
 
-		// download_playlist? и download_playlist_status прибиндены в app.view.tree
-		// — логика скачивания живёт в $bog_music_app.
-
-		download_playlist_label() {
-			return $bog_music_api.in_extension() ? this.ext_label() : this.pwa_label()
-		}
-
-		download_playlist_hint() {
-			return $bog_music_api.in_extension() ? this.ext_hint() : this.pwa_hint()
-		}
-
-		// ---------- перенос аккаунта между устройствами ----------
-
 		account_key() {
 			return String(this.$.$mol_state_local.value('$giper_baza_auth') ?? '')
 		}
@@ -37,10 +24,7 @@ namespace $.$$ {
 		account_link() {
 			const key = this.account_key()
 			if (!key) return ''
-			const base = $bog_music_boot.in_extension()
-				? 'https://b-on-g.github.io/music/'
-				: location.origin + location.pathname + location.search
-			return base + '#account=' + encodeURIComponent(key)
+			return location.origin + location.pathname + location.search + '#account=' + encodeURIComponent(key)
 		}
 
 		@$mol_mem
@@ -96,19 +80,12 @@ namespace $.$$ {
 		@$mol_action
 		reset_account() {
 			if (typeof window === 'undefined') return
-			try {
-				const ext = (globalThis as any).chrome
-				if (ext?.storage?.local?.clear) ext.storage.local.clear()
-			} catch {}
 			try { window.localStorage.clear() } catch {}
-			try {
-				const idb = (globalThis as any).indexedDB
-				if (idb?.deleteDatabase) {
-					idb.deleteDatabase('$giper_baza_mine')
-					idb.deleteDatabase('vk_audio_cache') // legacy-кеш старых версий
-				}
-			} catch {}
-			setTimeout(() => location.reload(), 100)
+			try { indexedDB.deleteDatabase('$giper_baza_mine') } catch {}
+			const drop = $bog_music_disk.supported()
+				? navigator.storage.getDirectory().then(root => root.removeEntry($bog_music_disk.folder, { recursive: true }))
+				: Promise.resolve()
+			drop.catch(() => {}).finally(() => location.reload())
 		}
 
 	}

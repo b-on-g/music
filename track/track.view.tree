@@ -63,6 +63,12 @@ $bog_music_track $mol_view
 								<= Demote_icon $mol_icon_format_vertical_align_bottom
 								<= Demote_label $mol_view
 									sub / \В конец списка
+						<= Pull $mol_button_minor
+							click? <=> pull_click? null
+							sub /
+								<= Pull_icon $mol_icon_download
+								<= Pull_label $mol_view
+									sub / <= pull_label \
 						<= Delete $mol_button_minor
 							click? <=> delete_cached? null
 							sub /

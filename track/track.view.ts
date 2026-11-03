@@ -1,7 +1,6 @@
 namespace $.$$ {
 	export class $bog_music_track extends $.$bog_music_track {
 
-		/** Доменная модель трека по ключу. */
 		track() {
 			return $bog_music_account_baza.home().track(this.key())
 		}
@@ -10,8 +9,22 @@ namespace $.$$ {
 			return this.track()?.Title()?.val() ?? ''
 		}
 
+		place() {
+			return this.account().place(this.key())
+		}
+
+		holder_name() {
+			const holders = this.account().holders_other(this.key())
+			return holders.length ? this.account().device_name(holders[0]) : ''
+		}
+
 		artist() {
-			return this.track()?.Artist()?.val() ?? ''
+			const artist = this.track()?.Artist()?.val() ?? ''
+			const status = $bog_music_beam.instance().status(this.key())
+			const where = status
+				|| ( this.place() === 'remote' ? `на «${this.holder_name()}»` : '' )
+				|| ( this.place() === 'lost' ? 'файла нет' : '' )
+			return [artist, where].filter(Boolean).join(' · ')
 		}
 
 		cover() {
@@ -27,29 +40,16 @@ namespace $.$$ {
 		}
 
 		cached() {
-			// Неблокирующая проверка: НЕ триггерит sync (иначе рендер списка поднял
-			// бы загрузку всех blob-лендов разом). blob догоняет фоновый prefetch.
-			return this.track()?.blob_local() ?? false
+			return this.place() === 'disk'
 		}
 
-		/** Blob ещё не на устройстве — строка приглушается до докачки. */
 		blob_pending() {
 			return !this.cached()
-		}
-
-		is_local() {
-			return this.track()?.audio()?.owner_id === 0
 		}
 
 		can_drag() {
 			return !this.archive_mode()
 		}
-
-		// =====================================================================
-		// Меню действий: одна кнопка «⋯» вместо ряда иконок, чтобы тексту
-		// доставалась вся ширина строки (на крупном шрифте иконки распирали
-		// строку до одной буквы в линии).
-		// =====================================================================
 
 		@$mol_action
 		menu_toggle() {
@@ -61,11 +61,23 @@ namespace $.$$ {
 			return this.archive_mode()
 				? [ this.Restore(), this.Delete_forever() ]
 				: [
+					... this.place() === 'remote' ? [ this.Pull() ] : [],
 					this.Demote(),
 					... this.can_drop_cache() ? [ this.Delete() ] : [],
 					... this.move_targets().map( id => this.Move( id ) ),
 					this.Archive(),
 				]
+		}
+
+		pull_label() {
+			return `Перенести с «${this.holder_name()}»`
+		}
+
+		@$mol_action
+		pull_click() {
+			this.Menu().showed(false)
+			$bog_music_beam.instance().pull_one(this.key())
+			return null
 		}
 
 		account() {
@@ -100,14 +112,9 @@ namespace $.$$ {
 			return null
 		}
 
-		/** Локальный файл с устройства больше взять неоткуда — кеш не сбрасываем. */
 		can_drop_cache() {
-			return !this.is_local() && this.cached()
+			return this.cached() && this.account().holders_other(this.key()).length > 0
 		}
-
-		// =====================================================================
-		// Удаление навсегда — только через подтверждение прямо в строке.
-		// =====================================================================
 
 		@$mol_mem
 		delete_asked(next?: boolean) {
@@ -143,9 +150,6 @@ namespace $.$$ {
 		}
 
 		on_play_click() {
-			// Клик играет всегда: если blob ещё докачивается, плеер сам дождётся
-			// (blob_wait suspend'ится до досинка) и заиграет без второго клика.
-			// Приглушение/мигание строки — лишь индикатор, клик не блокирует.
 			this.play(this.key())
 		}
 
@@ -176,12 +180,8 @@ namespace $.$$ {
 		@$mol_action
 		delete_cached() {
 			this.Menu().showed(false)
-			$bog_music_account_baza.home().drop_blob(this.key())
+			void this.account().drop_file(this.key())
 		}
-
-		// =====================================================================
-		// Share: long-press = вход в multi-select, клик = single share / toggle
-		// =====================================================================
 
 		share() {
 			return $bog_music_share.instance()
@@ -191,7 +191,6 @@ namespace $.$$ {
 			return this.share().selected(this.key())
 		}
 
-		// Состояние жеста long-press: не reactive-состояние, а таймер DOM-жеста.
 		private _share_press_timer: ReturnType<typeof setTimeout> | null = null
 		private _share_long_press_fired = false
 		private static SHARE_LONG_PRESS_MS = 450
@@ -234,9 +233,6 @@ namespace $.$$ {
 		share_pointer_leave(event?: Event) {
 			return this.share_pointer_cancel(event)
 		}
-
-		// Пункты меню: закрыть панель и дёрнуть действие, которое привязал
-		// список ($bog_music_tracks через <=>).
 
 		@$mol_action
 		demote_click() {

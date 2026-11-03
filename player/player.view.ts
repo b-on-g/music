@@ -1,15 +1,5 @@
-declare const chrome: any
-
 namespace $.$$ {
 
-	/**
-	 * Плеер. Работает с треками по ключу, метаданные и блобы читает из домена
-	 * ($bog_music_account_baza). Два режима вывода звука:
-	 * - PWA/сайт: собственный <audio>;
-	 * - extension: offscreen-документ (см. ext/offscreen.js) — играет при
-	 *   закрытом табе. Команды — sendMessage, блоб — BroadcastChannel
-	 *   (sendMessage сериализует через JSON и теряет Blob).
-	 */
 	export class $bog_music_player extends $.$bog_music_player {
 
 		account() {
@@ -21,14 +11,12 @@ namespace $.$$ {
 			return key ? this.account().track(key) : null
 		}
 
-		current_audio(): $bog_music_api_audio | null {
+		current_audio(): $bog_music_track_baza_info | null {
 			const ext = this.ext()
-			if (ext) return { id: 0, owner_id: 0, artist: ext.artist, title: ext.title, duration: 0, url: ext.url }
-			return this.current_track()?.audio() ?? null
+			if (ext) return { artist: ext.artist, title: ext.title, duration: 0, cover: ext.cover }
+			return this.current_track()?.info() ?? null
 		}
 
-		// Внешний источник (стрим tube-превью), играющий без записи в baza.
-		// Пока задан — плеер работает по url, а не по ключу из baza.
 		private _ext: { url: string, title: string, artist: string, cover: string } | null = null
 		private _ext_seq = 0
 
@@ -46,12 +34,7 @@ namespace $.$$ {
 			return this._ext
 		}
 
-		/** Прослушать по прямому URL, не сохраняя трек (tube-превью). */
 		play_external(url: string, title: string, artist: string, cover = '') {
-			if (this.is_extension()) {
-				// В extension нет прямого <audio>; превью работает только в PWA/сайте.
-				return
-			}
 			$bog_music_log.act(`внешний стрим: ${artist} — ${title}`)
 			this.ext({ url, title, artist, cover })
 			this.current_key('')
@@ -62,43 +45,23 @@ namespace $.$$ {
 			this.apply_media_metadata(this.current_audio()!)
 			this.gain_chain_unlock()
 			const el = this.audio_el()
-			if (this._last_blob_url) {
-				URL.revokeObjectURL(this._last_blob_url)
-				this._last_blob_url = ''
-			}
+			this.url_drop()
 			this._dispatch_token++
 			this.set_track_src(el, url)
 			el.play().catch(() => {})
 		}
 
-		// ---------- окружение ----------
-
-		private is_extension() {
-			return typeof chrome !== 'undefined' && !!chrome?.runtime?.id
+		private url_drop() {
+			if (!this._last_blob_url) return
+			URL.revokeObjectURL(this._last_blob_url)
+			this._last_blob_url = ''
 		}
 
-		private _channel?: BroadcastChannel
-
-		private channel() {
-			if (!this._channel) this._channel = new BroadcastChannel('bog_music_player')
-			return this._channel
+		private url_take(file: Blob) {
+			this.url_drop()
+			return this._last_blob_url = URL.createObjectURL(file)
 		}
 
-		private send(type: string, payload?: Record<string, unknown>) {
-			if (!this.is_extension()) return
-			chrome.runtime.sendMessage({ target: 'offscreen', type, ...payload }).catch(() => {})
-		}
-
-		// ---------- iOS фоновое воспроизведение (один элемент, swap src) ----------
-		// iOS PWA: два <audio> дерутся за единственную аудио-сессию, и play с
-		// локскрина попадает в silence-элемент вместо трека. Решение — ОДИН
-		// элемент, который никогда не останавливается: на «паузе» его src
-		// подменяется на беззвучный цикл (сессия и страница живы), по play —
-		// возвращается src трека и перематывается на сохранённую позицию.
-
-		// Тишина для keep-alive. 3 сек 8kHz — короткий обрывок (пара сэмплов)
-		// iOS Safari не считает валидным медиа и не держит на нём сессию
-		// («нет аудио»). Генерим полноценный WAV как Blob URL один раз.
 		private static _silence_url = ''
 		private static silence_url() {
 			if (this._silence_url) return this._silence_url
@@ -110,30 +73,15 @@ namespace $.$$ {
 			dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true)
 			dv.setUint32(24, rate, true); dv.setUint32(28, rate, true); dv.setUint16(32, 1, true); dv.setUint16(34, 8, true)
 			w(36, 'data'); dv.setUint32(40, n, true)
-			buf.fill(128, 44) // 8-bit unsigned: 128 = тишина
+			buf.fill(128, 44)
 			this._silence_url = URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }))
 			return this._silence_url
 		}
 
-		/** src текущего трека (blob url) — чтобы вернуть его после silence-паузы. */
 		private _track_src = ''
-		/** Позиция трека на момент паузы (для seek при возобновлении). */
 		private _paused_pos = 0
-		/** Сейчас в элементе крутится беззвучный keep-alive-цикл (не трек). */
 		private _silent = false
-		/**
-		 * Ждём, пока трек после resume домотается до сохранённой позиции.
-		 * Пока >0 — timeupdate не пишет current_time (иначе полоска мигнёт в 0:
-		 * смена src сбрасывает el.currentTime до отработки seek).
-		 */
 		private _await_seek = 0
-		/**
-		 * Идёт смена трека: элемент перезагружает ресурс и ещё не заиграл.
-		 * Транзиентные 'pause' в этом окне — не системная пауза, и уводить по ним
-		 * элемент в keep-alive-тишину нельзя: он застревает на беззвучном цикле,
-		 * трек «играет» без звука, а toggle не помогает (ios_pause на _silent
-		 * молча выходит). Сбрасывается по 'playing'/'timeupdate' или по таймауту.
-		 */
 		private _switching = false
 		private _switch_gen = 0
 
@@ -142,18 +90,7 @@ namespace $.$$ {
 				|| (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
 		}
 
-		/**
-		 * Ставит src трека, запоминая его для последующего swap.
-		 *
-		 * Обрез НЕ уходит медиа-фрагментом (blob:...#t=): пробовали — обрезанные
-		 * треки переставали играть и проскакивались. Фрагмент на blob-url
-		 * ломает загрузку ресурса. Позицию ставит только seek в
-		 * attach_seek_listener, а от «пауза перехода → keep-alive-тишина»
-		 * защищает флаг _switching ниже.
-		 */
 		private set_track_src(el: HTMLAudioElement, url: string) {
-			// Тот же URL повторно — браузер начинает загрузку заново (ливень Range).
-			// el.src — resolved absolute; сравниваем через URL, не строками 1:1.
 			if (!this._silent && this._track_src === url) {
 				try {
 					if (el.src && new URL(el.src).href === new URL(url).href) return
@@ -164,8 +101,6 @@ namespace $.$$ {
 
 			this._silent = false
 			this._track_src = url
-			// WebAudio + CORS: только для чужого origin (tube). same-origin stream
-			// и blob: — без crossOrigin, иначе лишний reload медиаэлемента.
 			if (!this._gain_dead && this.normalize()) {
 				const same = url.startsWith('blob:')
 					|| (typeof location !== 'undefined' && url.startsWith(location.origin))
@@ -179,18 +114,11 @@ namespace $.$$ {
 			setTimeout(() => { if (this._switch_gen === gen) this._switching = false }, 3000)
 		}
 
-		/**
-		 * «Пауза» на iOS: не останавливаем элемент (иначе iOS заморозит страницу
-		 * и локскрин умрёт), а крутим в нём беззвучный цикл. Сессия остаётся у
-		 * этого же элемента — play с локскрина гарантированно попадёт в него.
-		 */
 		private ios_pause(el: HTMLAudioElement) {
-			// Уже на тишине: повторная «пауза» затёрла бы _paused_pos позицией
-			// silence-цикла (0..3с) и resume отмотал бы трек в начало.
 			if (this._silent) return
 			this._paused_pos = el.currentTime || this._paused_pos
 			this._silent = true
-			this.current_time(this._paused_pos) // заморозить полоску на позиции
+			this.current_time(this._paused_pos)
 			el.loop = true
 			el.src = $bog_music_player.silence_url()
 			el.play().catch(() => {})
@@ -198,15 +126,10 @@ namespace $.$$ {
 			if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused'
 		}
 
-		/**
-		 * Возобновление на iOS: возвращаем src трека в тот же элемент и
-		 * перематываем на сохранённую позицию. Синхронно в юзер-жесте (toggle /
-		 * mediaSession play), поэтому iOS разрешает воспроизведение.
-		 */
 		private ios_resume(el: HTMLAudioElement) {
 			if (this._track_src) {
 				this._await_seek = this._paused_pos
-				this.current_time(this._paused_pos) // держим полоску до досинка seek
+				this.current_time(this._paused_pos)
 				this.set_track_src(el, this._track_src)
 				this.attach_seek_listener(el, this._paused_pos)
 				el.play().catch(() => {})
@@ -214,54 +137,25 @@ namespace $.$$ {
 				if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing'
 				return
 			}
-			// src трека потерян — пересобираем из blob по текущему ключу.
 			const key = this.current_key()
 			if (!key) return
 			const pos = this._paused_pos
-			;($mol_wire_async(this) as any).blob_of(key).then((blob: Blob | null) => {
-				if (!blob) return
-				// URL держим в _last_blob_url: раньше он создавался «мимо» поля, и
-				// каждый resume после потери src оставлял в браузере ещё одну
-				// неотзываемую ссылку на целый трек.
-				if (this._last_blob_url) URL.revokeObjectURL(this._last_blob_url)
-				const url = URL.createObjectURL(blob)
-				this._last_blob_url = url
-				this.set_track_src(el, url)
+			$bog_music_disk.file(key).then(file => {
+				if (!file) return
+				this.set_track_src(el, this.url_take(file))
 				this.attach_seek_listener(el, pos)
 				el.play().catch(() => {})
 			}).catch(() => {})
 		}
 
-		// ---------- выравнивание громкости ----------
-		// Весь звук идёт через WebAudio: el → gain → limiter → выход.
-		// Пользовательская громкость и выравнивающий множитель лежат вместе в
-		// GainNode, потому что el.volume не годится ни для того, ни для другого:
-		// на iOS система его игнорирует, а на остальных платформах он зажат
-		// единицей — тихую запись им не поднять, только приглушить громкую.
-
 		private _gain_ctx?: AudioContext
 		private _gain_node?: GainNode
-		/** Элемент заведён в граф. Обратной дороги нет: выход теперь только там. */
 		private _gain_ready = false
-		/** WebAudio недоступен или упал — работаем напрямую элементом. */
 		private _gain_dead = false
 		private _gain_wake_set = false
 
-		/**
-		 * Создать и разбудить контекст. Зовётся из юзер-жеста: без жеста он
-		 * остаётся спящим, а заводить элемент в спящий граф нельзя — весь звук
-		 * ушёл бы в тишину.
-		 */
 		private gain_chain_unlock() {
 			if (this._gain_dead) return
-			// Эквалайзер живёт в том же графе, что и выравнивание: включён любой
-			// из двух — цепочка нужна.
-			//
-			// Смотрим на _eq_on, а не на eq_on(): тот читает baza и может
-			// подвиснуть на несинхронизированном ленде. Сюда заходят из клика,
-			// а клик — единственный момент, когда WebAudio разрешено будить;
-			// подвиснуть здесь значит доехать до resume уже вне жеста, и на iOS
-			// это тишина до конца сессии.
 			if (!this.normalize() && !this._eq_on) return
 			if (this._gain_ready) { this.gain_resume(); return }
 			try {
@@ -275,8 +169,6 @@ namespace $.$$ {
 					this.gain_wire()
 					return
 				}
-				// Safari отдаёт контекст спящим даже внутри жеста — подключаемся,
-				// когда он проснётся.
 				ctx.resume().then(() => this.gain_wire()).catch(() => {})
 			} catch (e: any) {
 				this._gain_dead = true
@@ -284,7 +176,6 @@ namespace $.$$ {
 			}
 		}
 
-		/** Завести элемент в граф: el → gain → limiter → выход. */
 		private gain_wire() {
 			if (this._gain_ready || this._gain_dead) return
 			const ctx = this._gain_ctx
@@ -292,20 +183,12 @@ namespace $.$$ {
 			try {
 				const src = ctx.createMediaElementSource(this.audio_el())
 				const gain = ctx.createGain()
-				// Страховка от клиппинга: у поднятой тихой записи пики вылезают
-				// за 0 dBFS, лимитер срезает их без хруста.
 				const limiter = ctx.createDynamicsCompressor()
 				limiter.threshold.value = -1
 				limiter.knee.value = 0
 				limiter.ratio.value = 20
 				limiter.attack.value = 0.003
 				limiter.release.value = 0.25
-				// Полосы эквалайзера — ДО гейна, чтобы лимитер остался последним:
-				// поднятый на +12 dB бас вылезает за 0 dBFS ровно так же, как
-				// поднятая тихая запись, и срезает их один и тот же лимитер.
-				// Узлы стоят в графе всегда; выключенный эквалайзер — это все
-				// полосы в нуле, а не выдернутые узлы: createMediaElementSource
-				// необратим, разбирать цепочку обратно всё равно нечем.
 				const eq = $bog_music_eq.bands.map(band => {
 					const node = ctx.createBiquadFilter()
 					node.type = band.type
@@ -325,7 +208,7 @@ namespace $.$$ {
 				this._eq_nodes = eq
 				this._gain_node = gain
 				this._gain_ready = true
-				this.audio_el().volume = 1 // дальше громкостью рулит только гейн
+				this.audio_el().volume = 1
 				this.gain_push()
 				this.eq_push()
 				this.setup_gain_wake()
@@ -335,11 +218,6 @@ namespace $.$$ {
 			}
 		}
 
-		/**
-		 * Заснувший контекст = тишина при живом <audio>: iOS усыпляет его в фоне
-		 * и после каждого прерывания (звонок, наушники). Будим отовсюду, откуда
-		 * можно узнать, что мы снова на переднем плане.
-		 */
 		private setup_gain_wake() {
 			if (this._gain_wake_set) return
 			this._gain_wake_set = true
@@ -357,10 +235,6 @@ namespace $.$$ {
 			if (!this._gain_ready) this.gain_wire()
 		}
 
-		/**
-		 * Выравнивать ли громкость треков. Выключенное — ещё и аварийный тумблер:
-		 * после перезагрузки страницы звук пойдёт мимо WebAudio совсем.
-		 */
 		@$mol_mem
 		normalize(next?: boolean) {
 			if (next !== undefined) $bog_music_log.act(`выравнивание громкости: ${next ? 'включено' : 'выключено'}`)
@@ -368,13 +242,10 @@ namespace $.$$ {
 			return v ?? true
 		}
 
-		/** Множитель выравнивания текущего трека. 1 пока громкость не измерена. */
 		track_gain(): number {
 			if (!this.normalize()) return 1
 			return $bog_music_gain.factor(this.current_track()?.lufs() ?? null)
 		}
-
-		// ---------- <audio> для PWA-режима ----------
 
 		private _audio_el?: HTMLAudioElement
 		private _last_blob_url = ''
@@ -385,33 +256,20 @@ namespace $.$$ {
 			el.volume = this.volume()
 			el.addEventListener('ended', () => { if (!this._silent) this.on_ended() })
 			el.addEventListener('play', () => {
-				if (this._silent) return // это беззвучный keep-alive-цикл, не трек
+				if (this._silent) return
 				try { this.playing(true) } catch {}
 				if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing'
 				this.gain_resume()
 			})
 			el.addEventListener('pause', () => {
 				if (this._silent) {
-					// Системная пауза (выдернули наушники) остановила и беззвучный
-					// keep-alive → страница замёрзнет и iOS прибьёт PWA. Будим тишину.
 					el.play().catch(() => {})
 					return
 				}
-				// Пауза посреди смены трека при неготовом ресурсе — не решение
-				// пользователя и не системное прерывание, а последствие
-				// перезагрузки src и seek'а на обрез: буфер просел, элемент встал.
-				// Возвращаем его в игру. Пауза с уже загруженным треком
-				// (readyState 4) сюда не попадает и обрабатывается как обычно.
 				if (this._switching && !el.ended && el.readyState < el.HAVE_FUTURE_DATA) {
 					el.play().catch(() => {})
 					return
 				}
-				// iOS: системная пауза (наушники, interruption) мимо mediaSession
-				// бьёт прямо в элемент. Просто принять её = потерять audio-сессию →
-				// iOS закроет приложение. Переводим в наш swap-на-тишину: позиция
-				// сохранена, сессия жива, UI показывает паузу.
-				// НО не во время смены трека: там 'pause' прилетает от самой
-				// перезагрузки ресурса, и swap на тишину намертво глушил автопереход.
 				if (this.is_ios() && this.playing() && !el.ended && !this._switching) {
 					this.ios_pause(el)
 					const key = this.current_key()
@@ -423,29 +281,21 @@ namespace $.$$ {
 				try { this.playing(false) } catch {}
 				if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused'
 			})
-			// Реально заигралo — окно смены трека закрыто.
 			el.addEventListener('playing', () => { this._switching = false })
 			el.addEventListener('timeupdate', () => {
-				// Дешёвая проверка живости графа: контекст мог заснуть в фоне,
-				// и тогда элемент играет, а из динамика тишина.
 				if (this._gain_ctx && this._gain_ctx.state !== 'running') this.gain_resume()
 				if (this._silent) return
 				this._switching = false
-				// После resume игнорим нулевой скачок, пока трек не домотается
-				// до сохранённой позиции (иначе полоска мигнёт в 0).
 				if (this._await_seek > 0) {
 					if (el.currentTime >= this._await_seek - 1.5) this._await_seek = 0
 					else return
 				}
-				// Палец на полоске — позицию рисует драг, элемент не перебивает.
 				if (this._seek_drag) return
 				this.current_time(el.currentTime)
 				this.scrobble_watch(el.currentTime)
 			})
 			el.addEventListener('loadedmetadata', () => {
 				if (this._silent) return
-				// Не писать NaN/0 (промельк при смене src на resume) — иначе
-				// trim-ручки считаются как trim/NaN и уезжают.
 				if (el.duration > 0 && isFinite(el.duration)) this.duration(el.duration)
 			})
 			el.addEventListener('error', () => {
@@ -455,23 +305,15 @@ namespace $.$$ {
 			return el
 		}
 
-		// ---------- скробблинг в last.fm ----------
-
 		private _fm: { artist: string, title: string, duration: number, started: number, done: boolean } | null = null
 
-		/**
-		 * Часы скробблинга. Зовутся из тика воспроизведения (timeupdate в PWA,
-		 * state-сообщение из offscreen в расширении) — специально не из
-		 * play_track: там синхронный iOS-путь, и лишний код в нём рвёт звук в
-		 * фоне. Смену трека ловим по метаданным, а не по событию.
-		 */
 		private scrobble_watch(time: number) {
 			if (!$bog_music_scrobble.enabled()) return
-			let audio: $bog_music_api_audio | null = null
+			let audio: $bog_music_track_baza_info | null = null
 			try {
 				audio = this.current_audio()
 			} catch {
-				return // метаданные ещё синкаются — тик пропускаем
+				return
 			}
 			const artist = audio?.artist ?? ''
 			const title = audio?.title ?? ''
@@ -480,7 +322,6 @@ namespace $.$$ {
 				return
 			}
 			const current = this._fm
-			// Новый трек, либо тот же самый запустили заново с начала.
 			if (!current || current.artist !== artist || current.title !== title || (current.done && time < 3)) {
 				let duration = 0
 				try { duration = this.duration() || audio?.duration || 0 } catch {}
@@ -492,8 +333,6 @@ namespace $.$$ {
 			if (!current.duration) {
 				try { current.duration = this.duration() || 0 } catch {}
 			}
-			// Правило last.fm: трек длиннее 30 с, прослушано больше половины
-			// или больше 4 минут.
 			if (current.duration < 30) return
 			if (time < Math.min(current.duration / 2, 240)) return
 			current.done = true
@@ -501,86 +340,23 @@ namespace $.$$ {
 		}
 
 		private on_ended() {
-			let finished: $bog_music_api_audio | null = null
-			try { finished = this.current_audio() } catch {}
 			try {
-				// Синхронно и вне фибры: на iOS звук в фоне даётся только если
-				// el.play() ушёл в continuation этого же 'ended'-обработчика.
 				this.next(false)
 			} catch (e: any) {
 				if (e instanceof Promise) {
-					// Что-то в цепочке ещё не прогрето (холодный baza-атом, крипта):
-					// вне фибры Promise = молчаливая остановка. Ретраим в фибре.
 					;($mol_wire_async(this) as any).next_auto()
 				} else {
 					console.warn('[player] ended handler error:', e)
 				}
 			}
-			// Дослушанный трек докачиваем в кеш, если ещё не там.
-			if (finished && navigator.onLine) {
-				try { this.account().save_hls(finished).catch(() => {}) } catch {}
-			}
 		}
-
-		// ---------- связь с offscreen (extension) ----------
-
-		private _msg_listener_set = false
-
-		@$mol_mem
-		private offscreen_link() {
-			if (!this.is_extension()) return null
-			if (this._msg_listener_set) return null
-			this._msg_listener_set = true
-
-			chrome.runtime.onMessage.addListener((msg: any) => {
-				if (msg?.target !== 'popup') return
-				if (msg.type === 'state') {
-					if (typeof msg.playing === 'boolean') {
-						this.playing(msg.playing)
-						if ('mediaSession' in navigator) {
-							navigator.mediaSession.playbackState = msg.playing ? 'playing' : 'paused'
-						}
-					}
-					if (typeof msg.current_time === 'number' && !this._seek_drag) this.current_time(msg.current_time)
-					if (typeof msg.duration === 'number' && isFinite(msg.duration)) this.duration(msg.duration)
-					if (msg.current_audio) {
-						this.current_key($bog_music_account_baza.key_of(msg.current_audio))
-					}
-					// Ключ уже обновлён — метаданные для скроббла свежие.
-					if (typeof msg.current_time === 'number') this.scrobble_watch(msg.current_time)
-				}
-				if (msg.type === 'ended') this.on_ended()
-				if (msg.type === 'error') {
-					console.error('[player] offscreen error:', msg.code, msg.message)
-				}
-			})
-
-			chrome.runtime.sendMessage({ target: 'background', type: 'ensure_offscreen' })
-				.then(() => chrome.runtime.sendMessage({ target: 'offscreen', type: 'get_state' }))
-				.then((s: any) => {
-					if (s?.current_audio) {
-						if (typeof s.playing === 'boolean') this.playing(s.playing)
-						if (typeof s.current_time === 'number') this.current_time(s.current_time)
-						if (typeof s.duration === 'number' && isFinite(s.duration)) this.duration(s.duration)
-						this.current_key($bog_music_account_baza.key_of(s.current_audio))
-						return
-					}
-					this.try_restore_session()
-				})
-				.catch(() => {})
-
-			return null
-		}
-
-		// ---------- восстановление последней сессии ----------
 
 		private _session_restored = false
 
-		/** Sync-чтение сессии из домена — зовётся через фибру. */
 		session_read() {
 			const session = this.account().last_session()
 			if (!session) return null
-			const audio = this.account().track(session.key)?.audio()
+			const audio = this.account().info(session.key)
 			if (!audio) return null
 			return { ...session, audio }
 		}
@@ -588,93 +364,46 @@ namespace $.$$ {
 		private async try_restore_session() {
 			if (this._session_restored) return
 			this._session_restored = true
-			const session = await ($mol_wire_async(this) as any).session_read()
-				.catch(() => null) as { key: string, position: number, audio: $bog_music_api_audio } | null
+			const session = await $mol_wire_async(this).session_read().catch(() => null)
 			if (!session) return
 			this.current_key(session.key)
 			this.current_time(session.position)
 			if (session.audio.duration) this.duration(session.audio.duration)
-
-			// До этой правки метаданные и обработчики ставились ТОЛЬКО из
-			// play_track. После восстановления сессии (открыл приложение, но ещё
-			// не нажал play) системный плеер оставался пустым: в шторке нечего
-			// показывать и нечем управлять.
 			this.apply_media_metadata(session.audio)
 			if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused'
-
-			if (this.is_extension()) {
-				this.restore_offscreen(session).catch(() => {})
-			} else {
-				this.restore_local(session).catch(() => {})
-			}
+			this.restore_local(session).catch(() => {})
 		}
 
-		private async restore_offscreen(session: { key: string, position: number, audio: $bog_music_api_audio }) {
-			await chrome.runtime.sendMessage({ target: 'background', type: 'ensure_offscreen' })
-			const blob = await this.blob_ready(session.key, session.audio)
-			if (!blob) return
-			this.channel().postMessage({
-				target: 'offscreen',
-				type: 'play_track',
-				audio: session.audio,
-				blob,
-				start_at: session.position,
-				autoplay: false,
-			})
-		}
-
-		private async restore_local(session: { key: string, position: number, audio: $bog_music_api_audio }) {
+		private async restore_local(session: { key: string, position: number }) {
 			const el = this.audio_el()
+			if (!await $bog_music_disk.probe(session.key)) return
 			if ($bog_music_stream.supported() && ( $bog_music_stream.active() || await $bog_music_stream.when_ready() )) {
-				await ($mol_wire_async(this) as any).track_file_ready(session.key).catch(() => null)
-				if (this._last_blob_url) {
-					URL.revokeObjectURL(this._last_blob_url)
-					this._last_blob_url = ''
-				}
+				this.url_drop()
 				this.set_track_src(el, $bog_music_stream.url(session.key))
 			} else {
-				const blob = await ($mol_wire_async(this) as any).blob_of(session.key).catch(() => null) as Blob | null
-				if (blob) {
-					if (this._last_blob_url) URL.revokeObjectURL(this._last_blob_url)
-					const url = URL.createObjectURL(blob)
-					this._last_blob_url = url
-					this.set_track_src(el, url)
-				} else if (session.audio.url) {
-					this.set_track_src(el, session.audio.url)
-				} else {
-					return
-				}
+				const file = await $bog_music_disk.file(session.key)
+				if (!file) return
+				this.set_track_src(el, this.url_take(file))
 			}
 			this.attach_seek_listener(el, session.position)
 		}
-
-		// ---------- media session ----------
 
 		private setup_media_session() {
 			if (!('mediaSession' in navigator)) return
 			const ms = navigator.mediaSession
 			ms.setActionHandler('previoustrack', () => { try { this.prev() } catch {} })
 			ms.setActionHandler('nexttrack', () => { try { this.next() } catch {} })
-			if (this.is_extension()) {
-				ms.setActionHandler('seekto', details => {
-					if (details.seekTime != null) this.send('seek', { time: details.seekTime })
-				})
-				ms.setActionHandler('play', () => { this.send('resume') })
-				ms.setActionHandler('pause', () => { this.send('pause') })
-			} else {
-				const el = this.audio_el()
-				ms.setActionHandler('seekto', details => {
-					if (details.seekTime != null) el.currentTime = details.seekTime
-				})
-				ms.setActionHandler('play', () => { this.resume_robust() })
-				ms.setActionHandler('pause', () => {
-					if (this.is_ios()) this.ios_pause(el)
-					else el.pause()
-				})
-			}
+			const el = this.audio_el()
+			ms.setActionHandler('seekto', details => {
+				if (details.seekTime != null) el.currentTime = details.seekTime
+			})
+			ms.setActionHandler('play', () => { this.resume_robust() })
+			ms.setActionHandler('pause', () => {
+				if (this.is_ios()) this.ios_pause(el)
+				else el.pause()
+			})
 		}
 
-		/** Возобновление с локскрина/Control Center. */
 		private resume_robust() {
 			const el = this.audio_el()
 			this.gain_chain_unlock()
@@ -685,10 +414,8 @@ namespace $.$$ {
 			el.play().catch(() => {})
 		}
 
-		private apply_media_metadata(audio: $bog_music_api_audio) {
+		private apply_media_metadata(audio: $bog_music_track_baza_info) {
 			if (!('mediaSession' in navigator)) return
-			// iOS PWA: без artwork iOS считает это не «настоящим медиа» и душит
-			// фоновый звук — подсовываем favicon в нескольких размерах.
 			const fav = 'bog/music/app/favicon.svg'
 			navigator.mediaSession.metadata = new MediaMetadata({
 				title: audio.title,
@@ -703,15 +430,6 @@ namespace $.$$ {
 			this.setup_media_session()
 		}
 
-		/**
-		 * Позиция для системного плеера — локскрин и Пункт управления (шторка
-		 * справа сверху). Без setPositionState шторка не знает ни длительности,
-		 * ни позиции: прогресс стоит на нуле, а скраб-бар не двигается, хотя
-		 * обработчик seekto давно есть. Локскрин это переживал, шторка — нет.
-		 *
-		 * Значения обязаны быть валидными: NaN-длительность или позиция за её
-		 * пределами роняют setPositionState с TypeError.
-		 */
 		@$mol_mem
 		private apply_position_state() {
 			if (!('mediaSession' in navigator)) return 0
@@ -720,7 +438,6 @@ namespace $.$$ {
 			const duration = this.duration()
 			const position = this.current_time()
 			if (!(duration > 0) || !isFinite(duration)) {
-				// Метаданных ещё нет — сбрасываем, иначе шторка держит прошлый трек.
 				try { ms.setPositionState() } catch {}
 				return 0
 			}
@@ -732,8 +449,6 @@ namespace $.$$ {
 			}
 			return at
 		}
-
-		// ---------- базовое состояние ----------
 
 		@$mol_mem
 		playing(next?: boolean) {
@@ -756,30 +471,22 @@ namespace $.$$ {
 			return Math.max(0, Math.min(1, v as number))
 		}
 
-		/** Последняя посчитанная пара — дожать её после сборки цепочки. */
 		private _gain_last = { volume: 0.7, factor: 1 }
 
 		@$mol_mem
 		private apply_volume() {
 			const volume = this.volume()
-			// Реактивно: когда фоновый замер допишет громкость, гейн подтянется.
 			const factor = this.track_gain()
 			this._gain_last = { volume, factor }
 			this.gain_push()
 			return volume * factor
 		}
 
-		/** Разложить громкость по выходу: offscreen, WebAudio или сам элемент. */
 		private gain_push() {
 			const { volume, factor } = this._gain_last
-			if (this.is_extension()) {
-				this.send('volume', { value: volume, gain: factor })
-				return
-			}
 			const node = this._gain_node
 			const ctx = this._gain_ctx
 			if (node && ctx) {
-				// Плавно: мгновенный скачок гейна на стыке треков щёлкает.
 				try {
 					node.gain.setTargetAtTime(volume * factor, ctx.currentTime, 0.02)
 				} catch {
@@ -787,8 +494,6 @@ namespace $.$$ {
 				}
 				return
 			}
-			// Цепочки нет (жеста ещё не было, WebAudio недоступен, выравнивание
-			// выключено) — элементом можно только приглушить.
 			if (this._audio_el) this._audio_el.volume = Math.max(0, Math.min(1, volume * factor))
 		}
 
@@ -834,13 +539,6 @@ namespace $.$$ {
 			return `${(this.current_time() / dur) * 100}%`
 		}
 
-		// ---------- громкость (drag по вертикальному слайдеру) ----------
-
-		/**
-		 * Тап по иконке открывает и закрывает панель. Раньше панель была
-		 * $mol_pop_over, а он показан, пока «в фокусе ИЛИ под курсором»: на
-		 * телефоне фокус остаётся на кнопке, и повторный тап ничего не закрывал.
-		 */
 		volume_toggle() {
 			const pop = this.Volume()
 			const showed = pop.showed()
@@ -884,10 +582,7 @@ namespace $.$$ {
 			const e = event as PointerEvent
 			try { (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId) } catch {}
 			this._vol_dragging = false
-			// Пишем в журнал на отпускании, а не на каждом шаге: за одно
-			// перетаскивание сеттер зовётся десятки раз и вытеснил бы журнал.
 			$bog_music_log.act(`громкость: ${Math.round(this.volume() * 100)}%`)
-			// Ползунок отпущен — панель своё отработала, убираем её с экрана.
 			try { this.Volume().showed(false) } catch {}
 			return null
 		}
@@ -896,19 +591,8 @@ namespace $.$$ {
 			return `${Math.round(this.volume() * 100)}%`
 		}
 
-		// ---------- эквалайзер ----------
-		// Полосы стоят в общем тракте, между источником и гейном (см. gain_wire).
-		// Настройки лежат в аккаунте, а не в localStorage: кривую выставляют один
-		// раз и ждут её же на другом устройстве.
-		//
-		// Ни eq_on, ни eq_gains не мемоизируем. Запись в @$mol_mem замораживает
-		// его зависимости — настройка, приехавшая синком с телефона, до открытого
-		// ноутбука бы уже не дошла. Реактивность даёт сам baza-атом: его читает
-		// тот атом, который вызвал эти методы.
-
 		private _eq_nodes: BiquadFilterNode[] = []
 		private _eq_last: number[] = $bog_music_eq.flat()
-		/** Последнее известное «включён» — снимок для путей, где нельзя виснуть. */
 		private _eq_on = false
 
 		eq_on(next?: boolean): boolean {
@@ -919,32 +603,17 @@ namespace $.$$ {
 			}
 			this._eq_on = next
 			this.account().save_eq_on(next)
-			// Клик по тумблеру — юзер-жест, единственный момент, когда WebAudio
-			// разрешено будить. Поднимаем цепочку прямо здесь: при выключенной
-			// автогромкости её до сих пор могло не быть вовсе.
 			if (next) this.gain_chain_unlock()
 			return next
 		}
 
-		/**
-		 * Полосы, пока ползунок в руке. В baza пишем один раз на перетаскивание,
-		 * а не на каждый pointermove: иначе каждое движение пальца улетало бы в
-		 * ленд отдельной правкой.
-		 */
 		@$mol_mem
 		private eq_draft(next?: number[] | null) {
 			return next ?? null
 		}
 
-		/** Черновик перетаскивания либо сохранённое в аккаунте. */
 		eq_gains(): number[] {
 			return this.eq_draft() ?? this.account().eq_gains()
-		}
-
-		/** Панель эквалайзера — только для своего <audio>; в offscreen её нет. */
-		Eq() {
-			if (this.is_extension()) return null as any
-			return super.Eq()
 		}
 
 		eq_pop_toggle() {
@@ -956,21 +625,12 @@ namespace $.$$ {
 			return null
 		}
 
-		/** Выставить полосы: в аккаунт, черновик прочь. */
 		@$mol_action
 		private eq_apply( gains: number[] ) {
 			this.account().save_eq_gains( gains )
 			this.eq_draft( null )
-			// Тронули кривую при выключенном эквалайзере — включаем: иначе точка
-			// ездит, а звук не меняется, и это читается как поломка.
 			if( !this.eq_on() && $bog_music_eq.preset_of( gains ) !== 'default' ) this.eq_on( true )
 		}
-
-		// ---------- пресеты ----------
-		// Список как в Я.Музыке: «Своя настройка» сверху, дальше пресеты по
-		// порядку. «Своя настройка» висит всегда и лишь показывает, что кривая
-		// ничьей заготовке не соответствует; нажатие на неё ничего не даёт —
-		// сделать из неё кривую неоткуда.
 
 		eq_preset_rows() {
 			return [ '', ... $bog_music_eq.presets.map( preset => preset.id ) ]
@@ -990,9 +650,6 @@ namespace $.$$ {
 			return true
 		}
 
-		// ---------- перетаскивание точек ----------
-
-		/** Полоса — по колонке графика, в которую попал палец. */
 		private eq_band_at( event: PointerEvent ) {
 			const rect = ( event.currentTarget as HTMLElement ).getBoundingClientRect()
 			const part = rect.width ? ( event.clientX - rect.left ) / rect.width : 0
@@ -1018,8 +675,6 @@ namespace $.$$ {
 			if( !event ) return null
 			const e = event as PointerEvent
 			try { ( e.currentTarget as HTMLElement ).setPointerCapture( e.pointerId ) } catch {}
-			// Полосу выбираем один раз, на нажатии: иначе палец, уехавший вверх по
-			// диагонали, посреди жеста перескакивал бы на соседнюю точку.
 			this._eq_dragging = this.eq_band_at( e )
 			this.eq_drag_to( e )
 			e.preventDefault()
@@ -1040,15 +695,11 @@ namespace $.$$ {
 			this._eq_dragging = -1
 			const gains = this.eq_draft()
 			if( gains ) this.eq_apply( gains )
-			// Панель не закрываем, в отличие от громкости: точек шесть, их
-			// таскают подряд.
 			return null
 		}
 
-		/** Разложить полосы по узлам. Реактивно: сработает и на синк с другого устройства. */
 		@$mol_mem
 		private apply_eq() {
-			// Заодно обновляет _eq_on — снимок для gain_chain_unlock.
 			this._eq_last = this.eq_on() ? $bog_music_eq.clamp(this.eq_gains()) : $bog_music_eq.flat()
 			this.eq_push()
 			return this._eq_last
@@ -1060,7 +711,6 @@ namespace $.$$ {
 			this._eq_last.forEach((db, index) => {
 				const node = this._eq_nodes[index]
 				if (!node) return
-				// Плавно: мгновенный скачок фильтра щёлкает так же, как скачок гейна.
 				try {
 					node.gain.setTargetAtTime(db, ctx.currentTime, 0.02)
 				} catch {
@@ -1068,8 +718,6 @@ namespace $.$$ {
 				}
 			})
 		}
-
-		// ---------- режим повтора ----------
 
 		@$mol_mem
 		repeat_mode(next?: 'all' | 'one' | 'shuffle') {
@@ -1108,29 +756,10 @@ namespace $.$$ {
 			return super.Shuffle_icon()
 		}
 
-		// ---------- позиция в очереди ----------
-
-		/**
-		 * Индекс текущего трека в очереди. Обычное поле, а не @$mol_mem (как
-		 * tube_current в app): индекс не участвует в рендере, подписчиков у
-		 * ячейки нет — $mol её сметает, и записанное значение молча
-		 * откатывается к дефолту. Именно так плеер залипал: индекс всё время
-		 * был 0, и автопереход бесконечно играл queue[1].
-		 */
 		private _queue_at = 0
 
-		/**
-		 * Индекс назначен снаружи (demote_key целится в конкретного соседа, а
-		 * не в позицию играющего). Действует до старта следующего трека.
-		 */
 		private _queue_at_forced = false
 
-		/**
-		 * Позиция текущего трека в очереди. Источник правды — сам трек:
-		 * список переупорядочивают, фильтруют и дозагружают из базы, а после
-		 * восстановления сессии индекс вообще никто не ставит. Сохранённое
-		 * число берём, только когда играет что-то не из этого списка.
-		 */
 		queue_index(next?: number): number {
 			if (next !== undefined) {
 				this._queue_at_forced = true
@@ -1140,10 +769,6 @@ namespace $.$$ {
 			const at = this.queue_keys().indexOf(this.current_key())
 			return at >= 0 ? at : this._queue_at
 		}
-
-		// ---------- shuffle-bag ----------
-		// Одна перетасовка всего плейлиста, играем без повторов до конца, затем
-		// тасуем заново. Состояние обхода — не reactive: его никто не рендерит.
 
 		private _shuffle_bag: string[] = []
 		private _shuffle_bag_idx = 0
@@ -1166,8 +791,6 @@ namespace $.$$ {
 			this._shuffle_bag_sig = sig
 		}
 
-		// ---------- запуск трека ----------
-
 		play_track(key?: string | null) {
 			if (!key) return
 			const audio = this.audio_of(key)
@@ -1177,141 +800,78 @@ namespace $.$$ {
 			}
 			$bog_music_log.act(`старт трека ${audio.artist} — ${audio.title} (${key})`)
 
-			this.ext(null) // возвращаемся к baza-треку, гасим tube-превью
+			this.ext(null)
+			this.file_cache_keep(key)
 
-			$bog_music_mem.play_started()
-			// Предыдущий трек больше не нужен: отпускаем и его Blob, и object URL.
-			// Держать их дальше нечем оправдать — назад мотают через play_track,
-			// который соберёт Blob заново из чанков.
-			this.blob_cache_keep(key)
-
-			// Сброс времени ДО смены трека: иначе apply_trim в auto() прочитает
-			// stale-значения предыдущего трека и может мгновенно дёрнуть next().
 			this.current_time(0)
 			this.duration(0)
-			this._await_seek = 0 // новый трек — не ждём resume-seek
+			this._await_seek = 0
 			this.current_key(key)
-			this._queue_at_forced = false // дальше позиция считается по треку
+			this._queue_at_forced = false
 			this._trim_end_skip = ''
-			// Обрез начала может быть ещё не прогрет: play_track зовётся из
-			// 'ended'/микротаска — ВНЕ фибры, а холодный baza-атом там суспендится.
-			// Раньше Promise улетал наружу и рвал play_track уже после смены
-			// current_key: трек выбран, src не выставлен, звука нет — «стоп» при
-			// автопереходе на обрезанную песню. Теперь стартуем с нуля, а seek
-			// догоняет реактивно в apply_trim_start (там фибра auto() ретраит).
 			const trim = this.trim_start_of(key)
 			const start_at = trim ?? 0
 			this._trim_start_done = trim === null ? '' : key
-			// Если фоновый переход всё же сорвётся в keep-alive-тишину, resume
-			// должен вернуться к НАЧАЛУ нового трека (с учётом обреза), а не к
-			// позиции предыдущего: в ios_pause el.currentTime тут ещё 0.
 			this._paused_pos = start_at
 			try { this.account().save_last_session(key, start_at) } catch {}
 
 			this.apply_media_metadata(audio)
-			this.heap_release()
-
-			if (this.is_extension()) {
-				this.dispatch_play_offscreen(key, audio, start_at)
-				return
-			}
-
-			// Клик — единственный шанс разлочить WebAudio-цепочку для iOS.
 			this.gain_chain_unlock()
-
-			// Предзагружаем следующий трек (Range warm / blob fallback).
 			this.prefetch_next(key)
 
 			const el = this.audio_el()
-			// iOS PWA: sync play в том же tick. Stream URL — без сборки Blob.
 			if (this.try_play_local_sync(key, el, start_at)) return
-			if (audio.url) {
-				this.set_track_src(el, audio.url)
-				this.attach_seek_listener(el, start_at)
-				el.play().catch(() => {})
-			}
-			this.play_source_local(key, audio, el, start_at)
+			this.play_source_local(key, el, start_at)
 		}
 
-		private heap_release() {
-			setTimeout(() => $mol_wire_async($bog_music_land).release_all().catch($mol_fail_log), 5000)
-		}
+		private _file_cache = new Map<string, File>()
 
-		// Готовые Blob'ы в RAM. Критично для авто-next: на iOS звук в фоне даётся
-		// только если el.play() вызван СИНХРОННО в обработчике 'ended'
-		// (continuation). Для этого blob следующего трека должен быть доступен
-		// без suspend — держим его здесь, прогретым заранее.
-		private _blob_cache = new Map<string, Blob>()
+		private static FILE_CACHE_MAX = 2
 
-		/**
-		 * Потолок кеша: текущий трек и один прогретый следующий. Больше держать
-		 * незачем, а меньше нельзя — на одном месте останется тот самый
-		 * синхронный переход, ради которого кеш и заведён.
-		 */
-		private static BLOB_CACHE_MAX = 2
-
-		/**
-		 * Оставить в кеше только перечисленные ключи и подрезать остаток до
-		 * потолка. Зовётся на каждой смене трека: без этого кеш рос ровно на
-		 * длину прослушанного за сессию.
-		 */
-		private blob_cache_keep(...keep: (string | null | undefined)[]) {
+		private file_cache_keep(...keep: (string | null | undefined)[]) {
 			const alive = new Set(keep.filter(Boolean) as string[])
-			for (const key of [...this._blob_cache.keys()]) {
-				if (!alive.has(key)) this._blob_cache.delete(key)
+			for (const key of [...this._file_cache.keys()]) {
+				if (!alive.has(key)) this._file_cache.delete(key)
 			}
-			// Map сохраняет порядок вставки — лишним оказывается самый старый.
-			while (this._blob_cache.size > $bog_music_player.BLOB_CACHE_MAX) {
-				const oldest = this._blob_cache.keys().next().value
+			while (this._file_cache.size > $bog_music_player.FILE_CACHE_MAX) {
+				const oldest = this._file_cache.keys().next().value
 				if (oldest === undefined) break
-				this._blob_cache.delete(oldest)
+				this._file_cache.delete(oldest)
 			}
 		}
 
-		/** Прогреть следующий трек (stream Range или blob-кеш). */
 		private prefetch_next(key: string) {
-			try { ($mol_wire_async(this) as any).cache_next(key) } catch {}
+			void this.cache_next(key).catch(() => {})
 		}
 
-		/**
-		 * Sync-метод (через фибру): вычислить РЕАЛЬНЫЙ следующий трек с учётом
-		 * режима (repeat/shuffle/«Моя волна») и прогреть его. При SW+Range
-		 * достаточно warm первого окна; blob-кеш — fallback без SW / для iOS
-		 * без controller.
-		 */
-		cache_next(key: string): boolean {
+		async cache_next(key: string) {
+			const next_key = await $mol_wire_async(this).next_warm(key)
+			if (!next_key) return
+			if (!await this.file_ensure(next_key)) return
+			if ($bog_music_stream.supported()) return $bog_music_stream.warm(next_key)
+			const file = await $bog_music_disk.file(next_key)
+			if (!file) return
+			this._file_cache.set(next_key, file)
+			this.file_cache_keep(this.current_key(), next_key)
+		}
+
+		next_warm(key: string) {
 			const next_key = this.predict_next_key(key)
-			if (!next_key) return false
-			this.track_warm(next_key)
-			if ($bog_music_stream.supported()) {
-				$bog_music_stream.warm(next_key)
-				return true
-			}
-			return this._blob_cache.has(next_key) || this.cache_blob(next_key)
+			if (next_key) this.track_warm(next_key)
+			return next_key
 		}
 
-		/**
-		 * Прогрев холодных baza-атомов трека. Обрез и метаданные для НЕтекущего
-		 * трека не читает никто, поэтому их первое чтение подвисает (land.sync →
-		 * loading/крипта). play_track читает их вне фибры — прогреваем заранее,
-		 * из фибры, чтобы автопереход не спотыкался.
-		 */
 		private track_warm(key: string) {
 			const track = this.account().track(key)
 			if (!track) return
-			track.audio()
+			track.info()
 			track.trim_start()
 			track.trim_end(0)
 		}
 
-		/**
-		 * Метаданные трека без риска оборвать play_track: если атом ещё холодный
-		 * (вне фибры = Promise наружу), догреваем в фибре и повторяем ЭТОТ же
-		 * трек — иначе автопереход молча терял бы песню.
-		 */
-		private audio_of(key: string): $bog_music_api_audio | null {
+		private audio_of(key: string): $bog_music_track_baza_info | null {
 			try {
-				return this.account().track(key)?.audio() ?? null
+				return this.account().info(key)
 			} catch (e: any) {
 				if (!(e instanceof Promise)) throw e
 				;($mol_wire_async(this) as any).play_track_warm(key)
@@ -1319,13 +879,11 @@ namespace $.$$ {
 			}
 		}
 
-		/** Прогреть трек в фибре (ретраит подвисания) и запустить его же. */
 		play_track_warm(key: string) {
 			this.track_warm(key)
 			this.play_track(key)
 		}
 
-		/** Обрез начала трека. null — атом ещё холодный (подвис вне фибры). */
 		private trim_start_of(key: string): number | null {
 			try {
 				return this.account().track(key)?.trim_start() ?? 0
@@ -1335,36 +893,21 @@ namespace $.$$ {
 			}
 		}
 
-		/**
-		 * Автопереход (ended / trim_end) в фибре — фолбэк, когда синхронный путь
-		 * подвис. Подвисающие чтения ПЕРВЫМИ: ретрай фибры не должен повторно
-		 * прокручивать shuffle-мешок. predict_next_key только подглядывает.
-		 */
 		next_auto() {
 			const key = this.predict_next_key(this.current_key())
 			if (key) this.track_warm(key)
 			this.next(false)
 		}
 
-		/**
-		 * Выбор «Моей волны», сделанный ЗАРАНЕЕ (при старте текущего трека).
-		 * Волна рандомная, поэтому предсказать её на 'ended' нельзя — вместо
-		 * этого выбираем следующий трек сразу, греем его blob, а next() потом
-		 * использует именно этот выбор.
-		 */
 		private _planned_wave: { from: string, key: string } | null = null
 
-		/** Зеркало логики next() без побочных эффектов (кроме плана волны). */
 		private predict_next_key(key: string): string | null {
 			if (this.repeat_mode() === 'one') return key
 			const queue = this.queue_keys()
 			if (this.repeat_mode() === 'shuffle' && queue.length) {
-				// Peek следующего из shuffle-bag: детерминирован, next() возьмёт его же.
 				this.ensure_shuffle_bag(queue)
 				return this._shuffle_bag[this._shuffle_bag_idx] ?? null
 			}
-			// Фибра ретраится при suspend — рандомный выбор волны делаем один раз
-			// и переиспользуем на ретраях, иначе план скакал бы на каждом заходе.
 			if (this._planned_wave?.from === key) return this._planned_wave.key
 			const picked = this.wave_pick(key)
 			if (picked && picked !== key) {
@@ -1376,62 +919,31 @@ namespace $.$$ {
 			return queue[idx >= 0 && idx + 1 < queue.length ? idx + 1 : 0] ?? null
 		}
 
-		/** Sync-метод (через фибру): дождаться blob и положить в RAM-кеш. */
-		cache_blob(key: string): boolean {
-			const blob = this.account().track(key)?.blob_wait()
-			if (!blob) return false
-			this._blob_cache.set(key, blob)
-			// Держим компактно: только текущий + этот (следующий).
-			this.blob_cache_keep(this.current_key(), key)
-			return true
-		}
-
-		/** Sync-чтение блоба: сперва RAM-кеш (без suspend), потом baza. */
-		blob_of(key: string): Blob | null {
-			const cached = this._blob_cache.get(key)
-			if (cached) return cached
-			return this.account().track(key)?.blob() ?? null
-		}
-
-		/** Блоб, ДОЖИДАЯСЬ докачки land (suspend). Для проигрывания через фибру. */
-		blob_of_wait(key: string): Blob | null {
-			return this.account().track(key)?.blob_wait() ?? null
-		}
-
-		/** Land с байтами на месте — без материализации Blob (для SW+Range). */
-		track_file_ready(key: string): boolean {
-			return this.account().track(key)?.blob_ensure() ?? false
+		async file_ensure(key: string): Promise<boolean> {
+			if (await $bog_music_disk.probe(key)) return true
+			const place = await $mol_wire_async(this.account()).place(key)
+			if (place === 'legacy') return this.account().migrate(key)
+			return false
 		}
 
 		private try_play_local_sync(key: string, el: HTMLAudioElement, start_at: number): boolean {
-			// SW+Range: src — same-origin URL, play() синхронно. Полный Blob не собираем.
+			try {
+				if (!$bog_music_disk.has(key)) return false
+			} catch {
+				return false
+			}
 			if ($bog_music_stream.active()) {
-				if (this._last_blob_url) {
-					URL.revokeObjectURL(this._last_blob_url)
-					this._last_blob_url = ''
-				}
+				this.url_drop()
 				this._dispatch_token++
 				this.set_track_src(el, $bog_music_stream.url(key))
 				this.attach_seek_listener(el, start_at)
 				el.play().catch(() => {})
 				return true
 			}
-			// SW есть, но controller ещё null (типично сразу после reload) —
-			// НЕ собираем parts() всего файла, уйдём в async и дождёмся ready.
-			if ($bog_music_stream.supported()) return false
-
-			let blob: Blob | null = null
-			try {
-				blob = this.blob_of(key)
-			} catch {
-				return false
-			}
-			if (!blob) return false
-			if (this._last_blob_url) URL.revokeObjectURL(this._last_blob_url)
-			const url = URL.createObjectURL(blob)
-			this._last_blob_url = url
+			const file = this._file_cache.get(key)
+			if (!file) return false
 			this._dispatch_token++
-			this.set_track_src(el, url)
+			this.set_track_src(el, this.url_take(file))
 			this.attach_seek_listener(el, start_at)
 			el.play().catch(() => {})
 			return true
@@ -1447,18 +959,12 @@ namespace $.$$ {
 		}
 
 		private seek_to(time: number) {
-			if (this.is_extension()) {
-				this.send('seek', { time })
-			} else if (this._silent) {
-				// На iOS-паузе в элементе крутится тишина: мотать нечего, позиция
-				// применится при resume.
+			if (this._silent) {
 				this._paused_pos = time
 			} else if (this._audio_el) {
 				try { this._audio_el.currentTime = time } catch {}
 			}
 		}
-
-		// ---------- перемотка (тап и драг по полоске) ----------
 
 		private _seek_drag = false
 
@@ -1498,97 +1004,53 @@ namespace $.$$ {
 			return null
 		}
 
-		// Гонки fast-click'ов: пока blob трека A грузится, пользователь кликает B.
-		// Токен инвалидирует устаревшие dispatch'и.
 		private _dispatch_token = 0
 
 		private is_current(key: string): boolean {
 			return this.current_key() === key
 		}
 
-		/**
-		 * Дожидается блоба: сначала ждём докачку blob-land с мастера
-		 * (blob_of_wait suspend'ится, фибра ретраит пока не досинкается),
-		 * при неудаче докачиваем с VK.
-		 */
-		private async blob_ready(key: string, audio: $bog_music_api_audio): Promise<Blob | null> {
-			let blob = await ($mol_wire_async(this) as any).blob_of_wait(key).catch(() => null) as Blob | null
-			if (!blob && audio.url) {
-				await this.account().save_hls(audio).catch(() => {})
-				blob = await ($mol_wire_async(this) as any).blob_of_wait(key).catch(() => null) as Blob | null
-			}
-			return blob
+		@$mol_mem
+		missing(next?: string) {
+			return next ?? ''
 		}
 
-		private async dispatch_play_offscreen(key: string, audio: $bog_music_api_audio, start_at: number) {
+		private async play_source_local(key: string, el: HTMLAudioElement, start_at: number) {
 			const token = ++this._dispatch_token
+			this.missing('')
 			try {
-				await chrome.runtime.sendMessage({ target: 'background', type: 'ensure_offscreen' })
+				this.url_drop()
+
+				const ready = await this.file_ensure(key)
 				if (token !== this._dispatch_token || !this.is_current(key)) return
 
-				const blob = await this.blob_ready(key, audio)
-				if (token !== this._dispatch_token || !this.is_current(key)) return
-
-				if (!blob) {
-					console.warn('[player] no source:', audio.artist, '—', audio.title)
+				if (!ready) {
+					const holders = this.account().holders_other(key)
+					const name = holders.length ? this.account().device_name(holders[0]) : ''
+					this.missing(name ? `Файл на «${name}» — перенеси его сюда` : 'Файла нет ни на одном устройстве')
+					$bog_music_log.err(`нет файла на устройстве: ${key}`)
+					this.playing(false)
 					return
 				}
-				this.channel().postMessage({
-					target: 'offscreen',
-					type: 'play_track',
-					audio,
-					blob,
-					start_at,
-				})
-			} catch (e: any) {
-				console.error('[player] play failed:', e)
-				this.playing(false)
-			}
-		}
 
-		private async play_source_local(key: string, audio: $bog_music_api_audio, el: HTMLAudioElement, start_at: number) {
-			const token = ++this._dispatch_token
-			try {
-				if (this._last_blob_url) {
-					URL.revokeObjectURL(this._last_blob_url)
-					this._last_blob_url = ''
-				}
-
-				// PWA: всегда stream, даже если controller ещё не прилип после reload.
 				if ($bog_music_stream.supported()) {
 					const ok = $bog_music_stream.active() || await $bog_music_stream.when_ready()
 					if (token !== this._dispatch_token || !this.is_current(key)) return
 					if (ok) {
-						await ($mol_wire_async(this) as any).track_file_ready(key).catch(() => null)
-						if (token !== this._dispatch_token || !this.is_current(key)) return
 						this.set_track_src(el, $bog_music_stream.url(key))
 						this.attach_seek_listener(el, start_at)
 						await this.safe_play(el)
 						return
 					}
-					console.warn('[player] SW not controlling page — stream unavailable')
 				}
 
-				const blob = await this.blob_ready(key, audio)
+				const file = await $bog_music_disk.file(key)
 				if (token !== this._dispatch_token || !this.is_current(key)) return
-
-				if (blob) {
-					const url = URL.createObjectURL(blob)
-					this._last_blob_url = url
-					this.set_track_src(el, url)
-					this.attach_seek_listener(el, start_at)
-					await this.safe_play(el)
-					return
-				}
-
-				if (audio.url) {
-					this.set_track_src(el, audio.url)
-					this.attach_seek_listener(el, start_at)
-					await this.safe_play(el)
-					return
-				}
-
-				console.warn('[player] no source:', audio.artist, '—', audio.title)
+				if (!file) return
+				this.set_track_src(el, this.url_take(file))
+				this.attach_seek_listener(el, start_at)
+				await this.safe_play(el)
+				return
 			} catch (e: any) {
 				console.error('[player] play failed:', e)
 			}
@@ -1609,27 +1071,17 @@ namespace $.$$ {
 			}
 		}
 
-		// ---------- управление ----------
-
 		toggle() {
-			// Крутится keep-alive-тишина = звука нет, чем бы ни было playing():
-			// жмём resume, иначе ios_pause молча выйдет по _silent и кнопка
-			// перестанет что-либо делать.
 			const was_playing = this.playing() && !this._silent
 			$bog_music_log.act(`${was_playing ? 'пауза' : 'продолжить'}: ${this.current_key() || 'без трека'}`)
-			if (this.is_extension()) {
-				if (was_playing) this.send('pause')
-				else this.send('resume')
+			this.gain_chain_unlock()
+			const el = this.audio_el()
+			if (this.is_ios()) {
+				if (was_playing) this.ios_pause(el)
+				else this.ios_resume(el)
 			} else {
-				this.gain_chain_unlock()
-				const el = this.audio_el()
-				if (this.is_ios()) {
-					if (was_playing) this.ios_pause(el)
-					else this.ios_resume(el)
-				} else {
-					if (was_playing) el.pause()
-					else el.play()
-				}
+				if (was_playing) el.pause()
+				else el.play()
 			}
 			if (was_playing) {
 				const key = this.current_key()
@@ -1639,17 +1091,12 @@ namespace $.$$ {
 			}
 		}
 
-		/**
-		 * Полный сброс плеера (крестик): стоп звука, очистка всего внутреннего
-		 * состояния (swap-паузы, RAM-кеша, плана волны) и сохранённой сессии —
-		 * чтобы после перезагрузки плеер не воскрес сам.
-		 */
 		close() {
 			$bog_music_log.act('закрытие плеера')
-			this._dispatch_token++ // инвалидировать pending dispatch'и
+			this._dispatch_token++
 			this.ext(null)
 			this._planned_wave = null
-			this._blob_cache.clear()
+			this._file_cache.clear()
 			this._silent = false
 			this._track_src = ''
 			this._paused_pos = 0
@@ -1658,21 +1105,14 @@ namespace $.$$ {
 			this._switch_gen++
 			this._trim_end_skip = ''
 			this._trim_start_done = ''
-			// ДО el.pause(): его синхронный 'pause'-event при playing()=true был бы
-			// принят за системную паузу и воскресил бы keep-alive-тишину.
 			this.playing(false)
-			if (this.is_extension()) {
-				this.send('pause')
-			} else if (this._audio_el) {
+			if (this._audio_el) {
 				const el = this._audio_el
 				el.pause()
 				el.removeAttribute('src')
 				try { el.load() } catch {}
 			}
-			if (this._last_blob_url) {
-				URL.revokeObjectURL(this._last_blob_url)
-				this._last_blob_url = ''
-			}
+			this.url_drop()
 			if ('mediaSession' in navigator) {
 				navigator.mediaSession.metadata = null
 				navigator.mediaSession.playbackState = 'none'
@@ -1680,13 +1120,12 @@ namespace $.$$ {
 			this.current_time(0)
 			this.duration(0)
 			this.queue_index(0)
-			this._session_restored = true // не воскрешать сессию в этой вкладке
+			this._session_restored = true
 			try { this.account().save_last_session('', 0) } catch {}
 			this.current_key('')
 		}
 
 		prev() {
-			// Тот же случай, что и в next(): играет выдача — шагаем по ней.
 			if (this.ext()) {
 				$bog_music_log.act('предыдущий результат выдачи')
 				this.ext_step(-1)
@@ -1703,11 +1142,6 @@ namespace $.$$ {
 			}
 		}
 
-		/**
-		 * Сосед по выдаче YouTube. Плеер про tube ничего не знает — он лишь
-		 * сообщает app, что играет внешний стрим, и просит шагнуть.
-		 * false — выдача кончилась.
-		 */
 		private ext_step(step: number): boolean {
 			try {
 				return !!($bog_music_app.Root(0) as any).tube_step(step)
@@ -1718,7 +1152,6 @@ namespace $.$$ {
 			}
 		}
 
-		/** Рекомендация «Моей волны» из app (null если режим выключен). */
 		private wave_pick(key: string): string | null {
 			try {
 				return ($bog_music_app.Root(0) as any).player_pick_next(key) ?? null
@@ -1733,22 +1166,16 @@ namespace $.$$ {
 			const queue = this.queue_keys()
 			$bog_music_log.act(`следующий трек (${manual ? 'кнопка' : 'авто'}, режим ${mode})`)
 
-			// Играет стрим из выдачи YouTube. Шагаем по выдаче, а не по фонотеке:
-			// у внешнего трека current_key пустой, и общий путь ниже взял бы
-			// queue[0] — по концу трека молча стартовал личный плейлист с начала.
 			if (this.ext()) {
 				if (!manual && mode === 'one') {
 					const ext = this.ext()!
 					this.play_external(ext.url, ext.title, ext.artist)
 					return
 				}
-				this.ext_step(1) // выдача кончилась — просто встаём, трек уже доиграл
+				this.ext_step(1)
 				return
 			}
 
-			// Авто-advance при mode='one': перезапуск того же трека через
-			// play_track — он подхватит trim_start (native loop крутит от 0).
-			// Ручной клик по Next всё равно ведёт к следующему.
 			if (!manual && mode === 'one') {
 				const cur = this.current_key()
 				if (cur) {
@@ -1762,7 +1189,7 @@ namespace $.$$ {
 				const key = this._shuffle_bag[this._shuffle_bag_idx++]
 				if (this._shuffle_bag_idx >= this._shuffle_bag.length) {
 					this._shuffle_last_key = key
-					this._shuffle_bag_sig = '' // следующий next() перетасует
+					this._shuffle_bag_sig = ''
 				}
 				const idx = queue.indexOf(key)
 				if (idx >= 0) {
@@ -1772,11 +1199,6 @@ namespace $.$$ {
 				}
 			}
 
-			// «Моя волна» — рекомендалка. Зовём app напрямую: event-binding
-			// `pick_next?` возвращал бы свой аргумент (echo), а не рекомендацию,
-			// из-за чего next() играл текущий трек заново вместо следующего.
-			// Сперва — выбор, сделанный заранее в cache_next: его blob уже прогрет
-			// в RAM → play пройдёт синхронно в ended-continuation (звук в фоне).
 			try {
 				const cur = this.current_key()
 				let picked: string | null = null
@@ -1799,8 +1221,6 @@ namespace $.$$ {
 
 			if (!queue.length) return
 			let next_idx = this.queue_index() + 1 < queue.length ? this.queue_index() + 1 : 0
-			// Страховка от залипания: в списке есть куда шагнуть, а шагаем на
-			// себя же (дубль в очереди, протухший индекс) — берём следующего.
 			if (queue.length > 1 && queue[next_idx] === this.current_key()) {
 				next_idx = next_idx + 1 < queue.length ? next_idx + 1 : 0
 			}
@@ -1811,6 +1231,27 @@ namespace $.$$ {
 		sub() {
 			if (!this.current_key() && !this.ext()) return this.full() ? [ this.Empty() ] : []
 			return super.sub()
+		}
+
+		Missing() {
+			return this.missing() ? super.Missing() : null as any
+		}
+
+		Missing_pull() {
+			return this.account().holders_other(this.current_key()).length ? super.Missing_pull() : null as any
+		}
+
+		@$mol_action
+		missing_pull() {
+			const key = this.current_key()
+			const beam = $bog_music_beam.instance()
+			const from = beam.pick_holder(key)
+			if (!from) return
+			this.missing('Переношу…')
+			void beam.pull(from, [key]).then(
+				() => this.is_current(key) && this.play_track(key),
+				(error: any) => this.missing(error?.message ?? 'Не получилось перенести'),
+			)
 		}
 
 		toggle_icons() {
@@ -1826,13 +1267,6 @@ namespace $.$$ {
 			return super.Collapse()
 		}
 
-		// ---------- обрез трека (trim handles на прогресс-баре) ----------
-
-		/**
-		 * Ручки обреза показываем только по кнопке «ножницы» в полном плеере:
-		 * на общей полоске их принимали за перемотку, а второй ползунок «в
-		 * конце» вообще не понимали.
-		 */
 		progress_parts() {
 			const parts = [ this.Progress_line(), this.Progress_bar(), this.Progress_knob() ]
 			if (!this.trim_editing()) return parts
@@ -1862,12 +1296,6 @@ namespace $.$$ {
 		private _trim_start_done = ''
 		private _trim_drag: 'start' | 'end' | null = null
 
-		/**
-		 * Догоняющий seek на trim_start: применяется, только если play_track не
-		 * смог прочитать обрез (холодный атом). Здесь мы уже в фибре auto(), она
-		 * ретраится — значение доедет. Один раз на трек и не во время драга,
-		 * иначе спам инвалидаций рождает гонку seek'ов с pending play_track.
-		 */
 		private apply_trim_start() {
 			const key = this.current_key()
 			if (!key) return
@@ -1889,13 +1317,6 @@ namespace $.$$ {
 			})
 		}
 
-		/**
-		 * Реактивный apply ТОЛЬКО end-trim'а: current_time >= trim_end → next().
-		 * Через microtask, чтобы не писать в cell внутри auto-фибры.
-		 * Seek на trim_start делается один раз в trim_pointer_up: если делать
-		 * реактивно, drag-спам инвалидаций рождает гонку seek-сообщений с
-		 * pending play_track → DEMUXER_ERROR в offscreen.
-		 */
 		private apply_trim() {
 			const track = this.current_track()
 			if (!track) return
@@ -1908,13 +1329,9 @@ namespace $.$$ {
 			const key = this.current_key()
 			if (this._trim_end_skip === key) return
 			this._trim_end_skip = key
-			const audio = track.audio()
 			queueMicrotask(() => {
 				try {
-					// В фибре: цепочка next() читает baza (очередь, обрез следующего)
-					// и может подвиснуть — вне фибры это была бы тихая остановка.
 					;($mol_wire_async(this) as any).next_auto()
-					if (audio && navigator.onLine) this.account().save_hls(audio).catch(() => {})
 				} catch (e: any) {
 					if (e instanceof Promise) return
 					console.warn('[player] trim_end next failed:', e?.message)
@@ -2004,8 +1421,6 @@ namespace $.$$ {
 			return `${(track.trim_end(dur) / dur) * 100}%`
 		}
 
-		// ---------- lifecycle ----------
-
 		private _pagehide_listener_set = false
 
 		private setup_pagehide_save() {
@@ -2019,9 +1434,8 @@ namespace $.$$ {
 		}
 
 		auto() {
-			this.offscreen_link()
 			this.setup_pagehide_save()
-			if (!this.is_extension() && !this.current_key()) {
+			if (!this.current_key()) {
 				this.try_restore_session()
 			}
 			this.apply_volume()

@@ -50,13 +50,19 @@ $bog_music_app $mol_page
 			fm_button <= fm_button \
 			fm_status <= fm_status \
 			fm_link? <=> fm_link? null
-		<= Mem $bog_music_mem_view
 		<= Logs $bog_music_log_view
 			version <= version_label
 		<= Feedback $bog_feedback2_form
 			feedback_id \bog_music
 		<= Share_toast $mol_view
 			sub / <= share_toast_text \
+		<= Beam_bar $mol_view
+			sub /
+				<= Beam_text $mol_view
+					sub / <= beam_text \
+				<= Beam_pull $mol_button_minor
+					title <= beam_button \
+					click? <=> beam_pull? null
 		<= Tabs $bog_music_playlists
 			page? <=> page? \my
 			my_title <= my_title \Моя музыка
