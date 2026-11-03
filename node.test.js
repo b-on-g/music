@@ -22210,6 +22210,2125 @@ var $;
 })($ || ($ = {}));
 
 ;
+	($.$mol_check_list) = class $mol_check_list extends ($.$mol_view) {
+		option_checked(id, next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		option_title(id){
+			return "";
+		}
+		option_label(id){
+			return [(this.option_title(id))];
+		}
+		enabled(){
+			return true;
+		}
+		option_enabled(id){
+			return (this.enabled());
+		}
+		option_hint(id){
+			return "";
+		}
+		items(){
+			return [];
+		}
+		dictionary(){
+			return {};
+		}
+		Option(id){
+			const obj = new this.$.$mol_check();
+			(obj.checked) = (next) => ((this.option_checked(id, next)));
+			(obj.label) = () => ((this.option_label(id)));
+			(obj.enabled) = () => ((this.option_enabled(id)));
+			(obj.hint) = () => ((this.option_hint(id)));
+			(obj.minimal_height) = () => (24);
+			return obj;
+		}
+		options(){
+			return {};
+		}
+		keys(){
+			return [];
+		}
+		sub(){
+			return (this.items());
+		}
+	};
+	($mol_mem_key(($.$mol_check_list.prototype), "option_checked"));
+	($mol_mem_key(($.$mol_check_list.prototype), "Option"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        /**
+         * List of checkboxes
+         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_check_list_demo
+         */
+        class $mol_check_list extends $.$mol_check_list {
+            options() {
+                return {};
+            }
+            dictionary(next) {
+                return next ?? {};
+            }
+            option_checked(id, next) {
+                const prev = this.dictionary();
+                if (next === undefined)
+                    return prev[id] ?? null;
+                const next_rec = { ...prev, [id]: next };
+                if (next === null)
+                    delete next_rec[id];
+                return this.dictionary(next_rec)[id] ?? null;
+            }
+            keys() {
+                return Object.keys(this.options());
+            }
+            items() {
+                return this.keys().map(key => this.Option(key));
+            }
+            option_title(key) {
+                return this.options()[key] || key;
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_check_list.prototype, "keys", null);
+        __decorate([
+            $mol_mem
+        ], $mol_check_list.prototype, "items", null);
+        $$.$mol_check_list = $mol_check_list;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/check/list/list.view.css", "[mol_check_list] {\n\tdisplay: flex;\n\tflex-wrap: wrap;\n\tflex: 1 1 auto;\n\tborder-radius: var(--mol_gap_round);\n\tgap: 1px;\n}\n\n[mol_check_list_option] {\n\tflex: 0 1 auto;\n}\n\n[mol_check_list_option]:where([mol_check_checked=\"true\"]) {\n\ttext-shadow: 0 0;\n\tcolor: var(--mol_theme_current);\n}\n\n[mol_check_list_option]:where([mol_check_checked=\"true\"][disabled]) {\n\tcolor: var(--mol_theme_text);\n}\n");
+})($ || ($ = {}));
+
+;
+	($.$mol_switch) = class $mol_switch extends ($.$mol_check_list) {
+		value(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+	};
+	($mol_mem(($.$mol_switch.prototype), "value"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        /**
+         * Buttons which switching the state
+         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_switch_demo
+         */
+        class $mol_switch extends $.$mol_switch {
+            value(next) {
+                return $mol_state_session.value(`${this}.value()`, next) ?? '';
+            }
+            option_checked(key, next) {
+                if (next === undefined)
+                    return this.value() == key;
+                this.value(next ? key : '');
+                return next;
+            }
+        }
+        $$.$mol_switch = $mol_switch;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$mol_icon_download) = class $mol_icon_download extends ($.$mol_icon) {
+		path(){
+			return "M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_labeler) = class $mol_labeler extends ($.$mol_list) {
+		label(){
+			return [(this.title())];
+		}
+		Label(){
+			const obj = new this.$.$mol_view();
+			(obj.minimal_height) = () => (32);
+			(obj.sub) = () => ((this.label()));
+			return obj;
+		}
+		content(){
+			return [];
+		}
+		Content(){
+			const obj = new this.$.$mol_view();
+			(obj.minimal_height) = () => (24);
+			(obj.sub) = () => ((this.content()));
+			return obj;
+		}
+		rows(){
+			return [(this.Label()), (this.Content())];
+		}
+	};
+	($mol_mem(($.$mol_labeler.prototype), "Label"));
+	($mol_mem(($.$mol_labeler.prototype), "Content"));
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/labeler/labeler.view.css", "[mol_labeler] {\n\tdisplay: flex;\n\tflex-direction: column;\n\talign-items: stretch;\n\tcursor: inherit;\n}\n\n[mol_labeler_label] {\n\tmin-height: 2rem;\n\tcolor: var(--mol_theme_shade);\n\tpadding: 0;\n\tpadding-top: .5rem;\n\tpadding-inline: .75rem;\n\tgap: 0 var(--mol_gap_block);\n\tflex-wrap: wrap;\n}\n\n[mol_labeler_content] {\n\tdisplay: flex;\n\tpadding: var(--mol_gap_text);\n\tmin-height: 2.5rem;\n}\n");
+})($ || ($ = {}));
+
+;
+"use strict";
+
+
+;
+	($.$mol_form_field) = class $mol_form_field extends ($.$mol_labeler) {
+		state(){
+			return null;
+		}
+		name(){
+			return "";
+		}
+		bid(){
+			return "";
+		}
+		Bid(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.bid())]);
+			return obj;
+		}
+		control(){
+			return null;
+		}
+		attr(){
+			return {...(super.attr()), "mol_form_field_state": (this.state())};
+		}
+		bids(){
+			return [];
+		}
+		label(){
+			return [(this.name()), (this.Bid())];
+		}
+		content(){
+			return [(this.control())];
+		}
+	};
+	($mol_mem(($.$mol_form_field.prototype), "Bid"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        /**
+         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_form_demo
+         */
+        class $mol_form_field extends $.$mol_form_field {
+            state() {
+                return this.bid() ? 'bid' : null;
+            }
+            bid() {
+                return this.bids().filter(Boolean)[0] ?? '';
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_form_field.prototype, "bid", null);
+        $$.$mol_form_field = $mol_form_field;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/form/field/field.view.css", "[mol_form_field] {\n\talign-items: stretch;\n}\n\n[mol_form_field_bid] {\n\tcolor: var(--mol_theme_focus);\n\tdisplay: inline-block;\n\ttext-shadow: 0 0;\n}\n\n[mol_form_field_content] {\n\tborder-radius: var(--mol_gap_round);\n}\n");
+})($ || ($ = {}));
+
+;
+	($.$bog_qr) = class $bog_qr extends ($.$mol_svg_root) {
+		stop_offset(id){
+			return "0%";
+		}
+		stop_color(id){
+			return "";
+		}
+		qr_view_box(){
+			return "0 0 1 1";
+		}
+		grad_x1(){
+			return "0";
+		}
+		grad_y1(){
+			return "0";
+		}
+		grad_x2(){
+			return "1";
+		}
+		grad_y2(){
+			return "1";
+		}
+		gradient_stop_list(){
+			return [];
+		}
+		Gradient(){
+			const obj = new this.$.$mol_svg();
+			(obj.dom_name) = () => ("linearGradient");
+			(obj.attr) = () => ({
+				...(this.$.$mol_svg.prototype.attr.call(obj)), 
+				"id": (this.gradient_id()), 
+				"x1": (this.grad_x1()), 
+				"y1": (this.grad_y1()), 
+				"x2": (this.grad_x2()), 
+				"y2": (this.grad_y2())
+			});
+			(obj.sub) = () => ((this.gradient_stop_list()));
+			return obj;
+		}
+		Defs(){
+			const obj = new this.$.$mol_svg();
+			(obj.dom_name) = () => ("defs");
+			(obj.sub) = () => ([(this.Gradient())]);
+			return obj;
+		}
+		modules_d(){
+			return "";
+		}
+		Modules(){
+			const obj = new this.$.$mol_svg_path();
+			(obj.geometry) = () => ((this.modules_d()));
+			(obj.attr) = () => ({...(this.$.$mol_svg_path.prototype.attr.call(obj)), "fill": (this.gradient_fill())});
+			return obj;
+		}
+		rings_d(){
+			return "";
+		}
+		Rings(){
+			const obj = new this.$.$mol_svg_path();
+			(obj.geometry) = () => ((this.rings_d()));
+			(obj.attr) = () => ({
+				...(this.$.$mol_svg_path.prototype.attr.call(obj)), 
+				"fill": (this.gradient_fill()), 
+				"fill-rule": "evenodd"
+			});
+			return obj;
+		}
+		centers_d(){
+			return "";
+		}
+		Centers(){
+			const obj = new this.$.$mol_svg_path();
+			(obj.geometry) = () => ((this.centers_d()));
+			(obj.attr) = () => ({...(this.$.$mol_svg_path.prototype.attr.call(obj)), "fill": (this.gradient_fill())});
+			return obj;
+		}
+		center_x(){
+			return "0";
+		}
+		center_y(){
+			return "0";
+		}
+		center_size(){
+			return "0";
+		}
+		Center_body(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ((this.center()));
+			return obj;
+		}
+		Center_wrap(){
+			const obj = new this.$.$mol_svg();
+			(obj.dom_name) = () => ("foreignObject");
+			(obj.attr) = () => ({
+				...(this.$.$mol_svg.prototype.attr.call(obj)), 
+				"x": (this.center_x()), 
+				"y": (this.center_y()), 
+				"width": (this.center_size()), 
+				"height": (this.center_size())
+			});
+			(obj.sub) = () => ([(this.Center_body())]);
+			return obj;
+		}
+		uri(){
+			return "";
+		}
+		module_radius(){
+			return 0.35;
+		}
+		finder_radius(){
+			return 1.2;
+		}
+		gradient_angle(){
+			return 45;
+		}
+		error_correction(){
+			return "M";
+		}
+		quiet_zone(){
+			return 2;
+		}
+		center(){
+			return [];
+		}
+		gradient_id(){
+			return "qr-grad";
+		}
+		gradient_fill(){
+			return "url(#qr-grad)";
+		}
+		gradient_stops(){
+			return ["var(--mol_theme_special)", "var(--mol_theme_focus)"];
+		}
+		Stop(id){
+			const obj = new this.$.$mol_svg();
+			(obj.dom_name) = () => ("stop");
+			(obj.attr) = () => ({
+				...(this.$.$mol_svg.prototype.attr.call(obj)), 
+				"offset": (this.stop_offset(id)), 
+				"stop-color": (this.stop_color(id))
+			});
+			return obj;
+		}
+		view_box(){
+			return (this.qr_view_box());
+		}
+		sub(){
+			return [
+				(this.Defs()), 
+				(this.Modules()), 
+				(this.Rings()), 
+				(this.Centers()), 
+				(this.Center_wrap())
+			];
+		}
+	};
+	($mol_mem(($.$bog_qr.prototype), "Gradient"));
+	($mol_mem(($.$bog_qr.prototype), "Defs"));
+	($mol_mem(($.$bog_qr.prototype), "Modules"));
+	($mol_mem(($.$bog_qr.prototype), "Rings"));
+	($mol_mem(($.$bog_qr.prototype), "Centers"));
+	($mol_mem(($.$bog_qr.prototype), "Center_body"));
+	($mol_mem(($.$bog_qr.prototype), "Center_wrap"));
+	($mol_mem_key(($.$bog_qr.prototype), "Stop"));
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    /** Dynamic sources import. */
+    class $mol_import extends $mol_object2 {
+        static module(uri) {
+            $mol_wire_solid();
+            return $mol_wire_sync(this).module_async(uri);
+        }
+        static module_async(uri) {
+            return import(uri);
+        }
+        static script(uri) {
+            $mol_wire_solid();
+            return $mol_wire_sync(this).script_async(uri);
+        }
+        static script_async(uri) {
+            const doc = $mol_dom_context.document;
+            const script = doc.createElement('script');
+            script.src = uri;
+            doc.head.appendChild(script);
+            return new Promise((done, fail) => {
+                script.onload = () => done($mol_dom_context);
+                script.onerror = () => fail(new Error(`Can not import ${uri}`));
+            });
+        }
+        static style(uri) {
+            return $mol_wire_sync(this).style_async(uri);
+        }
+        static style_async(uri) {
+            const doc = $mol_dom_context.document;
+            const style = doc.createElement('link');
+            style.rel = 'stylesheet';
+            style.href = uri;
+            doc.head.appendChild(style);
+            return new Promise((done, fail) => {
+                style.onload = () => done(style.sheet);
+                style.onerror = () => fail(new Error(`Can not import ${uri}`));
+            });
+        }
+    }
+    __decorate([
+        $mol_mem_key
+    ], $mol_import, "module", null);
+    __decorate([
+        $mol_mem_key
+    ], $mol_import, "script", null);
+    __decorate([
+        $mol_mem_key
+    ], $mol_import, "style", null);
+    $.$mol_import = $mol_import;
+})($ || ($ = {}));
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        let grad_counter = 0;
+        class $bog_qr extends $.$bog_qr {
+            gradient_id() {
+                return 'qr-grad-' + (++grad_counter);
+            }
+            gradient_fill() {
+                return `url(#${this.gradient_id()})`;
+            }
+            grad_x1() {
+                const a = this.gradient_angle() * Math.PI / 180;
+                return String(0.5 - Math.cos(a) * 0.5);
+            }
+            grad_y1() {
+                const a = this.gradient_angle() * Math.PI / 180;
+                return String(0.5 - Math.sin(a) * 0.5);
+            }
+            grad_x2() {
+                const a = this.gradient_angle() * Math.PI / 180;
+                return String(0.5 + Math.cos(a) * 0.5);
+            }
+            grad_y2() {
+                const a = this.gradient_angle() * Math.PI / 180;
+                return String(0.5 + Math.sin(a) * 0.5);
+            }
+            gradient_stop_list() {
+                const colors = this.gradient_stops();
+                return colors.map((_, i) => this.Stop(i));
+            }
+            stop_offset(index) {
+                const colors = this.gradient_stops();
+                if (colors.length <= 1)
+                    return '0%';
+                return Math.round(index / (colors.length - 1) * 100) + '%';
+            }
+            stop_color(index) {
+                return this.gradient_stops()[index];
+            }
+            qr_lib() {
+                return $mol_import.script('https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js');
+            }
+            qr_matrix() {
+                this.qr_lib();
+                const data = this.uri();
+                if (!data)
+                    return null;
+                const qr = qrcode(0, this.error_correction());
+                qr.addData(data);
+                qr.make();
+                const count = qr.getModuleCount();
+                const matrix = [];
+                for (let r = 0; r < count; r++) {
+                    matrix[r] = [];
+                    for (let c = 0; c < count; c++) {
+                        matrix[r][c] = qr.isDark(r, c);
+                    }
+                }
+                return matrix;
+            }
+            qr_view_box() {
+                const matrix = this.qr_matrix();
+                if (!matrix)
+                    return '0 0 1 1';
+                const total = matrix.length + this.quiet_zone() * 2;
+                return `0 0 ${total} ${total}`;
+            }
+            qr_paths() {
+                const matrix = this.qr_matrix();
+                if (!matrix)
+                    return { modules: '', rings: '', centers: '' };
+                const count = matrix.length;
+                const quiet = this.quiet_zone();
+                const r = this.module_radius();
+                const dark = (row, col) => row >= 0 && row < count && col >= 0 && col < count && matrix[row][col];
+                const isFinder = (row, col) => (row < 7 && col < 7) || (row < 7 && col >= count - 7) || (row >= count - 7 && col < 7);
+                const hasCenter = this.center().length > 0;
+                const centerRadius = hasCenter ? count * 0.15 : 0;
+                const centerMid = count / 2;
+                const isCenter = (row, col) => {
+                    if (!hasCenter)
+                        return false;
+                    const dx = col + 0.5 - centerMid;
+                    const dy = row + 0.5 - centerMid;
+                    return dx * dx + dy * dy < centerRadius * centerRadius;
+                };
+                let modules = '';
+                for (let row = 0; row < count; row++) {
+                    for (let col = 0; col < count; col++) {
+                        if (!matrix[row][col])
+                            continue;
+                        if (isFinder(row, col))
+                            continue;
+                        if (isCenter(row, col))
+                            continue;
+                        const x = col + quiet;
+                        const y = row + quiet;
+                        const top = dark(row - 1, col);
+                        const bottom = dark(row + 1, col);
+                        const left = dark(row, col - 1);
+                        const right = dark(row, col + 1);
+                        const alone = !top && !bottom && !left && !right;
+                        if (alone) {
+                            const cx = x + 0.5;
+                            const cy = y + 0.5;
+                            const cr = 0.5;
+                            modules += `M${cx - cr},${cy}A${cr},${cr},0,1,1,${cx + cr},${cy}A${cr},${cr},0,1,1,${cx - cr},${cy}Z`;
+                        }
+                        else {
+                            const tl = !top && !left ? r : 0;
+                            const tr = !top && !right ? r : 0;
+                            const br = !bottom && !right ? r : 0;
+                            const bl = !bottom && !left ? r : 0;
+                            modules += this.rect_path(x, y, 1, 1, tl, tr, br, bl);
+                        }
+                    }
+                }
+                const fr = this.finder_radius();
+                const finders = [
+                    [quiet, quiet],
+                    [count - 7 + quiet, quiet],
+                    [quiet, count - 7 + quiet],
+                ];
+                let rings = '';
+                let centers = '';
+                for (const [fx, fy] of finders) {
+                    rings += this.rect_path(fx, fy, 7, 7, fr, fr, fr, fr);
+                    rings += this.rect_path(fx + 1, fy + 1, 5, 5, fr * 0.7, fr * 0.7, fr * 0.7, fr * 0.7);
+                    centers += this.rect_path(fx + 2, fy + 2, 3, 3, fr * 0.5, fr * 0.5, fr * 0.5, fr * 0.5);
+                }
+                return { modules, rings, centers };
+            }
+            center_area() {
+                const matrix = this.qr_matrix();
+                if (!matrix || this.center().length === 0)
+                    return { x: 0, y: 0, size: 0 };
+                const count = matrix.length;
+                const quiet = this.quiet_zone();
+                const centerSize = count * 0.3;
+                const total = count + quiet * 2;
+                return {
+                    x: (total - centerSize) / 2,
+                    y: (total - centerSize) / 2,
+                    size: centerSize,
+                };
+            }
+            center_x() {
+                return String(this.center_area().x);
+            }
+            center_y() {
+                return String(this.center_area().y);
+            }
+            center_size() {
+                return String(this.center_area().size);
+            }
+            modules_d() {
+                return this.qr_paths().modules;
+            }
+            rings_d() {
+                return this.qr_paths().rings;
+            }
+            centers_d() {
+                return this.qr_paths().centers;
+            }
+            rect_path(x, y, w, h, tl, tr, br, bl) {
+                return [
+                    `M${x + tl},${y}`,
+                    `H${x + w - tr}`,
+                    tr ? `A${tr},${tr},0,0,1,${x + w},${y + tr}` : '',
+                    `V${y + h - br}`,
+                    br ? `A${br},${br},0,0,1,${x + w - br},${y + h}` : '',
+                    `H${x + bl}`,
+                    bl ? `A${bl},${bl},0,0,1,${x},${y + h - bl}` : '',
+                    `V${y + tl}`,
+                    tl ? `A${tl},${tl},0,0,1,${x + tl},${y}` : '',
+                    'Z',
+                ]
+                    .filter(Boolean)
+                    .join('');
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "gradient_id", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "gradient_fill", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "grad_x1", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "grad_y1", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "grad_x2", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "grad_y2", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "gradient_stop_list", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "qr_lib", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "qr_matrix", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "qr_view_box", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "qr_paths", null);
+        __decorate([
+            $mol_mem
+        ], $bog_qr.prototype, "center_area", null);
+        $$.$bog_qr = $bog_qr;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $mol_style_define($bog_qr, {
+            width: '300px',
+            height: '300px',
+            Center_body: {
+                width: '80%',
+                height: '80%',
+                position: 'absolute',
+                top: '10%',
+                left: '10%',
+            },
+        });
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$mol_video_player) = class $mol_video_player extends ($.$mol_view) {
+		uri(){
+			return "";
+		}
+		controls(){
+			return true;
+		}
+		autoplay(){
+			return true;
+		}
+		inline(){
+			return true;
+		}
+		loop(){
+			return false;
+		}
+		muted(){
+			return false;
+		}
+		poster(){
+			return "";
+		}
+		stream(){
+			return null;
+		}
+		revolume(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		retime(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		redurate(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		playing_event(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		play_event(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		pause_event(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		dom_name(){
+			return "video";
+		}
+		playing(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		play(){
+			return null;
+		}
+		pause(){
+			return null;
+		}
+		volume(next){
+			if(next !== undefined) return next;
+			return 0;
+		}
+		time(next){
+			if(next !== undefined) return next;
+			return 0;
+		}
+		duration(){
+			return 0;
+		}
+		attr(){
+			return {
+				"src": (this.uri()), 
+				"controls": (this.controls()), 
+				"autoplay": (this.autoplay()), 
+				"playsinline": (this.inline()), 
+				"loop": (this.loop()), 
+				"muted": (this.muted()), 
+				"poster": (this.poster())
+			};
+		}
+		field(){
+			return {"srcObject": (this.stream())};
+		}
+		event(){
+			return {
+				"volumechange": (next) => (this.revolume(next)), 
+				"timeupdate": (next) => (this.retime(next)), 
+				"durationchange": (next) => (this.redurate(next)), 
+				"playing": (next) => (this.playing_event(next)), 
+				"play": (next) => (this.play_event(next)), 
+				"pause": (next) => (this.pause_event(next))
+			};
+		}
+	};
+	($mol_mem(($.$mol_video_player.prototype), "revolume"));
+	($mol_mem(($.$mol_video_player.prototype), "retime"));
+	($mol_mem(($.$mol_video_player.prototype), "redurate"));
+	($mol_mem(($.$mol_video_player.prototype), "playing_event"));
+	($mol_mem(($.$mol_video_player.prototype), "play_event"));
+	($mol_mem(($.$mol_video_player.prototype), "pause_event"));
+	($mol_mem(($.$mol_video_player.prototype), "playing"));
+	($mol_mem(($.$mol_video_player.prototype), "volume"));
+	($mol_mem(($.$mol_video_player.prototype), "time"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        /**
+         * Video player component
+         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_video_player_demo
+         */
+        class $mol_video_player extends $.$mol_video_player {
+            dom_node() {
+                return super.dom_node();
+            }
+            volume(next) {
+                this.revolume();
+                if (next === undefined) {
+                    return this.dom_node().volume;
+                }
+                else {
+                    return this.dom_node().volume = Math.max(0, Math.min(next, 1));
+                }
+            }
+            time(next) {
+                this.retime();
+                if (next === undefined) {
+                    return this.dom_node().currentTime;
+                }
+                else {
+                    return this.dom_node().currentTime = Math.max(0, Math.min(next, this.duration()));
+                }
+            }
+            duration() {
+                this.redurate();
+                return this.dom_node().duration;
+            }
+            playing(next) {
+                const node = this.dom_node();
+                this.playing_event();
+                this.play_event();
+                if (next === undefined)
+                    return !node.paused;
+                if (next && node.paused)
+                    $mol_wire_sync(node).play();
+                if (!next && !node.paused)
+                    node.pause();
+                return !node.paused;
+            }
+            play() {
+                this.playing(true);
+            }
+            pause() {
+                this.playing(false);
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_video_player.prototype, "volume", null);
+        __decorate([
+            $mol_mem
+        ], $mol_video_player.prototype, "time", null);
+        __decorate([
+            $mol_mem
+        ], $mol_video_player.prototype, "duration", null);
+        __decorate([
+            $mol_mem
+        ], $mol_video_player.prototype, "playing", null);
+        $$.$mol_video_player = $mol_video_player;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/video/player/player.view.css", "[mol_video_player] {\n\tflex: 1 1 auto;\n}\n");
+})($ || ($ = {}));
+
+;
+	($.$mol_video_camera) = class $mol_video_camera extends ($.$mol_video_player) {
+		transform(){
+			return "";
+		}
+		facing(){
+			return "user";
+		}
+		aspect(){
+			return 1;
+		}
+		size(){
+			return 720;
+		}
+		width(){
+			return (this.size());
+		}
+		height(){
+			return (this.size());
+		}
+		brightness(){
+			return 128;
+		}
+		sharpness(){
+			return 2;
+		}
+		contrast(){
+			return 32;
+		}
+		saturation(){
+			return 64;
+		}
+		temperature(){
+			return 4000;
+		}
+		torch(){
+			return false;
+		}
+		controls(){
+			return false;
+		}
+		style(){
+			return {"transform": (this.transform())};
+		}
+		video_constraints(){
+			return {
+				"facingMode": (this.facing()), 
+				"aspectRatio": (this.aspect()), 
+				"width": {"ideal": (this.width())}, 
+				"height": {"ideal": (this.height())}
+			};
+		}
+		video_settings(){
+			return {
+				"brightness": (this.brightness()), 
+				"sharpness": (this.sharpness()), 
+				"contrast": (this.contrast()), 
+				"saturation": (this.saturation()), 
+				"advanced": [{"colorTemperature": (this.temperature())}, {"torch": (this.torch())}]
+			};
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $mol_video_camera extends $.$mol_video_camera {
+            stream_raw() {
+                const stream = $mol_wire_sync(navigator.mediaDevices).getUserMedia({
+                    video: this.video_constraints(),
+                });
+                return Object.assign(stream, {
+                    destructor: () => stream.getTracks().forEach(track => track.stop())
+                });
+            }
+            stream() {
+                const settings = this.video_settings();
+                const stream = this.stream_raw();
+                for (const track of stream.getVideoTracks()) {
+                    for (const param in settings) {
+                        if (param === 'advanced') {
+                            for (const constraint of settings.advanced) {
+                                try {
+                                    track.applyConstraints({ advanced: [constraint] });
+                                }
+                                catch (error) {
+                                    $mol_fail_log(error);
+                                }
+                            }
+                        }
+                        else if (settings[param] !== null) {
+                            try {
+                                track.applyConstraints({ [param]: settings[param] });
+                            }
+                            catch (error) {
+                                $mol_fail_log(error);
+                            }
+                        }
+                    }
+                }
+                return stream;
+            }
+            dom_node_actual() {
+                return super.dom_node_actual();
+            }
+            transform() {
+                return this.facing() === 'user' ? 'scaleX(-1)' : '';
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_video_camera.prototype, "stream_raw", null);
+        __decorate([
+            $mol_mem
+        ], $mol_video_camera.prototype, "stream", null);
+        $$.$mol_video_camera = $mol_video_camera;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$bog_music_qrscan) = class $bog_music_qrscan extends ($.$mol_view) {
+		Toggle(){
+			const obj = new this.$.$mol_check();
+			(obj.title) = () => ((this.$.$mol_locale.text("$bog_music_qrscan_Toggle_title")));
+			(obj.checked) = (next) => ((this.scanning(next)));
+			return obj;
+		}
+		Camera(){
+			const obj = new this.$.$mol_video_camera();
+			(obj.facing) = () => ("environment");
+			(obj.muted) = () => (true);
+			return obj;
+		}
+		scanning(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		prefix(){
+			return "";
+		}
+		found(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		sub(){
+			return [(this.Toggle()), (this.Camera())];
+		}
+	};
+	($mol_mem(($.$bog_music_qrscan.prototype), "Toggle"));
+	($mol_mem(($.$bog_music_qrscan.prototype), "Camera"));
+	($mol_mem(($.$bog_music_qrscan.prototype), "scanning"));
+	($mol_mem(($.$bog_music_qrscan.prototype), "found"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        const qr_module = require('jsqr/dist/jsQR.js');
+        const qr_read = qr_module.default ?? qr_module;
+        class $bog_music_qrscan extends $.$bog_music_qrscan {
+            sub() {
+                return this.scanning() ? [this.Toggle(), this.Camera()] : [this.Toggle()];
+            }
+            canvas() {
+                return $mol_dom_context.document.createElement('canvas');
+            }
+            tick() {
+                if (!this.scanning())
+                    return null;
+                $mol_state_time.now(250);
+                const video = this.Camera().dom_node();
+                const width = video.videoWidth;
+                const height = video.videoHeight;
+                if (!width || !height)
+                    return null;
+                const canvas = this.canvas();
+                canvas.width = width;
+                canvas.height = height;
+                const context = canvas.getContext('2d', { willReadFrequently: true });
+                context.drawImage(video, 0, 0, width, height);
+                const found = qr_read(context.getImageData(0, 0, width, height).data, width, height);
+                if (!found?.data.includes(this.prefix()))
+                    return null;
+                setTimeout(() => {
+                    this.scanning(false);
+                    this.found(found.data);
+                });
+                return found.data;
+            }
+            auto() {
+                this.tick();
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $bog_music_qrscan.prototype, "canvas", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_qrscan.prototype, "tick", null);
+        $$.$bog_music_qrscan = $bog_music_qrscan;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $mol_style_define($bog_music_qrscan, {
+            flex: { direction: 'column' },
+            gap: $mol_gap.text,
+            Camera: {
+                width: '100%',
+                maxWidth: '20rem',
+                aspectRatio: 1,
+                objectFit: 'cover',
+                border: { radius: $mol_gap.round },
+            },
+        });
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$mol_button_major) = class $mol_button_major extends ($.$mol_button_minor) {
+		theme(){
+			return "$mol_theme_base";
+		}
+	};
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/button/major/major.view.css", "[mol_button_major] {\n\tbackground-color: var(--mol_theme_back);\n\tcolor: var(--mol_theme_text);\n}\n");
+})($ || ($ = {}));
+
+;
+"use strict";
+
+
+;
+	($.$mol_status) = class $mol_status extends ($.$mol_view) {
+		message(){
+			return "";
+		}
+		status(){
+			return (this.title());
+		}
+		minimal_height(){
+			return 24;
+		}
+		minimal_width(){
+			return 0;
+		}
+		sub(){
+			return [(this.message())];
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $mol_status extends $.$mol_status {
+            message() {
+                try {
+                    return this.status() ?? null;
+                }
+                catch (error) {
+                    if (error instanceof Promise)
+                        $mol_fail_hidden(error);
+                    $mol_fail_log(error);
+                    return error.message;
+                }
+            }
+        }
+        $$.$mol_status = $mol_status;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/status/status.view.css", "[mol_status] {\n\tpadding: var(--mol_gap_text);\n\tborder-radius: var(--mol_gap_round);\n\tdisplay: block;\n\tflex-shrink: 1;\n\tword-wrap: break-word;\n}\n\n[mol_status]:not([mol_view_error=\"Promise\"]) {\n\tcolor: var(--mol_theme_focus);\n}\n\n[mol_status]:not([mol_view_error=\"Promise\"]):empty {\n\tdisplay: none;\n}\n");
+})($ || ($ = {}));
+
+;
+	($.$mol_row) = class $mol_row extends ($.$mol_view) {};
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/row/row.view.css", "[mol_row] {\n\tdisplay: flex;\n\tflex-wrap: wrap;\n\talign-items: flex-start;\n\talign-content: flex-start;\n\tjustify-content: flex-start;\n\tpadding: var(--mol_gap_block);\n\tgap: var(--mol_gap_block);\n\tflex: 0 0 auto;\n\tbox-sizing: border-box;\n\tmax-width: 100%;\n}\n\n[mol_row] > * {\n\tmax-width: 100%;\n}\n");
+})($ || ($ = {}));
+
+;
+"use strict";
+
+
+;
+	($.$mol_form) = class $mol_form extends ($.$mol_list) {
+		keydown(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		form_invalid(){
+			return (this.$.$mol_locale.text("$mol_form_form_invalid"));
+		}
+		form_fields(){
+			return [];
+		}
+		body(){
+			return (this.form_fields());
+		}
+		Body(){
+			const obj = new this.$.$mol_list();
+			(obj.sub) = () => ((this.body()));
+			return obj;
+		}
+		submit_title(){
+			return (this.$.$mol_locale.text("$mol_form_submit_title"));
+		}
+		submit_hint(){
+			return "";
+		}
+		submit_activate(next){
+			return (this.Submit().activate(next));
+		}
+		submit(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Submit(){
+			const obj = new this.$.$mol_button_major();
+			(obj.title) = () => ((this.submit_title()));
+			(obj.hint) = () => ((this.submit_hint()));
+			(obj.click) = (next) => ((this.submit(next)));
+			return obj;
+		}
+		result(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Result(){
+			const obj = new this.$.$mol_status();
+			(obj.message) = () => ((this.result()));
+			return obj;
+		}
+		buttons(){
+			return [(this.Submit()), (this.Result())];
+		}
+		foot(){
+			return (this.buttons());
+		}
+		Foot(){
+			const obj = new this.$.$mol_row();
+			(obj.sub) = () => ((this.foot()));
+			return obj;
+		}
+		submit_allowed(){
+			return true;
+		}
+		submit_blocked(){
+			return false;
+		}
+		event(){
+			return {...(super.event()), "keydown": (next) => (this.keydown(next))};
+		}
+		save(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		message_done(){
+			return (this.$.$mol_locale.text("$mol_form_message_done"));
+		}
+		errors(){
+			return {"Form invalid": (this.form_invalid())};
+		}
+		rows(){
+			return [(this.Body()), (this.Foot())];
+		}
+	};
+	($mol_mem(($.$mol_form.prototype), "keydown"));
+	($mol_mem(($.$mol_form.prototype), "Body"));
+	($mol_mem(($.$mol_form.prototype), "submit"));
+	($mol_mem(($.$mol_form.prototype), "Submit"));
+	($mol_mem(($.$mol_form.prototype), "result"));
+	($mol_mem(($.$mol_form.prototype), "Result"));
+	($mol_mem(($.$mol_form.prototype), "Foot"));
+	($mol_mem(($.$mol_form.prototype), "save"));
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/form/form.view.css", "[mol_form] {\r\n\tgap: var(--mol_gap_block);\r\n}\r\n\r\n[mol_form_body] {\r\n\tgap: var(--mol_gap_block);\r\n}");
+})($ || ($ = {}));
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        /**
+         * Form, that contains form fields and action buttons.
+         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_form_demo
+         */
+        class $mol_form extends $.$mol_form {
+            form_fields() {
+                return [...this.view_find(view => view instanceof $mol_form_field)]
+                    .map(path => path[path.length - 1]);
+            }
+            submit_allowed() {
+                return this.form_fields().every(field => !field.bid());
+            }
+            submit_blocked() {
+                return !this.submit_allowed();
+            }
+            keydown(next) {
+                if (next.ctrlKey && next.keyCode === $mol_keyboard_code.enter && !this.submit_blocked())
+                    this.submit(next);
+            }
+            result(next) {
+                if (next instanceof Error)
+                    next = this.errors()[next.message] || next.message || this.form_invalid();
+                return next ?? '';
+            }
+            buttons() {
+                return [
+                    this.Submit(),
+                    ...this.result() ? [this.Result()] : [],
+                ];
+            }
+            submit(next) {
+                try {
+                    if (!this.submit_allowed()) {
+                        throw new Error('Form invalid');
+                    }
+                    this.save(next);
+                }
+                catch (e) {
+                    if ($mol_promise_like(e))
+                        $mol_fail_hidden(e);
+                    $mol_fail_log(e);
+                    this.result(e);
+                    return false;
+                }
+                this.result(this.message_done());
+                return true;
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $mol_form.prototype, "form_fields", null);
+        __decorate([
+            $mol_mem
+        ], $mol_form.prototype, "submit_allowed", null);
+        __decorate([
+            $mol_mem
+        ], $mol_form.prototype, "result", null);
+        __decorate([
+            $mol_mem
+        ], $mol_form.prototype, "buttons", null);
+        __decorate([
+            $mol_action
+        ], $mol_form.prototype, "submit", null);
+        $$.$mol_form = $mol_form;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$bog_music_account) = class $bog_music_account extends ($.$mol_view) {
+		Font_label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => (["Размер шрифта"]);
+			return obj;
+		}
+		Font_size(){
+			const obj = new this.$.$mol_switch();
+			(obj.value) = (next) => ((this.font_size(next)));
+			(obj.options) = () => ({
+				"normal": "Обычный", 
+				"large": "Крупный", 
+				"huge": "Огромный"
+			});
+			return obj;
+		}
+		Font_row(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Font_label()), (this.Font_size())]);
+			return obj;
+		}
+		download_playlist(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Download_playlist_icon(){
+			const obj = new this.$.$mol_icon_download();
+			return obj;
+		}
+		Download_playlist_label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => (["Скачать плейлист zip-архивом"]);
+			return obj;
+		}
+		Download_playlist(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.hint) = () => ((this.$.$mol_locale.text("$bog_music_account_Download_playlist_hint")));
+			(obj.click) = (next) => ((this.download_playlist(next)));
+			(obj.sub) = () => ([(this.Download_playlist_icon()), (this.Download_playlist_label())]);
+			return obj;
+		}
+		download_playlist_status(){
+			return "";
+		}
+		Download_playlist_status(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.download_playlist_status())]);
+			return obj;
+		}
+		Sync_row(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Download_playlist()), (this.Download_playlist_status())]);
+			return obj;
+		}
+		nickname(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		Nickname_input(){
+			const obj = new this.$.$mol_string();
+			(obj.value) = (next) => ((this.nickname(next)));
+			(obj.hint) = () => ("Как тебя зовут?");
+			return obj;
+		}
+		Nickname_field(){
+			const obj = new this.$.$mol_form_field();
+			(obj.name) = () => ("Имя");
+			(obj.Content) = () => ((this.Nickname_input()));
+			return obj;
+		}
+		lord_text(){
+			return "";
+		}
+		Lord_text(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.lord_text())]);
+			return obj;
+		}
+		Lord(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => (["ЛК:", (this.Lord_text())]);
+			return obj;
+		}
+		Profile(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Nickname_field()), (this.Lord())]);
+			return obj;
+		}
+		Tg_title(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ("Музыка из Телеграма");
+			return obj;
+		}
+		tg_hint(){
+			return "";
+		}
+		Tg_hint(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.tg_hint()));
+			return obj;
+		}
+		tg_button(){
+			return "";
+		}
+		tg_link(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Tg_connect(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ((this.tg_button()));
+			(obj.click) = (next) => ((this.tg_link(next)));
+			return obj;
+		}
+		tg_status(){
+			return "";
+		}
+		Tg_status(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.tg_status())]);
+			return obj;
+		}
+		Telegram(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([
+				(this.Tg_title()), 
+				(this.Tg_hint()), 
+				(this.Tg_connect()), 
+				(this.Tg_status())
+			]);
+			return obj;
+		}
+		Fm_title(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ("Last.fm");
+			return obj;
+		}
+		fm_hint(){
+			return "";
+		}
+		Fm_hint(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.fm_hint()));
+			return obj;
+		}
+		fm_button(){
+			return "";
+		}
+		fm_link(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Fm_connect(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ((this.fm_button()));
+			(obj.click) = (next) => ((this.fm_link(next)));
+			return obj;
+		}
+		fm_status(){
+			return "";
+		}
+		Fm_status(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.fm_status())]);
+			return obj;
+		}
+		Lastfm(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([
+				(this.Fm_title()), 
+				(this.Fm_hint()), 
+				(this.Fm_connect()), 
+				(this.Fm_status())
+			]);
+			return obj;
+		}
+		Warning(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ("Ссылка ниже — СЕКРЕТ. Не делись ей публично.");
+			return obj;
+		}
+		copy(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Copy(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ("Скопировать ссылку для переноса");
+			(obj.click) = (next) => ((this.copy(next)));
+			return obj;
+		}
+		copy_status(){
+			return "";
+		}
+		Copy_status(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.copy_status())]);
+			return obj;
+		}
+		qr_showed(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		Qr_show(){
+			const obj = new this.$.$mol_check();
+			(obj.title) = () => ((this.$.$mol_locale.text("$bog_music_account_Qr_show_title")));
+			(obj.checked) = (next) => ((this.qr_showed(next)));
+			return obj;
+		}
+		account_link(){
+			return "";
+		}
+		Qr(){
+			const obj = new this.$.$bog_qr();
+			(obj.uri) = () => ((this.account_link()));
+			(obj.error_correction) = () => ("L");
+			(obj.gradient_stops) = () => (["#111827", "#1e3a8a"]);
+			return obj;
+		}
+		Export(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([
+				(this.Warning()), 
+				(this.Copy()), 
+				(this.Copy_status()), 
+				(this.Qr_show()), 
+				(this.Qr())
+			]);
+			return obj;
+		}
+		Import_hint(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ("Перенести с другого устройства — вставь ссылку:");
+			return obj;
+		}
+		import_link(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		Import_input(){
+			const obj = new this.$.$mol_string();
+			(obj.hint) = () => ("https://.../music/#account=...");
+			(obj.value) = (next) => ((this.import_link(next)));
+			return obj;
+		}
+		apply_import(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Import_apply(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ("Применить");
+			(obj.click) = (next) => ((this.apply_import(next)));
+			return obj;
+		}
+		qr_found(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		Import_scan(){
+			const obj = new this.$.$bog_music_qrscan();
+			(obj.prefix) = () => ("#account=");
+			(obj.found) = (next) => ((this.qr_found(next)));
+			return obj;
+		}
+		import_status(){
+			return "";
+		}
+		Import_status(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.import_status())]);
+			return obj;
+		}
+		Import(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([
+				(this.Import_hint()), 
+				(this.Import_input()), 
+				(this.Import_apply()), 
+				(this.Import_scan()), 
+				(this.Import_status())
+			]);
+			return obj;
+		}
+		Reset_hint(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ("Сбросить состояние и сгенерировать новый аккаунт. Текущие треки в Giper Baza останутся orphan.");
+			return obj;
+		}
+		reset_account(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Reset_button(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ("Сбросить локальный аккаунт");
+			(obj.click) = (next) => ((this.reset_account(next)));
+			return obj;
+		}
+		Reset(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Reset_hint()), (this.Reset_button())]);
+			return obj;
+		}
+		Cards(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([
+				(this.Profile()), 
+				(this.Telegram()), 
+				(this.Lastfm()), 
+				(this.Export()), 
+				(this.Import()), 
+				(this.Reset())
+			]);
+			return obj;
+		}
+		font_size(next){
+			if(next !== undefined) return next;
+			return "normal";
+		}
+		sub(){
+			return [
+				(this.Font_row()), 
+				(this.Sync_row()), 
+				(this.Cards())
+			];
+		}
+	};
+	($mol_mem(($.$bog_music_account.prototype), "Font_label"));
+	($mol_mem(($.$bog_music_account.prototype), "Font_size"));
+	($mol_mem(($.$bog_music_account.prototype), "Font_row"));
+	($mol_mem(($.$bog_music_account.prototype), "download_playlist"));
+	($mol_mem(($.$bog_music_account.prototype), "Download_playlist_icon"));
+	($mol_mem(($.$bog_music_account.prototype), "Download_playlist_label"));
+	($mol_mem(($.$bog_music_account.prototype), "Download_playlist"));
+	($mol_mem(($.$bog_music_account.prototype), "Download_playlist_status"));
+	($mol_mem(($.$bog_music_account.prototype), "Sync_row"));
+	($mol_mem(($.$bog_music_account.prototype), "nickname"));
+	($mol_mem(($.$bog_music_account.prototype), "Nickname_input"));
+	($mol_mem(($.$bog_music_account.prototype), "Nickname_field"));
+	($mol_mem(($.$bog_music_account.prototype), "Lord_text"));
+	($mol_mem(($.$bog_music_account.prototype), "Lord"));
+	($mol_mem(($.$bog_music_account.prototype), "Profile"));
+	($mol_mem(($.$bog_music_account.prototype), "Tg_title"));
+	($mol_mem(($.$bog_music_account.prototype), "Tg_hint"));
+	($mol_mem(($.$bog_music_account.prototype), "tg_link"));
+	($mol_mem(($.$bog_music_account.prototype), "Tg_connect"));
+	($mol_mem(($.$bog_music_account.prototype), "Tg_status"));
+	($mol_mem(($.$bog_music_account.prototype), "Telegram"));
+	($mol_mem(($.$bog_music_account.prototype), "Fm_title"));
+	($mol_mem(($.$bog_music_account.prototype), "Fm_hint"));
+	($mol_mem(($.$bog_music_account.prototype), "fm_link"));
+	($mol_mem(($.$bog_music_account.prototype), "Fm_connect"));
+	($mol_mem(($.$bog_music_account.prototype), "Fm_status"));
+	($mol_mem(($.$bog_music_account.prototype), "Lastfm"));
+	($mol_mem(($.$bog_music_account.prototype), "Warning"));
+	($mol_mem(($.$bog_music_account.prototype), "copy"));
+	($mol_mem(($.$bog_music_account.prototype), "Copy"));
+	($mol_mem(($.$bog_music_account.prototype), "Copy_status"));
+	($mol_mem(($.$bog_music_account.prototype), "qr_showed"));
+	($mol_mem(($.$bog_music_account.prototype), "Qr_show"));
+	($mol_mem(($.$bog_music_account.prototype), "Qr"));
+	($mol_mem(($.$bog_music_account.prototype), "Export"));
+	($mol_mem(($.$bog_music_account.prototype), "Import_hint"));
+	($mol_mem(($.$bog_music_account.prototype), "import_link"));
+	($mol_mem(($.$bog_music_account.prototype), "Import_input"));
+	($mol_mem(($.$bog_music_account.prototype), "apply_import"));
+	($mol_mem(($.$bog_music_account.prototype), "Import_apply"));
+	($mol_mem(($.$bog_music_account.prototype), "qr_found"));
+	($mol_mem(($.$bog_music_account.prototype), "Import_scan"));
+	($mol_mem(($.$bog_music_account.prototype), "Import_status"));
+	($mol_mem(($.$bog_music_account.prototype), "Import"));
+	($mol_mem(($.$bog_music_account.prototype), "Reset_hint"));
+	($mol_mem(($.$bog_music_account.prototype), "reset_account"));
+	($mol_mem(($.$bog_music_account.prototype), "Reset_button"));
+	($mol_mem(($.$bog_music_account.prototype), "Reset"));
+	($mol_mem(($.$bog_music_account.prototype), "Cards"));
+	($mol_mem(($.$bog_music_account.prototype), "font_size"));
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $bog_music_disk extends $mol_object {
+        static folder = 'bog_music';
+        static supported() {
+            return typeof navigator !== 'undefined' && typeof navigator.storage?.getDirectory === 'function';
+        }
+        static _dir = null;
+        static dir() {
+            if (this._dir)
+                return this._dir;
+            return this._dir = navigator.storage.getDirectory()
+                .then(root => root.getDirectoryHandle(this.folder, { create: true }));
+        }
+        static name_of(key) {
+            return encodeURIComponent(key);
+        }
+        static key_of(name) {
+            return decodeURIComponent(name);
+        }
+        static async file(key) {
+            const dir = await this.dir();
+            try {
+                const handle = await dir.getFileHandle(this.name_of(key));
+                const file = await handle.getFile();
+                return file.size ? file : null;
+            }
+            catch (error) {
+                if (error?.name === 'NotFoundError')
+                    return null;
+                throw error;
+            }
+        }
+        static async put(key, data) {
+            const dir = await this.dir();
+            const handle = await dir.getFileHandle(this.name_of(key), { create: true });
+            const blob = data instanceof Blob ? data : new Blob([data]);
+            if ('createWritable' in handle) {
+                const stream = await handle.createWritable();
+                await stream.write(blob);
+                await stream.close();
+            }
+            else {
+                await this.put_worker(this.name_of(key), blob);
+            }
+            this.has(key, true);
+        }
+        static async drop(key) {
+            const dir = await this.dir();
+            try {
+                await dir.removeEntry(this.name_of(key));
+            }
+            catch (error) {
+                if (error?.name !== 'NotFoundError')
+                    throw error;
+            }
+            this.has(key, false);
+        }
+        static async keys() {
+            const dir = await this.dir();
+            const keys = [];
+            for await (const name of dir.keys())
+                keys.push(this.key_of(name));
+            return keys;
+        }
+        static async probe(key) {
+            return Boolean(await this.file(key));
+        }
+        static has(key, next) {
+            if (next !== undefined)
+                return next;
+            if (!this.supported())
+                return false;
+            return $mol_wire_sync(this).probe(key);
+        }
+        static async bytes(key, start, end) {
+            const file = await this.file(key);
+            if (!file)
+                return null;
+            const from = Math.max(0, Math.min(file.size, start));
+            const to = end < 0 ? file.size : Math.max(from, Math.min(file.size, end));
+            const head = await file.slice(0, 12).arrayBuffer();
+            return {
+                bytes: await file.slice(from, to).arrayBuffer(),
+                total: file.size,
+                mime: this.mime(new Uint8Array(head)),
+                start: from,
+                end: to,
+            };
+        }
+        static mime(head) {
+            const text = String.fromCharCode(...head);
+            if (text.slice(4, 8) === 'ftyp')
+                return 'audio/mp4';
+            if (text.startsWith('OggS'))
+                return 'audio/ogg';
+            if (text.startsWith('fLaC'))
+                return 'audio/flac';
+            if (text.startsWith('RIFF'))
+                return 'audio/wav';
+            if (head[0] === 0xFF && (head[1] & 0xF6) === 0xF0)
+                return 'audio/aac';
+            return 'audio/mpeg';
+        }
+        static worker_source = `
+			onmessage = async event => {
+				const { folder, name, blob } = event.data
+				try {
+					const root = await navigator.storage.getDirectory()
+					const dir = await root.getDirectoryHandle( folder, { create: true } )
+					const handle = await dir.getFileHandle( name, { create: true } )
+					const access = await handle.createSyncAccessHandle()
+					const bytes = new Uint8Array( await blob.arrayBuffer() )
+					access.truncate( 0 )
+					access.write( bytes, { at: 0 } )
+					access.flush()
+					access.close()
+					postMessage({ ok: true })
+				} catch( error ) {
+					postMessage({ ok: false, error: String( error?.message ?? error ) })
+				}
+			}
+		`;
+        static put_worker(name, blob) {
+            const url = URL.createObjectURL(new Blob([this.worker_source], { type: 'text/javascript' }));
+            const worker = new Worker(url);
+            return new Promise((done, fail) => {
+                worker.onmessage = event => {
+                    worker.terminate();
+                    URL.revokeObjectURL(url);
+                    if (event.data.ok)
+                        done();
+                    else
+                        fail(new Error(event.data.error));
+                };
+                worker.postMessage({ folder: this.folder, name, blob });
+            });
+        }
+    }
+    __decorate([
+        $mol_mem_key
+    ], $bog_music_disk, "has", null);
+    $.$bog_music_disk = $bog_music_disk;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $bog_music_track_baza extends $giper_baza_dict.with({
+        Title: $giper_baza_atom.of($mol_schema_string),
+        Artist: $giper_baza_atom.of($mol_schema_string),
+        Duration: $giper_baza_atom.of($mol_schema_float),
+        Added: $giper_baza_atom.of($mol_schema_float),
+        Order: $giper_baza_atom.of($mol_schema_float),
+        Playlist: $giper_baza_atom.of($mol_schema_string),
+        File: $giper_baza_atom_link.to(() => $giper_baza_file),
+        Holders: $giper_baza_list_str,
+        Trim_start: $giper_baza_atom.of($mol_schema_float),
+        Trim_end: $giper_baza_atom.of($mol_schema_float),
+        Lufs: $giper_baza_atom.of($mol_schema_float),
+        Cover: $giper_baza_atom.of($mol_schema_string),
+    }) {
+        info() {
+            const title = this.Title()?.val();
+            if (title == null)
+                return null;
+            return {
+                title,
+                artist: this.Artist()?.val() ?? '',
+                duration: this.Duration()?.val() ?? 0,
+                cover: this.cover(),
+            };
+        }
+        cover() {
+            return String(this.Cover()?.val() ?? '');
+        }
+        playlist() {
+            return this.Playlist()?.val() ?? '';
+        }
+        added() {
+            return Number(this.Added()?.val() ?? 0);
+        }
+        order() {
+            const raw = this.Order()?.val();
+            return raw == null ? this.added() : Number(raw);
+        }
+        order_set(next) {
+            this.Order('auto').val(next);
+        }
+        holders() {
+            return (this.Holders()?.items() ?? []);
+        }
+        holder_add(device) {
+            if (this.holders().includes(device))
+                return;
+            this.Holders('auto').add(device);
+        }
+        holder_cut(device) {
+            if (!this.holders().includes(device))
+                return;
+            this.Holders('auto').cut(device);
+        }
+        legacy() {
+            return Boolean(this.File()?.val());
+        }
+        legacy_bytes() {
+            const file = this.File()?.remote();
+            if (!file)
+                return null;
+            file.land().sync();
+            const bytes = file.buffer();
+            return bytes.length ? bytes : null;
+        }
+        lufs(next) {
+            if (next !== undefined)
+                this.Lufs('auto').val(next);
+            const v = this.Lufs()?.val();
+            return v == null ? null : Number(v);
+        }
+        trim_start(next) {
+            if (next !== undefined)
+                this.Trim_start('auto').val(Math.max(0, next));
+            const v = Number(this.Trim_start()?.val() ?? 0);
+            return Number.isFinite(v) && v > 0 ? v : 0;
+        }
+        trim_end(fallback, next) {
+            if (next !== undefined)
+                this.Trim_end('auto').val(Math.max(0, next));
+            const raw = this.Trim_end()?.val();
+            if (raw == null)
+                return fallback;
+            const v = Number(raw);
+            return Number.isFinite(v) && v > 0 ? v : fallback;
+        }
+    }
+    __decorate([
+        $mol_action
+    ], $bog_music_track_baza.prototype, "holder_add", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_track_baza.prototype, "holder_cut", null);
+    $.$bog_music_track_baza = $bog_music_track_baza;
+    class $bog_music_track_baza_dict extends $giper_baza_dict_to($bog_music_track_baza) {
+    }
+    $.$bog_music_track_baza_dict = $bog_music_track_baza_dict;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $bog_music_device extends $mol_object {
+        static id() {
+            const stored = this.$.$mol_state_local.value('bog_music_device');
+            if (stored)
+                return stored;
+            const id = $mol_guid(12);
+            this.$.$mol_state_local.value('bog_music_device', id);
+            return id;
+        }
+        static title_of(agent) {
+            const os = /iPhone/.test(agent) ? 'iPhone'
+                : /iPad/.test(agent) ? 'iPad'
+                    : /Android/.test(agent) ? 'Android'
+                        : /Mac OS X/.test(agent) ? 'Mac'
+                            : /Windows/.test(agent) ? 'Windows'
+                                : /Linux/.test(agent) ? 'Linux'
+                                    : 'Устройство';
+            const browser = /Edg\//.test(agent) ? 'Edge'
+                : /Firefox\//.test(agent) ? 'Firefox'
+                    : /Chrome\//.test(agent) ? 'Chrome'
+                        : /Safari\//.test(agent) ? 'Safari'
+                            : '';
+            return browser ? `${os} · ${browser}` : os;
+        }
+        static title() {
+            return this.title_of(typeof navigator === 'undefined' ? '' : navigator.userAgent);
+        }
+    }
+    __decorate([
+        $mol_mem
+    ], $bog_music_device, "id", null);
+    $.$bog_music_device = $bog_music_device;
+    class $bog_music_device_baza extends $giper_baza_dict.with({
+        Name: $giper_baza_atom.of($mol_schema_string),
+        Beat: $giper_baza_atom.of($mol_schema_float),
+    }) {
+        name() {
+            return this.Name()?.val() ?? 'Устройство';
+        }
+        beat() {
+            return Number(this.Beat()?.val() ?? 0);
+        }
+    }
+    $.$bog_music_device_baza = $bog_music_device_baza;
+    class $bog_music_device_dict extends $giper_baza_dict_to($bog_music_device_baza) {
+    }
+    $.$bog_music_device_dict = $bog_music_device_dict;
+    class $bog_music_device_signals extends $giper_baza_dict_to($giper_baza_atom_text) {
+    }
+    $.$bog_music_device_signals = $bog_music_device_signals;
+})($ || ($ = {}));
+
+;
 "use strict";
 var $;
 (function ($) {
@@ -22332,27 +24451,155 @@ var $;
 var $;
 (function ($) {
     /**
-     * Land с выгрузкой нагрузки sand'ов.
+     * Выравнивание громкости треков по EBU R128 (ITU-R BS.1770): интегральная
+     * громкость записи в LUFS меряется один раз, при добавлении файла,
+     * и хранится в baza; при воспроизведении все треки приводятся к
+     * target_lufs.
      *
-     * В базовом `$giper_baza_land` после `sand_open` / `sands_open` поля `_ball`
-     * и `_open` живут до конца жизни юнита — большие файлы (музыка) копят всю
-     * прослушанную сессию в JS-куче. Здесь можно отпустить payload, когда чанк
-     * уже скопирован в Blob / отдан стриму.
+     * Раньше мерили обычный RMS. Он не совпадает с восприятием: басовитая
+     * запись по RMS громче, чем звучит, и после «выравнивания» оказывалась
+     * тише соседней. R128 сначала прогоняет сигнал через K-взвешивание
+     * (подъём верха + обрез низа), потом усредняет по 400-мс блокам с
+     * отсечкой тишины — по этому же стандарту нормализуют Spotify и YouTube.
      */
-    class $mws_baza_land extends $giper_baza_land {
+    class $bog_music_gain extends $mol_object {
+        /** Целевая громкость (LUFS). -14 — как у Spotify/YouTube Music. */
+        static target_lufs = -14;
+        /** Потолок усиления (dB): выше вытащим шум и дыхание зала. */
+        static gain_max_db = 12;
+        /** Предел приглушения (dB). */
+        static gain_min_db = -20;
+        /** Абсолютный гейт: блоки тише этого — тишина, в среднее не идут. */
+        static gate_abs = -70;
+        /** Считаем на 48 кГц — частота, для которой BS.1770 задаёт фильтры. */
+        static rate = 48000;
         /**
-         * Сбросить расшифрованную и (для big) сырую нагрузку.
-         * Заголовок unit'а остаётся; повторный `sand_open` снова подтянет ball из IDB.
+         * Коэффициенты K-взвешивания из BS.1770 для 48 кГц.
+         * Первый каскад — шельф +4 dB от ~1.5 кГц (голова и ушная раковина
+         * подчёркивают верх), второй — обрез ниже ~40 Гц (низы весят по
+         * энергии больше, чем слышны).
          */
-        sand_unload(sand) {
-            sand._open = null;
-            // Мелкие sand'ы держат data() во view на буфер заголовка — обнулять
-            // `_ball` нельзя: это не отдельный IDB-ball, а alias на data().
-            if (sand.big())
-                sand._ball = null;
+        static shelf = [1.53512485958697, -2.69169618940638, 1.19839281085285, -1.69065929318241, 0.73248077421585];
+        static cut = [1.0, -2.0, 1.0, -1.99004745483398, 0.99007225036621];
+        /**
+         * Интегральная громкость записи в LUFS. null — мерить нечего:
+         * запись короче 400 мс или сплошная тишина.
+         */
+        static async measure_lufs(buf) {
+            const audio = await this.decode(buf);
+            const hop = Math.round(audio.sampleRate / 10); // 100 мс
+            const hops = Math.floor(audio.length / hop);
+            if (hops < 4)
+                return null;
+            // Сумма квадратов по каждому 100-мс куску, взвешенная по каналам.
+            const power = new Float64Array(hops);
+            for (let ch = 0; ch < audio.numberOfChannels; ch++) {
+                // Фильтруем на месте: копия целого трека на телефоне лишняя,
+                // декодированный буфер всё равно выбрасываем сразу после замера.
+                const data = audio.getChannelData(ch);
+                // Между проходами отпускаем поток: каждый — это десятки
+                // миллионов операций, и без пауз отрисовка встала бы колом.
+                this.biquad(data, this.shelf);
+                await this.breathe();
+                this.biquad(data, this.cut);
+                await this.breathe();
+                const weight = ch < 3 ? 1 : 1.41; // тыловые каналы весят больше
+                for (let h = 0; h < hops; h++) {
+                    let sum = 0;
+                    const end = (h + 1) * hop;
+                    for (let i = h * hop; i < end; i++)
+                        sum += data[i] * data[i];
+                    power[h] += weight * sum;
+                }
+                await this.breathe();
+            }
+            return this.integrated(power, hop);
+        }
+        /**
+         * Интегральная громкость по мощности 100-мс кусков. Блок — 400 мс
+         * (4 куска) с шагом в один кусок, дальше двойной гейт: сначала
+         * выкидываем тишину, потом всё, что на 10 LU тише среднего по
+         * оставшемуся — иначе долгие тихие проигрыши тянут оценку вниз.
+         */
+        static integrated(power, hop) {
+            const size = hop * 4;
+            const blocks = [];
+            for (let h = 0; h + 4 <= power.length; h++) {
+                const mean = (power[h] + power[h + 1] + power[h + 2] + power[h + 3]) / size;
+                if (mean > 0)
+                    blocks.push(mean);
+            }
+            if (!blocks.length)
+                return null;
+            const loud = (mean) => -0.691 + 10 * Math.log10(mean);
+            const mean_of = (list) => list.reduce((sum, mean) => sum + mean, 0) / list.length;
+            const heard = blocks.filter(mean => loud(mean) > this.gate_abs);
+            if (!heard.length)
+                return null;
+            const gate_rel = loud(mean_of(heard)) - 10;
+            const rest = heard.filter(mean => loud(mean) > gate_rel);
+            if (!rest.length)
+                return null;
+            return loud(mean_of(rest));
+        }
+        /**
+         * Выше этого размера не декодируем в PCM: decodeAudioData раздувает
+         * сжатый файл в сотни МБ float'ов и добивает OOM на телефоне.
+         */
+        static max_bytes = 40 * 1024 * 1024;
+        /** Замеры идут по одному: декодированный трек занимает десятки мегабайт. */
+        static queue = Promise.resolve();
+        /** Поставить файл в очередь на замер, результат отдать в done. */
+        static measure_later(buffer, done) {
+            if (buffer.byteLength > this.max_bytes)
+                return;
+            this.queue = this.queue.then(async () => {
+                // decodeAudioData отбирает буфер, а этот же байтовый массив лежит в baza.
+                const lufs = await this.measure_lufs(buffer.slice().buffer);
+                if (lufs != null)
+                    await done(lufs);
+            }).catch(error => console.warn('[gain] loudness measure failed:', error?.message ?? error));
+        }
+        /** Линейный множитель приведения записи к target_lufs. */
+        static factor(lufs) {
+            if (lufs == null || !Number.isFinite(lufs))
+                return 1;
+            const db = Math.max(this.gain_min_db, Math.min(this.gain_max_db, this.target_lufs - lufs));
+            return Math.pow(10, db / 20);
+        }
+        /** Отпустить поток, чтобы браузер успел отрисовать кадр. */
+        static breathe() {
+            return new Promise(done => setTimeout(done, 0));
+        }
+        /** Каскад БИХ-фильтра (direct form I) по сэмплам, на месте. */
+        static biquad(data, c) {
+            let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+            for (let i = 0; i < data.length; i++) {
+                const x = data[i];
+                const y = c[0] * x + c[1] * x1 + c[2] * x2 - c[3] * y1 - c[4] * y2;
+                x2 = x1;
+                x1 = x;
+                y2 = y1;
+                y1 = y;
+                data[i] = y;
+            }
+        }
+        /**
+         * Декод в 48 кГц: decodeAudioData отдаёт сэмплы на частоте контекста,
+         * так что коэффициенты фильтров подходят без пересчёта. Safari отдаёт
+         * результат колбэком, остальные — промисом.
+         */
+        static decode(buf) {
+            const OAC = globalThis.OfflineAudioContext ?? globalThis.webkitOfflineAudioContext;
+            const ctx = new OAC(1, 1, this.rate);
+            return new Promise((done, fail) => {
+                const ret = ctx.decodeAudioData(buf, done, fail);
+                if (ret && typeof ret.then === 'function')
+                    ret.then(done, fail);
+            });
         }
     }
-    $.$mws_baza_land = $mws_baza_land;
+    $.$bog_music_gain = $bog_music_gain;
 })($ || ($ = {}));
 
 ;
@@ -22360,174 +24607,109 @@ var $;
 var $;
 (function ($) {
     /**
-     * Счётчики памяти для дебага «вся фонотека в оперативке».
+     * Шестиполосный эквалайзер. Раскладка и названия пресетов — как в Я.Музыке
+     * на Android: 60 / 150 / 400 / 1.0k / 2.4k / 15k Гц.
      *
-     * Без цифр правки не проверить: экономия здесь — это не сделанные копии, и
-     * увидеть её можно только по размеру кучи и по числу треков, чьё содержимое
-     * реально поднято из IndexedDB.
+     * Крайние полосы — шельфы: низ и верх двигают целиком, а колокол цепляет
+     * только свою метку и спадает по обе стороны от неё. Средние четыре —
+     * колокола с Q=1.4, около октавы на полосу: полосы стоят в 1.3 октавы друг
+     * от друга, и при более широком колоколе они бы заметно складывались.
      *
-     * Счётчики — обычные статические поля, а не реактивные ячейки: писать в них
-     * приходится из тел вычислений (`blob()` зовётся из мемоизированных
-     * методов), а запись в ячейку оттуда роняет пересчёт. Панель вместо подписки
-     * перечитывает их по таймеру — как это уже сделано в журнале
-     * ($bog_music_log).
+     * У шельфа `frequency` — середина перехода, где набрана ПОЛОВИНА усиления,
+     * а не начало полки, поэтому углы стоят выше своих меток. Замерено
+     * (getFrequencyResponse, +12 на одну полосу, остальные в нуле):
+     *
+     *   полоса 60    → +9.7 на 60 Гц,  +1.7 на 150 Гц
+     *   полоса 150   → +12  на 150 Гц, +1.5 на 60 и +1.3 на 400
+     *   полоса 15000 → +11  на 15 кГц, 0 на 2.4 кГц
+     *
+     * То есть каждый ползунок делает то, что написано на его метке, а соседу
+     * достаётся полтора децибела — нарисованная кривая совпадает со слышимым.
      */
-    class $bog_music_mem extends $mol_object {
-        /** Сколько раз материализовали Blob трека. */
-        static blobs = 0;
-        /** Суммарный объём материализованных Blob'ов, байт. */
-        static blob_bytes = 0;
-        /** Сколько треков запускали на воспроизведение. */
-        static plays = 0;
-        static blob_made(bytes) {
-            this.blobs += 1;
-            this.blob_bytes += bytes;
+    class $bog_music_eq extends $mol_object {
+        static bands = [
+            { freq: 90, type: 'lowshelf', title: '60 Hz' },
+            { freq: 150, type: 'peaking', title: '150 Hz' },
+            { freq: 400, type: 'peaking', title: '400 Hz' },
+            { freq: 1000, type: 'peaking', title: '1.0 kHz' },
+            { freq: 2400, type: 'peaking', title: '2.4 kHz' },
+            { freq: 10000, type: 'highshelf', title: '15 kHz' },
+        ];
+        /** Добротность колоколов. */
+        static q = 1.4;
+        /**
+         * Потолок полосы (dB). Тот же, что gain_max_db у автогромкости: выше
+         * лимитер на плотных миксах начинает дышать слышимо.
+         */
+        static range_db = 12;
+        /**
+         * Пресеты. Названия и порядок — как в Я.Музыке; формы подобраны под нашу
+         * сетку полос по смыслу названия, а не скопированы из чужих таблиц.
+         * `default` первым: ровная кривая, она же состояние «ничего не трогали».
+         */
+        static presets = [
+            { id: 'default', title: 'По умолчанию', gains: [0, 0, 0, 0, 0, 0] },
+            { id: 'classic', title: 'Классическая музыка', gains: [4, 2, 0, -1, -3, 4] },
+            { id: 'club', title: 'Клубная музыка', gains: [0, 2, 5, 5, 3, 0] },
+            { id: 'dance', title: 'Танцевальная музыка', gains: [7, 5, 0, -2, 2, 5] },
+            { id: 'bass', title: 'Усиление НЧ', gains: [10, 7, 3, 0, 0, 0] },
+            { id: 'bass_treble', title: 'Усиление НЧ и ВЧ', gains: [9, 6, 1, -2, 3, 8] },
+            { id: 'treble', title: 'Усиление ВЧ', gains: [0, 0, 0, 2, 5, 10] },
+        ];
+        /** Подпись состояния, которое ни одному пресету не соответствует. */
+        static custom_title = 'Своя настройка';
+        /** Все полосы в нуле — сигнал проходит нетронутым. */
+        static flat() {
+            return this.bands.map(() => 0);
         }
-        static play_started() {
-            this.plays += 1;
+        static preset(id) {
+            const found = this.presets.find(preset => preset.id === id);
+            return found ? found.gains.slice() : null;
         }
-        static reset() {
-            this.blobs = 0;
-            this.blob_bytes = 0;
-            this.plays = 0;
+        /** Пресет, совпадающий с набором, или '' — значит «Свой». */
+        static preset_of(gains) {
+            const norm = this.clamp(gains);
+            const found = this.presets.find(preset => preset.gains.every((db, i) => db === norm[i]));
+            return found ? found.id : '';
         }
         /**
-         * Занятая JS-куча, байт. Есть только в Chromium (в Firefox и Safari
-         * `performance.memory` нет) — 0 значит «браузер не говорит».
+         * Привести чужой набор к нашему: длина по числу полос, целые dB в
+         * пределах диапазона. Набор приезжает из baza и мог быть записан
+         * версией с другим числом полос — недостающие в ноль, лишние прочь.
          */
-        static heap() {
-            return Number(performance?.memory?.usedJSHeapSize ?? 0);
-        }
-        /** Потолок JS-кучи, байт. 0 — браузер не говорит. */
-        static heap_limit() {
-            return Number(performance?.memory?.jsHeapSizeLimit ?? 0);
+        static clamp(gains) {
+            return this.bands.map((_, i) => {
+                const db = Number(gains?.[i]);
+                if (!Number.isFinite(db))
+                    return 0;
+                return Math.round(Math.max(-this.range_db, Math.min(this.range_db, db)));
+            });
         }
         /**
-         * Сколько нагрузки чанков реально поднято в память.
-         *
-         * Заголовок sand-юнита живёт в ленде всегда, а нагрузка (`ball`)
-         * приезжает лениво. В music через `$mws_baza_land.sand_unload` её
-         * отпускают после копирования в Blob — поэтому после play цифра
-         * «поднято» по sands должна быть ≈ 0 (байты живут в Blob-кеше плеера,
-         * не в `_ball`/`_open`). Считается по заголовкам, ничего не подгружая.
+         * Цвет точки по её усилению, как на графике в Я.Музыке: красный наверху,
+         * жёлтый в нуле, зелёный внизу.
          */
-        static units_stat(units) {
-            let loaded = 0;
-            let bytes_total = 0;
-            let bytes_loaded = 0;
-            for (const unit of units) {
-                const size = unit.size();
-                bytes_total += size;
-                if (!unit._ball && !unit._open)
-                    continue;
-                loaded += 1;
-                bytes_loaded += size;
-            }
-            return { units: units.length, loaded, bytes_total, bytes_loaded };
+        static color(db) {
+            const part = Math.max(-1, Math.min(1, db / this.range_db));
+            const hue = part >= 0 ? 50 - part * 50 : 50 - part * 70;
+            return `hsl( ${hue.toFixed(0)} 80% 55% )`;
         }
-        /** Байты человеку: 12.3 МБ. */
-        static size_label(bytes) {
-            if (!bytes)
-                return '0';
-            const units = ['Б', 'КБ', 'МБ', 'ГБ'];
-            let rank = 0;
-            let value = bytes;
-            while (value >= 1024 && rank < units.length - 1) {
-                value /= 1024;
-                rank += 1;
-            }
-            return `${value.toFixed(rank ? 1 : 0)} ${units[rank]}`;
+        /** Подпись усиления над точкой. */
+        static db_text(db) {
+            return `${db} dB`;
+        }
+        /** Набор одной строкой — так он и лежит в baza. */
+        static stringify(gains) {
+            return this.clamp(gains).join(',');
+        }
+        static parse(text) {
+            if (!text)
+                return this.flat();
+            return this.clamp(text.split(',').map(Number));
         }
     }
-    $.$bog_music_mem = $bog_music_mem;
+    $.$bog_music_eq = $bog_music_eq;
 })($ || ($ = {}));
-
-;
-	($.$bog_music_mem_view) = class $bog_music_mem_view extends ($.$mol_list) {
-		Title(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ("Память");
-			return obj;
-		}
-		refresh(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Refresh(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.title) = () => ("Пересчитать");
-			(obj.click) = (next) => ((this.refresh(next)));
-			return obj;
-		}
-		reset(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Reset(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.title) = () => ("Обнулить счётчики");
-			(obj.click) = (next) => ((this.reset(next)));
-			return obj;
-		}
-		Head(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([
-				(this.Title()), 
-				(this.Refresh()), 
-				(this.Reset())
-			]);
-			return obj;
-		}
-		heap_label(){
-			return "";
-		}
-		Heap(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.heap_label())]);
-			return obj;
-		}
-		counters_label(){
-			return "";
-		}
-		Counters(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.counters_label())]);
-			return obj;
-		}
-		audit_label(){
-			return "";
-		}
-		Audit(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.audit_label())]);
-			return obj;
-		}
-		Hint(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ("«Пересчитать» обходит фонотеку по заголовкам чанков, содержимое не читает. Треки, чей ленд в этот момент ещё грузился, попадают в «ждут» — жми второй раз.");
-			return obj;
-		}
-		rows(){
-			return [
-				(this.Head()), 
-				(this.Heap()), 
-				(this.Counters()), 
-				(this.Audit()), 
-				(this.Hint())
-			];
-		}
-	};
-	($mol_mem(($.$bog_music_mem_view.prototype), "Title"));
-	($mol_mem(($.$bog_music_mem_view.prototype), "refresh"));
-	($mol_mem(($.$bog_music_mem_view.prototype), "Refresh"));
-	($mol_mem(($.$bog_music_mem_view.prototype), "reset"));
-	($mol_mem(($.$bog_music_mem_view.prototype), "Reset"));
-	($mol_mem(($.$bog_music_mem_view.prototype), "Head"));
-	($mol_mem(($.$bog_music_mem_view.prototype), "Heap"));
-	($mol_mem(($.$bog_music_mem_view.prototype), "Counters"));
-	($mol_mem(($.$bog_music_mem_view.prototype), "Audit"));
-	($mol_mem(($.$bog_music_mem_view.prototype), "Hint"));
-
 
 ;
 "use strict";
@@ -22539,109 +24721,122 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        /**
-         * Панель диагностики памяти в отладочной секции (рядом с журналом).
-         *
-         * Показывает три вещи: занятую кучу от браузера, счётчики приложения
-         * (сколько Blob'ов материализовали и сколько треков запускали) и обход
-         * фонотеки — сколько чанков у треков и у скольких из них поднято в память
-         * содержимое. Последнее и есть та цифра, ради которой всё затевалось:
-         * пока она близка к нулю при полном списке — фонотека в куче не оседает.
-         */
-        class $bog_music_mem_view extends $.$bog_music_mem_view {
+        class $bog_music_account extends $.$bog_music_account {
             account() {
                 return $bog_music_account_baza.home();
             }
-            /**
-             * Счётчики лежат в обычных полях, подписаться на них нельзя —
-             * перечитываем раз в секунду, как в журнале.
-             */
-            heap_label() {
-                this.$.$mol_state_time.now(1000);
-                const used = $bog_music_mem.heap();
-                if (!used)
-                    return 'Куча: браузер не сообщает (только Chromium)';
-                const limit = $bog_music_mem.heap_limit();
-                const size = $bog_music_mem.size_label(used);
-                return limit
-                    ? `Куча: ${size} из ${$bog_music_mem.size_label(limit)}`
-                    : `Куча: ${size}`;
+            nickname(next) {
+                return this.account().nickname(next);
             }
-            counters_label() {
-                this.$.$mol_state_time.now(1000);
-                const blobs = $bog_music_mem.blobs;
-                const bytes = $bog_music_mem.size_label($bog_music_mem.blob_bytes);
-                return `Запусков ${$bog_music_mem.plays}, Blob'ов собрано ${blobs} на ${bytes}`;
+            lord_text() {
+                const auth = this.$.$giper_baza_auth.current();
+                if (!auth)
+                    return '—';
+                return auth.pass().lord().str;
             }
-            audit(next) {
-                return next ?? null;
+            account_key() {
+                return String(this.$.$mol_state_local.value('$giper_baza_auth') ?? '');
             }
-            audit_label() {
-                const a = this.audit();
-                if (!a)
-                    return 'Фонотека: нажми «Пересчитать»';
-                const loaded = $bog_music_mem.size_label(a.bytes_loaded);
-                const total = $bog_music_mem.size_label(a.bytes_total);
-                const pending = a.pending ? `, ждут загрузки ${a.pending}` : '';
-                return `Фонотека: треков ${a.tracks}, с файлом ${a.files}`
-                    + `, чанков ${a.units} на ${total}`
-                    + `, поднято в память ${a.loaded} на ${loaded}${pending}`;
+            account_link() {
+                const key = this.account_key();
+                if (!key)
+                    return '';
+                return location.origin + location.pathname + location.search + '#account=' + encodeURIComponent(key);
             }
-            /**
-             * Один проход по фонотеке. Трек, чей blob-land в этот момент ещё
-             * читается из IndexedDB, кидает Promise — считаем его «ждущим» и идём
-             * дальше, а не ретраим весь обход: ретрай на каждом ленде превратил бы
-             * проход в квадрат.
-             */
-            audit_run() {
-                const account = this.account();
-                const dict = account.tracks();
-                const keys = (dict.keys() ?? []);
-                const res = {
-                    tracks: keys.length,
-                    files: 0,
-                    units: 0,
-                    loaded: 0,
-                    bytes_total: 0,
-                    bytes_loaded: 0,
-                    pending: 0,
-                };
-                for (const key of keys) {
-                    try {
-                        const stat = dict.key(key)?.chunks_stat();
-                        if (!stat || !stat.units)
-                            continue;
-                        res.files += 1;
-                        res.units += stat.units;
-                        res.loaded += stat.loaded;
-                        res.bytes_total += stat.bytes_total;
-                        res.bytes_loaded += stat.bytes_loaded;
-                    }
-                    catch {
-                        res.pending += 1;
-                    }
+            Qr() {
+                return this.qr_showed() ? super.Qr() : null;
+            }
+            qr_found(next) {
+                if (next) {
+                    this.import_link(next);
+                    this.apply_import();
                 }
-                this.audit(res);
+                return next ?? '';
             }
-            refresh() {
-                $mol_wire_async(this).audit_run();
-                return null;
+            copy_status(next) {
+                return next ?? '';
             }
-            reset() {
-                $bog_music_mem.reset();
-                return null;
+            copy() {
+                const link = this.account_link();
+                if (!link) {
+                    this.copy_status('Ключ не найден');
+                    return;
+                }
+                try {
+                    navigator.clipboard.writeText(link);
+                    this.copy_status('Скопировано. Не делись публично!');
+                }
+                catch (e) {
+                    console.warn('[account] clipboard failed:', e?.message);
+                    this.copy_status('Не удалось — скопируй из адресной строки: ' + link);
+                }
+            }
+            import_link(next) {
+                return next ?? '';
+            }
+            import_status(next) {
+                return next ?? '';
+            }
+            apply_import() {
+                const raw = this.import_link().trim();
+                if (!raw) {
+                    this.import_status('Вставь ссылку с #account=…');
+                    return;
+                }
+                const match = raw.match(/[#&]account=([^&\s]+)/);
+                const key = match ? decodeURIComponent(match[1]) : raw;
+                if (key.length < 172) {
+                    this.import_status('Ключ слишком короткий');
+                    return;
+                }
+                const current = this.$.$mol_state_local.value('$giper_baza_auth');
+                if (current !== key)
+                    this.$.$mol_state_local.value('$giper_baza_auth', key);
+                this.import_status(current === key ? 'Перезапуск…' : 'Применено, перезагрузка…');
+                location.reload();
+            }
+            reset_account() {
+                if (typeof window === 'undefined')
+                    return;
+                try {
+                    window.localStorage.clear();
+                }
+                catch { }
+                try {
+                    indexedDB.deleteDatabase('$giper_baza_mine');
+                }
+                catch { }
+                const drop = $bog_music_disk.supported()
+                    ? navigator.storage.getDirectory().then(root => root.removeEntry($bog_music_disk.folder, { recursive: true }))
+                    : Promise.resolve();
+                drop.catch(() => { }).finally(() => location.reload());
             }
         }
         __decorate([
             $mol_mem
-        ], $bog_music_mem_view.prototype, "audit", null);
+        ], $bog_music_account.prototype, "lord_text", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_account.prototype, "qr_found", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_account.prototype, "copy_status", null);
         __decorate([
             $mol_action
-        ], $bog_music_mem_view.prototype, "refresh", null);
+        ], $bog_music_account.prototype, "copy", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_account.prototype, "import_link", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_account.prototype, "import_status", null);
         __decorate([
             $mol_action
-        ], $bog_music_mem_view.prototype, "reset", null);
-        $$.$bog_music_mem_view = $bog_music_mem_view;
+        ], $bog_music_account.prototype, "apply_import", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_account.prototype, "reset_account", null);
+        $$.$bog_music_account = $bog_music_account;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
 
@@ -22649,101 +24844,624 @@ var $;
 "use strict";
 var $;
 (function ($) {
+    class $bog_music_account_baza_playlists extends $giper_baza_dict_to($giper_baza_atom_text) {
+    }
+    $.$bog_music_account_baza_playlists = $bog_music_account_baza_playlists;
+    class $bog_music_account_baza_lists extends $giper_baza_dict_to($giper_baza_list_str) {
+    }
+    $.$bog_music_account_baza_lists = $bog_music_account_baza_lists;
+    class $bog_music_account_baza extends $giper_baza_dict.with({
+        Nickname: $giper_baza_atom.of($mol_schema_string),
+        Last_track_key: $giper_baza_atom.of($mol_schema_string),
+        Last_position: $giper_baza_atom.of($mol_schema_float),
+        Eq_on: $giper_baza_atom.of($mol_schema_boolean),
+        Eq_gains: $giper_baza_atom.of($mol_schema_string),
+        Tracks: $bog_music_track_baza_dict,
+        Playlists: $bog_music_account_baza_playlists,
+        Lists: $bog_music_account_baza_lists,
+        Devices: $bog_music_device_dict,
+        Signals: $bog_music_device_signals,
+    }) {
+        static home() {
+            return $giper_baza_glob.home().land().Data($bog_music_account_baza);
+        }
+        static key_make(source) {
+            return `0_${this.hash_str(source)}`;
+        }
+        land_id() {
+            try {
+                return this.land().link().str;
+            }
+            catch {
+                return '';
+            }
+        }
+        tracks() {
+            return this.Tracks(null);
+        }
+        track(key) {
+            return this.tracks().key(key);
+        }
+        info(key) {
+            return this.track(key)?.info() ?? null;
+        }
+        nickname(next) {
+            if (next !== undefined)
+                this.Nickname('auto').val(next);
+            return this.Nickname()?.val() ?? '';
+        }
+        keys_in(playlist) {
+            const dict = this.tracks();
+            const rows = [];
+            for (const key of (dict.keys() ?? [])) {
+                const track = dict.key(key);
+                if (!track)
+                    continue;
+                if (track.playlist() !== playlist)
+                    continue;
+                if (!track.info())
+                    continue;
+                rows.push({ key, order: track.order(), added: track.added() });
+            }
+            rows.sort((a, b) => a.order !== b.order ? a.order - b.order : b.added - a.added);
+            return rows.map(r => r.key);
+        }
+        shared_playlists() {
+            const dict = this.tracks();
+            const map = new Map();
+            for (const key of (dict.keys() ?? [])) {
+                const pl = dict.key(key)?.playlist() ?? '';
+                if (!pl.startsWith('shared:'))
+                    continue;
+                map.set(pl, (map.get(pl) ?? 0) + 1);
+            }
+            return Array.from(map.entries()).map(([id, count]) => ({
+                id,
+                sender: id.slice('shared:'.length),
+                count,
+            }));
+        }
+        min_order() {
+            let min = Infinity;
+            const dict = this.tracks();
+            for (const key of (dict.keys() ?? [])) {
+                const track = dict.key(key);
+                if (!track)
+                    continue;
+                min = Math.min(min, track.order());
+            }
+            return Number.isFinite(min) ? min : 1;
+        }
+        max_order(playlist) {
+            let max = -Infinity;
+            const dict = this.tracks();
+            for (const key of (dict.keys() ?? [])) {
+                const track = dict.key(key);
+                if (!track)
+                    continue;
+                if (track.playlist() !== playlist)
+                    continue;
+                max = Math.max(max, track.order());
+            }
+            return Number.isFinite(max) ? max : 0;
+        }
+        move_to_bottom(key) {
+            const track = this.track(key);
+            if (!track)
+                return;
+            track.order_set(this.max_order(track.playlist()) + 1);
+        }
+        save_track(key, meta) {
+            const track = this.tracks().key(key, 'auto');
+            if (track.Title()?.val() !== meta.title)
+                track.Title('auto').val(meta.title);
+            if (track.Artist()?.val() !== meta.artist)
+                track.Artist('auto').val(meta.artist);
+            if (track.Duration()?.val() !== meta.duration)
+                track.Duration('auto').val(meta.duration);
+            if (meta.cover && track.Cover()?.val() !== meta.cover)
+                track.Cover('auto').val(meta.cover);
+            if (track.Added()?.val() == null)
+                track.Added('auto').val(Date.now());
+            if (track.Order()?.val() == null)
+                track.Order('auto').val(this.min_order() - 1);
+        }
+        holder_add(key) {
+            this.track(key)?.holder_add($bog_music_device.id());
+        }
+        holder_cut(key) {
+            this.track(key)?.holder_cut($bog_music_device.id());
+        }
+        async import_audio(key, meta, bytes, playlist = '') {
+            $bog_music_log.act(`импорт трека ${meta.artist} — ${meta.title}${playlist ? ` в «${playlist}»` : ''}`, this.land_id());
+            await $bog_music_disk.put(key, bytes);
+            const self = $mol_wire_async(this);
+            await self.save_track(key, meta);
+            if (playlist)
+                await self.move_to_playlist(key, playlist);
+            await self.holder_add(key);
+            this.lufs_measure(key, bytes);
+        }
+        async save_local_track(file, order) {
+            const { artist, title, order: parsed_order } = $bog_music_account_baza.parse_filename(file.name);
+            const key = $bog_music_account_baza.key_make(`${file.name}|${file.size}|${file.lastModified}`);
+            $bog_music_log.act(`файл с устройства: ${file.name}, ${file.size} байт → ${artist} — ${title}`, this.land_id());
+            const bytes = new Uint8Array(await file.arrayBuffer());
+            await this.import_audio(key, { artist, title, duration: 0, cover: '' }, bytes);
+            const want = parsed_order ?? order;
+            if (want != null)
+                await $mol_wire_async(this).order_set(key, want);
+        }
+        order_set(key, order) {
+            this.track(key)?.order_set(order);
+        }
+        place(key) {
+            if ($bog_music_disk.has(key))
+                return 'disk';
+            const track = this.track(key);
+            if (!track)
+                return 'lost';
+            const me = $bog_music_device.id();
+            if (track.holders().some(id => id !== me))
+                return 'remote';
+            if (track.legacy())
+                return 'legacy';
+            return 'lost';
+        }
+        holders_other(key) {
+            const me = $bog_music_device.id();
+            return (this.track(key)?.holders() ?? []).filter(id => id !== me);
+        }
+        async migrate(key) {
+            if (await $bog_music_disk.probe(key))
+                return true;
+            const track = this.track(key);
+            if (!track?.legacy())
+                return false;
+            const bytes = await $mol_wire_async(track).legacy_bytes();
+            if (!bytes)
+                return false;
+            await $bog_music_disk.put(key, bytes);
+            await $mol_wire_async(this).holder_add(key);
+            $bog_music_log.act(`перенесён из Базы на устройство: ${key}, ${bytes.length} байт`, this.land_id());
+            return true;
+        }
+        swap_order(key_a, key_b) {
+            const ta = this.tracks().key(key_a, 'auto');
+            const tb = this.tracks().key(key_b, 'auto');
+            if (!ta || !tb)
+                return;
+            const oa = ta.order();
+            const ob = tb.order();
+            ta.order_set(ob === oa ? oa + 1 : ob);
+            tb.order_set(oa);
+        }
+        move_to_playlist(key, playlist) {
+            const track = this.track(key);
+            if (!track)
+                return;
+            $bog_music_log.act(`${key} → плейлист «${playlist || 'Моя музыка'}»`, this.land_id());
+            track.Playlist('auto').val(playlist);
+        }
+        playlists_dict() {
+            return this.Playlists(null);
+        }
+        playlists() {
+            const dict = this.playlists_dict();
+            const rows = [];
+            for (const id of (dict.keys() ?? [])) {
+                const title = dict.key(id)?.val();
+                if (title == null)
+                    continue;
+                rows.push({ id, title });
+            }
+            return rows.sort((a, b) => a.title.localeCompare(b.title, 'ru', { numeric: true }));
+        }
+        playlist_title(id) {
+            return this.playlists_dict().key(id)?.val() ?? '';
+        }
+        playlist_create(title) {
+            const id = 'list:' + $mol_guid(8, id => this.playlists_dict().has(id));
+            $bog_music_log.act(`новый плейлист «${title}»`, this.land_id());
+            this.playlists_dict().key(id, 'auto').val(title);
+            return id;
+        }
+        playlist_rename(id, title) {
+            this.playlists_dict().key(id, 'auto').val(title);
+        }
+        playlist_delete(id) {
+            $bog_music_log.act(`удалён плейлист ${id}`, this.land_id());
+            for (const key of this.keys_in(id))
+                this.move_to_playlist(key, '');
+            this.Lists(null).cut(id);
+            this.playlists_dict().cut(id);
+        }
+        list(id, auto) {
+            return this.Lists(null).key(id, auto);
+        }
+        list_raw(id) {
+            return (this.list(id)?.items() ?? []);
+        }
+        list_keys(id) {
+            const keys = [];
+            for (const key of this.list_raw(id)) {
+                const track = this.track(key);
+                if (!track?.info())
+                    continue;
+                if (track.playlist() === 'archive')
+                    continue;
+                keys.push(key);
+            }
+            return keys;
+        }
+        list_has(id, key) {
+            return this.list(id)?.has(key) ?? false;
+        }
+        list_add(id, key) {
+            $bog_music_log.act(`${key} → в «${this.playlist_title(id)}»`, this.land_id());
+            this.list(id, 'auto').add(key);
+        }
+        list_cut(id, key) {
+            $bog_music_log.act(`${key} ← из «${this.playlist_title(id)}»`, this.land_id());
+            this.list(id)?.cut(key);
+        }
+        list_move(id, key, to_key) {
+            const raw = this.list_raw(id);
+            const from = raw.indexOf(key);
+            const to = raw.indexOf(to_key);
+            if (from < 0 || to < 0 || from === to)
+                return;
+            this.list(id, 'auto').move(from, to > from ? to + 1 : to);
+        }
+        migrate_lists() {
+            const dict = this.tracks();
+            for (const key of (dict.keys() ?? [])) {
+                const track = dict.key(key);
+                const id = track?.playlist() ?? '';
+                if (!id.startsWith('list:'))
+                    continue;
+                this.list(id, 'auto').add(key);
+                track.Playlist('auto').val('');
+            }
+        }
+        async delete_track(key) {
+            $bog_music_log.act(`трек вырезан из фонотеки: ${key}`, this.land_id());
+            await $bog_music_disk.drop(key);
+            await $mol_wire_async(this.tracks()).cut(key);
+        }
+        async drop_file(key) {
+            $bog_music_log.act(`файл удалён с устройства, метаданные оставлены: ${key}`, this.land_id());
+            await $bog_music_disk.drop(key);
+            await $mol_wire_async(this).holder_cut(key);
+        }
+        save_lufs(key, lufs) {
+            this.track(key)?.lufs(lufs);
+        }
+        lufs_measure(key, buffer) {
+            $bog_music_gain.measure_later(buffer, lufs => $mol_wire_async(this).save_lufs(key, lufs));
+        }
+        last_session() {
+            const key = this.Last_track_key()?.val() ?? '';
+            if (!key)
+                return null;
+            if (!this.track(key))
+                return null;
+            const position = Number(this.Last_position()?.val() ?? 0) || 0;
+            return { key, position };
+        }
+        save_last_session(key, position) {
+            this.Last_track_key('auto').val(key);
+            this.Last_position('auto').val(Math.max(0, position || 0));
+        }
+        eq_gains() {
+            return $bog_music_eq.parse(this.Eq_gains()?.val() ?? '');
+        }
+        eq_on() {
+            return this.Eq_on()?.val() ?? false;
+        }
+        save_eq_on(on) {
+            this.Eq_on('auto').val(on);
+        }
+        save_eq_gains(gains) {
+            this.Eq_gains('auto').val($bog_music_eq.stringify(gains));
+        }
+        devices() {
+            return this.Devices(null);
+        }
+        static online_span = 90_000;
+        device_beat() {
+            const device = this.devices().key($bog_music_device.id(), 'auto');
+            const name = $bog_music_device.title();
+            if (device.Name()?.val() !== name)
+                device.Name('auto').val(name);
+            device.Beat('auto').val(Date.now());
+        }
+        device_name(id) {
+            return this.devices().key(id)?.name() ?? 'другое устройство';
+        }
+        device_online(id, now = Date.now()) {
+            const beat = this.devices().key(id)?.beat() ?? 0;
+            return now - beat < $bog_music_account_baza.online_span;
+        }
+        signals() {
+            return this.Signals(null);
+        }
+        static parse_filename(name) {
+            let base = name.replace(/\.[^.]+$/, '').trim();
+            let order = null;
+            const numbered = base.match(/^(\d{1,4})\s*[-–—]\s*(.+)$/);
+            if (numbered) {
+                order = Number(numbered[1]);
+                base = numbered[2].trim();
+            }
+            const m = base.match(/^(.+?)\s*[-–—]\s*(.+)$/);
+            if (m)
+                return { artist: m[1].trim(), title: m[2].trim(), order };
+            return { artist: '', title: base, order };
+        }
+        static hash_str(s) {
+            let h = 2166136261;
+            for (let i = 0; i < s.length; i++) {
+                h ^= s.charCodeAt(i);
+                h = Math.imul(h, 16777619);
+            }
+            return h >>> 0;
+        }
+    }
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "move_to_bottom", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "save_track", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "holder_add", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "holder_cut", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "order_set", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "swap_order", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "move_to_playlist", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "playlist_create", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "playlist_rename", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "playlist_delete", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "list_add", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "list_cut", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "list_move", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "migrate_lists", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "save_lufs", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "save_last_session", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "save_eq_on", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "save_eq_gains", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_account_baza.prototype, "device_beat", null);
+    $.$bog_music_account_baza = $bog_music_account_baza;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
     var $$;
     (function ($$) {
-        /**
-         * Панель памяти стоит на том же экране, что и журнал, и должна читаться
-         * как один с ним блок: та же карточка, те же отступы, тот же размер шрифта.
-         */
-        $mol_style_define($bog_music_mem_view, {
+        $mol_style_define($bog_music_account, {
             flex: { direction: 'column' },
-            gap: '0.25rem',
+            width: '100%',
+            boxSizing: 'border-box',
             padding: {
                 top: '0.5rem',
                 bottom: '0.5rem',
                 left: '0.5rem',
                 right: '0.5rem',
             },
-            // Отбивка от журнала, который идёт следом на том же экране.
-            margin: { bottom: '0.5rem' },
-            Head: {
-                flex: {
-                    direction: 'row',
-                    wrap: 'wrap',
-                },
-                justifyContent: 'space-between',
+            gap: '0.75rem',
+            Font_row: {
                 alignItems: 'center',
+                flex: { wrap: 'wrap' },
                 gap: '0.5rem',
-                padding: {
-                    top: '0.25rem',
-                    bottom: '0.25rem',
-                    left: '0.25rem',
-                    right: '0.25rem',
-                },
+                padding: { left: '0.25rem', right: '0.25rem' },
             },
-            // Заголовок забирает свободное место, чтобы обе кнопки встали парой
-            // справа, а не разъехались по всей ширине из-за space-between.
-            Title: {
-                font: { weight: 600 },
-                flex: { grow: 1, shrink: 1 },
-                minWidth: 0,
-            },
-            Heap: {
-                font: {
-                    size: '0.8125rem',
-                    family: 'monospace',
-                },
-                minWidth: 0,
-                overflowWrap: 'anywhere',
-                padding: {
-                    top: '0.375rem',
-                    bottom: '0.375rem',
-                    left: '0.5rem',
-                    right: '0.5rem',
-                },
-                border: { radius: $mol_gap.round },
-                background: { color: $mol_theme.card },
-            },
-            Counters: {
-                font: {
-                    size: '0.8125rem',
-                    family: 'monospace',
-                },
-                minWidth: 0,
-                overflowWrap: 'anywhere',
-                padding: {
-                    top: '0.375rem',
-                    bottom: '0.375rem',
-                    left: '0.5rem',
-                    right: '0.5rem',
-                },
-                border: { radius: $mol_gap.round },
-                background: { color: $mol_theme.card },
-            },
-            Audit: {
-                font: {
-                    size: '0.8125rem',
-                    family: 'monospace',
-                },
-                minWidth: 0,
-                overflowWrap: 'anywhere',
-                padding: {
-                    top: '0.375rem',
-                    bottom: '0.375rem',
-                    left: '0.5rem',
-                    right: '0.5rem',
-                },
-                border: { radius: $mol_gap.round },
-                background: { color: $mol_theme.card },
-            },
-            Hint: {
-                font: { size: '0.75rem' },
+            Font_label: {
                 color: $mol_theme.shade,
+            },
+            Font_size: {
+                flex: { direction: 'row', wrap: 'wrap' },
+            },
+            Sync_row: {
+                alignItems: 'center',
+                flex: { wrap: 'wrap' },
+                gap: '0.5rem',
+                padding: { left: '0.25rem', right: '0.25rem' },
+            },
+            Download_playlist: {
+                gap: '0.375rem',
+                alignItems: 'center',
+            },
+            Download_playlist_label: {
+                font: { size: '0.875rem' },
+            },
+            Download_playlist_status: {
+                font: { size: '0.8125rem' },
+                color: $mol_theme.shade,
+                flex: { grow: 1 },
+            },
+            Cards: {
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 18rem), 1fr))',
+                gap: '0.75rem',
+                alignItems: 'start',
+            },
+            Profile: {
+                flex: { direction: 'column' },
+                background: { color: $mol_theme.card },
+                border: { radius: $mol_gap.round },
                 padding: {
-                    top: '0.25rem',
-                    left: '0.25rem',
-                    right: '0.25rem',
+                    top: '0.75rem',
+                    bottom: '0.75rem',
+                    left: '0.75rem',
+                    right: '0.75rem',
                 },
+                gap: '0.5rem',
+            },
+            Lord: {
+                font: {
+                    family: 'monospace',
+                    size: '0.875rem',
+                },
+                alignItems: 'baseline',
+                padding: { top: '0.25rem', bottom: '0.25rem' },
+                gap: '0.5rem',
+            },
+            // Идентификатор печатается целиком, поэтому строке нужно разрешить
+            // перенос: без minWidth флекс-элемент не сжимается и вылезает за край.
+            Lord_text: {
+                minWidth: 0,
+                overflowWrap: 'anywhere',
+                userSelect: 'text',
+            },
+            Telegram: {
+                flex: { direction: 'column' },
+                background: { color: $mol_theme.card },
+                border: { radius: $mol_gap.round },
+                padding: {
+                    top: '0.75rem',
+                    bottom: '0.75rem',
+                    left: '0.75rem',
+                    right: '0.75rem',
+                },
+                gap: '0.5rem',
+            },
+            Tg_title: {
+                font: { weight: 'bold' },
+            },
+            Tg_hint: {
+                font: { size: '0.8125rem' },
+                color: $mol_theme.shade,
+            },
+            Tg_status: {
+                font: { size: '0.8125rem' },
+                color: $mol_theme.shade,
+                minHeight: '1rem',
+            },
+            Lastfm: {
+                flex: { direction: 'column' },
+                background: { color: $mol_theme.card },
+                border: { radius: $mol_gap.round },
+                padding: {
+                    top: '0.75rem',
+                    bottom: '0.75rem',
+                    left: '0.75rem',
+                    right: '0.75rem',
+                },
+                gap: '0.5rem',
+            },
+            Fm_title: {
+                font: { weight: 'bold' },
+            },
+            Fm_hint: {
+                font: { size: '0.8125rem' },
+                color: $mol_theme.shade,
+            },
+            Fm_status: {
+                font: { size: '0.8125rem' },
+                color: $mol_theme.shade,
+                minHeight: '1rem',
+            },
+            Export: {
+                flex: { direction: 'column' },
+                background: { color: $mol_theme.card },
+                border: { radius: $mol_gap.round },
+                padding: {
+                    top: '0.75rem',
+                    bottom: '0.75rem',
+                    left: '0.75rem',
+                    right: '0.75rem',
+                },
+                gap: '0.5rem',
+            },
+            Warning: {
+                font: { size: '0.8125rem' },
+                color: '#d33',
+            },
+            Copy_status: {
+                font: { size: '0.8125rem' },
+                color: $mol_theme.shade,
+                minHeight: '1rem',
+            },
+            Qr: {
+                width: '16rem',
+                maxWidth: '100%',
+                aspectRatio: 1,
+                alignSelf: 'center',
+                background: { color: 'white' },
+                border: { radius: $mol_gap.round },
+            },
+            Import: {
+                flex: { direction: 'column' },
+                background: { color: $mol_theme.card },
+                border: { radius: $mol_gap.round },
+                padding: {
+                    top: '0.75rem',
+                    bottom: '0.75rem',
+                    left: '0.75rem',
+                    right: '0.75rem',
+                },
+                gap: '0.5rem',
+            },
+            Import_hint: {
+                font: { size: '0.8125rem' },
+                color: $mol_theme.shade,
+            },
+            Import_status: {
+                font: { size: '0.8125rem' },
+                color: $mol_theme.shade,
+                minHeight: '1rem',
+            },
+            Reset: {
+                flex: { direction: 'column' },
+                background: { color: $mol_theme.card },
+                border: { radius: $mol_gap.round },
+                padding: {
+                    top: '0.75rem',
+                    bottom: '0.75rem',
+                    left: '0.75rem',
+                    right: '0.75rem',
+                },
+                gap: '0.5rem',
+            },
+            Reset_hint: {
+                font: { size: '0.8125rem' },
+                color: $mol_theme.shade,
             },
         });
     })($$ = $.$$ || ($.$$ = {}));
@@ -25954,25 +28672,6 @@ var $;
 })($ || ($ = {}));
 
 ;
-	($.$mol_button_major) = class $mol_button_major extends ($.$mol_button_minor) {
-		theme(){
-			return "$mol_theme_base";
-		}
-	};
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_attach("mol/button/major/major.view.css", "[mol_button_major] {\n\tbackground-color: var(--mol_theme_back);\n\tcolor: var(--mol_theme_text);\n}\n");
-})($ || ($ = {}));
-
-;
-"use strict";
-
-
-;
 	($.$mol_section) = class $mol_section extends ($.$mol_list) {
 		title_dom_name(){
 			return "h1";
@@ -26048,60 +28747,6 @@ var $;
 var $;
 (function ($) {
     $mol_style_attach("mol/section/section.view.css", "[mol_section_head] {\n\tjustify-content: space-between;\n\talign-items: flex-end;\n\tflex-wrap: wrap;\n}\n\n[mol_section_title] {\n\tmargin: 0;\n\tpadding: var(--mol_gap_text);\n\ttext-shadow: 0 0;\n\tfont-weight: normal;\n}\n\n[mol_section_title]:where(h1) {\n\tfont-size: 1.5rem;\n}\n\n[mol_section_title]:where(h2) {\n\tfont-size: 1.5rem;\n\tfont-style: italic;\n}\n\n[mol_section_title]:where(h3) {\n\tfont-size: 1.25rem;\n}\n\n[mol_section_title]:where(h4) {\n\tfont-size: 1.25rem;\n\tfont-style: italic;\n}\n\n[mol_section_title]:where(h5) {\n\tfont-size: 1rem;\n}\n\n[mol_section_title]:where(h6) {\n\tfont-size: 1rem;\n\tfont-style: italic;\n}\n");
-})($ || ($ = {}));
-
-;
-	($.$mol_status) = class $mol_status extends ($.$mol_view) {
-		message(){
-			return "";
-		}
-		status(){
-			return (this.title());
-		}
-		minimal_height(){
-			return 24;
-		}
-		minimal_width(){
-			return 0;
-		}
-		sub(){
-			return [(this.message())];
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        class $mol_status extends $.$mol_status {
-            message() {
-                try {
-                    return this.status() ?? null;
-                }
-                catch (error) {
-                    if (error instanceof Promise)
-                        $mol_fail_hidden(error);
-                    $mol_fail_log(error);
-                    return error.message;
-                }
-            }
-        }
-        $$.$mol_status = $mol_status;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_attach("mol/status/status.view.css", "[mol_status] {\n\tpadding: var(--mol_gap_text);\n\tborder-radius: var(--mol_gap_round);\n\tdisplay: block;\n\tflex-shrink: 1;\n\tword-wrap: break-word;\n}\n\n[mol_status]:not([mol_view_error=\"Promise\"]) {\n\tcolor: var(--mol_theme_focus);\n}\n\n[mol_status]:not([mol_view_error=\"Promise\"]):empty {\n\tdisplay: none;\n}\n");
 })($ || ($ = {}));
 
 ;
@@ -27752,18 +30397,6 @@ var $;
 
 
 ;
-	($.$mol_icon_download) = class $mol_icon_download extends ($.$mol_icon) {
-		path(){
-			return "M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
 	($.$bog_music_tube_row) = class $bog_music_tube_row extends ($.$mol_view) {
 		play(next){
 			if(next !== undefined) return next;
@@ -27983,7553 +30616,6 @@ var $;
             },
         },
     });
-})($ || ($ = {}));
-
-;
-	($.$mol_icon_magnify) = class $mol_icon_magnify extends ($.$mol_icon) {
-		path(){
-			return "M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$bog_music_nav_item) = class $bog_music_nav_item extends ($.$mol_view) {
-		click(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Label(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.label())]);
-			return obj;
-		}
-		label(){
-			return "";
-		}
-		active(){
-			return "off";
-		}
-		Icon(){
-			const obj = new this.$.$mol_view();
-			return obj;
-		}
-		attr(){
-			return {...(super.attr()), "bog_music_nav_active": (this.active())};
-		}
-		event(){
-			return {...(super.event()), "click": (next) => (this.click(next))};
-		}
-		sub(){
-			return [(this.Icon()), (this.Label())];
-		}
-	};
-	($mol_mem(($.$bog_music_nav_item.prototype), "click"));
-	($mol_mem(($.$bog_music_nav_item.prototype), "Label"));
-	($mol_mem(($.$bog_music_nav_item.prototype), "Icon"));
-
-
-;
-"use strict";
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_define($bog_music_nav_item, {
-        // shrink явно: у $mol_view по умолчанию flex-shrink: 0, и на крупном
-        // шрифте четыре nowrap-подписи распирали приложение шире экрана.
-        flex: { direction: 'column', grow: 1, shrink: 1, basis: '0%' },
-        align: { items: 'center' },
-        justify: { content: 'center' },
-        gap: '0.125rem',
-        padding: {
-            top: '0.5rem',
-            bottom: '0.5rem',
-            left: '0.25rem',
-            right: '0.25rem',
-        },
-        minWidth: 0,
-        minHeight: '3.75rem',
-        cursor: 'pointer',
-        userSelect: 'none',
-        border: { radius: $bog_builderui_tokens.radius },
-        color: $bog_builderui_tokens.shade,
-        background: { color: 'transparent' },
-        transition: 'color 120ms ease, background-color 120ms ease',
-        Icon: {
-            width: '2rem',
-            height: '2rem',
-            color: 'inherit',
-        },
-        Label: {
-            font: { size: '0.8125rem', weight: 500 },
-            color: 'inherit',
-            whiteSpace: 'nowrap',
-            maxWidth: '100%',
-            overflow: { x: 'hidden', y: 'hidden' },
-            textOverflow: 'ellipsis',
-        },
-        ':hover': {
-            background: { color: $bog_builderui_tokens.hover },
-            color: $bog_builderui_tokens.text,
-        },
-        '@': {
-            bog_music_nav_active: {
-                on: {
-                    color: $bog_builderui_tokens.special,
-                },
-            },
-        },
-    });
-})($ || ($ = {}));
-
-;
-	($.$mol_icon_playlist_music) = class $mol_icon_playlist_music extends ($.$mol_icon) {
-		path(){
-			return "M15,6H3V8H15V6M15,10H3V12H15V10M3,16H11V14H3V16M17,6V14.18C16.69,14.07 16.35,14 16,14A3,3 0 0,0 13,17A3,3 0 0,0 16,20A3,3 0 0,0 19,17V8H22V6H17Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_account) = class $mol_icon_account extends ($.$mol_icon) {
-		path(){
-			return "M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_account_circle) = class $mol_icon_account_circle extends ($.$mol_icon) {
-		path(){
-			return "M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_text) = class $mol_icon_text extends ($.$mol_icon) {
-		path(){
-			return "M21,6V8H3V6H21M3,18H12V16H3V18M3,13H21V11H3V13Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_text_box) = class $mol_icon_text_box extends ($.$mol_icon) {
-		path(){
-			return "M14,17H7V15H14M17,13H7V11H17M17,9H7V7H17M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_text_box_outline) = class $mol_icon_text_box_outline extends ($.$mol_icon) {
-		path(){
-			return "M5,3C3.89,3 3,3.89 3,5V19C3,20.11 3.89,21 5,21H19C20.11,21 21,20.11 21,19V5C21,3.89 20.11,3 19,3H5M5,5H19V19H5V5M7,7V9H17V7H7M7,11V13H17V11H7M7,15V17H14V15H7Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$bog_music_nav) = class $bog_music_nav extends ($.$mol_view) {
-		search_active(){
-			return "off";
-		}
-		Search_icon(){
-			const obj = new this.$.$mol_icon_magnify();
-			return obj;
-		}
-		search_click(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Tab_search(){
-			const obj = new this.$.$bog_music_nav_item();
-			(obj.label) = () => ("Поиск");
-			(obj.active) = () => ((this.search_active()));
-			(obj.Icon) = () => ((this.Search_icon()));
-			(obj.click) = (next) => ((this.search_click(next)));
-			return obj;
-		}
-		music_active(){
-			return "off";
-		}
-		Music_icon(){
-			const obj = new this.$.$mol_icon_playlist_music();
-			return obj;
-		}
-		music_click(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Tab_music(){
-			const obj = new this.$.$bog_music_nav_item();
-			(obj.label) = () => ("Музыка");
-			(obj.active) = () => ((this.music_active()));
-			(obj.Icon) = () => ((this.Music_icon()));
-			(obj.click) = (next) => ((this.music_click(next)));
-			return obj;
-		}
-		account_active(){
-			return "off";
-		}
-		Account_icon(){
-			const obj = new this.$.$mol_icon_account_circle();
-			return obj;
-		}
-		account_click(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Tab_account(){
-			const obj = new this.$.$bog_music_nav_item();
-			(obj.label) = () => ("Аккаунт");
-			(obj.active) = () => ((this.account_active()));
-			(obj.Icon) = () => ((this.Account_icon()));
-			(obj.click) = (next) => ((this.account_click(next)));
-			return obj;
-		}
-		logs_active(){
-			return "off";
-		}
-		Logs_icon(){
-			const obj = new this.$.$mol_icon_text_box_outline();
-			return obj;
-		}
-		logs_click(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Tab_logs(){
-			const obj = new this.$.$bog_music_nav_item();
-			(obj.label) = () => ("Логи");
-			(obj.active) = () => ((this.logs_active()));
-			(obj.Icon) = () => ((this.Logs_icon()));
-			(obj.click) = (next) => ((this.logs_click(next)));
-			return obj;
-		}
-		section(next){
-			if(next !== undefined) return next;
-			return "music";
-		}
-		sub(){
-			return [
-				(this.Tab_search()), 
-				(this.Tab_music()), 
-				(this.Tab_account()), 
-				(this.Tab_logs())
-			];
-		}
-	};
-	($mol_mem(($.$bog_music_nav.prototype), "Search_icon"));
-	($mol_mem(($.$bog_music_nav.prototype), "search_click"));
-	($mol_mem(($.$bog_music_nav.prototype), "Tab_search"));
-	($mol_mem(($.$bog_music_nav.prototype), "Music_icon"));
-	($mol_mem(($.$bog_music_nav.prototype), "music_click"));
-	($mol_mem(($.$bog_music_nav.prototype), "Tab_music"));
-	($mol_mem(($.$bog_music_nav.prototype), "Account_icon"));
-	($mol_mem(($.$bog_music_nav.prototype), "account_click"));
-	($mol_mem(($.$bog_music_nav.prototype), "Tab_account"));
-	($mol_mem(($.$bog_music_nav.prototype), "Logs_icon"));
-	($mol_mem(($.$bog_music_nav.prototype), "logs_click"));
-	($mol_mem(($.$bog_music_nav.prototype), "Tab_logs"));
-	($mol_mem(($.$bog_music_nav.prototype), "section"));
-
-
-;
-"use strict";
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        class $bog_music_nav extends $.$bog_music_nav {
-            music_active() { return this.section() === 'music' ? 'on' : 'off'; }
-            search_active() { return this.section() === 'search' ? 'on' : 'off'; }
-            account_active() { return this.section() === 'account' ? 'on' : 'off'; }
-            logs_active() { return this.section() === 'logs' ? 'on' : 'off'; }
-            music_click(e) {
-                if (e)
-                    e.preventDefault();
-                this.section('music');
-                return null;
-            }
-            search_click(e) {
-                if (e)
-                    e.preventDefault();
-                this.section('search');
-                return null;
-            }
-            account_click(e) {
-                if (e)
-                    e.preventDefault();
-                this.section('account');
-                return null;
-            }
-            /**
-             * Вкладка журнала — только для владельца приложения. Сравнивается
-             * публичный идентификатор личности, а не ключ: ключ в коде держать
-             * нельзя, он даёт полный доступ к аккаунту.
-             */
-            static owner_lords = [
-                'rkya36Pg_4GhW4PYB',
-                'xSwlxBfW_flwwJqOO',
-                '24q6G0lY_q0azSzlh',
-                'YsWOsMje_h6DAWt6n',
-            ];
-            Tab_logs() {
-                try {
-                    const self = this.$.$giper_baza_auth.current().pass().lord().str;
-                    if (!$bog_music_nav.owner_lords.includes(self))
-                        return null;
-                }
-                catch (error) {
-                    return null;
-                }
-                return super.Tab_logs();
-            }
-            logs_click(e) {
-                if (e)
-                    e.preventDefault();
-                this.section('logs');
-                return null;
-            }
-        }
-        __decorate([
-            $mol_action
-        ], $bog_music_nav.prototype, "music_click", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_nav.prototype, "search_click", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_nav.prototype, "account_click", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_nav.prototype, "logs_click", null);
-        $$.$bog_music_nav = $bog_music_nav;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_define($bog_music_nav, {
-        flex: { direction: 'row' },
-        padding: {
-            top: '0.375rem',
-            bottom: '0.375rem',
-            left: '0.5rem',
-            right: '0.5rem',
-        },
-        gap: '0.25rem',
-        background: { color: $bog_builderui_tokens.card },
-        border: { top: { width: '1px', style: 'solid', color: $bog_builderui_tokens.line } },
-    });
-})($ || ($ = {}));
-
-;
-	($.$bog_music_app) = class $bog_music_app extends ($.$mol_page) {
-		Skin(){
-			const obj = new this.$.$bog_builderui_skin();
-			(obj.lights) = () => ((this.lights()));
-			(obj.base) = () => ("zinc");
-			(obj.font_head) = () => ("eb-garamond");
-			return obj;
-		}
-		Theme(){
-			const obj = new this.$.$bog_theme_auto();
-			return obj;
-		}
-		Popup_fix(){
-			const obj = new this.$.$bog_popup_plugin();
-			return obj;
-		}
-		Tooltip(){
-			const obj = new this.$.$bog_tooltip_plugin();
-			return obj;
-		}
-		Brand_image(){
-			const obj = new this.$.$mol_image();
-			(obj.uri) = () => ("bog/music/app/favicon.svg");
-			(obj.title) = () => ((this.title()));
-			return obj;
-		}
-		Brand_name(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.title())]);
-			return obj;
-		}
-		Brand(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.Brand_image()), (this.Brand_name())]);
-			return obj;
-		}
-		Sync_status(){
-			const obj = new this.$.$giper_baza_status();
-			return obj;
-		}
-		nickname_label(){
-			return "";
-		}
-		Nickname_label(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.nickname_label())]);
-			return obj;
-		}
-		version_label(){
-			return "";
-		}
-		Version(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.version_label())]);
-			return obj;
-		}
-		Wave_icon(){
-			const obj = new this.$.$mol_icon_chart_timeline_variant();
-			return obj;
-		}
-		wave_mode(next){
-			if(next !== undefined) return next;
-			return false;
-		}
-		Wave_toggle(){
-			const obj = new this.$.$mol_check_icon();
-			(obj.hint) = () => ("Моя волна");
-			(obj.Icon) = () => ((this.Wave_icon()));
-			(obj.checked) = (next) => ((this.wave_mode(next)));
-			return obj;
-		}
-		upload_files(next){
-			if(next !== undefined) return next;
-			return [];
-		}
-		Upload(){
-			const obj = new this.$.$mol_button_open();
-			(obj.hint) = () => ("Загрузить с устройства");
-			(obj.accept) = () => ("audio/*,.mp3,.m4a,.aac,.wav,.ogg,.flac");
-			(obj.files) = (next) => ((this.upload_files(next)));
-			return obj;
-		}
-		Theme_btn(){
-			const obj = new this.$.$bog_theme_toggle();
-			(obj.theme_auto) = () => ((this.Theme()));
-			return obj;
-		}
-		scroll(next){
-			if(next !== undefined) return next;
-			return 0;
-		}
-		download_playlist(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		download_playlist_status(){
-			return "";
-		}
-		tg_hint(){
-			return "";
-		}
-		tg_button(){
-			return "";
-		}
-		tg_status(){
-			return "";
-		}
-		tg_link(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		fm_hint(){
-			return "";
-		}
-		fm_button(){
-			return "";
-		}
-		fm_status(){
-			return "";
-		}
-		fm_link(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Account(){
-			const obj = new this.$.$bog_music_account();
-			(obj.font_size) = (next) => ((this.font_size(next)));
-			(obj.download_playlist) = (next) => ((this.download_playlist(next)));
-			(obj.download_playlist_status) = () => ((this.download_playlist_status()));
-			(obj.tg_hint) = () => ((this.tg_hint()));
-			(obj.tg_button) = () => ((this.tg_button()));
-			(obj.tg_status) = () => ((this.tg_status()));
-			(obj.tg_link) = (next) => ((this.tg_link(next)));
-			(obj.fm_hint) = () => ((this.fm_hint()));
-			(obj.fm_button) = () => ((this.fm_button()));
-			(obj.fm_status) = () => ((this.fm_status()));
-			(obj.fm_link) = (next) => ((this.fm_link(next)));
-			return obj;
-		}
-		Mem(){
-			const obj = new this.$.$bog_music_mem_view();
-			return obj;
-		}
-		Logs(){
-			const obj = new this.$.$bog_music_log_view();
-			(obj.version) = () => ((this.version_label()));
-			return obj;
-		}
-		Feedback(){
-			const obj = new this.$.$bog_feedback2_form();
-			(obj.feedback_id) = () => ("bog_music");
-			return obj;
-		}
-		share_toast_text(){
-			return "";
-		}
-		Share_toast(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.share_toast_text())]);
-			return obj;
-		}
-		page(next){
-			if(next !== undefined) return next;
-			return "my";
-		}
-		my_title(){
-			return "Моя музыка";
-		}
-		archive_title(){
-			return "Архив";
-		}
-		list_dict(){
-			return {};
-		}
-		Tabs(){
-			const obj = new this.$.$bog_music_playlists();
-			(obj.page) = (next) => ((this.page(next)));
-			(obj.my_title) = () => ((this.my_title()));
-			(obj.archive_title) = () => ((this.archive_title()));
-			(obj.list_dict) = () => ((this.list_dict()));
-			return obj;
-		}
-		visible_keys(){
-			return [];
-		}
-		current_key(next){
-			if(next !== undefined) return next;
-			return "";
-		}
-		play_key(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		archive_mode(){
-			return false;
-		}
-		reorder_to(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		archive_key(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		restore_key(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		delete_key(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		demote_key(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Tracks(){
-			const obj = new this.$.$bog_music_tracks();
-			(obj.track_keys) = () => ((this.visible_keys()));
-			(obj.current_key) = () => ((this.current_key()));
-			(obj.play_key) = (next) => ((this.play_key(next)));
-			(obj.archive_mode) = () => ((this.archive_mode()));
-			(obj.reorder_to) = (next) => ((this.reorder_to(next)));
-			(obj.archive_key) = (next) => ((this.archive_key(next)));
-			(obj.restore_key) = (next) => ((this.restore_key(next)));
-			(obj.delete_key) = (next) => ((this.delete_key(next)));
-			(obj.demote_key) = (next) => ((this.demote_key(next)));
-			return obj;
-		}
-		tube_submit(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		tube_query(next){
-			if(next !== undefined) return next;
-			return "";
-		}
-		Tube_query(){
-			const obj = new this.$.$mol_string();
-			(obj.hint) = () => ("Что ищем на YouTube?");
-			(obj.value) = (next) => ((this.tube_query(next)));
-			(obj.keyboard) = () => ("search");
-			(obj.enter) = () => ("search");
-			return obj;
-		}
-		tube_find(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Tube_find(){
-			const obj = new this.$.$mol_button_major();
-			(obj.title) = () => ("Найти");
-			(obj.click) = (next) => ((this.tube_find(next)));
-			return obj;
-		}
-		Tube_bar(){
-			const obj = new this.$.$mol_view();
-			(obj.dom_name) = () => ("form");
-			(obj.event) = () => ({...(this.$.$mol_view.prototype.event.call(obj)), "submit": (next) => (this.tube_submit(next))});
-			(obj.sub) = () => ([(this.Tube_query()), (this.Tube_find())]);
-			return obj;
-		}
-		tube_rows(){
-			return [];
-		}
-		Tube_list(){
-			const obj = new this.$.$mol_list();
-			(obj.rows) = () => ((this.tube_rows()));
-			return obj;
-		}
-		tube_title(id){
-			return "";
-		}
-		tube_meta(id){
-			return "";
-		}
-		tube_status_text(id){
-			return "";
-		}
-		tube_cover(id){
-			return "";
-		}
-		tube_busy(id){
-			return false;
-		}
-		tube_play(id, next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		tube_get(id, next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Tube_row(id){
-			const obj = new this.$.$bog_music_tube_row();
-			(obj.title) = () => ((this.tube_title(id)));
-			(obj.subtitle) = () => ((this.tube_meta(id)));
-			(obj.status) = () => ((this.tube_status_text(id)));
-			(obj.cover) = () => ((this.tube_cover(id)));
-			(obj.busy) = () => ((this.tube_busy(id)));
-			(obj.play) = (next) => ((this.tube_play(id, next)));
-			(obj.get) = (next) => ((this.tube_get(id, next)));
-			return obj;
-		}
-		player_full(){
-			return false;
-		}
-		player_open(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		player_collapse(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Player(){
-			const obj = new this.$.$bog_music_player();
-			(obj.full) = () => ((this.player_full()));
-			(obj.open) = (next) => ((this.player_open(next)));
-			(obj.collapse) = (next) => ((this.player_collapse(next)));
-			(obj.queue_keys) = () => ((this.visible_keys()));
-			(obj.current_key) = (next) => ((this.current_key(next)));
-			return obj;
-		}
-		section(next){
-			if(next !== undefined) return next;
-			return "music";
-		}
-		Nav(){
-			const obj = new this.$.$bog_music_nav();
-			(obj.section) = (next) => ((this.section(next)));
-			return obj;
-		}
-		plugins(){
-			return [
-				(this.Skin()), 
-				(this.Theme()), 
-				(this.Popup_fix()), 
-				(this.Tooltip())
-			];
-		}
-		lights(){
-			return "system";
-		}
-		font_size(next){
-			if(next !== undefined) return next;
-			return "normal";
-		}
-		attr(){
-			return {...(super.attr()), "bog_music_font": (this.font_size())};
-		}
-		title(){
-			return "Bog Music";
-		}
-		Title(){
-			return (this.Brand());
-		}
-		tools(){
-			return [
-				(this.Sync_status()), 
-				(this.Nickname_label()), 
-				(this.Version()), 
-				(this.Wave_toggle()), 
-				(this.Upload()), 
-				(this.Theme_btn())
-			];
-		}
-		body_scroll_top(next){
-			return (this.scroll(next));
-		}
-		body(){
-			return [
-				(this.Account()), 
-				(this.Mem()), 
-				(this.Logs()), 
-				(this.Feedback()), 
-				(this.Share_toast()), 
-				(this.Tabs()), 
-				(this.Tracks()), 
-				(this.Tube_bar()), 
-				(this.Tube_list()), 
-				(this.Tube_row(id))
-			];
-		}
-		foot(){
-			return [(this.Player()), (this.Nav())];
-		}
-	};
-	($mol_mem(($.$bog_music_app.prototype), "Skin"));
-	($mol_mem(($.$bog_music_app.prototype), "Theme"));
-	($mol_mem(($.$bog_music_app.prototype), "Popup_fix"));
-	($mol_mem(($.$bog_music_app.prototype), "Tooltip"));
-	($mol_mem(($.$bog_music_app.prototype), "Brand_image"));
-	($mol_mem(($.$bog_music_app.prototype), "Brand_name"));
-	($mol_mem(($.$bog_music_app.prototype), "Brand"));
-	($mol_mem(($.$bog_music_app.prototype), "Sync_status"));
-	($mol_mem(($.$bog_music_app.prototype), "Nickname_label"));
-	($mol_mem(($.$bog_music_app.prototype), "Version"));
-	($mol_mem(($.$bog_music_app.prototype), "Wave_icon"));
-	($mol_mem(($.$bog_music_app.prototype), "wave_mode"));
-	($mol_mem(($.$bog_music_app.prototype), "Wave_toggle"));
-	($mol_mem(($.$bog_music_app.prototype), "upload_files"));
-	($mol_mem(($.$bog_music_app.prototype), "Upload"));
-	($mol_mem(($.$bog_music_app.prototype), "Theme_btn"));
-	($mol_mem(($.$bog_music_app.prototype), "scroll"));
-	($mol_mem(($.$bog_music_app.prototype), "download_playlist"));
-	($mol_mem(($.$bog_music_app.prototype), "tg_link"));
-	($mol_mem(($.$bog_music_app.prototype), "fm_link"));
-	($mol_mem(($.$bog_music_app.prototype), "Account"));
-	($mol_mem(($.$bog_music_app.prototype), "Mem"));
-	($mol_mem(($.$bog_music_app.prototype), "Logs"));
-	($mol_mem(($.$bog_music_app.prototype), "Feedback"));
-	($mol_mem(($.$bog_music_app.prototype), "Share_toast"));
-	($mol_mem(($.$bog_music_app.prototype), "page"));
-	($mol_mem(($.$bog_music_app.prototype), "Tabs"));
-	($mol_mem(($.$bog_music_app.prototype), "current_key"));
-	($mol_mem(($.$bog_music_app.prototype), "play_key"));
-	($mol_mem(($.$bog_music_app.prototype), "reorder_to"));
-	($mol_mem(($.$bog_music_app.prototype), "archive_key"));
-	($mol_mem(($.$bog_music_app.prototype), "restore_key"));
-	($mol_mem(($.$bog_music_app.prototype), "delete_key"));
-	($mol_mem(($.$bog_music_app.prototype), "demote_key"));
-	($mol_mem(($.$bog_music_app.prototype), "Tracks"));
-	($mol_mem(($.$bog_music_app.prototype), "tube_submit"));
-	($mol_mem(($.$bog_music_app.prototype), "tube_query"));
-	($mol_mem(($.$bog_music_app.prototype), "Tube_query"));
-	($mol_mem(($.$bog_music_app.prototype), "tube_find"));
-	($mol_mem(($.$bog_music_app.prototype), "Tube_find"));
-	($mol_mem(($.$bog_music_app.prototype), "Tube_bar"));
-	($mol_mem(($.$bog_music_app.prototype), "Tube_list"));
-	($mol_mem_key(($.$bog_music_app.prototype), "tube_play"));
-	($mol_mem_key(($.$bog_music_app.prototype), "tube_get"));
-	($mol_mem_key(($.$bog_music_app.prototype), "Tube_row"));
-	($mol_mem(($.$bog_music_app.prototype), "player_open"));
-	($mol_mem(($.$bog_music_app.prototype), "player_collapse"));
-	($mol_mem(($.$bog_music_app.prototype), "Player"));
-	($mol_mem(($.$bog_music_app.prototype), "section"));
-	($mol_mem(($.$bog_music_app.prototype), "Nav"));
-	($mol_mem(($.$bog_music_app.prototype), "font_size"));
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    class $bog_music_land extends $mws_baza_land {
-        static release_all() {
-            for (const land of this.$.$giper_baza_glob.yard().lands_alive()) {
-                if (!(land instanceof $bog_music_land))
-                    continue;
-                try {
-                    land.sands_release();
-                }
-                catch (error) {
-                    if ($mol_promise_like(error))
-                        $mol_fail_hidden(error);
-                    $mol_fail_log(error);
-                }
-            }
-        }
-        sand_load(sand) { }
-        diff_units(skip_faces) {
-            const units = super.diff_units(skip_faces);
-            for (const unit of units) {
-                if (!(unit instanceof $giper_baza_unit_sand))
-                    continue;
-                if (!unit.big() || unit._ball)
-                    continue;
-                unit._ball = $mol_wire_sync(this.mine()).ball_load(unit);
-            }
-            return units;
-        }
-        sands_release() {
-            this.units_saving();
-            const mine = this.mine();
-            for (const peers of this._sand.values()) {
-                for (const sands of peers.values()) {
-                    for (const sand of sands.values()) {
-                        if (!sand.big() || !sand._ball)
-                            continue;
-                        if (!mine.units_persisted.has(sand))
-                            continue;
-                        this.sand_unload(sand);
-                    }
-                }
-            }
-        }
-    }
-    $.$bog_music_land = $bog_music_land;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    /**
-     * File с потоковым чтением чанков без `sands_open` на весь список.
-     *
-     * Базовый `chunks()` / `buffer()` по-прежнему открывают все balls сразу —
-     
-     */
-    class $mws_baza_file extends $giper_baza_file {
-        /** Размер полного сырого чанка при `buffer()` / записи. */
-        static raw_chunk = 2 ** 15;
-        buffer(next) {
-            if (next !== undefined)
-                this._byte_length = -1;
-            return super.buffer(next);
-        }
-        /**
-         * Unit'ы чанков — только заголовки, без `sands_open`.
-         * Трек на 10 МБ ≈ 320 заголовков (~17 КБ), без байта звука в куче.
-         */
-        chunk_units() {
-            const list = this.Chunks();
-            if (!list)
-                return [];
-            return list.land()
-                .sand_ordered({ head: list.head(), peer: $giper_baza_link.hole })
-                .filter(unit => !unit.dead() && unit.self().str !== '');
-        }
-        unpack(open) {
-            const raw = $giper_baza_vary.take(open)[0];
-            if (raw instanceof Uint8Array) {
-                return raw.slice();
-            }
-            return new Uint8Array(raw ?? []);
-        }
-        /**
-         * Байты одного чанка: open → unpack → unload.
-         *
-         */
-        async chunk_bytes(unit) {
-            const land = this.land();
-            const open = await land.sand_open(unit);
-            try {
-                return this.unpack(open);
-            }
-            finally {
-                land.sand_unload(unit);
-            }
-        }
-        chunk_bytes_sync(unit) {
-            const land = this.land();
-            const open = $mol_wire_sync(land).sand_open(unit);
-            const bytes = this.unpack(open);
-            land.sand_unload(unit);
-            return bytes;
-        }
-        _byte_length = -1;
-        /**
-         * Длина файла в сырых байтах.
-         * Полные чанки = raw_chunk; длину последнего узнаём одним open
-         * (не поднимая весь файл). Кеш — meta/Range не открывают last снова.
-         */
-        byte_length() {
-            if (this._byte_length >= 0)
-                return this._byte_length;
-            const units = this.chunk_units();
-            if (!units.length)
-                return this._byte_length = 0;
-            const last = this.chunk_bytes_sync(units[units.length - 1]);
-            return this._byte_length =
-                (units.length - 1) * $mws_baza_file.raw_chunk + last.byteLength;
-        }
-        /**
-         * Полуинтервал [start, end) сырых байт.
-         * Open окна через `sands_open` (один suspend), copy, unload.
-         */
-        read_range(start, end) {
-            const units = this.chunk_units();
-            const chunk = $mws_baza_file.raw_chunk;
-            const from = Math.max(0, start | 0);
-            const to = Math.max(from, end | 0);
-            if (!units.length || from >= to) {
-                return new Uint8Array(0);
-            }
-            const first = Math.floor(from / chunk);
-            const last = Math.min(units.length - 1, Math.floor((to - 1) / chunk));
-            const slice_units = units.slice(first, last + 1);
-            const land = this.land();
-            land.sands_open(slice_units);
-            const out = new Uint8Array(to - from);
-            let offset = 0;
-            for (let i = first; i <= last; i++) {
-                const bytes = this.unpack(units[i]._open);
-                const base = i * chunk;
-                const a = Math.max(0, from - base);
-                const b = Math.min(bytes.byteLength, to - base);
-                if (b > a) {
-                    out.set(bytes.subarray(a, b), offset);
-                    offset += b - a;
-                }
-            }
-            for (const unit of slice_units)
-                land.sand_unload(unit);
-            return offset === out.byteLength ? out : out.subarray(0, offset);
-        }
-        /**
-         * Поток чанков с backpressure. Каждый pull поднимает один sand.
-         */
-        readable() {
-            const units = this.chunk_units();
-            let i = 0;
-            const file = this;
-            return new ReadableStream({
-                async pull(controller) {
-                    if (i >= units.length) {
-                        controller.close();
-                        return;
-                    }
-                    controller.enqueue(await file.chunk_bytes(units[i++]));
-                },
-            });
-        }
-        /**
-         * Все чанки как отдельные буферы — для сборки Blob (LUFS и т.п.).
-         */
-        parts() {
-            const units = this.chunk_units();
-            if (!units.length)
-                return [];
-            const land = this.land();
-            land.sands_open(units);
-            const parts = units.map(unit => this.unpack(unit._open));
-            for (const unit of units)
-                land.sand_unload(unit);
-            return parts;
-        }
-    }
-    $.$mws_baza_file = $mws_baza_file;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    /** Sync API для SW→page; `$mol_wire_async` — только на границе MessagePort. */
-    class $bog_music_stream_peer extends $mol_object {
-        meta(key) {
-            return $bog_music_stream.meta_sync(key);
-        }
-        range(key, start, end) {
-            return $bog_music_stream.range_sync(key, start, end);
-        }
-    }
-    __decorate([
-        $mol_action
-    ], $bog_music_stream_peer.prototype, "meta", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_stream_peer.prototype, "range", null);
-    $.$bog_music_stream_peer = $bog_music_stream_peer;
-    /**
-     * Стрим трека через Service Worker + HTTP Range.
-     *
-     * `<audio src>` не умеет ReadableStream напрямую. SW перехватывает
-     * `bog-music-stream?key=…` (query — чтобы $mol_offline не кешировал),
-     * страница отдаёт окно из `$mws_baza_file.read_range` через peer.@$mol_action.
-     * Play стартует сразу; в RAM — окно чанков, не весь файл.
-     */
-    class $bog_music_stream extends $mol_object {
-        static name = 'bog-music-stream';
-        static _page_ready = false;
-        static _sw_ready = false;
-        static _served = null;
-        static _served_wait = null;
-        static ping = '~ping';
-        /** Meta (total/mime) — LRU, без байт. */
-        static _meta_cache = new Map();
-        static _meta_cache_max = 16;
-        /** Одинаковые Range, пока ответ в полёте (после finally — delete). */
-        static _inflight = new Map();
-        /** Сколько page↔SW Range одновременно (seek иначе держит N×окно в RAM). */
-        static _ask_active = 0;
-        static _ask_max = 2;
-        static _ask_wait = [];
-        /** URL для `<audio src>` / fetch. Stable string — sync play на iOS. */
-        static url(key) {
-            const url = new URL(typeof location !== 'undefined' ? location.href : 'http://localhost/');
-            url.hash = '';
-            url.search = '';
-            url.pathname = url.pathname.replace(/[^/]*$/, this.name);
-            url.searchParams.set('key', key);
-            return url.href;
-        }
-        static matches(request_url) {
-            try {
-                const url = new URL(request_url);
-                if (!url.pathname.endsWith('/' + this.name) && !url.pathname.endsWith(this.name)) {
-                    return null;
-                }
-                return url.searchParams.get('key');
-            }
-            catch {
-                return null;
-            }
-        }
-        /** SW API есть (PWA). Не путать с controller — после reload он бывает null секунду. */
-        static supported() {
-            if (typeof navigator === 'undefined')
-                return false;
-            return Boolean(navigator.serviceWorker);
-        }
-        /** SW уже контролирует страницу — sync play без await. */
-        static active() {
-            return this.supported() && Boolean(navigator.serviceWorker.controller) && this._served === true;
-        }
-        static served() {
-            if (this._served_wait)
-                return this._served_wait;
-            return this._served_wait = fetch(this.url(this.ping), { cache: 'no-store' })
-                .then(res => res.status === 204)
-                .catch(() => false)
-                .then(ok => {
-                this._served = ok;
-                if (!ok)
-                    void navigator.serviceWorker.getRegistration().then(reg => reg?.update()).catch(() => { });
-                return ok;
-            });
-        }
-        /** Дождаться controller (после reload / первой установки). */
-        static async when_ready() {
-            if (!this.supported())
-                return false;
-            try {
-                await navigator.serviceWorker.ready;
-                if (!navigator.serviceWorker.controller)
-                    return false;
-                return await this.served();
-            }
-            catch {
-                return false;
-            }
-        }
-        /** Страница: слушать запросы Range от SW. */
-        static install_page() {
-            if (typeof window === 'undefined')
-                return;
-            if (this._page_ready)
-                return;
-            this._page_ready = true;
-            navigator.serviceWorker?.addEventListener('message', event => {
-                void this.on_sw_message(event);
-            });
-            navigator.serviceWorker?.addEventListener('controllerchange', () => {
-                this._served = null;
-                this._served_wait = null;
-                void this.served();
-            });
-            if (navigator.serviceWorker?.controller)
-                void this.served();
-        }
-        /** SW-контекст (web.js как worker): отвечать на fetch Range. */
-        static install_sw() {
-            // Страница — window есть. Node-тесты — нет ни window, ни self.
-            if (typeof window !== 'undefined')
-                return;
-            if (typeof self === 'undefined')
-                return;
-            if (this._sw_ready)
-                return;
-            this._sw_ready = true;
-            self.addEventListener('fetch', (event) => {
-                const key = this.matches(event.request.url);
-                if (!key)
-                    return;
-                if (key === this.ping)
-                    return event.respondWith(new Response(null, { status: 204 }));
-                event.respondWith(this.sw_respond(event.request, key));
-            });
-        }
-        /** Прогреть начало трека (первый кусок) — для авто-next. */
-        static warm(key) {
-            if (!this.supported() || !key)
-                return;
-            const go = () => fetch(this.url(key), {
-                headers: { Range: 'bytes=0-65535' },
-                credentials: 'same-origin',
-            }).catch(() => { });
-            if (this.active())
-                go();
-            else
-                void this.when_ready().then(ok => { if (ok)
-                    go(); });
-        }
-        static peer = new $bog_music_stream_peer;
-        static async on_sw_message(event) {
-            const data = event.data;
-            if (!data || (data.type !== 'bog_music_stream_range' && data.type !== 'bog_music_stream_meta')) {
-                return;
-            }
-            const port = event.ports?.[0];
-            if (!port)
-                return;
-            try {
-                if (data.type === 'bog_music_stream_meta') {
-                    const meta = await $mol_wire_async(this.peer).meta(data.key);
-                    port.postMessage({ ok: true, ...meta });
-                    return;
-                }
-                const result = await $mol_wire_async(this.peer).range(data.key, data.start, data.end);
-                port.postMessage({
-                    ok: true,
-                    total: result.total,
-                    mime: result.mime,
-                    start: result.start,
-                    end: result.end,
-                    bytes: result.bytes,
-                }, [result.bytes]);
-            }
-            catch (e) {
-                port.postMessage({
-                    ok: false,
-                    error: e?.message ?? String(e),
-                });
-            }
-        }
-        static file_of(key) {
-            const track = $bog_music_account_baza.home().track(key);
-            if (!track)
-                throw new Error(`stream: no track ${key}`);
-            let file = track.File()?.remote();
-            if (!file) {
-                track.land().sync();
-                file = track.File()?.remote();
-            }
-            if (!file)
-                throw new Error(`stream: no file ${key}`);
-            file.land().sync();
-            if (typeof file.byte_length !== 'function') {
-                throw new Error('stream: $mws_baza_file not installed');
-            }
-            return file;
-        }
-        static meta_sync(key) {
-            const file = this.file_of(key);
-            const mime_raw = file.type();
-            const mime = !mime_raw || mime_raw === 'application/octet-stream'
-                ? 'audio/mpeg'
-                : mime_raw;
-            return { total: file.byte_length(), mime };
-        }
-        /** Байты [start, end); звать из peer.@$mol_action. */
-        static range_sync(key, start, end) {
-            const file = this.file_of(key);
-            const total = file.byte_length();
-            const mime_raw = file.type();
-            const mime = !mime_raw || mime_raw === 'application/octet-stream'
-                ? 'audio/mpeg'
-                : mime_raw;
-            const from = Math.max(0, Math.min(total, start | 0));
-            const to = end < 0
-                ? total
-                : Math.max(from, Math.min(total, end | 0));
-            const slice = file.read_range(from, to);
-            const bytes = slice.buffer.slice(slice.byteOffset, slice.byteOffset + slice.byteLength);
-            return { bytes, total, mime, start: from, end: to };
-        }
-        static async sw_client() {
-            const list = await self.clients.matchAll({
-                type: 'window',
-                includeUncontrolled: true,
-            });
-            return list[0] ?? null;
-        }
-        static sw_call(client, message) {
-            return new Promise(resolve => {
-                const channel = new MessageChannel();
-                const timer = setTimeout(() => {
-                    resolve({ ok: false, error: 'stream: page timeout' });
-                }, 60000);
-                channel.port1.onmessage = (event) => {
-                    clearTimeout(timer);
-                    resolve(event.data);
-                };
-                client.postMessage(message, [channel.port2]);
-            });
-        }
-        static meta_cache_put(key, meta) {
-            if (this._meta_cache.has(key))
-                this._meta_cache.delete(key);
-            this._meta_cache.set(key, meta);
-            while (this._meta_cache.size > this._meta_cache_max) {
-                const oldest = this._meta_cache.keys().next().value;
-                if (oldest === undefined)
-                    break;
-                this._meta_cache.delete(oldest);
-            }
-        }
-        static async sw_meta(key) {
-            const cached = this._meta_cache.get(key);
-            if (cached) {
-                // LRU touch
-                this._meta_cache.delete(key);
-                this._meta_cache.set(key, cached);
-                return { ok: true, ...cached };
-            }
-            const client = await this.sw_client();
-            if (!client)
-                return { ok: false, error: 'stream: no page client' };
-            const res = await this.sw_call(client, { type: 'bog_music_stream_meta', key });
-            if (res.ok)
-                this.meta_cache_put(key, { total: res.total, mime: res.mime });
-            return res;
-        }
-        static async ask_slot(run) {
-            if (this._ask_active >= this._ask_max) {
-                await new Promise(done => this._ask_wait.push(done));
-            }
-            this._ask_active++;
-            try {
-                return await run();
-            }
-            finally {
-                this._ask_active--;
-                const next = this._ask_wait.shift();
-                if (next)
-                    next();
-            }
-        }
-        static async sw_ask(key, start, end) {
-            const id = `${key}:${start}:${end}`;
-            const wait = this._inflight.get(id);
-            if (wait)
-                return wait;
-            const task = this.ask_slot(async () => {
-                const client = await this.sw_client();
-                if (!client)
-                    return { ok: false, error: 'stream: no page client' };
-                return this.sw_call(client, {
-                    type: 'bog_music_stream_range',
-                    key,
-                    start,
-                    end,
-                });
-            }).finally(() => this._inflight.delete(id));
-            this._inflight.set(id, task);
-            return task;
-        }
-        /**
-         * Потолок только для open-ended `bytes=N-`.
-         * Явно запрошенный диапазон отдаём целиком — иначе Chromium
-         * долбит один и тот же Range десятками повторов.
-         * 512KiB: пик ≈ ask_max×окно, не десятки МБ на seek.
-         */
-        static open_ended_window = 512 * 1024;
-        static async sw_respond(request, key) {
-            const range_hdr = request.headers.get('Range');
-            // Без Range — progressive stream.
-            if (!range_hdr) {
-                return this.sw_respond_stream(key);
-            }
-            let start = 0;
-            let end = -1; // exclusive; -1 = open-ended
-            let open_ended = false;
-            const m = /^bytes=(\d*)-(\d*)$/i.exec(range_hdr.trim());
-            if (m) {
-                if (m[1] !== '')
-                    start = parseInt(m[1], 10);
-                if (m[2] !== '')
-                    end = parseInt(m[2], 10) + 1;
-                else
-                    open_ended = true;
-            }
-            const meta = await this.sw_meta(key);
-            if (!meta.ok) {
-                return new Response(meta.error, { status: 503 });
-            }
-            const total = meta.total;
-            if (start >= total) {
-                return new Response(null, {
-                    status: 416,
-                    headers: { 'Content-Range': `bytes */${total}` },
-                });
-            }
-            if (open_ended || end < 0) {
-                end = Math.min(total, start + this.open_ended_window);
-            }
-            else {
-                // Явный Range — как просили (медиа-пробы обычно крошечные).
-                end = Math.min(total, end);
-            }
-            const data = await this.sw_ask(key, start, end);
-            if (!data.ok) {
-                return new Response(data.error, { status: 503 });
-            }
-            return new Response(data.bytes, {
-                status: 206,
-                headers: {
-                    'Content-Type': data.mime || meta.mime,
-                    'Accept-Ranges': 'bytes',
-                    'Content-Length': String(data.bytes.byteLength),
-                    'Content-Range': `bytes ${data.start}-${data.end - 1}/${total}`,
-                    'Cache-Control': 'no-store',
-                },
-            });
-        }
-        /** GET без Range: тело — поток окон, Content-Length = полный размер. */
-        static async sw_respond_stream(key) {
-            const meta = await this.sw_meta(key);
-            if (!meta.ok) {
-                return new Response(meta.error, { status: 503 });
-            }
-            const total = meta.total;
-            const mime = meta.mime;
-            const win = this.open_ended_window;
-            let pos = 0;
-            const stream = new ReadableStream({
-                async pull(controller) {
-                    if (pos >= total) {
-                        controller.close();
-                        return;
-                    }
-                    const next = Math.min(total, pos + win);
-                    const data = await $bog_music_stream.sw_ask(key, pos, next);
-                    if (!data.ok) {
-                        controller.error(new Error(data.error));
-                        return;
-                    }
-                    controller.enqueue(new Uint8Array(data.bytes));
-                    pos = data.end;
-                },
-            });
-            return new Response(stream, {
-                status: 200,
-                headers: {
-                    'Content-Type': mime,
-                    'Accept-Ranges': 'bytes',
-                    'Content-Length': String(total),
-                    'Cache-Control': 'no-store',
-                },
-            });
-        }
-    }
-    $.$bog_music_stream = $bog_music_stream;
-    // Регистрация на загрузке бандла (и страница, и SW — один web.js).
-    $bog_music_stream.install_sw();
-    $bog_music_stream.install_page();
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    /**
-     * Однократные фиксы окружения. Выполняются при загрузке бандла (init()
-     * зовётся из app.view.ts на уровне модуля) — ДО первого обращения
-     * к $giper_baza_auth / yard.
-     */
-    class $bog_music_boot extends $mol_object {
-        /** Токен шара из #share=… — забирается приложением один раз в auto(). */
-        static share_token = '';
-        static init() {
-            // Подмена file/land до любого baza: play-путь читает чанки потоком
-            // с unload (см. $mws_baza_file / $mws_baza_land), а не через
-            // sands_open на весь файл. Glob и File-link смотрят this.$ / $.
-            $.$giper_baza_land = $bog_music_land;
-            $.$giper_baza_file = $mws_baza_file;
-            $bog_music_stream.install_page();
-            if (typeof location === 'undefined')
-                return;
-            $bog_music_log.init();
-            $bog_music_log.act('запуск приложения');
-            this.bridge_vk_token();
-            this.import_account_hash();
-            this.parse_share_hash();
-        }
-        static in_extension() {
-            if (typeof location === 'undefined')
-                return false;
-            const proto = location.protocol;
-            return proto === 'chrome-extension:' || proto === 'moz-extension:';
-        }
-        /** Мост `chrome.storage.local.vk_token` → `localStorage.vk_token`. */
-        static bridge_vk_token() {
-            try {
-                const ext = globalThis.chrome;
-                if (!ext?.storage?.local?.get)
-                    return;
-                const apply = (token) => {
-                    if (!token)
-                        return;
-                    try {
-                        if (window.localStorage.getItem('vk_token') === JSON.stringify(token))
-                            return;
-                        window.localStorage.setItem('vk_token', JSON.stringify(token));
-                        window.dispatchEvent(new StorageEvent('storage', { key: 'vk_token' }));
-                    }
-                    catch (e) {
-                        console.warn('[boot] vk_token write failed:', e?.message);
-                    }
-                };
-                ext.storage.local.get(['vk_token'], (r) => apply(r?.vk_token ?? ''));
-                ext.storage.onChanged?.addListener?.((changes, area) => {
-                    if (area !== 'local' || !changes?.vk_token)
-                        return;
-                    apply(changes.vk_token.newValue ?? '');
-                });
-            }
-            catch (e) {
-                console.warn('[boot] vk_token bridge failed:', e?.message);
-            }
-        }
-        /**
-         * Импорт аккаунта из URL вида `#account=<key>`. Должен сработать ДО
-         * первого обращения к $giper_baza_auth.current().
-         */
-        static import_account_hash() {
-            try {
-                const hash = location.hash || '';
-                const match = hash.match(/[#&]account=([^&]+)/);
-                if (!match)
-                    return;
-                const key = decodeURIComponent(match[1]);
-                if (key.length < 172) {
-                    console.warn('[boot] account key too short, ignoring');
-                    return;
-                }
-                const current = $mol_state_local.value('$giper_baza_auth');
-                $mol_state_local.value('$giper_baza_auth', key);
-                const clean_hash = hash.replace(/[#&]?account=[^&]*/, '').replace(/^#&/, '#');
-                const new_url = location.origin + location.pathname + location.search
-                    + (clean_hash && clean_hash !== '#' ? clean_hash : '');
-                history.replaceState(null, '', new_url);
-                if (current !== key)
-                    location.reload();
-            }
-            catch (e) {
-                console.warn('[boot] account import failed:', e?.message);
-            }
-        }
-        /** Сохраняет токен из `#share=…`, не трогая baza (импорт — реактивно в app). */
-        static parse_share_hash() {
-            try {
-                const match = (location.hash || '').match(/[#&]share=([^&]+)/);
-                if (match)
-                    this.share_token = decodeURIComponent(match[1]);
-            }
-            catch (e) {
-                console.warn('[boot] share hash parse failed:', e?.message);
-            }
-        }
-        /** Убирает #share=… из адресной строки после обработки. */
-        static clear_share_hash() {
-            try {
-                const new_hash = (location.hash || '').replace(/[#&]?share=[^&]*/, '').replace(/^#&/, '#');
-                const new_url = location.origin + location.pathname + location.search
-                    + (new_hash && new_hash !== '#' ? new_hash : '');
-                history.replaceState(null, '', new_url);
-            }
-            catch { }
-            this.share_token = '';
-        }
-    }
-    $.$bog_music_boot = $bog_music_boot;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    class $bog_music_api extends $mol_object {
-        static default_proxy_url = 'https://bog-vk-audio.cmyser-fast-i.workers.dev';
-        static token(next) {
-            return $mol_state_local.value('vk_token', next) ?? '';
-        }
-        static cookies(next) {
-            return $mol_state_local.value('vk_cookies', next) ?? '';
-        }
-        /**
-         * Конфигурируемый URL прокси. Пустое значение — дефолт.
-         * Позволяет обходить блокировки VK API через свой / альтернативный хост.
-         */
-        static proxy_url(next) {
-            const custom = $mol_state_local.value('vk_proxy_url', next) ?? '';
-            return custom || this.default_proxy_url;
-        }
-        /**
-         * Запущены ли мы как Chrome/Firefox extension?
-         * В этом контексте host_permissions снимают CORS, и VK API можно дёргать
-         * напрямую без прокси-воркера.
-         */
-        static in_extension() {
-            return $bog_music_boot.in_extension();
-        }
-        /** Прямой вызов VK API из popup (использует host_permissions расширения). */
-        static async fetch_vk_direct(method, params) {
-            const token = this.token();
-            if (!token)
-                throw new Error('Token is not set');
-            const body = new URLSearchParams({
-                ...Object.fromEntries(Object.entries(params).map(([k, v]) => [k, String(v)])),
-                access_token: token,
-                v: '5.275',
-                client_id: '6287487',
-            });
-            // credentials: 'include' прицепляет cookies vk.com (если user залогинен) —
-            // нужно для приватных треков с непустым audio.url.
-            const resp = await fetch(`https://api.vk.com/method/${method}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: body.toString(),
-                credentials: 'include',
-            });
-            const data = await resp.json();
-            if (data?.error) {
-                const msg = data.error.error_msg ?? 'VK API error';
-                const code = data.error.error_code ?? '?';
-                console.error(`[vk-api] error ${code}: ${msg}`);
-                throw new Error(`[${code}] ${msg}`);
-            }
-            return data.response;
-        }
-        static async fetch_proxy(endpoint, body) {
-            const base = this.proxy_url().replace(/\/$/, '');
-            const resp = await fetch(`${base}${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body),
-            });
-            const data = await resp.json();
-            if (!resp.ok) {
-                const code = data.code ?? '?';
-                const msg = data.error ?? 'Proxy error';
-                console.error(`[vk-api] error ${code}: ${msg}`);
-                throw new Error(`[${code}] ${msg}`);
-            }
-            return data;
-        }
-        static my_audios() {
-            const token = this.token();
-            if (!token)
-                throw new Error('Token is not set');
-            if (this.in_extension()) {
-                return $mol_wire_sync(this).fetch_vk_direct('audio.get', { count: 200 });
-            }
-            return $mol_wire_sync(this).fetch_proxy('/audios', { token, cookies: this.cookies(), count: 200 });
-        }
-        static search_audios(query) {
-            const token = this.token();
-            if (!token)
-                throw new Error('Token is not set');
-            if (this.in_extension()) {
-                return $mol_wire_sync(this).fetch_vk_direct('audio.search', { q: query, count: 100, sort: 2 });
-            }
-            return $mol_wire_sync(this).fetch_proxy('/search', { token, cookies: this.cookies(), query, count: 100 });
-        }
-        /**
-         * Обновляет URL трека (HLS-ссылки от VK живут ~60 минут).
-         * Используется перед save_hls для треков, у которых url протух.
-         */
-        static refresh_audio(audio_key) {
-            const token = this.token();
-            if (!token)
-                throw new Error('Token is not set');
-            if (this.in_extension()) {
-                const resp = $mol_wire_sync(this).fetch_vk_direct('audio.getById', { audios: audio_key });
-                return resp?.[0] ?? null;
-            }
-            const resp = $mol_wire_sync(this).fetch_proxy('/getById', { token, cookies: this.cookies(), audios: audio_key });
-            return resp?.[0] ?? null;
-        }
-    }
-    __decorate([
-        $mol_mem
-    ], $bog_music_api, "token", null);
-    __decorate([
-        $mol_mem
-    ], $bog_music_api, "cookies", null);
-    __decorate([
-        $mol_mem
-    ], $bog_music_api, "proxy_url", null);
-    __decorate([
-        $mol_mem
-    ], $bog_music_api, "my_audios", null);
-    __decorate([
-        $mol_mem_key
-    ], $bog_music_api, "search_audios", null);
-    __decorate([
-        $mol_mem_key
-    ], $bog_music_api, "refresh_audio", null);
-    $.$bog_music_api = $bog_music_api;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    /** @deprecated Use $mol_crypto2_nonce */
-    $.$mol_crypto_salt = $mol_crypto2_nonce;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    /** Symmetric cipher with shortest payload. */
-    class $mol_crypto_sacred extends $mol_buffer {
-        /** Key size in bytes. */
-        static size = 16;
-        /** Makes new random secret. */
-        static make() {
-            return this.from($mol_crypto_salt());
-        }
-        /** Makes from string of buffer view. */
-        static from(serial) {
-            if (typeof serial === 'string') {
-                serial = new Uint8Array([
-                    ...$mol_base64_url_decode(serial),
-                ]);
-            }
-            if (!(serial instanceof Uint8Array)) {
-                serial = new Uint8Array(serial.buffer, serial.byteOffset, serial.byteLength);
-            }
-            ;
-            serial[0] = 0xFF;
-            const sacred = super.from(serial);
-            return sacred;
-        }
-        static async from_native(native) {
-            const buf = await $mol_crypto_native.subtle.exportKey('raw', native).catch($mol_crypto_restack);
-            const sacred = this.from(new Uint8Array(buf));
-            sacred._native = native;
-            return sacred;
-        }
-        constructor(buffer, byteOffset, byteLength) {
-            super(buffer, byteOffset, byteLength);
-            if (this.getUint8(0) !== 0xFF)
-                $mol_fail(new Error('Buffer should starts with 0xFF byte'));
-        }
-        toString() {
-            return $mol_base64_url_encode(this.asArray());
-        }
-        _native;
-        /** Native crypto secret */
-        async native() {
-            return this._native ?? (this._native = await $mol_crypto_native.subtle.importKey('raw', this, {
-                name: 'AES-CBC',
-                length: 128,
-            }, true, ['encrypt', 'decrypt']).catch($mol_crypto_restack));
-        }
-        /** Encrypt any binary message. 16n bytes */
-        async encrypt(open, salt) {
-            return new Uint8Array(await $mol_crypto_native.subtle.encrypt({
-                name: 'AES-CBC',
-                length: 128,
-                tagLength: 32,
-                iv: salt,
-            }, await this.native(), open).catch($mol_crypto_restack));
-        }
-        /** Decrypt any binary message. */
-        async decrypt(closed, salt) {
-            return new Uint8Array(await $mol_crypto_native.subtle.decrypt({
-                name: 'AES-CBC',
-                length: 128,
-                tagLength: 32,
-                iv: salt,
-            }, await this.native(), closed).catch($mol_crypto_restack));
-        }
-        /** Encrypts 0xFF prefixed buffer. 16 bytes */
-        async close(opened, salt) {
-            if (opened.getUint8(0) !== 0xFF)
-                throw new Error('Closable buffer should starts with 0xFF');
-            const trimed = new Uint8Array(opened.buffer, opened.byteOffset + 1, opened.byteLength - 1);
-            return this.encrypt(trimed, salt);
-        }
-        /** Decrypts 0xFF prefixed buffer. 16 bytes */
-        async open(closed, salt) {
-            const trimed = await this.decrypt(closed, salt);
-            if (trimed.byteLength !== closed.byteLength - 1)
-                throw new Error('Length of opened buffer should be ' + (closed.byteLength - 1));
-            const opened = new Uint8Array(closed.byteLength);
-            opened[0] = 0xFF;
-            opened.set(trimed, 1);
-            return opened;
-        }
-    }
-    __decorate([
-        $mol_memo.method
-    ], $mol_crypto_sacred.prototype, "toString", null);
-    $.$mol_crypto_sacred = $mol_crypto_sacred;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    /**
-     * Расширение `$giper_baza_atom_link.to` с автоматическим запуском `.sync()`
-     * на target-land при чтении ссылки: стандартный `remote()` только создаёт
-     * Pawn proxy без триггера sync. Благодаря обёртке достаточно прочитать
-     * ссылку (например, отрендерив трек) — синхронизация blob-land стартует
-     * сама, view-слой о ней не думает.
-     */
-    function $bog_music_link_synced(Value) {
-        const Base = $giper_baza_atom_link.to(Value);
-        class $bog_music_link_synced extends Base {
-            remote(next) {
-                const r = super.remote(next);
-                if (r && next === undefined) {
-                    try {
-                        r.land().sync();
-                    }
-                    catch (e) {
-                        // Promise = sync пошёл в фоне, ждать его здесь не нужно.
-                        if (!(e instanceof Promise))
-                            throw e;
-                    }
-                }
-                return r;
-            }
-            /**
-             * Чтение ссылки БЕЗ запуска sync target-land'а. Для проверок «есть ли
-             * blob уже локально» (индикатор строки, выбор следующего в префетче) —
-             * чтобы простой рендер списка не поднимал загрузку всех blob-лендов разом.
-             */
-            remote_local(next) {
-                return super.remote(next);
-            }
-        }
-        return $bog_music_link_synced;
-    }
-    $.$bog_music_link_synced = $bog_music_link_synced;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    /**
-     * Шаринг треков ссылкой. Sender: выбранные треки шифруются одноразовым
-     * AES-ключом и заливаются в эфемерный land с публичным чтением; ключ
-     * уезжает только в URL-fragment. Receiver: по #share=<link>.<key> тянет
-     * land, расшифровывает и складывает треки в плейлист `shared:<имя>`.
-     *
-     * Все записи в baza — внутри одной $mol_wire_async-фибры (write_in_fiber):
-     * PoW и IDB-load wire_task'и кешируются между ретраями только там.
-     */
-    class $bog_music_share extends $mol_object {
-        static instance() {
-            return new $bog_music_share;
-        }
-        // Значение верификатора менять нельзя: старые ссылки перестанут читаться.
-        static verifier_plain = 'bog-vk-share-v1';
-        account() {
-            return $bog_music_account_baza.home();
-        }
-        static plural_tracks(n) {
-            const mod10 = n % 10;
-            const mod100 = n % 100;
-            if (mod10 === 1 && mod100 !== 11)
-                return 'трек';
-            if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14))
-                return 'трека';
-            return 'треков';
-        }
-        // ---------- выбор треков (long-press → multi-select) ----------
-        mode(next) {
-            return next ?? false;
-        }
-        selection(next) {
-            return next ?? [];
-        }
-        selected(key) {
-            return this.selection().includes(key);
-        }
-        enter(key) {
-            $bog_music_log.act(`режим шаринга включён с ${key}`);
-            this.selection([key]);
-            this.mode(true);
-        }
-        toggle(key) {
-            const cur = this.selection();
-            const next = cur.includes(key) ? cur.filter(k => k !== key) : [...cur, key];
-            $bog_music_log.act(`${cur.includes(key) ? 'снят' : 'выбран'} для шаринга ${key}, всего ${next.length}`);
-            this.selection(next);
-        }
-        exit() {
-            if (this.mode())
-                $bog_music_log.act('режим шаринга выключен');
-            this.selection([]);
-            this.mode(false);
-        }
-        // ---------- статусы для тоста ----------
-        status_logged = '';
-        status(next) {
-            if (next && next !== this.status_logged)
-                $bog_music_log.act(`шар: ${next}`);
-            if (next !== undefined)
-                this.status_logged = next;
-            return next ?? '';
-        }
-        import_logged = '';
-        import_status(next) {
-            if (next && next !== this.import_logged)
-                $bog_music_log.act(`приём шара: ${next}`);
-            if (next !== undefined)
-                this.import_logged = next;
-            return next ?? '';
-        }
-        busy(next) {
-            return next ?? false;
-        }
-        // ---------- sender ----------
-        /** Клик по share-иконке вне режима выбора — мгновенный одиночный шар. */
-        share_single(key) {
-            $bog_music_log.act(`одиночный шар ${key}`);
-            // Не через $mol_wire_async(share_keys): async+wire глотает suspense неправильно.
-            void this.share_keys([key]);
-        }
-        /**
-         * Клик по табу «Расшаренный» — финализирует мульти-шар.
-         * Только триггер: submit зовётся из page()-мема, а чистка selection
-         * пишет в мемы — делать это синхронно из тела мема нельзя.
-         */
-        submit() {
-            void this.submit_async();
-        }
-        async submit_async() {
-            const keys = [...this.selection()];
-            this.exit();
-            await this.share_keys(keys);
-        }
-        /** Сбор мета+blob. `@$mol_action` + `$mol_wire_async` — suspend до готовности. */
-        collect(keys) {
-            const out = [];
-            for (const key of keys) {
-                const track = this.account().track(key);
-                const audio = track?.audio();
-                const blob = track?.blob_wait();
-                if (audio && blob)
-                    out.push({ audio, blob });
-            }
-            return out;
-        }
-        sender_name() {
-            return (this.account().nickname() || '').trim() || 'Расшаренный';
-        }
-        async share_keys(keys) {
-            if (this.busy())
-                return;
-            if (!keys.length) {
-                $bog_music_log.act('шар отменён: нет выбранных треков');
-                this.status('Нет выбранных треков');
-                return;
-            }
-            $bog_music_log.act(`сборка шара: ${keys.length} трек(ов)`);
-            this.busy(true);
-            Promise.resolve().then(() => this.status('Готовлю шар…'));
-            try {
-                await this.share_build(keys);
-            }
-            catch (e) {
-                console.warn('[share] failed:', e?.message ?? e);
-                $bog_music_log.err(`шар не собрался: ${e?.message ?? e}`);
-                this.status('Ошибка: ' + (e?.message ?? 'неизвестно'));
-            }
-            finally {
-                this.busy(false);
-            }
-        }
-        async share_build(keys) {
-            const peer = $mol_wire_async(this);
-            let usable = [];
-            let ciphers = [];
-            try {
-                usable = await peer.collect(keys);
-                if (!usable.length) {
-                    this.status('Нет локальных данных для шаринга');
-                    return;
-                }
-                const sender = await peer.sender_name();
-                // Ключи новых lands генерим заранее и параллельно: PoW на каждый —
-                // секунды. `land_grab` дальше возьмёт готовые из embryos без PoW.
-                const auth_class = $giper_baza_auth;
-                const needed = usable.length + 1; // share-land + по одному на файл
-                const to_gen = Math.max(0, needed - (auth_class.embryos?.length ?? 0));
-                if (to_gen > 0) {
-                    this.status(`Генерирую ключи (${to_gen})…`);
-                    const generated = await Promise.all(Array.from({ length: to_gen }, () => auth_class._generate()));
-                    for (const g of generated) {
-                        auth_class.embryos.push(g.toString() + g.toStringPrivate());
-                    }
-                }
-                this.status('Шифрую…');
-                const key = $mol_crypto_sacred.make();
-                const sender_cipher = await this.encrypt(key, $mol_charset_encode(sender));
-                const verifier_cipher = await this.encrypt(key, $mol_charset_encode($bog_music_share.verifier_plain));
-                for (const { audio, blob } of usable) {
-                    const meta_json = JSON.stringify({
-                        artist: audio.artist ?? '',
-                        title: audio.title ?? '',
-                        duration: Number(audio.duration) || 0,
-                        mime: blob.type || 'audio/mpeg',
-                        owner_id: audio.owner_id,
-                        id: audio.id,
-                        cover: audio.cover ?? '',
-                    });
-                    const meta_cipher = await this.encrypt(key, $mol_charset_encode(meta_json));
-                    const plain = new Uint8Array(await blob.arrayBuffer());
-                    const blob_cipher = await this.encrypt(key, plain);
-                    plain.fill(0);
-                    ciphers.push({ audio, mime: blob.type || 'audio/mpeg', meta: meta_cipher, blob: blob_cipher });
-                }
-                // plaintext Blob больше не нужны — отпускаем до заливки.
-                usable = [];
-                this.status('Заливаю в baza…');
-                const burn = await $giper_baza_auth._generate();
-                const land_link = await peer.write_in_fiber(sender_cipher, verifier_cipher, ciphers, burn.pass());
-                if (!land_link) {
-                    $bog_music_log.err('шар не залился: write_in_fiber не вернул ленд');
-                    this.status('Не удалось залить треки');
-                    return;
-                }
-                $bog_music_log.act(`шар залит: ${ciphers.length} трек(ов)`, land_link);
-                const url = this.url_for(land_link, key.toString(), burn.toString() + burn.toStringPrivate());
-                try {
-                    navigator.clipboard.writeText(url);
-                    this.status(`Скопировано: ${ciphers.length} ${$bog_music_share.plural_tracks(ciphers.length)}`);
-                }
-                catch {
-                    this.status('Ссылка: ' + url);
-                }
-            }
-            finally {
-                // Отпускаем plaintext/cipher из замыкания + unload source sands.
-                // Не zero-fill cipher: buffer()/val могли оставить ту же ссылку в land.
-                ciphers = [];
-                usable = [];
-                await peer.unload_keys(keys);
-            }
-        }
-        /** Сбросить `_ball`/`_open` у file-land треков после шара. */
-        unload_keys(keys) {
-            for (const key of keys) {
-                const file = this.account().track(key)?.File()?.remote();
-                if (!file || typeof file.chunk_units !== 'function')
-                    continue;
-                const land = file.land();
-                if (typeof land.sand_unload !== 'function')
-                    continue;
-                for (const unit of file.chunk_units())
-                    land.sand_unload(unit);
-            }
-        }
-        /** Все записи шара одной фиброй: land_grab (PoW) + атомы + file-lands + sync. */
-        write_in_fiber(sender_cipher, verifier_cipher, ciphers, burn) {
-            const preset = [[null, $giper_baza_rank_read], [burn, $giper_baza_rank_post('just')]];
-            const land = $giper_baza_glob.land_grab(preset);
-            const data = land.Data($bog_music_share_baza);
-            data.Sender('auto').val(sender_cipher);
-            data.Verifier('auto').val(verifier_cipher);
-            data.Count('auto').val(ciphers.length);
-            const tracks = data.Tracks(null);
-            const file_lands = [];
-            for (const c of ciphers) {
-                const trk = tracks.key($bog_music_account_baza.key_of(c.audio), 'auto');
-                if (!trk)
-                    continue;
-                trk.Meta('auto').val(c.meta);
-                const file_store = trk.File('auto').ensure(preset);
-                if (!file_store)
-                    continue;
-                file_store.buffer(c.blob);
-                file_store.type(c.mime);
-                trk.File('auto').remote(file_store);
-                file_lands.push(file_store.land());
-            }
-            // Шар — эфемерный land вне home: пуш на master запускаем явно.
-            this.keep(land);
-            for (const fl of file_lands)
-                this.keep(fl);
-            return land.link().str;
-        }
-        url_for(link, key, burn) {
-            const base = $bog_music_boot.in_extension()
-                ? 'https://b-on-g.github.io/music/'
-                : location.origin + location.pathname + location.search;
-            return base + '#share=' + link + '.' + key + '.' + burn;
-        }
-        // ---------- receiver ----------
-        token_done(token, next) {
-            return next ?? false;
-        }
-        /** Возвращает id плейлиста с импортированными треками (или null). */
-        async import(token) {
-            if (!token || this.token_done(token))
-                return null;
-            const [link_str, key_str, burn_str = ''] = token.split('.');
-            if (!link_str || !key_str) {
-                $bog_music_log.err('импорт шара: битая ссылка, нет разделителя ленда и ключа');
-                this.import_status('Битая ссылка');
-                this.finish(token);
-                return null;
-            }
-            let key;
-            try {
-                key = $mol_crypto_sacred.from(key_str);
-            }
-            catch {
-                $bog_music_log.err('импорт шара: битый ключ расшифровки', link_str);
-                this.import_status('Битый ключ');
-                this.finish(token);
-                return null;
-            }
-            $bog_music_log.act('импорт шара: ленд и ключ разобраны', link_str);
-            try {
-                const land = $giper_baza_glob.Land(new $giper_baza_link(link_str));
-                this.keep(land);
-                this.import_status('Загружаю шар…');
-                let header = null;
-                for (let i = 0; i < 90; i++) {
-                    const cur = await $mol_wire_async(this)
-                        .header_read(land).catch(() => null);
-                    if (cur?.verifier_cipher) {
-                        header = cur;
-                        if (cur.burned)
-                            break;
-                        if (cur.count > 0 && cur.keys.length >= cur.count)
-                            break;
-                        if (cur.count === 0 && cur.keys.length > 0)
-                            break;
-                    }
-                    if (cur)
-                        this.import_status(`Жду треки (${cur.keys.length}/${cur.count || '?'})…`);
-                    await new Promise(r => setTimeout(r, 1000));
-                }
-                if (!header?.verifier_cipher) {
-                    this.import_status('Шар не загрузился — попробуй позже');
-                    return null;
-                }
-                if (header.burned) {
-                    $bog_music_log.act('импорт шара: ссылка уже использована', link_str);
-                    this.import_status('Ссылка уже использована');
-                    this.finish(token);
-                    return null;
-                }
-                let verifier = '';
-                try {
-                    verifier = $mol_charset_decode(await this.decrypt(key, header.verifier_cipher));
-                }
-                catch { }
-                if (verifier !== $bog_music_share.verifier_plain) {
-                    this.import_status('Не тот ключ');
-                    this.finish(token);
-                    return null;
-                }
-                const sender = header.sender_cipher?.byteLength
-                    ? $mol_charset_decode(await this.decrypt(key, header.sender_cipher))
-                    : 'Расшаренный';
-                const playlist = 'shared:' + sender;
-                let imported = 0;
-                for (let i = 0; i < header.keys.length; i++) {
-                    const k = header.keys[i];
-                    try {
-                        let td = null;
-                        for (let attempt = 0; attempt < 60 && !td; attempt++) {
-                            this.import_status(`Тяну ${i + 1}/${header.keys.length}${attempt ? ` (${attempt}с)` : ''}…`);
-                            td = await $mol_wire_async(this)
-                                .track_read(land, k).catch(() => null);
-                            if (!td)
-                                await new Promise(r => setTimeout(r, 1000));
-                        }
-                        if (!td)
-                            continue;
-                        const meta = JSON.parse($mol_charset_decode(await this.decrypt(key, td.meta_cipher)));
-                        const buf = await this.decrypt(key, td.file_cipher);
-                        const audio = {
-                            id: Number(meta.id),
-                            owner_id: Number(meta.owner_id),
-                            artist: String(meta.artist ?? ''),
-                            title: String(meta.title ?? ''),
-                            duration: Number(meta.duration ?? 0),
-                            url: '',
-                            cover: String(meta.cover ?? ''),
-                        };
-                        const mime = String(meta.mime || td.file_mime || 'audio/mpeg');
-                        await $mol_wire_async(this.account()).import_audio(audio, buf, mime, playlist);
-                        imported++;
-                    }
-                    catch (e) {
-                        if (e instanceof Promise)
-                            throw e;
-                        console.warn('[share] track import failed:', e?.message ?? e);
-                        $bog_music_log.err(`приём шара: трек ${k} не импортирован: ${e?.message ?? e}`, link_str);
-                    }
-                }
-                if (imported) {
-                    const burned = await $mol_wire_async(this)
-                        .burn_in_fiber(land, header.keys, burn_str).catch((e) => { $bog_music_log.err(`шар не сожжён: ${e?.message ?? e}`, link_str); return false; });
-                    $bog_music_log.act(burned ? 'шар сожжён после импорта' : 'шар старый, сжечь нельзя', link_str);
-                }
-                this.finish(token);
-                if (imported) {
-                    this.import_status(`От ${sender}: ${imported} ${$bog_music_share.plural_tracks(imported)}`);
-                    return playlist;
-                }
-                this.import_status('Шар пустой');
-                return null;
-            }
-            catch (e) {
-                if (e instanceof Promise)
-                    throw e;
-                console.warn('[share] import failed:', e?.message ?? e);
-                $bog_music_log.err(`приём шара не удался: ${e?.message ?? e}`, link_str);
-                this.import_status('Не получилось: ' + (e?.message ?? 'ошибка'));
-                return null;
-            }
-        }
-        finish(token) {
-            this.token_done(token, true);
-            $bog_music_boot.clear_share_hash();
-        }
-        kept = new Map();
-        keep(land) {
-            const link = land.link().str;
-            if (this.kept.has(link))
-                return;
-            const atom = new $mol_wire_atom(`bog_music_share_keep<${link}>`, () => {
-                $giper_baza_glob.Land(new $giper_baza_link(link)).sync();
-                return null;
-            });
-            this.kept.set(link, atom);
-            atom.fresh();
-        }
-        burn_in_fiber(land, keys, burn_str) {
-            if (!burn_str)
-                return false;
-            const burn = $giper_baza_auth.from(burn_str);
-            const sign = (target) => Object.assign(target, { auth: () => burn });
-            sign(land);
-            const data = land.Data($bog_music_share_baza);
-            if (!data.can_change())
-                return false;
-            data.Burned('auto').val(true);
-            const tracks = data.Tracks(null);
-            for (const key of keys) {
-                const file = tracks.key(key)?.File()?.remote();
-                try {
-                    if (file)
-                        sign(file.land());
-                    if (file?.can_change())
-                        file.buffer(new Uint8Array());
-                    if (file)
-                        this.keep(file.land());
-                }
-                catch (error) {
-                    if ($mol_promise_like(error))
-                        throw error;
-                }
-                tracks.cut(key);
-            }
-            this.keep(land);
-            return true;
-        }
-        /** Sync-чтение заголовка шара — в фибре, ретраится на загрузке land. */
-        header_read(land) {
-            const data = land.Data($bog_music_share_baza);
-            return {
-                sender_cipher: data.Sender()?.val() ?? null,
-                verifier_cipher: data.Verifier()?.val() ?? null,
-                count: Number(data.Count()?.val() ?? 0),
-                burned: Boolean(data.Burned()?.val()),
-                keys: (data.Tracks()?.keys() ?? []),
-            };
-        }
-        /** Sync-чтение шифров одного трека — в фибре. null пока чанки не доехали. */
-        track_read(land, key) {
-            const trk = land.Data($bog_music_share_baza).Tracks()?.key(key);
-            if (!trk)
-                return null;
-            const meta_cipher = trk.Meta()?.val();
-            if (!meta_cipher?.byteLength)
-                return null;
-            const file = trk.File()?.remote();
-            if (!file)
-                return null;
-            // Обёртка atom_link_synced глотает Promise от sync — здесь наоборот
-            // нужно, чтобы фибра подождала: зовём sync напрямую.
-            file.land().sync();
-            const file_cipher = file.buffer();
-            if (!file_cipher?.byteLength)
-                return null;
-            return { meta_cipher, file_cipher, file_mime: file.type() || 'audio/mpeg' };
-        }
-        // ---------- крипто ----------
-        async encrypt(key, data) {
-            const iv = crypto.getRandomValues(new Uint8Array(16));
-            const ct = await key.encrypt(data, iv);
-            const out = new Uint8Array(iv.length + ct.length);
-            out.set(iv, 0);
-            out.set(ct, iv.length);
-            return out;
-        }
-        async decrypt(key, blob) {
-            if (blob.length < 17)
-                throw new Error('cipher too short');
-            const iv = blob.slice(0, 16);
-            const ct = blob.slice(16);
-            return key.decrypt(ct, iv);
-        }
-    }
-    __decorate([
-        $mol_mem
-    ], $bog_music_share.prototype, "mode", null);
-    __decorate([
-        $mol_mem
-    ], $bog_music_share.prototype, "selection", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_share.prototype, "enter", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_share.prototype, "toggle", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_share.prototype, "exit", null);
-    __decorate([
-        $mol_mem
-    ], $bog_music_share.prototype, "status", null);
-    __decorate([
-        $mol_mem
-    ], $bog_music_share.prototype, "import_status", null);
-    __decorate([
-        $mol_mem
-    ], $bog_music_share.prototype, "busy", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_share.prototype, "share_single", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_share.prototype, "collect", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_share.prototype, "sender_name", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_share.prototype, "unload_keys", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_share.prototype, "write_in_fiber", null);
-    __decorate([
-        $mol_mem_key
-    ], $bog_music_share.prototype, "token_done", null);
-    __decorate([
-        $mol_mem
-    ], $bog_music_share, "instance", null);
-    $.$bog_music_share = $bog_music_share;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    /**
-     * Шаренный трек: зашифрованные метаданные + ссылка на отдельный land
-     * с зашифрованным буфером файла. Шифрование AES-CBC на стороне приложения
-     * с одноразовым ключом из URL — см. $bog_music_share.
-     *
-     * Meta содержит JSON {artist,title,duration,mime,owner_id,id} в виде
-     * `[16 bytes IV][ciphertext]`. File.buffer() — то же самое для аудио-байт.
-     */
-    class $bog_music_share_track_baza extends $giper_baza_dict.with({
-        Meta: $giper_baza_atom.of(Uint8Array),
-        File: $bog_music_link_synced(() => $.$giper_baza_file),
-    }) {
-    }
-    $.$bog_music_share_track_baza = $bog_music_share_track_baza;
-    class $bog_music_share_tracks_dict extends $giper_baza_dict_to($bog_music_share_track_baza) {
-    }
-    $.$bog_music_share_tracks_dict = $bog_music_share_tracks_dict;
-    /**
-     * Эфемерный share-land. `[null, $giper_baza_rank_post('fast')]` — публичная запись, чтобы получатель сжёг шар после импорта
-     * (на самом деле приватное: link достаточно длинный, payload зашифрован).
-     *
-     * Verifier — фиксированная зашифрованная строка для быстрой проверки ключа
-     * на стороне получателя без расшифровки крупного блоба.
-     */
-    class $bog_music_share_baza extends $giper_baza_dict.with({
-        Sender: $giper_baza_atom.of(Uint8Array),
-        Verifier: $giper_baza_atom.of(Uint8Array),
-        // Ожидаемое число треков в шаре. Используется получателем для polling'а
-        // синка — `tracks.keys().length` догоняет до Count или истекает таймаут.
-        // Plaintext (приватность count'а — приемлемая утечка).
-        Count: $giper_baza_atom.of($mol_schema_float),
-        Burned: $giper_baza_atom.of($mol_schema_boolean),
-        Tracks: $bog_music_share_tracks_dict,
-    }) {
-    }
-    $.$bog_music_share_baza = $bog_music_share_baza;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    const reward_of = {
-        play: 0.5,
-        skip: -0.5,
-        like: 1,
-        dislike: -1,
-    };
-    class $bog_recsys extends $mol_object2 {
-        static namespace(next) {
-            return next ?? 'default';
-        }
-        static epsilon(next) {
-            return next ?? 0.15;
-        }
-        static decay(next) {
-            return next ?? 0.92;
-        }
-        static storage_key() {
-            return `bog_recsys_${this.namespace()}_rewards`;
-        }
-        static rewards(next) {
-            const stored = this.$.$mol_state_local.value(this.storage_key(), next ?? undefined);
-            return stored ?? {};
-        }
-        static recommend(pool, opts) {
-            const exclude_set = opts?.exclude
-                ? (opts.exclude instanceof Set
-                    ? opts.exclude
-                    : new Set(opts.exclude))
-                : null;
-            const filtered = exclude_set
-                ? pool.filter(item => !exclude_set.has(item.id))
-                : pool.slice();
-            if (filtered.length === 0)
-                return [];
-            const limit = Math.max(1, opts?.limit ?? 1);
-            const seed = opts?.seed ?? null;
-            const rewards = this.rewards();
-            const eps = this.epsilon();
-            const rand = this.$.Math.random;
-            const explore = rand() < eps;
-            if (explore) {
-                const out = [];
-                const remaining = filtered.slice();
-                while (out.length < limit && remaining.length > 0) {
-                    const idx = Math.floor(rand() * remaining.length);
-                    out.push(remaining.splice(idx, 1)[0]);
-                }
-                return out;
-            }
-            const scored = filtered.map(item => ({
-                item,
-                score: 0.6 * cosine(seed?.embedding, item.embedding)
-                    + 0.3 * tag_reward(item.tags, rewards)
-                    + 0.1 * rand(),
-            }));
-            scored.sort((a, b) => b.score - a.score);
-            return scored.slice(0, limit).map(s => s.item);
-        }
-        static feedback(item, signal) {
-            const tags = item.tags;
-            if (!tags || tags.length === 0)
-                return;
-            const r = reward_of[signal];
-            const decay = this.decay();
-            try {
-                const current = { ...this.rewards() };
-                for (const tag of tags) {
-                    const prev = current[tag] ?? 0;
-                    current[tag] = prev * decay + r;
-                }
-                this.$.$mol_state_local.value(this.storage_key(), current);
-                this.rewards(current);
-            }
-            catch (error) {
-                console.warn(error);
-            }
-        }
-        static reset() {
-            try {
-                this.$.$mol_state_local.value(this.storage_key(), null);
-                this.rewards({});
-            }
-            catch (error) {
-                console.warn(error);
-            }
-        }
-    }
-    __decorate([
-        $mol_mem
-    ], $bog_recsys, "namespace", null);
-    __decorate([
-        $mol_mem
-    ], $bog_recsys, "epsilon", null);
-    __decorate([
-        $mol_mem
-    ], $bog_recsys, "decay", null);
-    __decorate([
-        $mol_mem
-    ], $bog_recsys, "rewards", null);
-    __decorate([
-        $mol_action
-    ], $bog_recsys, "feedback", null);
-    __decorate([
-        $mol_action
-    ], $bog_recsys, "reset", null);
-    $.$bog_recsys = $bog_recsys;
-    function cosine(a, b) {
-        if (!a || !b)
-            return 0;
-        const len = Math.min(a.length, b.length);
-        if (len === 0)
-            return 0;
-        let dot = 0, na = 0, nb = 0;
-        for (let i = 0; i < len; ++i) {
-            const x = a[i], y = b[i];
-            dot += x * y;
-            na += x * x;
-            nb += y * y;
-        }
-        if (na === 0 || nb === 0)
-            return 0;
-        return dot / Math.sqrt(na * nb);
-    }
-    function tag_reward(tags, rewards) {
-        if (!tags || tags.length === 0)
-            return 0;
-        let sum = 0, n = 0;
-        for (const tag of tags) {
-            const r = rewards[tag];
-            if (typeof r === 'number') {
-                sum += r;
-                ++n;
-            }
-        }
-        return n === 0 ? 0 : sum / n;
-    }
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    /**
-     * Минимальный ZIP-энкодер (STORE, без компрессии — аудио и так сжато).
-     * Используется для выгрузки плейлиста файлом в PWA-режиме.
-     */
-    class $bog_music_zip extends $mol_object {
-        /** Имя файла внутри архива: `001 - Artist - Title.mp3`. */
-        static entry_name(index, artist, title, mime) {
-            const ext_map = {
-                'audio/mpeg': 'mp3',
-                'audio/mp3': 'mp3',
-                'audio/mp4': 'm4a',
-                'audio/aac': 'aac',
-                'audio/ogg': 'ogg',
-                'audio/webm': 'webm',
-                'audio/wav': 'wav',
-                'audio/flac': 'flac',
-            };
-            const ext = ext_map[(mime || '').toLowerCase()] || 'mp3';
-            const safe = (s) => (s || '').replace(/[\\/:*?"<>|\x00-\x1f]/g, '_').trim().slice(0, 80);
-            const num = String(index).padStart(3, '0');
-            return `${num} - ${safe(artist) || 'unknown'} - ${safe(title) || 'unknown'}.${ext}`;
-        }
-        static _crc32_table = null;
-        static crc32_table() {
-            if (this._crc32_table)
-                return this._crc32_table;
-            const t = new Uint32Array(256);
-            for (let i = 0; i < 256; i++) {
-                let c = i;
-                for (let k = 0; k < 8; k++)
-                    c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
-                t[i] = c;
-            }
-            this._crc32_table = t;
-            return t;
-        }
-        static crc32(data) {
-            const t = this.crc32_table();
-            let crc = 0xFFFFFFFF;
-            for (let i = 0; i < data.length; i++)
-                crc = (crc >>> 8) ^ t[(crc ^ data[i]) & 0xFF];
-            return (crc ^ 0xFFFFFFFF) >>> 0;
-        }
-        static build(files) {
-            const enc = new TextEncoder();
-            const entries = files.map(f => ({
-                name: enc.encode(f.name),
-                data: f.data,
-                crc: this.crc32(f.data),
-                offset: 0,
-            }));
-            let local_size = 0;
-            let cd_size = 0;
-            for (const e of entries) {
-                local_size += 30 + e.name.length + e.data.length;
-                cd_size += 46 + e.name.length;
-            }
-            const ab = new ArrayBuffer(local_size + cd_size + 22);
-            const buf = new Uint8Array(ab);
-            const view = new DataView(ab);
-            let off = 0;
-            for (const e of entries) {
-                e.offset = off;
-                view.setUint32(off, 0x04034b50, true);
-                view.setUint16(off + 4, 20, true);
-                view.setUint16(off + 6, 0x0800, true); // UTF-8 filename
-                view.setUint16(off + 8, 0, true); // STORE
-                view.setUint16(off + 10, 0, true);
-                view.setUint16(off + 12, 0, true);
-                view.setUint32(off + 14, e.crc, true);
-                view.setUint32(off + 18, e.data.length, true);
-                view.setUint32(off + 22, e.data.length, true);
-                view.setUint16(off + 26, e.name.length, true);
-                view.setUint16(off + 28, 0, true);
-                buf.set(e.name, off + 30);
-                buf.set(e.data, off + 30 + e.name.length);
-                off += 30 + e.name.length + e.data.length;
-            }
-            const cd_off = off;
-            for (const e of entries) {
-                view.setUint32(off, 0x02014b50, true);
-                view.setUint16(off + 4, 20, true);
-                view.setUint16(off + 6, 20, true);
-                view.setUint16(off + 8, 0x0800, true);
-                view.setUint16(off + 10, 0, true);
-                view.setUint16(off + 12, 0, true);
-                view.setUint16(off + 14, 0, true);
-                view.setUint32(off + 16, e.crc, true);
-                view.setUint32(off + 20, e.data.length, true);
-                view.setUint32(off + 24, e.data.length, true);
-                view.setUint16(off + 28, e.name.length, true);
-                view.setUint16(off + 30, 0, true);
-                view.setUint16(off + 32, 0, true);
-                view.setUint16(off + 34, 0, true);
-                view.setUint16(off + 36, 0, true);
-                view.setUint32(off + 38, 0, true);
-                view.setUint32(off + 42, e.offset, true);
-                buf.set(e.name, off + 46);
-                off += 46 + e.name.length;
-            }
-            view.setUint32(off, 0x06054b50, true);
-            view.setUint16(off + 4, 0, true);
-            view.setUint16(off + 6, 0, true);
-            view.setUint16(off + 8, entries.length, true);
-            view.setUint16(off + 10, entries.length, true);
-            view.setUint32(off + 12, cd_size, true);
-            view.setUint32(off + 16, cd_off, true);
-            view.setUint16(off + 20, 0, true);
-            return ab;
-        }
-    }
-    $.$bog_music_zip = $bog_music_zip;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    /**
-     * Секрет устройства для нашего маленького backend'а (телеграм-инбокс,
-     * скробблинг). Живёт в localStorage, в baza не едет: на каждом устройстве
-     * связка своя, и потеря кода не роняет ни аккаунт, ни треки.
-     *
-     * Не путать с ключом аккаунта Гипер Базы — тот открывает всю музыку, этот
-     * только очередь пересланного и сессию last.fm.
-     */
-    class $bog_music_code extends $mol_object {
-        /** Текущий код, '' — ещё не заводили. */
-        static value(name, next) {
-            return $mol_state_local.value(name, next) ?? '';
-        }
-        /** Код, заводя его при первом обращении. Только из @$mol_action. */
-        static ensure(name) {
-            return this.value(name) || this.value(name, this.random());
-        }
-        /** 96 бит hex: перебором не угадать, в URL и диплинк лезет как есть. */
-        static random() {
-            const bytes = new Uint8Array(12);
-            crypto.getRandomValues(bytes);
-            return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-        /** Формат, который принимает сервер. */
-        static valid(code) {
-            return /^[A-Za-z0-9_-]{8,64}$/.test(code);
-        }
-    }
-    $.$bog_music_code = $bog_music_code;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    /**
-     * Клиент телеграм-инбокса: юзер пересылает музыку боту, приложение забирает
-     * её и кладёт в baza. Сервер — bog/music/srv/tg, живёт в том же процессе,
-     * что и tube (см. tube/api/api.node.ts).
-     *
-     * Методы плоско-асинхронные, без @$mol_mem: очередь меняется на стороне
-     * Телеграма, и мемоизировать её нечем — опросом рулит view приложения.
-     */
-    class $bog_music_tg extends $mol_object {
-        static base = 'https://tube.87.120.36.150.ip.giper.dev';
-        /** Юзернейм бота. Уточняется из /tg/status, чтобы не хардкодить дважды. */
-        static bot = 'bog_music_bot';
-        /** Секрет устройства: им линкуется чат и читается очередь. */
-        static code() {
-            return $bog_music_code.value('bog_music_tg_code');
-        }
-        /** Завести код при первом подключении. Только из @$mol_action. */
-        static code_ensure() {
-            return $bog_music_code.ensure('bog_music_tg_code');
-        }
-        static link_url(code) {
-            return `https://t.me/${this.bot}?start=${encodeURIComponent(code)}`;
-        }
-        static async status(code) {
-            const resp = await fetch(`${this.base}/tg/status?code=${encodeURIComponent(code)}`);
-            if (!resp.ok)
-                throw new Error(`tg status ${resp.status}`);
-            const data = await resp.json();
-            if (data.bot)
-                this.bot = data.bot;
-            return data;
-        }
-        static async inbox(code) {
-            const resp = await fetch(`${this.base}/tg/inbox?code=${encodeURIComponent(code)}`);
-            if (!resp.ok)
-                throw new Error(`tg inbox ${resp.status}`);
-            return await resp.json();
-        }
-        static async file(code, id) {
-            const resp = await fetch(`${this.base}/tg/file?code=${encodeURIComponent(code)}&id=${encodeURIComponent(id)}`);
-            if (!resp.ok)
-                throw new Error(`tg file ${resp.status}`);
-            const buffer = new Uint8Array(await resp.arrayBuffer());
-            if (!buffer.byteLength)
-                throw new Error('tg file: пустой ответ');
-            return buffer;
-        }
-        static async ack(code, id) {
-            await fetch(`${this.base}/tg/ack?code=${encodeURIComponent(code)}&id=${encodeURIComponent(id)}`);
-        }
-    }
-    $.$bog_music_tg = $bog_music_tg;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    /**
-     * Скробблинг в last.fm. Ключ приложения и session key юзера лежат на нашем
-     * сервере (bog/music/srv/fm): подпись запроса требует api-секрет, а
-     * ему в клиентском бандле не место. Отсюда уходят только «что играет» и
-     * «что доиграло».
-     */
-    class $bog_music_scrobble extends $mol_object {
-        static base = 'https://tube.87.120.36.150.ip.giper.dev';
-        static code() {
-            return $bog_music_code.value('bog_music_fm_code');
-        }
-        /** Завести код при первом подключении. Только из @$mol_action. */
-        static code_ensure() {
-            return $bog_music_code.ensure('bog_music_fm_code');
-        }
-        /**
-         * Имя на last.fm — оно же признак «подключено». Держим локально, чтобы
-         * плеер на каждом тике проверял скробблинг синхронно и без запроса.
-         */
-        static user(next) {
-            return $mol_state_local.value('bog_music_fm_user', next) ?? '';
-        }
-        static enabled() {
-            return !!this.code() && !!this.user();
-        }
-        /**
-         * Страница подтверждения last.fm. Возврат — на наш сервер, он меняет
-         * токен на сессию и отправляет юзера обратно в приложение. В расширении
-         * возвращаться некуда (chrome-extension:// last.fm не примет), поэтому
-         * сервер просто показывает «готово».
-         */
-        static login_url(code) {
-            const web = location.protocol === 'https:' || location.protocol === 'http:';
-            const back = web ? location.origin + location.pathname + location.search : '';
-            return `${this.base}/fm/login?code=${encodeURIComponent(code)}&back=${encodeURIComponent(back)}`;
-        }
-        /** Подтягивает имя юзера с сервера и кеширует его локально. */
-        static async status() {
-            const code = this.code();
-            if (!code)
-                return '';
-            const resp = await fetch(`${this.base}/fm/status?code=${encodeURIComponent(code)}`);
-            if (!resp.ok)
-                throw new Error(`fm status ${resp.status}`);
-            const data = await resp.json();
-            const user = String(data?.user ?? '');
-            if (this.user() !== user)
-                this.user(user);
-            return user;
-        }
-        static async logout() {
-            const code = this.code();
-            this.user('');
-            if (!code)
-                return;
-            await fetch(`${this.base}/fm/logout?code=${encodeURIComponent(code)}`);
-        }
-        /**
-         * Пуляем и забываем: скробблинг не должен ни задерживать плеер, ни
-         * ронять его своими ошибками. keepalive — потому что отправка часто
-         * совпадает с уходом со страницы (последний трек, закрытие вкладки).
-         */
-        static send(method, params) {
-            const code = this.code();
-            if (!code)
-                return;
-            const query = new URLSearchParams({ code, ...params });
-            fetch(`${this.base}/fm/${method}?${query}`, { keepalive: true })
-                .catch(e => console.warn('[fm] ' + method + ':', e?.message ?? e));
-        }
-        static now_playing(artist, track, duration) {
-            if (!this.enabled() || !track)
-                return;
-            this.send('now', { artist, track, duration: Math.round(duration) || 0 });
-        }
-        static scrobble(artist, track, duration, started) {
-            if (!this.enabled() || !track)
-                return;
-            this.send('scrobble', {
-                artist,
-                track,
-                duration: Math.round(duration) || 0,
-                ts: Math.round(started),
-            });
-        }
-    }
-    $.$bog_music_scrobble = $bog_music_scrobble;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    /**
-     * Очередь треков, сохранённых кнопкой на vk.com: content.js → background.js
-     * (скачивает HLS) → IDB `bog_music_pending`. Приложение при старте и по
-     * сообщению `pending_added` разбирает очередь в Giper Baza.
-     */
-    class $bog_music_pending extends $mol_object {
-        static db_name = 'bog_music_pending';
-        static store_name = 'pending';
-        static open() {
-            return new Promise((resolve, reject) => {
-                const req = indexedDB.open(this.db_name, 1);
-                req.onupgradeneeded = () => {
-                    const db = req.result;
-                    if (!db.objectStoreNames.contains(this.store_name)) {
-                        db.createObjectStore(this.store_name, { keyPath: 'key' });
-                    }
-                };
-                req.onsuccess = () => resolve(req.result);
-                req.onerror = () => reject(req.error);
-            });
-        }
-        static async all() {
-            const db = await this.open();
-            try {
-                return await new Promise((resolve, reject) => {
-                    const tx = db.transaction([this.store_name], 'readonly');
-                    const req = tx.objectStore(this.store_name).getAll();
-                    req.onsuccess = () => resolve(req.result || []);
-                    req.onerror = () => reject(req.error);
-                });
-            }
-            finally {
-                db.close();
-            }
-        }
-        static async remove(key) {
-            const db = await this.open();
-            try {
-                await new Promise((resolve, reject) => {
-                    const tx = db.transaction([this.store_name], 'readwrite');
-                    tx.objectStore(this.store_name).delete(key);
-                    tx.oncomplete = () => resolve();
-                    tx.onerror = () => reject(tx.error);
-                    tx.onabort = () => reject(tx.error);
-                });
-            }
-            finally {
-                db.close();
-            }
-        }
-    }
-    $.$bog_music_pending = $bog_music_pending;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.83';
-})($ || ($ = {}));
-
-;
-"use strict";
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        /**
-         * Единственный мастер синхронизации — свой болгарский узел.
-         *
-         * Список мастеров задаётся ПОЛНОЙ заменой, а не дополнением. Штатный
-         * `masters()` склеивает `masters_default` с пирами из бандленного сида,
-         * а там зашит чужой публичный мастер: чистки одного `masters_default`
-         * мало, надо глушить сам `masters()`. Поэтому сначала обнуляем список по
-         * умолчанию, затем подменяем функцию — ничего от Гипер Базы не остаётся.
-         */
-        const local = typeof location !== 'undefined' && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
-        const master = local ? 'http://localhost:9090/' : 'https://cmyser-bg-pony.87.120.36.150.ip.giper.dev/';
-        $giper_baza_yard.masters_default.length = 0;
-        $giper_baza_yard.masters = () => [master];
-        // Фиксы окружения (yard masters, vk_token bridge, #account/#share из URL) —
-        // до первого обращения к baza.
-        $bog_music_boot.init();
-        $bog_music_log.act(`мастер синка: ${master}`);
-        class $bog_music_app extends $.$bog_music_app {
-            title() {
-                return 'Bog Music';
-            }
-            /** Доменная модель: home land пользователя. */
-            account() {
-                return $bog_music_account_baza.home();
-            }
-            share() {
-                return $bog_music_share.instance();
-            }
-            // =====================================================================
-            // Страницы
-            // =====================================================================
-            page(next) {
-                if (next !== undefined) {
-                    // Клик на табе «Расшаренный» в режиме шаринга финализирует шар,
-                    // не переключая страницу.
-                    if (next === 'share') {
-                        $bog_music_log.act('финализация шара по клику на табе');
-                        this.share().submit();
-                        return $mol_state_arg.value('page') ?? 'my';
-                    }
-                    $bog_music_log.act(`вкладка: ${next}`);
-                    $mol_state_arg.value('page', next);
-                    $mol_state_local.value('page', next);
-                    return next;
-                }
-                const page = $mol_state_arg.value('page')
-                    ?? $mol_state_local.value('page')
-                    ?? 'my';
-                if (page.startsWith('list:')) {
-                    const exists = this.account().playlists().some(pl => pl.id === page);
-                    if (!exists) {
-                        $mol_state_local.value('page', 'my');
-                        return 'my';
-                    }
-                }
-                return page;
-            }
-            list_id() {
-                const page = this.page();
-                return page.startsWith('list:') ? page : '';
-            }
-            _lists_migrated = false;
-            lists_migrate() {
-                if (this._lists_migrated)
-                    return;
-                this._lists_migrated = true;
-                $mol_wire_async(this.account()).migrate_lists();
-            }
-            archive_mode() {
-                return this.page() === 'archive';
-            }
-            visible_keys() {
-                const p = this.page();
-                if (p === 'share')
-                    return this.share().selection();
-                if (p === 'archive')
-                    return this.account().keys_in('archive');
-                if (p.startsWith('list:'))
-                    return this.account().list_keys(p);
-                if (p.startsWith('shared:'))
-                    return this.account().keys_in(p);
-                return this.account().keys_in('');
-            }
-            my_title() {
-                const my = this.account().keys_in('').length;
-                return my ? `Моя музыка ${my}` : 'Моя музыка';
-            }
-            archive_title() {
-                const arch = this.account().keys_in('archive').length;
-                return arch ? `Архив ${arch}` : 'Архив';
-            }
-            list_dict() {
-                const opts = {};
-                if (this.share().mode()) {
-                    const n = this.share().selection().length;
-                    opts['share'] = n ? `Расшаренный ${n}` : 'Расшаренный';
-                }
-                for (const pl of this.account().playlists()) {
-                    const n = this.account().list_keys(pl.id).length;
-                    opts[pl.id] = n ? `${pl.title} ${n}` : pl.title;
-                }
-                for (const pl of this.account().shared_playlists()) {
-                    opts[pl.id] = `${pl.sender} ${pl.count}`;
-                }
-                return opts;
-            }
-            // =====================================================================
-            // Воспроизведение
-            // =====================================================================
-            current_key(next) {
-                return next ?? '';
-            }
-            /**
-             * Сколько треков держим докачанными вперёд от текущего. Слушают по
-             * одной песне: пары следующих хватает, чтобы переход не ждал сети, а
-             * дальше докачка только тащила бы фонотеку на устройство и в память.
-             */
-            static prefetch_ahead = 3;
-            /**
-             * Окно префетча: текущий трек и несколько следующих из видимого списка.
-             * Играет что-то не из этого списка (или ничего) — греем его начало.
-             */
-            prefetch_window() {
-                const keys = this.visible_keys();
-                if (!keys.length)
-                    return [];
-                const current = this.current_key();
-                const at = current ? keys.indexOf(current) : -1;
-                const from = at >= 0 ? at : 0;
-                return keys.slice(from, from + $bog_music_app.prefetch_ahead);
-            }
-            /**
-             * Фоновый драйвер докачки blob'ов «по одной песне». Detached-атом (как
-             * land.sync_yard): его suspend'ы на текущем blob'е не блокируют рендер UI.
-             * @$mol_mem здесь — во view-слое (на baza-объекте @$mol_mem запрещён).
-             * Востребован из auto(), пока приложение открыто.
-             *
-             * Окно читается ВНУТРИ атома, поэтому смена трека сама перенацеливает
-             * докачку на новых соседей.
-             */
-            prefetch() {
-                const account = this.account();
-                const root = new $mol_wire_atom('bog_music_prefetch', () => account.prefetch_step(this.prefetch_window()));
-                setTimeout(() => root.fresh());
-                return root;
-            }
-            play_key(key) {
-                if (!key)
-                    return;
-                $bog_music_log.act(`воспроизведение ${key}`);
-                this.tube_current(-1); // ушли в фонотеку — выдача больше не очередь
-                const keys = this.visible_keys();
-                const idx = keys.indexOf(key);
-                this.Player().queue_index(idx >= 0 ? idx : 0);
-                this.Player().play_track(key);
-                const item = this.recsys_item(key);
-                if (item) {
-                    $bog_recsys.namespace('vk'); // исторический id, на нём накоплена статистика
-                    try {
-                        $bog_recsys.feedback(item, 'play');
-                    }
-                    catch { }
-                }
-            }
-            wave_mode(next) {
-                if (next !== undefined)
-                    $bog_music_log.act(`моя волна: ${next ? 'включена' : 'выключена'}`);
-                return $mol_state_local.value('music_wave_mode', next) ?? false;
-            }
-            recsys_item(key) {
-                const audio = this.account().track(key)?.audio();
-                if (!audio)
-                    return null;
-                const tags = [];
-                if (audio.artist)
-                    tags.push('artist:' + audio.artist.toLowerCase().trim());
-                return { id: key, tags };
-            }
-            /** «Моя волна»: следующий трек от рекомендалки. null = обычный порядок. */
-            player_pick_next(current) {
-                if (!this.wave_mode())
-                    return null;
-                const pool = this.visible_keys();
-                if (!pool.length)
-                    return null;
-                $bog_recsys.namespace('vk');
-                const items = pool.map(k => this.recsys_item(k)).filter(Boolean);
-                const seed = current ? this.recsys_item(current) : null;
-                const picked = $bog_recsys.recommend(items, {
-                    seed,
-                    exclude: current ? [current] : [],
-                    limit: 1,
-                })[0];
-                return picked?.id ?? null;
-            }
-            // =====================================================================
-            // Редактирование списка
-            // =====================================================================
-            reorder_to(args) {
-                if (!args)
-                    return;
-                const { from, to } = args;
-                const keys = this.visible_keys();
-                if (from === to)
-                    return;
-                if (from < 0 || to < 0 || from >= keys.length || to >= keys.length)
-                    return;
-                const moving = keys[from];
-                $bog_music_log.act(`перестановка ${moving}: ${from} → ${to}`);
-                const list = this.list_id();
-                if (list)
-                    return this.account().list_move(list, moving, keys[to]);
-                const step = from < to ? 1 : -1;
-                for (let i = from; i !== to; i += step) {
-                    this.account().swap_order(moving, keys[i + step]);
-                }
-            }
-            archive_key(key) {
-                if (!key)
-                    return;
-                $bog_music_log.act(`в архив ${key}`);
-                this.account().move_to_playlist(key, 'archive');
-            }
-            restore_key(key) {
-                if (!key)
-                    return;
-                $bog_music_log.act(`из архива ${key}`);
-                this.account().move_to_playlist(key, '');
-            }
-            /**
-             * Трек уезжает в самый низ списка — «надоело, но выбрасывать жалко».
-             *
-             * Очередь при этом не должна дёрнуться. queue_index у плеера — это
-             * позиция ТЕКУЩЕГО трека, следующий берётся как +1, а список после
-             * переезда весь сдвигается, и без правки индекса песня бы перескочила.
-             * Поэтому запоминаем, что должно заиграть следом, и после переезда
-             * ставим индекс так, чтобы +1 указал ровно на него.
-             *
-             * Отдельный случай — скинуть тот трек, который сейчас играет. Он и сам
-             * уедет в конец, но доиграть обязан здесь и сейчас, а дальше пойти на
-             * своего прежнего соседа: слушаю 1 2 3, скинул 2 — дальше 3, а не 4.
-             */
-            demote_key(key) {
-                if (!key)
-                    return;
-                const keys = this.visible_keys();
-                const from = keys.indexOf(key);
-                if (from < 0 || from === keys.length - 1)
-                    return; // уже внизу
-                $bog_music_log.act(`вниз списка ${key}`);
-                const current = this.current_key();
-                const at = current ? keys.indexOf(current) : -1;
-                // Первый за текущим, минуя уезжающий. Если уезжает сам текущий —
-                // это просто следующий за ним.
-                const follow = at < 0 ? '' : keys.slice(at + 1).find(k => k !== key) ?? '';
-                const list = this.list_id();
-                if (list)
-                    this.account().list_move(list, key, keys[keys.length - 1]);
-                else
-                    this.account().move_to_bottom(key);
-                if (at < 0)
-                    return; // играет что-то не из этого списка — очередь не наша
-                const fresh = this.visible_keys();
-                const follow_at = follow ? fresh.indexOf(follow) : -1;
-                // Крутим по кругу, а не уходим в -1: prev() смотрит на idx > 0, и
-                // отрицательный индекс сломал бы ему шаг назад.
-                this.Player().queue_index(follow_at >= 0
-                    ? (follow_at - 1 + fresh.length) % fresh.length
-                    : Math.max(0, fresh.indexOf(current)));
-            }
-            delete_key(key) {
-                if (!key)
-                    return;
-                $bog_music_log.act(`удаление ${key}`);
-                this.account().delete_track(key);
-            }
-            // =====================================================================
-            // Загрузка файлов с устройства
-            // =====================================================================
-            upload_files(next) {
-                if (next?.length) {
-                    $bog_music_log.act(`загрузка с устройства: ${next.length} файл(ов)`);
-                    const files = [...next].sort((a, b) => a.name.localeCompare(b.name, 'ru', { numeric: true }));
-                    files.forEach((file, index) => {
-                        const buffer = new Uint8Array($mol_wire_sync(file).arrayBuffer());
-                        this.account().save_local_track(file, buffer, index + 1);
-                    });
-                }
-                return next ?? [];
-            }
-            // =====================================================================
-            // VK: список моих аудио и докачка плейлиста
-            // =====================================================================
-            vk_audios() {
-                if (!$bog_music_api.in_extension())
-                    return [];
-                if (!$bog_music_api.token())
-                    return [];
-                return $bog_music_api.my_audios()?.items ?? [];
-            }
-            prefetch_state(next) {
-                return next ?? { total: 0, done: 0, failed: 0 };
-            }
-            download_playlist_status(next) {
-                return next ?? '';
-            }
-            /** Кнопка в аккаунте: extension качает с VK в baza, PWA отдаёт zip. */
-            download_playlist() {
-                $bog_music_log.act('скачивание плейлиста');
-                $mol_wire_async(this).download_playlist_async();
-            }
-            async download_playlist_async() {
-                if (!$bog_music_api.in_extension()) {
-                    await this.download_zip_async();
-                    return;
-                }
-                const items = this.page() === 'my'
-                    ? await $mol_wire_async(this).vk_audios()
-                    : await $mol_wire_async(this).visible_audios();
-                if (!items.length) {
-                    this.download_playlist_status('Плейлист пуст');
-                    return;
-                }
-                this.download_playlist_status(`Скачиваю ${items.length}…`);
-                await this.prefetch_blobs(items);
-                const s = this.prefetch_state();
-                $bog_music_log.act(`плейлист скачан: ${s.done}/${s.total}, ошибок ${s.failed}`);
-                this.download_playlist_status(`Готово: ${s.done}/${s.total}${s.failed ? `, ошибок ${s.failed}` : ''}`);
-            }
-            /** Sync-хелперы для чтения baza из async-кода через фибру. */
-            visible_audios() {
-                return this.visible_keys()
-                    .map(key => this.account().track(key)?.audio())
-                    .filter(Boolean);
-            }
-            track_blob(key) {
-                return this.account().track(key)?.blob() ?? null;
-            }
-            /** Качает блобы треков в baza по одному, с прогрессом. */
-            async prefetch_blobs(items) {
-                if (!items?.length)
-                    return;
-                this.prefetch_state({ total: items.length, done: 0, failed: 0 });
-                let done = 0, failed = 0;
-                for (const audio of items) {
-                    try {
-                        const account = $mol_wire_async(this.account());
-                        await account.save_track(audio);
-                        const key = $bog_music_account_baza.key_of(audio);
-                        if (await account.track_cached(key)) {
-                            done++;
-                            continue;
-                        }
-                        let target = audio;
-                        if (!target.url) {
-                            const id = `${audio.owner_id}_${audio.id}${audio.access_key ? '_' + audio.access_key : ''}`;
-                            const fresh = await $bog_music_api.fetch_vk_direct('audio.getById', { audios: id })
-                                .then((r) => r?.[0]).catch(() => null);
-                            if (!fresh?.url) {
-                                failed++;
-                                this.prefetch_state({ total: items.length, done, failed });
-                                continue;
-                            }
-                            target = { ...audio, url: fresh.url };
-                        }
-                        await this.account().save_hls(target);
-                        done++;
-                    }
-                    catch (e) {
-                        failed++;
-                        const name = `${audio.artist} — ${audio.title}`;
-                        console.warn('[app] prefetch failed:', name, '|', e?.message ?? String(e));
-                        $bog_music_log.err(`докачка не удалась: ${name}: ${e?.message ?? String(e)}`);
-                    }
-                    this.prefetch_state({ total: items.length, done, failed });
-                }
-            }
-            /** PWA-путь: локально засинканные блобы → zip → браузерный download. */
-            async download_zip_async() {
-                const keys = await $mol_wire_async(this).visible_keys();
-                if (!keys.length) {
-                    this.download_playlist_status('Плейлист пуст');
-                    return;
-                }
-                const files = [];
-                let skipped = 0;
-                for (const key of keys) {
-                    this.download_playlist_status(`Архивирую ${files.length}/${keys.length}…`);
-                    const blob = await $mol_wire_async(this).track_blob(key).catch(() => null);
-                    const audio = this.account().track(key)?.audio();
-                    if (!blob || !audio) {
-                        skipped++;
-                        continue;
-                    }
-                    const data = new Uint8Array(await blob.arrayBuffer());
-                    files.push({
-                        name: $bog_music_zip.entry_name(files.length + 1, audio.artist, audio.title, blob.type),
-                        data,
-                    });
-                }
-                if (!files.length) {
-                    this.download_playlist_status('Нет локально доступных треков для архива');
-                    return;
-                }
-                this.download_playlist_status('Собираю zip…');
-                const blob = new Blob([$bog_music_zip.build(files)], { type: 'application/zip' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `music-playlist-${new Date().toISOString().slice(0, 10)}.zip`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                setTimeout(() => URL.revokeObjectURL(url), 1000);
-                const skipped_note = skipped ? `, пропущено ${skipped}` : '';
-                $bog_music_log.act(`zip собран: ${files.length} файлов${skipped_note}`);
-                this.download_playlist_status(`Готово: ${files.length} ${$bog_music_share.plural_tracks(files.length)}${skipped_note}`);
-            }
-            // =====================================================================
-            // Тулбар, панели, тосты
-            // =====================================================================
-            version_label() {
-                return $bog_music_version;
-            }
-            lights() {
-                const theme = this.Theme();
-                if (theme.mode() === 'system')
-                    return 'system';
-                return theme.is_light_now() ? 'light' : 'dark';
-            }
-            font_size(next) {
-                return this.$.$mol_state_local.value('bog_music_font_size', next) ?? 'normal';
-            }
-            /** Нижняя навигация: search / music / player / account / logs. */
-            section(next) {
-                if (next !== undefined)
-                    $bog_music_log.act(`раздел: ${next}`);
-                return next ?? 'music';
-            }
-            player_full() {
-                return this.section() === 'player';
-            }
-            _section_back = 'music';
-            player_open(event) {
-                if (this.player_full())
-                    return;
-                this._section_back = this.section();
-                this.section('player');
-            }
-            player_collapse(event) {
-                this.section(this._section_back);
-            }
-            body() {
-                switch (this.section()) {
-                    case 'logs': return [this.Mem(), this.Logs()];
-                    case 'account': return [this.Account(), this.Feedback()];
-                    case 'player': return [this.Player()];
-                    case 'search': return [this.Tube_bar(), this.Tube_list()];
-                }
-                return [
-                    this.Share_toast(),
-                    this.Tabs(),
-                    this.Tracks(),
-                ];
-            }
-            foot() {
-                return [
-                    ...this.player_full() ? [] : [this.Player()],
-                    this.Nav(),
-                ];
-            }
-            // =====================================================================
-            // Поиск и скачивание из YouTube (сервер bog/music/tube)
-            // =====================================================================
-            /**
-             * Поле ввода. Дефолт — из committed (URL), чтобы при возврате на
-             * секцию/заходе по ссылке в поле был текущий запрос, а не пусто.
-             */
-            tube_query(next) {
-                if (next !== undefined)
-                    return next;
-                return this.tube_committed();
-            }
-            /**
-             * Запрос, по которому реально ищем. Хранится в URL (`?q=`) — переживает
-             * переключение вкладок и перезагрузку, шарится ссылкой.
-             */
-            tube_committed(next) {
-                return $mol_state_arg.value('q', next) ?? '';
-            }
-            tube_find() {
-                const query = this.tube_query();
-                $bog_music_log.act(`поиск на YouTube: ${query}`);
-                this.tube_committed(query);
-            }
-            tube_submit(event) {
-                event?.preventDefault();
-                this.tube_find();
-                this.Tube_query().dom_node().blur();
-            }
-            _tube_found = { query: '', items: [] };
-            tube_items() {
-                const query = this.tube_committed().trim();
-                if (!query)
-                    return [];
-                if (this._tube_found.query === query)
-                    return this._tube_found.items;
-                const items = $bog_music_tube.search(query);
-                this._tube_found = { query, items };
-                return items;
-            }
-            tube_rows() {
-                return this.tube_items().map((_, i) => this.Tube_row(i));
-            }
-            tube_item(index) {
-                return this.tube_items()[index] ?? null;
-            }
-            tube_title(index) {
-                return this.tube_item(index)?.title ?? '';
-            }
-            tube_meta(index) {
-                const item = this.tube_item(index);
-                if (!item)
-                    return '';
-                const dur = item.duration;
-                const time = dur ? `${Math.floor(dur / 60)}:${String(Math.floor(dur % 60)).padStart(2, '0')}` : '';
-                return [item.channel, time].filter(Boolean).join(' · ');
-            }
-            tube_cover(index) {
-                const item = this.tube_item(index);
-                return item ? $bog_music_tube.cover_url(item.id) : '';
-            }
-            /**
-             * Индекс играющего результата выдачи. -1 — играет не из выдачи.
-             * Нужен, чтобы плеер мог шагнуть на соседний результат, а не свалиться
-             * в личную фонотеку.
-             *
-             * Обычное поле, а не @$mol_mem: значение не участвует в рендере, никто
-             * его не читает как зависимость — и неиспользуемую ячейку $mol сметает.
-             * На меме индекс сам откатывался к -1 через секунду после установки,
-             * из-за чего «назад» по выдаче переставал работать.
-             */
-            _tube_at = -1;
-            tube_current(next) {
-                if (next !== undefined)
-                    this._tube_at = next;
-                return this._tube_at;
-            }
-            /**
-             * Шаг по выдаче YouTube. Зовётся плеером: он знает только то, что играет
-             * внешний стрим, и просит соседа — про tube ему знать незачем.
-             * false — выдача кончилась, дальше идти некуда.
-             */
-            tube_step(step) {
-                const at = this.tube_current();
-                if (at < 0)
-                    return false;
-                const to = at + step;
-                if (to < 0 || to >= this.tube_items().length)
-                    return false;
-                this.tube_play(to);
-                return true;
-            }
-            /** Прослушать трек стримом с сервера, не скачивая в baza. */
-            tube_play(index) {
-                const item = this.tube_item(index);
-                if (!item)
-                    return;
-                $bog_music_log.act(`стрим с YouTube: ${item.title}`);
-                this.tube_current(index);
-                this.Player().play_external($bog_music_tube.audio_url(item.id), item.title, item.channel, $bog_music_tube.cover_url(item.id));
-            }
-            tube_status_text(index) {
-                const item = this.tube_item(index);
-                return item ? this.tube_status(item.id) : '';
-            }
-            tube_status(id, next) {
-                return next ?? '';
-            }
-            /** Идёт ли скачивание этой строки — для мигания кнопки Get. */
-            tube_busy(index) {
-                return this.tube_status_text(index).startsWith('Качаю');
-            }
-            tube_get(index) {
-                const item = this.tube_item(index);
-                if (!item)
-                    return;
-                $bog_music_log.act(`скачивание с YouTube: ${item.title ?? index}`);
-                $mol_wire_async(this).tube_download(item);
-            }
-            async tube_download(item) {
-                if (this.tube_status(item.id))
-                    return;
-                this.tube_status(item.id, 'Качаю…');
-                try {
-                    const bytes = await $bog_music_tube.audio_bytes(item.id);
-                    const audio = {
-                        id: $bog_music_account_baza.hash_str('yt:' + item.id),
-                        owner_id: 0,
-                        artist: item.channel,
-                        title: item.title,
-                        duration: item.duration,
-                        url: '',
-                        cover: $bog_music_tube.cover_url(item.id),
-                    };
-                    await $mol_wire_async(this.account()).import_audio(audio, bytes, 'audio/mp4');
-                    $bog_music_log.act(`скачано с YouTube: ${item.title} (${bytes.length} байт)`);
-                    this.tube_status(item.id, '✓ в Моей музыке');
-                }
-                catch (e) {
-                    if (e instanceof Promise)
-                        throw e;
-                    console.warn('[tube] download failed:', e?.message ?? e);
-                    $bog_music_log.err(`скачивание с YouTube не удалось: ${item.title}: ${e?.message ?? e}`);
-                    this.tube_status(item.id, 'Ошибка');
-                    setTimeout(() => this.tube_status(item.id, ''), 4000);
-                }
-            }
-            // =====================================================================
-            // Телеграм: треки, пересланные боту (сервер bog/music/tg)
-            // =====================================================================
-            tg_state(next) {
-                return next ?? { linked: false, name: '', pending: 0, done: 0, error: '' };
-            }
-            tg_hint() {
-                return this.tg_state().linked
-                    ? 'Пересылай боту треки из любого чата — они приедут в Мою музыку сами.'
-                    : 'Подключи бота и пересылай ему музыку из любого чата. Файлы больше 20 МБ Телеграм ботам не отдаёт.';
-            }
-            tg_button() {
-                return this.tg_state().linked ? 'Открыть бота' : 'Подключить Телеграм';
-            }
-            tg_status() {
-                const state = this.tg_state();
-                if (state.error)
-                    return state.error;
-                if (!$bog_music_tg.code())
-                    return '';
-                const parts = [state.linked
-                        ? (state.name ? `Подключено: ${state.name}` : 'Подключено')
-                        : 'Ждём /start в боте'
-                ];
-                if (state.pending)
-                    parts.push(`в очереди ${state.pending}`);
-                if (state.done)
-                    parts.push(`забрано ${state.done}`);
-                return parts.join(' · ');
-            }
-            /** Код связки создаётся при первом клике и уходит в диплинк бота. */
-            tg_link() {
-                const code = $bog_music_tg.code_ensure();
-                $bog_music_log.act('открытие телеграм-бота для связки');
-                window.open($bog_music_tg.link_url(code), '_blank');
-                $mol_wire_async(this).tg_drain();
-            }
-            /**
-             * Метаданные трека из Телеграма. Тегов там часто нет — тогда разбираем
-             * имя файла тем же парсером, что и локальную загрузку. `uid` стабилен
-             * для файла в любом чате: пересланный дважды трек перезапишет сам себя.
-             */
-            tg_audio(row) {
-                let artist = row.performer;
-                let title = row.title;
-                if (!title) {
-                    const parsed = $bog_music_account_baza.parse_filename(row.file_name || 'Трек');
-                    title = parsed.title;
-                    if (!artist)
-                        artist = parsed.artist;
-                }
-                return {
-                    id: $bog_music_account_baza.hash_str('tg:' + (row.uid || row.id)),
-                    owner_id: 0,
-                    artist,
-                    title,
-                    duration: row.duration,
-                    url: '',
-                };
-            }
-            _tg_busy = false;
-            /**
-             * Забирает пересланное боту и складывает в baza. Каждый трек — своя
-             * фибра на import_audio (blob-land с PoW), как в drain_pending.
-             */
-            async tg_drain() {
-                const code = $bog_music_tg.code();
-                if (!code || this._tg_busy)
-                    return;
-                this._tg_busy = true;
-                try {
-                    const status = await $bog_music_tg.status(code);
-                    this.tg_state({
-                        ...this.tg_state(),
-                        linked: status.linked,
-                        name: status.name,
-                        pending: status.pending,
-                        error: '',
-                    });
-                    if (!status.linked || !status.pending)
-                        return;
-                    $bog_music_log.act(`Телеграм: в очереди ${status.pending}, забираю`);
-                    for (const row of await $bog_music_tg.inbox(code)) {
-                        try {
-                            const bytes = await $bog_music_tg.file(code, row.id);
-                            await $mol_wire_async(this.account())
-                                .import_audio(this.tg_audio(row), bytes, row.mime || 'audio/mpeg');
-                            await $bog_music_tg.ack(code, row.id);
-                        }
-                        catch (e) {
-                            if (e instanceof Promise)
-                                throw e;
-                            console.warn('[tg] import failed:', row.id, e?.message ?? e);
-                            $bog_music_log.err(`импорт из Телеграма не удался: ${row.id}: ${e?.message ?? e}`);
-                            continue;
-                        }
-                        const state = this.tg_state();
-                        this.tg_state({ ...state, done: state.done + 1, pending: Math.max(0, state.pending - 1) });
-                    }
-                }
-                catch (e) {
-                    if (e instanceof Promise)
-                        throw e;
-                    console.warn('[tg] drain failed:', e?.message ?? e);
-                    $bog_music_log.err(`Телеграм-бот недоступен: ${e?.message ?? e}`);
-                    this.tg_state({ ...this.tg_state(), error: 'Телеграм-бот недоступен' });
-                }
-                finally {
-                    this._tg_busy = false;
-                }
-            }
-            _tg_timer = 0;
-            /** Опрос очереди, пока приложение открыто. Таймер живёт в ячейке. */
-            tg_poller() {
-                if (this._tg_timer) {
-                    clearInterval(this._tg_timer);
-                    this._tg_timer = 0;
-                }
-                if (!$bog_music_tg.code())
-                    return null;
-                this._tg_timer = setInterval(() => { $mol_wire_async(this).tg_drain(); }, 30000);
-                return null;
-            }
-            // =====================================================================
-            // Last.fm: скробблинг прослушанного
-            // =====================================================================
-            /** Имя на last.fm, '' — не подключено. Пишется после ответа сервера. */
-            fm_user() {
-                return $bog_music_scrobble.user();
-            }
-            fm_hint() {
-                return 'Прослушанное уходит в твою статистику на last.fm. Скробблится всё, что играет в плеере.';
-            }
-            fm_button() {
-                return this.fm_user() ? 'Отключить' : 'Подключить last.fm';
-            }
-            fm_error(next) {
-                return next ?? '';
-            }
-            fm_status() {
-                if (this.fm_error())
-                    return this.fm_error();
-                const user = this.fm_user();
-                return user ? `Подключено: ${user}` : '';
-            }
-            fm_link() {
-                if (this.fm_user()) {
-                    $bog_music_log.act('отключение last.fm');
-                    $mol_wire_async($bog_music_scrobble).logout();
-                    return;
-                }
-                $bog_music_log.act('подключение last.fm');
-                window.open($bog_music_scrobble.login_url($bog_music_scrobble.code_ensure()), '_blank');
-            }
-            /** Кто подключён — знает только сервер: спрашиваем на старте. */
-            async fm_refresh() {
-                if (!$bog_music_scrobble.code())
-                    return;
-                try {
-                    await $bog_music_scrobble.status();
-                    this.fm_error('');
-                }
-                catch (e) {
-                    if (e instanceof Promise)
-                        throw e;
-                    console.warn('[fm] status failed:', e?.message ?? e);
-                    $bog_music_log.err(`сервер скробблинга недоступен: ${e?.message ?? e}`);
-                    this.fm_error('Сервер скробблинга недоступен');
-                }
-            }
-            nickname_label() {
-                return this.account().nickname();
-            }
-            share_toast_text() {
-                return this.share().status() || this.share().import_status() || '';
-            }
-            Share_toast() {
-                if (!this.share_toast_text())
-                    return null;
-                return super.Share_toast();
-            }
-            // =====================================================================
-            // Фоновые процессы
-            // =====================================================================
-            _drain_busy = false;
-            /**
-             * Разбор очереди треков, сохранённых со страницы vk.com (см. ext/).
-             * Запись каждого — своя фибра: save_blob создаёт blob-land с PoW,
-             * и только внутри фибры PoW-task кешируется между ретраями.
-             */
-            async drain_pending() {
-                if (this._drain_busy)
-                    return;
-                this._drain_busy = true;
-                try {
-                    while (true) {
-                        const entries = await $bog_music_pending.all();
-                        if (!entries.length)
-                            break;
-                        for (const entry of entries) {
-                            const raw = entry.buf;
-                            const buf = raw instanceof Uint8Array ? raw : new Uint8Array(raw);
-                            try {
-                                await $mol_wire_async(this.account())
-                                    .import_audio(entry.audio, buf, entry.mime || 'audio/aac');
-                            }
-                            catch (e) {
-                                console.warn('[app] pending save failed:', entry.key, e?.message ?? e);
-                                $bog_music_log.err(`сохранение из очереди не удалось: ${entry.key}: ${e?.message ?? e}`);
-                                continue;
-                            }
-                            $bog_music_log.act(`трек из очереди сохранён: ${entry.key}`);
-                            await $bog_music_pending.remove(entry.key);
-                        }
-                    }
-                }
-                finally {
-                    this._drain_busy = false;
-                }
-            }
-            /** Однократная подписка на сигнал от background.js о новом pending-треке. */
-            pending_listener() {
-                const ext = globalThis.chrome;
-                if (!ext?.runtime?.onMessage?.addListener)
-                    return null;
-                ext.runtime.onMessage.addListener((msg) => {
-                    if (msg?.target !== 'popup' || msg.type !== 'pending_added')
-                        return;
-                    $mol_wire_async(this).drain_pending();
-                });
-                return null;
-            }
-            async import_share(token) {
-                $bog_music_log.act('импорт расшаренного плейлиста по ссылке');
-                const playlist = await this.share().import(token);
-                if (playlist) {
-                    $bog_music_log.act(`расшаренный плейлист импортирован: ${playlist}`);
-                    this.page(playlist);
-                }
-                else {
-                    $bog_music_log.err('импорт расшаренного плейлиста ничего не вернул');
-                }
-            }
-            auto() {
-                this.pending_listener();
-                this.prefetch(); // фоновая докачка blob'ов по одной песне
-                this.tg_poller();
-                $mol_wire_async(this).drain_pending();
-                $mol_wire_async(this).tg_drain();
-                $mol_wire_async(this).fm_refresh();
-                this.lists_migrate();
-                const token = $bog_music_boot.share_token;
-                if (token) {
-                    $bog_music_boot.share_token = '';
-                    $mol_wire_async(this).import_share(token);
-                }
-                return super.auto();
-            }
-        }
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "page", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "visible_keys", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "list_dict", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "current_key", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "prefetch", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_app.prototype, "play_key", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "wave_mode", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_app.prototype, "reorder_to", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_app.prototype, "archive_key", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_app.prototype, "restore_key", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_app.prototype, "demote_key", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_app.prototype, "delete_key", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "upload_files", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "vk_audios", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "prefetch_state", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "download_playlist_status", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_app.prototype, "download_playlist", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "font_size", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "section", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_app.prototype, "player_open", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_app.prototype, "player_collapse", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "tube_query", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "tube_committed", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_app.prototype, "tube_find", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_app.prototype, "tube_submit", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "tube_items", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "tube_rows", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_app.prototype, "tube_step", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_app.prototype, "tube_play", null);
-        __decorate([
-            $mol_mem_key
-        ], $bog_music_app.prototype, "tube_status", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_app.prototype, "tube_get", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "tg_state", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_app.prototype, "tg_link", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "tg_poller", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "fm_error", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_app.prototype, "fm_link", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "pending_listener", null);
-        $$.$bog_music_app = $bog_music_app;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-var $node = $node || {} ; $node[ "/bog/music/app/favicon.svg" ] = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzZDNjNGRiIvPgo8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMzQjgyRjYiLz4KPC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJzaGluZSIgeDE9IjAiIHkxPSIwIiB4Mj0iMCIgeTI9IjEiPgo8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZmZmZmZmIiBzdG9wLW9wYWNpdHk9IjAuMyIvPgo8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmZmZmZmYiIHN0b3Atb3BhY2l0eT0iMCIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTA4IiBmaWxsPSJ1cmwoI2JnKSIvPgo8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjI1NiIgcng9IjEwOCIgZmlsbD0idXJsKCNzaGluZSkiLz4KPGcgZmlsbD0iI2ZmZmZmZiI+CjxlbGxpcHNlIGN4PSIxNzUiIGN5PSIzNTUiIHJ4PSI1NSIgcnk9IjQ0Ii8+CjxlbGxpcHNlIGN4PSIzNDUiIGN5PSIzMjUiIHJ4PSI1NSIgcnk9IjQ0Ii8+CjxyZWN0IHg9IjIxOCIgeT0iMTA1IiB3aWR0aD0iMTQiIGhlaWdodD0iMjUwIiByeD0iNyIvPgo8cmVjdCB4PSIzODgiIHk9Ijc1IiB3aWR0aD0iMTQiIGhlaWdodD0iMjUwIiByeD0iNyIvPgo8cGF0aCBkPSJNMjMyIDEwNSBDMjMyIDEwNSAyOTUgNjUgNDAyIDc1IEw0MDIgMTE1IEMyOTUgMTA1IDIzMiAxNDUgMjMyIDE0NVoiLz4KPC9nPgo8L3N2Zz4K"
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_attach("bog/music/app/app.view.css", "[bog_music_app][bog_builderui_base][bog_builderui_lights=\"light\"] {\n\t--bog_builderui_control: hsl( 210, 68%, 42% );\n\t--bog_builderui_focus: hsl( 210, 72%, 36% );\n\t--bog_builderui_current: hsl( 26, 82%, 44% );\n\t--bog_builderui_special: hsl( 26, 82%, 44% );\n\t--bog_builderui_back: #faf9f7;\n\t--bog_builderui_card: #ffffff;\n}\n[bog_music_app][bog_builderui_base][bog_builderui_lights=\"dark\"],\n[bog_music_app][bog_builderui_base][bog_builderui_lights=\"system\"] {\n\t--bog_builderui_control: hsl( 210, 72%, 64% );\n\t--bog_builderui_focus: hsl( 210, 76%, 72% );\n\t--bog_builderui_current: hsl( 30, 85%, 60% );\n\t--bog_builderui_special: hsl( 30, 85%, 60% );\n\t--bog_builderui_text: #d4d4d8;\n\t--bog_builderui_back: #18181b;\n\t--bog_builderui_card: #09090b;\n}\n@media ( prefers-color-scheme: light ) {\n\t[bog_music_app][bog_builderui_base][bog_builderui_lights=\"system\"] {\n\t\t--bog_builderui_control: hsl( 210, 68%, 42% );\n\t\t--bog_builderui_focus: hsl( 210, 72%, 36% );\n\t\t--bog_builderui_current: hsl( 26, 82%, 44% );\n\t\t--bog_builderui_special: hsl( 26, 82%, 44% );\n\t\t--bog_builderui_text: #09090b;\n\t\t--bog_builderui_back: #faf9f7;\n\t\t--bog_builderui_card: #ffffff;\n\t}\n}\n\n[bog_music_app][bog_builderui_lights] {\n\t--mol_theme_back: var(--bog_builderui_back);\n\t--mol_theme_card: var(--bog_builderui_card);\n\t--mol_theme_field: var(--bog_builderui_field);\n\t--mol_theme_hover: var(--bog_builderui_hover);\n\t--mol_theme_text: var(--bog_builderui_text);\n\t--mol_theme_shade: var(--bog_builderui_shade);\n\t--mol_theme_line: var(--bog_builderui_line);\n\t--mol_theme_focus: var(--bog_builderui_focus);\n\t--mol_theme_control: var(--bog_builderui_control);\n\t--mol_theme_current: var(--bog_builderui_current);\n\t--mol_theme_special: var(--bog_builderui_special);\n}\n\n/* $bog_popup распирает html и body до min-width: 20rem (иначе попап\n   расширения схлопывается). Размер шрифта тоже на html, и на Огромном этот\n   минимум вырастал до 440px — шире экрана телефона. Те же 20rem, но в px. */\nhtml:has([bog_music_app]),\nbody:has([bog_music_app]) {\n\tmin-width: 320px;\n}\nhtml:has([bog_music_app][bog_music_font=\"large\"]) {\n\tfont-size: 118.75%;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) {\n\tfont-size: 137.5%;\n}\n\n@media ( max-width: 40rem ) {\n\t[bog_music_app_nickname_label],\n\t[bog_music_app_version] {\n\t\tdisplay: none;\n\t}\n\t[bog_music_app_brand_name] {\n\t\tfont-size: 1.25rem;\n\t}\n\t[bog_music_app] > [mol_page_head] {\n\t\tpadding-left: 0.25rem;\n\t\tpadding-right: 0.25rem;\n\t\t/* Шапка всегда в одну строку: инструменты не переносятся вниз, а\n\t\t   название при нехватке места режется многоточием. */\n\t\tflex-wrap: nowrap;\n\t\tgap: 0.25rem;\n\t}\n\t[bog_music_app_brand] {\n\t\tmin-width: 0;\n\t\tflex-shrink: 1;\n\t\tpadding-right: 0;\n\t}\n\t[bog_music_app_brand_name] {\n\t\tmin-width: 0;\n\t\toverflow: hidden;\n\t\ttext-overflow: ellipsis;\n\t}\n\t[bog_music_app_tools] {\n\t\tflex-shrink: 0;\n\t\tgap: 0;\n\t}\n}\n\n/* Огромный шрифт на телефоне: иконки шапки чуть меньше и без лишних полей,\n   иначе пять инструментов плюс название не влезают в 390px. */\n@media ( max-width: 40rem ) {\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tools] > * {\n\t\tpadding-left: 0.2rem;\n\t\tpadding-right: 0.2rem;\n\t\tmin-width: 0;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tools] [mol_icon] {\n\t\twidth: 1.25rem;\n\t\theight: 1.25rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_brand_image] {\n\t\twidth: 1.75rem;\n\t\theight: 1.75rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_brand_name] {\n\t\tfont-size: 1.1rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app] > [mol_page_head] {\n\t\tpadding-top: 0.25rem;\n\t\tpadding-bottom: 0.25rem;\n\t}\n}\n\n/* Огромный шрифт: контролы и навигация не раздуваются вместе с текстом. */\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_controls] {\n\tpadding: 0.125rem 0.5rem;\n\tgap: 0.25rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_center] {\n\tgap: 0;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_nav_item] {\n\tmin-height: 3rem;\n\tpadding: 0.25rem 0.125rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tabs] {\n\tpadding: 0.25rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] {\n\tgap: 0.5rem;\n\tpadding: 0.5rem 0.75rem 0.75rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_cover],\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_cover_placeholder] {\n\twidth: 45vw;\n\theight: 45vw;\n\tpadding: 2rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_left] {\n\tgap: 0.5rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_title] {\n\tfont-size: 1.25rem;\n}\n\nhtml:has([bog_music_app][bog_music_font=\"large\"]) [bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_prev],\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_prev] {\n\tdisplay: none;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_cover],\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_cover_placeholder] {\n\twidth: 2.25rem;\n\theight: 2.25rem;\n}\n");
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        const { rem } = $mol_style_unit;
-        $mol_style_define($bog_music_app, {
-            minWidth: '320px',
-            maxWidth: '50rem',
-            margin: {
-                left: 'auto',
-                right: 'auto',
-            },
-            font: { family: $bog_builderui_tokens.font_body },
-            background: { color: $bog_builderui_tokens.back },
-            color: $bog_builderui_tokens.text,
-            $mol_icon: {
-                width: '1.5em',
-            },
-            $mol_button_major: {
-                background: { color: $bog_builderui_tokens.control },
-                color: $bog_builderui_tokens.back,
-            },
-            Head: {
-                justifyContent: 'space-between',
-                background: { color: $bog_builderui_tokens.back },
-                border: {
-                    radius: 0,
-                    bottom: { width: '1px', style: 'solid', color: $bog_builderui_tokens.line },
-                },
-                box: { shadow: 'none' },
-            },
-            Tabs: {
-                flex: {
-                    direction: 'row',
-                },
-                gap: '0.25rem',
-                padding: {
-                    top: '0.5rem',
-                    bottom: '0.25rem',
-                    left: '0.5rem',
-                    right: '0.5rem',
-                },
-                List: {
-                    Trigger: {
-                        display: 'flex',
-                        justifyContent: 'space-between'
-                    }
-                }
-            },
-            Tools: {
-                alignItems: 'center',
-            },
-            Brand: {
-                align: { items: 'center' },
-                gap: $mol_gap.text,
-                padding: { left: '0.5rem' },
-            },
-            Brand_image: {
-                width: '2rem',
-                height: '2rem',
-                flex: { shrink: 0, grow: 0 },
-                objectFit: 'contain',
-            },
-            Brand_name: {
-                font: {
-                    family: $bog_builderui_tokens.font_head,
-                    size: rem(1.5),
-                    weight: 500,
-                },
-                whiteSpace: 'nowrap',
-                overflow: { x: 'visible', y: 'visible' },
-            },
-            Version: {
-                font: {
-                    size: '0.6875rem',
-                    family: 'monospace',
-                },
-                color: $bog_builderui_tokens.shade,
-                alignSelf: 'center',
-                padding: {
-                    left: '0.25rem',
-                    right: '0.25rem',
-                },
-            },
-            Tube_bar: {
-                flex: { direction: 'row' },
-                gap: '0.5rem',
-                padding: {
-                    top: '0.75rem',
-                    bottom: '0.5rem',
-                    left: '0.75rem',
-                    right: '0.75rem',
-                },
-                align: { items: 'center' },
-            },
-            Tube_query: {
-                flex: { grow: 1 },
-            },
-            Foot: {
-                flex: {
-                    direction: 'column',
-                },
-                align: {
-                    items: 'stretch',
-                },
-                gap: 0,
-            },
-            Nickname_label: {
-                font: { size: '0.875rem' },
-                color: $bog_builderui_tokens.shade,
-                padding: {
-                    left: '0.5rem',
-                    right: '0.5rem',
-                },
-                maxWidth: '8rem',
-                overflow: { x: 'hidden', y: 'hidden' },
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-            },
-            Share_toast: {
-                margin: {
-                    left: '0.5rem',
-                    right: '0.5rem',
-                    top: '0.5rem',
-                },
-                padding: {
-                    top: '0.5rem',
-                    bottom: '0.5rem',
-                    left: '0.75rem',
-                    right: '0.75rem',
-                },
-                background: { color: $bog_builderui_tokens.control },
-                color: $bog_builderui_tokens.back,
-                border: { radius: $bog_builderui_tokens.radius },
-                font: { size: '0.875rem' },
-            },
-        });
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-var $node = $node || {} ; $node[ "/bog/music/app/apple-touch-icon.png" ] = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAAABmJLR0QA/wD/AP+gvaeTAAAXHElEQVR4nO1da5Ac1XX+bk/PLtKy2tULWcISYCQCiJeAAJFJDFSMcQg4doVUkTjBZVeqUqlKnB82ya9UkcrP/CHlcrniHyRlUrgwdsoOdhCYp3kEBIp4SwtCEloQklbSitVK2pmdPvnROzPdt899dM/tntmZPn925/bpc+69/d3vnHtvP8QP7icAABb+CESFwIngD5KsoDXCiawpFOWtQsEdsLEsFRrtCBBng+I6HdUhYoS0Kjbda+7ziBHVVfY1zVM5IGIOxjraVDXi+tHU94kjCUeMOtPXvI7eIZGpSc3KKC1Y4ljGIMn/xVutarLCNvNDOf6J/HZtjF5hwRkwGyEL9DjjDHa8K6CsbrIFbrXIYAdMKs7g/uMdqWCcgSY9l9HEotxqAHUjmnSEDI0F8LXNiAy9CItrkSaANsOKxVA2RxOTpIom9qMwYzSJaKiQwUaTdHlGxgDKRRO9BTUy2DNtmuwrKyWVc8iIGs0WTVQZKF8H7hweGWmoVdlNNr1tzDPsAmiqaJJfk6UjPpkuqrO5iQ0y1H2dU57BSxrO0Fmya7I5A9WLTTThKiMbSTS5zRypOCNFR2en1viRbs9NZGRo3Vg1mdHJwhnGiVTmJi8wR/YMNFM0UThKwRm8SRtqNQVdM25NnKGPwNGapOKM4pvsK3HXLxloh9Qqn2Raz7Cam0CHDMmR0oKTuYmWJj3+DMH3QC7I0JZbcYYlMvSSZg20U2QY0d7B3CTdNdI22eerrmfGcm7CHszY5CzRxCrPMEUT42DwZYWUnKGspE03qfuazTMYSRlNlEG347nJYlwdN1iQ91YUnMFmN8oqFjk3MY73wuYmdpxhbJM5z0hDk7zYBFAAFE1IB3JuYo4mmeYmKppkVWyjSQ5roLy7Zk2aYaXLc5PIL1dzE6tEXWshUhnlVXG4b6K/8ik5w0lqtRBWupqBEvdH7csympg5Q10VnfvIQcsm28xa9T5zWwOVT4rTpIc2UJRGjRXIuiAIBSTUvpysgVoiQyv2TS4IGXrJNFH3WWSoyFlZG+ugy/YUm2cw4mxuYrKQaW5ileNJ/9msdFnncLyFsDxT0u3r7nGyjCZ6r1D1tf2vdmU6zTPSRBNdnmEXQA15RtasCFKTzQHUhC/FYNBu2WfKMxjHKTmDN+mkm6w5QyX2nGGOJkbOUNUhasQknWwIKLbsC5mbEJQkH5OUcxP72CeXmeYmzu7P6Jk1UP2F9hkHhc1NrDnDnIGau0ldlZYRjQXFMTa1MiND356UnJEqz5Ac6QeDp/GqOs3N3MQSGcax6mRuYoMMvQVk4QxGXCEja54RtexTSmSwB9gBlCjXRRM+AzX6txpASjttI8ZooqlDpCbGNpnzjDSpFS8utpfD8vjyuU000XtVOrb/1a6MOc/IxM9yoZM8w/rOHd9HtQK/Cr+CoarwPDQC1OvUqu1cHXNzmG+oKqRoRdOLg62iZm39RCOUjoubm9isdMGmmzQntR3pPKSfmwiBsVFaPiZWjGFsmRhZitGlWLoUI0vE6AiGhwweW1Kfx1wNnkCtjsPH6MmX6cAn7LWKiJMbD9C+iD5R781N0qxnpMozWIupOEMqEB5WjGPtavGZ1VizGquWi+XLUKnY+DZI1UfVB4ClSzC+TOzYRR8e1J7g4qZoafT6kq49Z+SVgbq5d1xrARbdpB4wS87ChnViw7k4b51YuwZDVW1lHMnq8YVmp+KMVAE0tBM9HLufo48z0HRBN6FQ9XHeerHpfGw8T6xeZbXW71aGqiBVzFBwhqQTiiVnhGJ+NIE3ZHacJc8wuLOawpkK0+QZoyO4ZJO4ZCPO/6zw5cXkoiV7npEJGdRaBFtccxNVN7GSOugSRpbiikvEZb8lNqyDKJ4lOFHTpO3cxCYDlcRXkVV/zk203eRVcOlGcfVl2HSB8BS35XdR5AY6uV0eumukuPu8L+YmbDrGylnD2HK5+Pxvi/FlSp2ui1R9B68MAXONor+Yh5p6dm6ijCYdzE3WrMbWa8VVl3Y/pTAIRWrvbg1UH/E55lhEc5MO1kDPWYkv/I64crPweiOr0Au1woqTx/JgMXpF/LmVRZeB2t8lRYAnIDw0GhgdwW03i6s2ix5JNm2EmqPOzdwkcZgd/5GprCtk6C00jeSUZyQdhRZuuFrcdpOo+Ni+k44ex5bLFg8uWuIQGfrC5gVqPmXfA3MTFhkqSTU3Wb0Sd3xxgSduuFr831tmXPWgOJu1aizEFXzkNjdRRRNW0kUTvQXIA2jtmlgEGRvl61CkzNUQBDhTQxBACCwZbh+q+uCyYwYaNqlVTIzXKB7u/YCzl8vcxIYzYEaG1XOt8W7yRLyKOYeUM3M4Ok1Hp3FiBp/O0swsTp7C7Cl8OktzNdTrmG8YAmjVx598ybt2c/vY1LRMHOxgUIk9Z0QLEw9S5zc36fy51qzbS+a8tQM5eQoHD9NHh/DxYTpyDEenafY0AF1WZEytavOYq8dOmTmlsBD5bYgmaTgjVEk8SJ08hynXcYaqgi7mJhackb/Mz+PAJ7R3Evsm6cBB+vRkPgE0cWGIVc60b8LqJS+xLxeYHadHhpu5STeRERAOfEy792JiLx04SNHbtFQBlJVUTTZYgDtkKC6x7rVPbqJJ58hAljzDiZyZw7vv01sTNLGPTjWDhbIOzZpkjiYx5fhdWESJLXvjjQecjjHPiP7yNeeoTiPNMclIh9QKp0vF1jJXwxu76PV36b29CyRBidryZlPeIazmDEoO+c45g+1HzWXkdmW1nBGtmc6ro7lJcW+kBwh4fx+98jq9uZtq9Vj5giMkCqWaqC0nf6RNrZK3gqfKQJOOEhZI+i8RVnKem7DUyosrziB5NCc7f34eO9+lp16kg0cUllxxhsYCdGugpMCo0p0xmljcLs9/UkOHDBspbG6izzMsantsGs+/GvzvTjp9hjlqyxl8UhRXttpeVg92aoYaG85Q1aHlyMQZoU5knaN3MlDX7/Zj+3z6Uzz9UvDia1RXPCFin2doKyjrWDZZUqNIfDSkVhacoaqm1GS/fY7asm12UyQyNBZMeUZ9Hv/1WPDCDmo0TB3tJM9w0mR3O2oqlWST/eiFVyJDdUxy7OSJ5/zf+nhoCs9uJ40FyZHGnZv3Z7BNTlCHPuY4jCYt8VudpLz6hXEGHOUZiWOsUTNnmKKJeRBbrXSZmtws0gEx0+q4/F+iyezd5+nzjGK+lpWJM4iL34HCCfefssl8HTgdNWdoLUQk0Iw9O85QqWgCqJ/ouyx5BitsftVRNNFyhu7W1yQ6NHgobg1UayHZFtZQPpwRirTOkQ9naCwg3XqGStgMQnMJiWSVFNHEBWcYLKh1YspO8gwom+wny9nR1nk04cUVZ2gtJE+U7NlzhkpS0qTJQkKH4jmH1ejVckZbR33Yk8oNFztu1J4zeHGyBmpChuo8+T9XyNDXIc1tbDp3nXEG6yhZMV9+d3G31zPkosx5RsyRpNH27DiaaCywNUkqKwYDKRzx7jqLJi3xY+G3wLmJgwfDbThDG91tOUOVDKbNMyyiiXIwULPbXWWgGgthYWtvxYqpoOMMSUfjFch5bhI3QolLS1Hu6NLqOKNsGgwByOoapVzC4TUFQGh+rrxIzsgnz0g60lngHGePJploMtVgWFjn0F9UmybbcUYofpA4QenAzXOthXLGwlEJ92HmX8x6hovFPfawRTRJKBtpMt69ni0yVLaildNbyHMNNOHIxIOLDhkaC3DPGaGo7yG1cFxw0O3gvePymYbvcDtbHc9Ok8zbD1gLcIaMJE3EH6RmT+idO3dsoolF7mQ47Igz3LzBraXYXARjo4nKSbZo0pL2CimPjDScwUuB6xkcZwDJnAOKjka+GahcW40FY7dHjKgGQ+Zo0hL1O8GK5AyNBRd5BkParKc830ifiibZKBNIpZbrGZk4I1RO7so2jdqA1100UUnn31Ejrn5MvVxxRuepFRg+li+Tk6RbzRmhsi/jEdbpmNZrcRmoBWdQopvYocnXIerISTQxcobgqhgtyZ8zQkm8NK9nFgSdRROLFTMH0SS394GyRvLLM6JNjj9l3zNzEzfRBFajMD9kdBJN+Cq7QobigHSVfakLzMjQenUzgLKvZ8T/08RHWlDokdVxgq62bZ3OPwNlxxmhtL9Ivcg4I80AUo3CgjlDJWw0MVyL+C/uv4x5RvQqtx9N6JQz0BPRRHLUrBhjsZc5I6lMkKayeeUZ0UKfIyvuHD1Z9XAGyrgT0t3nnHJheUbicPhLe5ugIZqk4oxYbeODwU+FjO5Hk0xTOP39mIwtp01WiX00UankxxmheJ1Gk8XFGWrp2TxDpZI3MsC+3rpnkaFSKRQZTlIrMLyirzBRzG/n0cSGJuW3CfZTNNH8VH6H29hkJ3mGkTMYhXaVC+CMUBSf8eoxzjAgAzpksD6YN/P1zHqGclkhajlnzgjF71Y3sX2UkTM0FtC7a6C8snZZoTDOAEAg7oVx/RJNmrXlfFG8m7rEGZomJ2dYC+schXAGgSDgqQ9z0lPRZGA4A/ZNdsQZoU5ky35x5RlpkCEdZfm5l5GxcIppeqzRyYAMtHMOmzXQRRdNNEI9Gk1UKlJZrtGkdcxfOEfrdfFyBqtD8cr0HmfwflVEuFDolDNCab/2SXVOP3BG0nXPc4YMaNXd5+FR15wRihc5zMki5wy9LArOMB7OgzNC8TV47AfOACBvdnMvmY8Z6X6eQWDawtztmxtnhMrKqWzfcIaiRzjpDc6wbXKenBEq87uy/Y0MXnoYGbyvnJEB5u5z9CMyjH1dIoNTZh5NKJHBuBs8ZEBI4CiRwbobSGQgxhwlMlh3g4oMtMFRIoN1N0hzE8kILYCjr5HBKy86ZGjqkDDiBBkA/BIZvLI7ZFSrWDEqlp4FIVCbp9nT4vgMxV5nqLGglVyRAcAfOGTYDM3OkCEENq0X11zsXbRBXLBOjJ8ta843cHCK3pukt/cFr+6i4zOkd6esQ7y2KgvZkAHpo8OW58SUFxsyDBbQETJWjonbbvBuuVasHNOlPH4F69eI9WvELdd4RHhjT/D4K8HzbwWketZKU+HckIEkOEpk6C2okHH2Utx9a+XW67wqM9x0IgSu3OhdudH70yn60bbGC2+aAVIMMqD7XHmJDFaZQ8bWy72/+lpl2Ugaxwk5d5X4hz/zd0wE9/+kcWxG2YjCkAHlln2fIcM4CURGZAgPf/mVyr1/3ikyWnL1Rd6//l310gv4GheJDGqBo7+RkVMG6lVw79crt3+e25/qQMZG8M/fqp6znKtDKIUgA8yWfR8io+PpGPho8jd3VW64zDEyQqn62LJRYbkoZEBIW/aDgQxJR2dBjYw7bvRuujoXZITisbYLRAakvRXNOSiRESlcPS6+/uWKwbhzKRYZiO6taM5BiYy4u7/4A2+4ajDvWApHBqRHE3oZGatW4ML1Ys1KsXIcw0M4a1jM1ehMDUencegofTCJQ0cpYiRHZKxeLrZekWNA0UthyEC4t6I5B11FhhDYvFFs3SK2XOKtGONOiMj0DHa8E7z0Bu2cCIzYUNahVa5eHb/xClHpEjaKRAZai2C9hoyqj5uv9+64WZyzQrcOHZXxUdxyvXfL9Zia9n7xTPDrl4NaXe0uKzIAXLmpC9CgwpFBITh6DRnXbBbf+KpnDwtJVo2Lb/5R5c6bvAd+Hrz8JntDf3ZkADh/XcaKdSIHjrAT8hyRAfa1TwuHu4GM4SF846veLdc7GJqrxsV376k895r4t581LE+xQYbwMOZoMdRe9nxM+w/JPZc3MsDuyqJLyBgbxd9/q3LhBpfj8veu8TasFU++YrebZUIGBPwKROHE8d5HXUAG+C37biBjdAT/+NeVz65x3/HnrxN//PsGKrJEBoDaPGrzGEq59dqhnDwTq0sxyEDy0YSuIKNSwXe+mQsyQhk7W2fZHhlh4cEpu7mQO/noSLR7C0IGJHB0KwO960vexYp9yLwlLTIA7P6waHDsOrDgsUhkIPrcSreQsXa1uOPm7qwbZEAGgJfftr5hy4V8fHQhGy0YGdTesu/eStfXvuj5hW9TICsyANoxEXxytDjy+OXLAbqBDCxs2XcPGSNLsHVLFwJKZmQACAI88rTt9LhDOT5D27Y3uoIMAF539022XCqKp41OkBHKE68Gu/YXQR4//FVjdq47yACICfaFIQPARed1gTbmanJJ2iYT4V9+PD9zKofKReSJ14KnX290CxlgprKJExKFzpABYO05XQDH9ndjGWW2Jh8+Tv/07/UzCZy5kp17gu/9vN5FZECeyiZOSBS6RAYBI2cpjuUmU9M08WGiFS1J0+TdH9J9D9Tz4I9XdgX3/ahe4xKbwpAB3Qvj8kcGgPmCEru2fDor16Et6Zv81l767vfrH3zsLP8gwsPPNO57sH6mzh2N/sgZGcTffY6CkAHgxEmFRm5yogkOV03+aIq+8/36fz7RqHGXM5Xs/YTu/WH9gcfn+XfDJWorF0qanSED/JZ9UciAwP6DdN3lhaYd+w8SXDe5Po8fP9l4Yntw+1bvtusqo0tT1+rDw/Tws41nXw/mg67NTZL/JbbsC0QGgDcn6K5bFar5yM6JxLB00mRgaob+Y1vjoacaN1/l3Xi5t/kCz7g/d+QEbd9Nz+xsvL0/fO6+h5ABIe3KFosMALv30dRxrEo8wJOTTM/gzQ/itXOEjNZyUa2ObduDbduDoSouXCcuWCs+s0KsXCaGqxgewuxpnJrD4WmanKKJSfrkWNRXbyEDsS37wpEBICD88rngnq8UtLfy6AuNRjQFdo2MqNTqeGc/vROulUUUFNe155AB6dGEgpERFm57MTjI3QPnXKam6dHnIysceSID2iYnNHsRGWi99ilhqCBkAKjP4wc/CRo573QS4XuPNNprViUyTMgA4HUXGaG8s4cefDRfdDz0eGPnRNNtiQwLZBD37vOikRHKo88FP/11Xvj4xW+Ch59sGi+RYYcMJKay3UEGBAj00GONEyfpnjsrDh8ZCgI8+FjjZ8+UyGCO65GB+A3G3URG+O+vng/2TNLf3l1Zs9LBytiR43T/w4239pTRhDluRAYAcfe35/nTCkdGS4aquPMm7w9/t3J2+qXGUM7U8N+/CR55qjHXWtIukZESGWiCo4eQ0VIeruIL13q33+iluiv90DF6cnvwPy8Fsc3SEhnpkQFA3P3tuny4B5DR0hECnztXbLlYXHK+t3G9YLnk5GnsmaR39wU7dtH7kyQvj5fIyIQMRHOOHkQGACK8P0nvTxIQABhZglXjYskwhqqYq+NMDVMn6OQphQWUyEBmZJCQnrLvMWQkLcyexuxpWig3dlOJjA6Qgdg6R88jI6ZcIiNnZKD9jbcSGayvAUYGonsr1l4VyiUyGM1FjAy09lasvSqUS2QwmosbGTDcfS57VTgokcFoLnpkwPC58hIZrPJgIIOUd5/LXhUOSmQwmn2CDCg/V14ig1UeJGSA/1x5iQxWecCQAcUXqXkpkaGz0HfIgAyOEhms8kAiA0L+IjUvJTJ0FvoUGYh/kZqXEhk6C/2LDES+SM1LiQydhb5GBoXL5yUyGOWBRwb4qazacYmMZmH/IwPMVFbtuERGs3AgkAEWHCUydBYGBhnQvTCuRAajOUDIgHLLvkQGozlYyED0PaQlMnQWBg8ZxGzZl8hgNAcRGRDSln2JDEZzQJGB2DpHiQxGc3CRgeQXqVVeS2Twyv2LDCQfTSiR0SwcdGRAejShREazsEQGYLj7HCUyFMoDgAzo7j5HiQyF8mAgg5R3n6NEhkJ5YJAB5ZZ9iQxWeZCQAX7LvkQGqzxgyIDi0YQSGQnlwUMGuEcTSmQklAcSGUg8mlAiI6E8qMhA/NGEEhkJ5QFGBkUeTSiRkVAebGSg+WhCiYyE8sAjA8D/A3U87523f1lYAAAAAElFTkSuQmCC"
-
-;
-	($.$mol_check_list) = class $mol_check_list extends ($.$mol_view) {
-		option_checked(id, next){
-			if(next !== undefined) return next;
-			return false;
-		}
-		option_title(id){
-			return "";
-		}
-		option_label(id){
-			return [(this.option_title(id))];
-		}
-		enabled(){
-			return true;
-		}
-		option_enabled(id){
-			return (this.enabled());
-		}
-		option_hint(id){
-			return "";
-		}
-		items(){
-			return [];
-		}
-		dictionary(){
-			return {};
-		}
-		Option(id){
-			const obj = new this.$.$mol_check();
-			(obj.checked) = (next) => ((this.option_checked(id, next)));
-			(obj.label) = () => ((this.option_label(id)));
-			(obj.enabled) = () => ((this.option_enabled(id)));
-			(obj.hint) = () => ((this.option_hint(id)));
-			(obj.minimal_height) = () => (24);
-			return obj;
-		}
-		options(){
-			return {};
-		}
-		keys(){
-			return [];
-		}
-		sub(){
-			return (this.items());
-		}
-	};
-	($mol_mem_key(($.$mol_check_list.prototype), "option_checked"));
-	($mol_mem_key(($.$mol_check_list.prototype), "Option"));
-
-
-;
-"use strict";
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        /**
-         * List of checkboxes
-         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_check_list_demo
-         */
-        class $mol_check_list extends $.$mol_check_list {
-            options() {
-                return {};
-            }
-            dictionary(next) {
-                return next ?? {};
-            }
-            option_checked(id, next) {
-                const prev = this.dictionary();
-                if (next === undefined)
-                    return prev[id] ?? null;
-                const next_rec = { ...prev, [id]: next };
-                if (next === null)
-                    delete next_rec[id];
-                return this.dictionary(next_rec)[id] ?? null;
-            }
-            keys() {
-                return Object.keys(this.options());
-            }
-            items() {
-                return this.keys().map(key => this.Option(key));
-            }
-            option_title(key) {
-                return this.options()[key] || key;
-            }
-        }
-        __decorate([
-            $mol_mem
-        ], $mol_check_list.prototype, "keys", null);
-        __decorate([
-            $mol_mem
-        ], $mol_check_list.prototype, "items", null);
-        $$.$mol_check_list = $mol_check_list;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_attach("mol/check/list/list.view.css", "[mol_check_list] {\n\tdisplay: flex;\n\tflex-wrap: wrap;\n\tflex: 1 1 auto;\n\tborder-radius: var(--mol_gap_round);\n\tgap: 1px;\n}\n\n[mol_check_list_option] {\n\tflex: 0 1 auto;\n}\n\n[mol_check_list_option]:where([mol_check_checked=\"true\"]) {\n\ttext-shadow: 0 0;\n\tcolor: var(--mol_theme_current);\n}\n\n[mol_check_list_option]:where([mol_check_checked=\"true\"][disabled]) {\n\tcolor: var(--mol_theme_text);\n}\n");
-})($ || ($ = {}));
-
-;
-	($.$mol_switch) = class $mol_switch extends ($.$mol_check_list) {
-		value(next){
-			if(next !== undefined) return next;
-			return "";
-		}
-	};
-	($mol_mem(($.$mol_switch.prototype), "value"));
-
-
-;
-"use strict";
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        /**
-         * Buttons which switching the state
-         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_switch_demo
-         */
-        class $mol_switch extends $.$mol_switch {
-            value(next) {
-                return $mol_state_session.value(`${this}.value()`, next) ?? '';
-            }
-            option_checked(key, next) {
-                if (next === undefined)
-                    return this.value() == key;
-                this.value(next ? key : '');
-                return next;
-            }
-        }
-        $$.$mol_switch = $mol_switch;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-	($.$mol_labeler) = class $mol_labeler extends ($.$mol_list) {
-		label(){
-			return [(this.title())];
-		}
-		Label(){
-			const obj = new this.$.$mol_view();
-			(obj.minimal_height) = () => (32);
-			(obj.sub) = () => ((this.label()));
-			return obj;
-		}
-		content(){
-			return [];
-		}
-		Content(){
-			const obj = new this.$.$mol_view();
-			(obj.minimal_height) = () => (24);
-			(obj.sub) = () => ((this.content()));
-			return obj;
-		}
-		rows(){
-			return [(this.Label()), (this.Content())];
-		}
-	};
-	($mol_mem(($.$mol_labeler.prototype), "Label"));
-	($mol_mem(($.$mol_labeler.prototype), "Content"));
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_attach("mol/labeler/labeler.view.css", "[mol_labeler] {\n\tdisplay: flex;\n\tflex-direction: column;\n\talign-items: stretch;\n\tcursor: inherit;\n}\n\n[mol_labeler_label] {\n\tmin-height: 2rem;\n\tcolor: var(--mol_theme_shade);\n\tpadding: 0;\n\tpadding-top: .5rem;\n\tpadding-inline: .75rem;\n\tgap: 0 var(--mol_gap_block);\n\tflex-wrap: wrap;\n}\n\n[mol_labeler_content] {\n\tdisplay: flex;\n\tpadding: var(--mol_gap_text);\n\tmin-height: 2.5rem;\n}\n");
-})($ || ($ = {}));
-
-;
-"use strict";
-
-
-;
-	($.$mol_form_field) = class $mol_form_field extends ($.$mol_labeler) {
-		state(){
-			return null;
-		}
-		name(){
-			return "";
-		}
-		bid(){
-			return "";
-		}
-		Bid(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.bid())]);
-			return obj;
-		}
-		control(){
-			return null;
-		}
-		attr(){
-			return {...(super.attr()), "mol_form_field_state": (this.state())};
-		}
-		bids(){
-			return [];
-		}
-		label(){
-			return [(this.name()), (this.Bid())];
-		}
-		content(){
-			return [(this.control())];
-		}
-	};
-	($mol_mem(($.$mol_form_field.prototype), "Bid"));
-
-
-;
-"use strict";
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        /**
-         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_form_demo
-         */
-        class $mol_form_field extends $.$mol_form_field {
-            state() {
-                return this.bid() ? 'bid' : null;
-            }
-            bid() {
-                return this.bids().filter(Boolean)[0] ?? '';
-            }
-        }
-        __decorate([
-            $mol_mem
-        ], $mol_form_field.prototype, "bid", null);
-        $$.$mol_form_field = $mol_form_field;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_attach("mol/form/field/field.view.css", "[mol_form_field] {\n\talign-items: stretch;\n}\n\n[mol_form_field_bid] {\n\tcolor: var(--mol_theme_focus);\n\tdisplay: inline-block;\n\ttext-shadow: 0 0;\n}\n\n[mol_form_field_content] {\n\tborder-radius: var(--mol_gap_round);\n}\n");
-})($ || ($ = {}));
-
-;
-	($.$mol_row) = class $mol_row extends ($.$mol_view) {};
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_attach("mol/row/row.view.css", "[mol_row] {\n\tdisplay: flex;\n\tflex-wrap: wrap;\n\talign-items: flex-start;\n\talign-content: flex-start;\n\tjustify-content: flex-start;\n\tpadding: var(--mol_gap_block);\n\tgap: var(--mol_gap_block);\n\tflex: 0 0 auto;\n\tbox-sizing: border-box;\n\tmax-width: 100%;\n}\n\n[mol_row] > * {\n\tmax-width: 100%;\n}\n");
-})($ || ($ = {}));
-
-;
-"use strict";
-
-
-;
-	($.$mol_form) = class $mol_form extends ($.$mol_list) {
-		keydown(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		form_invalid(){
-			return (this.$.$mol_locale.text("$mol_form_form_invalid"));
-		}
-		form_fields(){
-			return [];
-		}
-		body(){
-			return (this.form_fields());
-		}
-		Body(){
-			const obj = new this.$.$mol_list();
-			(obj.sub) = () => ((this.body()));
-			return obj;
-		}
-		submit_title(){
-			return (this.$.$mol_locale.text("$mol_form_submit_title"));
-		}
-		submit_hint(){
-			return "";
-		}
-		submit_activate(next){
-			return (this.Submit().activate(next));
-		}
-		submit(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Submit(){
-			const obj = new this.$.$mol_button_major();
-			(obj.title) = () => ((this.submit_title()));
-			(obj.hint) = () => ((this.submit_hint()));
-			(obj.click) = (next) => ((this.submit(next)));
-			return obj;
-		}
-		result(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Result(){
-			const obj = new this.$.$mol_status();
-			(obj.message) = () => ((this.result()));
-			return obj;
-		}
-		buttons(){
-			return [(this.Submit()), (this.Result())];
-		}
-		foot(){
-			return (this.buttons());
-		}
-		Foot(){
-			const obj = new this.$.$mol_row();
-			(obj.sub) = () => ((this.foot()));
-			return obj;
-		}
-		submit_allowed(){
-			return true;
-		}
-		submit_blocked(){
-			return false;
-		}
-		event(){
-			return {...(super.event()), "keydown": (next) => (this.keydown(next))};
-		}
-		save(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		message_done(){
-			return (this.$.$mol_locale.text("$mol_form_message_done"));
-		}
-		errors(){
-			return {"Form invalid": (this.form_invalid())};
-		}
-		rows(){
-			return [(this.Body()), (this.Foot())];
-		}
-	};
-	($mol_mem(($.$mol_form.prototype), "keydown"));
-	($mol_mem(($.$mol_form.prototype), "Body"));
-	($mol_mem(($.$mol_form.prototype), "submit"));
-	($mol_mem(($.$mol_form.prototype), "Submit"));
-	($mol_mem(($.$mol_form.prototype), "result"));
-	($mol_mem(($.$mol_form.prototype), "Result"));
-	($mol_mem(($.$mol_form.prototype), "Foot"));
-	($mol_mem(($.$mol_form.prototype), "save"));
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_attach("mol/form/form.view.css", "[mol_form] {\r\n\tgap: var(--mol_gap_block);\r\n}\r\n\r\n[mol_form_body] {\r\n\tgap: var(--mol_gap_block);\r\n}");
-})($ || ($ = {}));
-
-;
-"use strict";
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        /**
-         * Form, that contains form fields and action buttons.
-         * @see https://mol.hyoo.ru/#!section=demos/demo=mol_form_demo
-         */
-        class $mol_form extends $.$mol_form {
-            form_fields() {
-                return [...this.view_find(view => view instanceof $mol_form_field)]
-                    .map(path => path[path.length - 1]);
-            }
-            submit_allowed() {
-                return this.form_fields().every(field => !field.bid());
-            }
-            submit_blocked() {
-                return !this.submit_allowed();
-            }
-            keydown(next) {
-                if (next.ctrlKey && next.keyCode === $mol_keyboard_code.enter && !this.submit_blocked())
-                    this.submit(next);
-            }
-            result(next) {
-                if (next instanceof Error)
-                    next = this.errors()[next.message] || next.message || this.form_invalid();
-                return next ?? '';
-            }
-            buttons() {
-                return [
-                    this.Submit(),
-                    ...this.result() ? [this.Result()] : [],
-                ];
-            }
-            submit(next) {
-                try {
-                    if (!this.submit_allowed()) {
-                        throw new Error('Form invalid');
-                    }
-                    this.save(next);
-                }
-                catch (e) {
-                    if ($mol_promise_like(e))
-                        $mol_fail_hidden(e);
-                    $mol_fail_log(e);
-                    this.result(e);
-                    return false;
-                }
-                this.result(this.message_done());
-                return true;
-            }
-        }
-        __decorate([
-            $mol_mem
-        ], $mol_form.prototype, "form_fields", null);
-        __decorate([
-            $mol_mem
-        ], $mol_form.prototype, "submit_allowed", null);
-        __decorate([
-            $mol_mem
-        ], $mol_form.prototype, "result", null);
-        __decorate([
-            $mol_mem
-        ], $mol_form.prototype, "buttons", null);
-        __decorate([
-            $mol_action
-        ], $mol_form.prototype, "submit", null);
-        $$.$mol_form = $mol_form;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-	($.$bog_music_account) = class $bog_music_account extends ($.$mol_view) {
-		Font_label(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => (["Размер шрифта"]);
-			return obj;
-		}
-		Font_size(){
-			const obj = new this.$.$mol_switch();
-			(obj.value) = (next) => ((this.font_size(next)));
-			(obj.options) = () => ({
-				"normal": "Обычный", 
-				"large": "Крупный", 
-				"huge": "Огромный"
-			});
-			return obj;
-		}
-		Font_row(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.Font_label()), (this.Font_size())]);
-			return obj;
-		}
-		download_playlist_hint(){
-			return "";
-		}
-		download_playlist(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Download_playlist_icon(){
-			const obj = new this.$.$mol_icon_download();
-			return obj;
-		}
-		download_playlist_label(){
-			return "";
-		}
-		Download_playlist_label(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.download_playlist_label())]);
-			return obj;
-		}
-		Download_playlist(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.hint) = () => ((this.download_playlist_hint()));
-			(obj.click) = (next) => ((this.download_playlist(next)));
-			(obj.sub) = () => ([(this.Download_playlist_icon()), (this.Download_playlist_label())]);
-			return obj;
-		}
-		download_playlist_status(){
-			return "";
-		}
-		Download_playlist_status(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.download_playlist_status())]);
-			return obj;
-		}
-		Sync_row(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.Download_playlist()), (this.Download_playlist_status())]);
-			return obj;
-		}
-		nickname(next){
-			if(next !== undefined) return next;
-			return "";
-		}
-		Nickname_input(){
-			const obj = new this.$.$mol_string();
-			(obj.value) = (next) => ((this.nickname(next)));
-			(obj.hint) = () => ("Как тебя зовут?");
-			return obj;
-		}
-		Nickname_field(){
-			const obj = new this.$.$mol_form_field();
-			(obj.name) = () => ("Имя");
-			(obj.Content) = () => ((this.Nickname_input()));
-			return obj;
-		}
-		lord_text(){
-			return "";
-		}
-		Lord_text(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.lord_text())]);
-			return obj;
-		}
-		Lord(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => (["ЛК:", (this.Lord_text())]);
-			return obj;
-		}
-		Profile(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.Nickname_field()), (this.Lord())]);
-			return obj;
-		}
-		Tg_title(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ("Музыка из Телеграма");
-			return obj;
-		}
-		tg_hint(){
-			return "";
-		}
-		Tg_hint(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ((this.tg_hint()));
-			return obj;
-		}
-		tg_button(){
-			return "";
-		}
-		tg_link(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Tg_connect(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.title) = () => ((this.tg_button()));
-			(obj.click) = (next) => ((this.tg_link(next)));
-			return obj;
-		}
-		tg_status(){
-			return "";
-		}
-		Tg_status(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.tg_status())]);
-			return obj;
-		}
-		Telegram(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([
-				(this.Tg_title()), 
-				(this.Tg_hint()), 
-				(this.Tg_connect()), 
-				(this.Tg_status())
-			]);
-			return obj;
-		}
-		Fm_title(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ("Last.fm");
-			return obj;
-		}
-		fm_hint(){
-			return "";
-		}
-		Fm_hint(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ((this.fm_hint()));
-			return obj;
-		}
-		fm_button(){
-			return "";
-		}
-		fm_link(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Fm_connect(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.title) = () => ((this.fm_button()));
-			(obj.click) = (next) => ((this.fm_link(next)));
-			return obj;
-		}
-		fm_status(){
-			return "";
-		}
-		Fm_status(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.fm_status())]);
-			return obj;
-		}
-		Lastfm(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([
-				(this.Fm_title()), 
-				(this.Fm_hint()), 
-				(this.Fm_connect()), 
-				(this.Fm_status())
-			]);
-			return obj;
-		}
-		Warning(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ("Ссылка ниже — СЕКРЕТ. Не делись ей публично.");
-			return obj;
-		}
-		copy(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Copy(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.title) = () => ("Скопировать ссылку для переноса");
-			(obj.click) = (next) => ((this.copy(next)));
-			return obj;
-		}
-		copy_status(){
-			return "";
-		}
-		Copy_status(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.copy_status())]);
-			return obj;
-		}
-		Export(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([
-				(this.Warning()), 
-				(this.Copy()), 
-				(this.Copy_status())
-			]);
-			return obj;
-		}
-		Import_hint(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ("Перенести с другого устройства — вставь ссылку:");
-			return obj;
-		}
-		import_link(next){
-			if(next !== undefined) return next;
-			return "";
-		}
-		Import_input(){
-			const obj = new this.$.$mol_string();
-			(obj.hint) = () => ("https://.../music/#account=...");
-			(obj.value) = (next) => ((this.import_link(next)));
-			return obj;
-		}
-		apply_import(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Import_apply(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.title) = () => ("Применить");
-			(obj.click) = (next) => ((this.apply_import(next)));
-			return obj;
-		}
-		import_status(){
-			return "";
-		}
-		Import_status(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.import_status())]);
-			return obj;
-		}
-		Import(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([
-				(this.Import_hint()), 
-				(this.Import_input()), 
-				(this.Import_apply()), 
-				(this.Import_status())
-			]);
-			return obj;
-		}
-		Reset_hint(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ("Сбросить состояние и сгенерировать новый аккаунт. Текущие треки в Giper Baza останутся orphan.");
-			return obj;
-		}
-		reset_account(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Reset_button(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.title) = () => ("Сбросить локальный аккаунт");
-			(obj.click) = (next) => ((this.reset_account(next)));
-			return obj;
-		}
-		Reset(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.Reset_hint()), (this.Reset_button())]);
-			return obj;
-		}
-		Cards(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([
-				(this.Profile()), 
-				(this.Telegram()), 
-				(this.Lastfm()), 
-				(this.Export()), 
-				(this.Import()), 
-				(this.Reset())
-			]);
-			return obj;
-		}
-		font_size(next){
-			if(next !== undefined) return next;
-			return "normal";
-		}
-		sub(){
-			return [
-				(this.Font_row()), 
-				(this.Sync_row()), 
-				(this.Cards())
-			];
-		}
-		ext_label(){
-			return (this.$.$mol_locale.text("$bog_music_account_ext_label"));
-		}
-		ext_hint(){
-			return (this.$.$mol_locale.text("$bog_music_account_ext_hint"));
-		}
-		pwa_label(){
-			return (this.$.$mol_locale.text("$bog_music_account_pwa_label"));
-		}
-		pwa_hint(){
-			return (this.$.$mol_locale.text("$bog_music_account_pwa_hint"));
-		}
-	};
-	($mol_mem(($.$bog_music_account.prototype), "Font_label"));
-	($mol_mem(($.$bog_music_account.prototype), "Font_size"));
-	($mol_mem(($.$bog_music_account.prototype), "Font_row"));
-	($mol_mem(($.$bog_music_account.prototype), "download_playlist"));
-	($mol_mem(($.$bog_music_account.prototype), "Download_playlist_icon"));
-	($mol_mem(($.$bog_music_account.prototype), "Download_playlist_label"));
-	($mol_mem(($.$bog_music_account.prototype), "Download_playlist"));
-	($mol_mem(($.$bog_music_account.prototype), "Download_playlist_status"));
-	($mol_mem(($.$bog_music_account.prototype), "Sync_row"));
-	($mol_mem(($.$bog_music_account.prototype), "nickname"));
-	($mol_mem(($.$bog_music_account.prototype), "Nickname_input"));
-	($mol_mem(($.$bog_music_account.prototype), "Nickname_field"));
-	($mol_mem(($.$bog_music_account.prototype), "Lord_text"));
-	($mol_mem(($.$bog_music_account.prototype), "Lord"));
-	($mol_mem(($.$bog_music_account.prototype), "Profile"));
-	($mol_mem(($.$bog_music_account.prototype), "Tg_title"));
-	($mol_mem(($.$bog_music_account.prototype), "Tg_hint"));
-	($mol_mem(($.$bog_music_account.prototype), "tg_link"));
-	($mol_mem(($.$bog_music_account.prototype), "Tg_connect"));
-	($mol_mem(($.$bog_music_account.prototype), "Tg_status"));
-	($mol_mem(($.$bog_music_account.prototype), "Telegram"));
-	($mol_mem(($.$bog_music_account.prototype), "Fm_title"));
-	($mol_mem(($.$bog_music_account.prototype), "Fm_hint"));
-	($mol_mem(($.$bog_music_account.prototype), "fm_link"));
-	($mol_mem(($.$bog_music_account.prototype), "Fm_connect"));
-	($mol_mem(($.$bog_music_account.prototype), "Fm_status"));
-	($mol_mem(($.$bog_music_account.prototype), "Lastfm"));
-	($mol_mem(($.$bog_music_account.prototype), "Warning"));
-	($mol_mem(($.$bog_music_account.prototype), "copy"));
-	($mol_mem(($.$bog_music_account.prototype), "Copy"));
-	($mol_mem(($.$bog_music_account.prototype), "Copy_status"));
-	($mol_mem(($.$bog_music_account.prototype), "Export"));
-	($mol_mem(($.$bog_music_account.prototype), "Import_hint"));
-	($mol_mem(($.$bog_music_account.prototype), "import_link"));
-	($mol_mem(($.$bog_music_account.prototype), "Import_input"));
-	($mol_mem(($.$bog_music_account.prototype), "apply_import"));
-	($mol_mem(($.$bog_music_account.prototype), "Import_apply"));
-	($mol_mem(($.$bog_music_account.prototype), "Import_status"));
-	($mol_mem(($.$bog_music_account.prototype), "Import"));
-	($mol_mem(($.$bog_music_account.prototype), "Reset_hint"));
-	($mol_mem(($.$bog_music_account.prototype), "reset_account"));
-	($mol_mem(($.$bog_music_account.prototype), "Reset_button"));
-	($mol_mem(($.$bog_music_account.prototype), "Reset"));
-	($mol_mem(($.$bog_music_account.prototype), "Cards"));
-	($mol_mem(($.$bog_music_account.prototype), "font_size"));
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    /**
-     * Выравнивание громкости треков по EBU R128 (ITU-R BS.1770): интегральная
-     * громкость записи в LUFS меряется один раз, при добавлении файла,
-     * и хранится в baza; при воспроизведении все треки приводятся к
-     * target_lufs.
-     *
-     * Раньше мерили обычный RMS. Он не совпадает с восприятием: басовитая
-     * запись по RMS громче, чем звучит, и после «выравнивания» оказывалась
-     * тише соседней. R128 сначала прогоняет сигнал через K-взвешивание
-     * (подъём верха + обрез низа), потом усредняет по 400-мс блокам с
-     * отсечкой тишины — по этому же стандарту нормализуют Spotify и YouTube.
-     */
-    class $bog_music_gain extends $mol_object {
-        /** Целевая громкость (LUFS). -14 — как у Spotify/YouTube Music. */
-        static target_lufs = -14;
-        /** Потолок усиления (dB): выше вытащим шум и дыхание зала. */
-        static gain_max_db = 12;
-        /** Предел приглушения (dB). */
-        static gain_min_db = -20;
-        /** Абсолютный гейт: блоки тише этого — тишина, в среднее не идут. */
-        static gate_abs = -70;
-        /** Считаем на 48 кГц — частота, для которой BS.1770 задаёт фильтры. */
-        static rate = 48000;
-        /**
-         * Коэффициенты K-взвешивания из BS.1770 для 48 кГц.
-         * Первый каскад — шельф +4 dB от ~1.5 кГц (голова и ушная раковина
-         * подчёркивают верх), второй — обрез ниже ~40 Гц (низы весят по
-         * энергии больше, чем слышны).
-         */
-        static shelf = [1.53512485958697, -2.69169618940638, 1.19839281085285, -1.69065929318241, 0.73248077421585];
-        static cut = [1.0, -2.0, 1.0, -1.99004745483398, 0.99007225036621];
-        /**
-         * Интегральная громкость записи в LUFS. null — мерить нечего:
-         * запись короче 400 мс или сплошная тишина.
-         */
-        static async measure_lufs(buf) {
-            const audio = await this.decode(buf);
-            const hop = Math.round(audio.sampleRate / 10); // 100 мс
-            const hops = Math.floor(audio.length / hop);
-            if (hops < 4)
-                return null;
-            // Сумма квадратов по каждому 100-мс куску, взвешенная по каналам.
-            const power = new Float64Array(hops);
-            for (let ch = 0; ch < audio.numberOfChannels; ch++) {
-                // Фильтруем на месте: копия целого трека на телефоне лишняя,
-                // декодированный буфер всё равно выбрасываем сразу после замера.
-                const data = audio.getChannelData(ch);
-                // Между проходами отпускаем поток: каждый — это десятки
-                // миллионов операций, и без пауз отрисовка встала бы колом.
-                this.biquad(data, this.shelf);
-                await this.breathe();
-                this.biquad(data, this.cut);
-                await this.breathe();
-                const weight = ch < 3 ? 1 : 1.41; // тыловые каналы весят больше
-                for (let h = 0; h < hops; h++) {
-                    let sum = 0;
-                    const end = (h + 1) * hop;
-                    for (let i = h * hop; i < end; i++)
-                        sum += data[i] * data[i];
-                    power[h] += weight * sum;
-                }
-                await this.breathe();
-            }
-            return this.integrated(power, hop);
-        }
-        /**
-         * Интегральная громкость по мощности 100-мс кусков. Блок — 400 мс
-         * (4 куска) с шагом в один кусок, дальше двойной гейт: сначала
-         * выкидываем тишину, потом всё, что на 10 LU тише среднего по
-         * оставшемуся — иначе долгие тихие проигрыши тянут оценку вниз.
-         */
-        static integrated(power, hop) {
-            const size = hop * 4;
-            const blocks = [];
-            for (let h = 0; h + 4 <= power.length; h++) {
-                const mean = (power[h] + power[h + 1] + power[h + 2] + power[h + 3]) / size;
-                if (mean > 0)
-                    blocks.push(mean);
-            }
-            if (!blocks.length)
-                return null;
-            const loud = (mean) => -0.691 + 10 * Math.log10(mean);
-            const mean_of = (list) => list.reduce((sum, mean) => sum + mean, 0) / list.length;
-            const heard = blocks.filter(mean => loud(mean) > this.gate_abs);
-            if (!heard.length)
-                return null;
-            const gate_rel = loud(mean_of(heard)) - 10;
-            const rest = heard.filter(mean => loud(mean) > gate_rel);
-            if (!rest.length)
-                return null;
-            return loud(mean_of(rest));
-        }
-        /**
-         * Выше этого размера не декодируем в PCM: decodeAudioData раздувает
-         * сжатый файл в сотни МБ float'ов и добивает OOM на телефоне.
-         */
-        static max_bytes = 40 * 1024 * 1024;
-        /** Замеры идут по одному: декодированный трек занимает десятки мегабайт. */
-        static queue = Promise.resolve();
-        /** Поставить файл в очередь на замер, результат отдать в done. */
-        static measure_later(buffer, done) {
-            if (buffer.byteLength > this.max_bytes)
-                return;
-            this.queue = this.queue.then(async () => {
-                // decodeAudioData отбирает буфер, а этот же байтовый массив лежит в baza.
-                const lufs = await this.measure_lufs(buffer.slice().buffer);
-                if (lufs != null)
-                    await done(lufs);
-            }).catch(error => console.warn('[gain] loudness measure failed:', error?.message ?? error));
-        }
-        /** Линейный множитель приведения записи к target_lufs. */
-        static factor(lufs) {
-            if (lufs == null || !Number.isFinite(lufs))
-                return 1;
-            const db = Math.max(this.gain_min_db, Math.min(this.gain_max_db, this.target_lufs - lufs));
-            return Math.pow(10, db / 20);
-        }
-        /** Отпустить поток, чтобы браузер успел отрисовать кадр. */
-        static breathe() {
-            return new Promise(done => setTimeout(done, 0));
-        }
-        /** Каскад БИХ-фильтра (direct form I) по сэмплам, на месте. */
-        static biquad(data, c) {
-            let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
-            for (let i = 0; i < data.length; i++) {
-                const x = data[i];
-                const y = c[0] * x + c[1] * x1 + c[2] * x2 - c[3] * y1 - c[4] * y2;
-                x2 = x1;
-                x1 = x;
-                y2 = y1;
-                y1 = y;
-                data[i] = y;
-            }
-        }
-        /**
-         * Декод в 48 кГц: decodeAudioData отдаёт сэмплы на частоте контекста,
-         * так что коэффициенты фильтров подходят без пересчёта. Safari отдаёт
-         * результат колбэком, остальные — промисом.
-         */
-        static decode(buf) {
-            const OAC = globalThis.OfflineAudioContext ?? globalThis.webkitOfflineAudioContext;
-            const ctx = new OAC(1, 1, this.rate);
-            return new Promise((done, fail) => {
-                const ret = ctx.decodeAudioData(buf, done, fail);
-                if (ret && typeof ret.then === 'function')
-                    ret.then(done, fail);
-            });
-        }
-    }
-    $.$bog_music_gain = $bog_music_gain;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    /**
-     * Шестиполосный эквалайзер. Раскладка и названия пресетов — как в Я.Музыке
-     * на Android: 60 / 150 / 400 / 1.0k / 2.4k / 15k Гц.
-     *
-     * Крайние полосы — шельфы: низ и верх двигают целиком, а колокол цепляет
-     * только свою метку и спадает по обе стороны от неё. Средние четыре —
-     * колокола с Q=1.4, около октавы на полосу: полосы стоят в 1.3 октавы друг
-     * от друга, и при более широком колоколе они бы заметно складывались.
-     *
-     * У шельфа `frequency` — середина перехода, где набрана ПОЛОВИНА усиления,
-     * а не начало полки, поэтому углы стоят выше своих меток. Замерено
-     * (getFrequencyResponse, +12 на одну полосу, остальные в нуле):
-     *
-     *   полоса 60    → +9.7 на 60 Гц,  +1.7 на 150 Гц
-     *   полоса 150   → +12  на 150 Гц, +1.5 на 60 и +1.3 на 400
-     *   полоса 15000 → +11  на 15 кГц, 0 на 2.4 кГц
-     *
-     * То есть каждый ползунок делает то, что написано на его метке, а соседу
-     * достаётся полтора децибела — нарисованная кривая совпадает со слышимым.
-     */
-    class $bog_music_eq extends $mol_object {
-        static bands = [
-            { freq: 90, type: 'lowshelf', title: '60 Hz' },
-            { freq: 150, type: 'peaking', title: '150 Hz' },
-            { freq: 400, type: 'peaking', title: '400 Hz' },
-            { freq: 1000, type: 'peaking', title: '1.0 kHz' },
-            { freq: 2400, type: 'peaking', title: '2.4 kHz' },
-            { freq: 10000, type: 'highshelf', title: '15 kHz' },
-        ];
-        /** Добротность колоколов. */
-        static q = 1.4;
-        /**
-         * Потолок полосы (dB). Тот же, что gain_max_db у автогромкости: выше
-         * лимитер на плотных миксах начинает дышать слышимо.
-         */
-        static range_db = 12;
-        /**
-         * Пресеты. Названия и порядок — как в Я.Музыке; формы подобраны под нашу
-         * сетку полос по смыслу названия, а не скопированы из чужих таблиц.
-         * `default` первым: ровная кривая, она же состояние «ничего не трогали».
-         */
-        static presets = [
-            { id: 'default', title: 'По умолчанию', gains: [0, 0, 0, 0, 0, 0] },
-            { id: 'classic', title: 'Классическая музыка', gains: [4, 2, 0, -1, -3, 4] },
-            { id: 'club', title: 'Клубная музыка', gains: [0, 2, 5, 5, 3, 0] },
-            { id: 'dance', title: 'Танцевальная музыка', gains: [7, 5, 0, -2, 2, 5] },
-            { id: 'bass', title: 'Усиление НЧ', gains: [10, 7, 3, 0, 0, 0] },
-            { id: 'bass_treble', title: 'Усиление НЧ и ВЧ', gains: [9, 6, 1, -2, 3, 8] },
-            { id: 'treble', title: 'Усиление ВЧ', gains: [0, 0, 0, 2, 5, 10] },
-        ];
-        /** Подпись состояния, которое ни одному пресету не соответствует. */
-        static custom_title = 'Своя настройка';
-        /** Все полосы в нуле — сигнал проходит нетронутым. */
-        static flat() {
-            return this.bands.map(() => 0);
-        }
-        static preset(id) {
-            const found = this.presets.find(preset => preset.id === id);
-            return found ? found.gains.slice() : null;
-        }
-        /** Пресет, совпадающий с набором, или '' — значит «Свой». */
-        static preset_of(gains) {
-            const norm = this.clamp(gains);
-            const found = this.presets.find(preset => preset.gains.every((db, i) => db === norm[i]));
-            return found ? found.id : '';
-        }
-        /**
-         * Привести чужой набор к нашему: длина по числу полос, целые dB в
-         * пределах диапазона. Набор приезжает из baza и мог быть записан
-         * версией с другим числом полос — недостающие в ноль, лишние прочь.
-         */
-        static clamp(gains) {
-            return this.bands.map((_, i) => {
-                const db = Number(gains?.[i]);
-                if (!Number.isFinite(db))
-                    return 0;
-                return Math.round(Math.max(-this.range_db, Math.min(this.range_db, db)));
-            });
-        }
-        /**
-         * Цвет точки по её усилению, как на графике в Я.Музыке: красный наверху,
-         * жёлтый в нуле, зелёный внизу.
-         */
-        static color(db) {
-            const part = Math.max(-1, Math.min(1, db / this.range_db));
-            const hue = part >= 0 ? 50 - part * 50 : 50 - part * 70;
-            return `hsl( ${hue.toFixed(0)} 80% 55% )`;
-        }
-        /** Подпись усиления над точкой. */
-        static db_text(db) {
-            return `${db} dB`;
-        }
-        /** Набор одной строкой — так он и лежит в baza. */
-        static stringify(gains) {
-            return this.clamp(gains).join(',');
-        }
-        static parse(text) {
-            if (!text)
-                return this.flat();
-            return this.clamp(text.split(',').map(Number));
-        }
-    }
-    $.$bog_music_eq = $bog_music_eq;
-})($ || ($ = {}));
-
-;
-	($.$mol_icon_share) = class $mol_icon_share extends ($.$mol_icon) {
-		path(){
-			return "M21,12L14,5V9C7,10 4,15 3,20C5.5,16.5 9,14.9 14,14.9V19L21,12Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_format_vertical_align_bottom) = class $mol_icon_format_vertical_align_bottom extends ($.$mol_icon) {
-		path(){
-			return "M16,13H13V3H11V13H8L12,17L16,13M4,19V21H20V19H4Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_archive) = class $mol_icon_archive extends ($.$mol_icon) {
-		path(){
-			return "M3,3H21V7H3V3M4,8H20V21H4V8M9.5,11A0.5,0.5 0 0,0 9,11.5V13H15V11.5A0.5,0.5 0 0,0 14.5,11H9.5Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_playlist_plus) = class $mol_icon_playlist_plus extends ($.$mol_icon) {
-		path(){
-			return "M3 16H10V14H3M18 14V10H16V14H12V16H16V20H18V16H22V14M14 6H3V8H14M14 10H3V12H14V10Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_playlist_remove) = class $mol_icon_playlist_remove extends ($.$mol_icon) {
-		path(){
-			return "M14 10H3V12H14V10M14 6H3V8H14V6M3 16H10V14H3V16M14.4 22L17 19.4L19.6 22L21 20.6L18.4 18L21 15.4L19.6 14L17 16.6L14.4 14L13 15.4L15.6 18L13 20.6L14.4 22Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_restore) = class $mol_icon_restore extends ($.$mol_icon) {
-		path(){
-			return "M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_icon_delete_forever) = class $mol_icon_delete_forever extends ($.$mol_icon) {
-		path(){
-			return "M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8.46,11.88L9.87,10.47L12,12.59L14.12,10.47L15.53,11.88L13.41,14L15.53,16.12L14.12,17.53L12,15.41L9.88,17.53L8.47,16.12L10.59,14L8.46,11.88M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$bog_music_track) = class $bog_music_track extends ($.$mol_view) {
-		blob_pending(){
-			return false;
-		}
-		event_drag_start(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		event_drag_over(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		event_drop(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		on_play_click(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Cover(){
-			const obj = new this.$.$mol_image();
-			(obj.uri) = () => ((this.cover()));
-			return obj;
-		}
-		Cover_placeholder(){
-			const obj = new this.$.$mol_icon_music();
-			return obj;
-		}
-		Cover_box(){
-			const obj = new this.$.$mol_view();
-			(obj.event) = () => ({"click": (next) => (this.on_play_click(next))});
-			(obj.sub) = () => ([(this.Cover()), (this.Cover_placeholder())]);
-			return obj;
-		}
-		title(){
-			return "";
-		}
-		Title(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ((this.title()));
-			return obj;
-		}
-		artist(){
-			return "";
-		}
-		Artist(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ((this.artist()));
-			return obj;
-		}
-		Info(){
-			const obj = new this.$.$mol_view();
-			(obj.event) = () => ({"click": (next) => (this.on_play_click(next))});
-			(obj.sub) = () => ([(this.Title()), (this.Artist())]);
-			return obj;
-		}
-		share_pointer_down(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		share_pointer_up(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		share_pointer_cancel(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		share_pointer_leave(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Share_icon(){
-			const obj = new this.$.$mol_icon_share();
-			return obj;
-		}
-		Share(){
-			const obj = new this.$.$mol_view();
-			(obj.attr) = () => ({"bog_music_track_share_button": true, "bog_music_track_share_selected": (this.share_selected())});
-			(obj.event) = () => ({
-				"pointerdown": (next) => (this.share_pointer_down(next)), 
-				"pointerup": (next) => (this.share_pointer_up(next)), 
-				"pointercancel": (next) => (this.share_pointer_cancel(next)), 
-				"pointerleave": (next) => (this.share_pointer_leave(next))
-			});
-			(obj.sub) = () => ([(this.Share_icon())]);
-			return obj;
-		}
-		menu_toggle(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Menu_icon(){
-			const obj = new this.$.$mol_icon_dots_vertical();
-			return obj;
-		}
-		Menu_anchor(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.hint) = () => ("Действия");
-			(obj.click) = (next) => ((this.menu_toggle(next)));
-			(obj.sub) = () => ([(this.Menu_icon())]);
-			return obj;
-		}
-		demote_click(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Demote_icon(){
-			const obj = new this.$.$mol_icon_format_vertical_align_bottom();
-			return obj;
-		}
-		Demote_label(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => (["В конец списка"]);
-			return obj;
-		}
-		Demote(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.click) = (next) => ((this.demote_click(next)));
-			(obj.sub) = () => ([(this.Demote_icon()), (this.Demote_label())]);
-			return obj;
-		}
-		delete_cached(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Delete_icon(){
-			const obj = new this.$.$mol_icon_delete();
-			return obj;
-		}
-		Delete_label(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => (["Убрать с устройства"]);
-			return obj;
-		}
-		Delete(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.click) = (next) => ((this.delete_cached(next)));
-			(obj.sub) = () => ([(this.Delete_icon()), (this.Delete_label())]);
-			return obj;
-		}
-		archive_click(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Archive_icon(){
-			const obj = new this.$.$mol_icon_archive();
-			return obj;
-		}
-		Archive_label(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => (["В архив"]);
-			return obj;
-		}
-		Archive(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.click) = (next) => ((this.archive_click(next)));
-			(obj.sub) = () => ([(this.Archive_icon()), (this.Archive_label())]);
-			return obj;
-		}
-		move_click(id, next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Move_add_icon(id){
-			const obj = new this.$.$mol_icon_playlist_plus();
-			return obj;
-		}
-		Move_cut_icon(id){
-			const obj = new this.$.$mol_icon_playlist_remove();
-			return obj;
-		}
-		move_label(id){
-			return "";
-		}
-		Move_label(id){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.move_label(id))]);
-			return obj;
-		}
-		move_content(id){
-			return [
-				(this.Move_add_icon(id)), 
-				(this.Move_cut_icon(id)), 
-				(this.Move_label(id))
-			];
-		}
-		Move(id){
-			const obj = new this.$.$mol_button_minor();
-			(obj.click) = (next) => ((this.move_click(id, next)));
-			(obj.sub) = () => ((this.move_content(id)));
-			return obj;
-		}
-		restore_click(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Restore_icon(){
-			const obj = new this.$.$mol_icon_restore();
-			return obj;
-		}
-		Restore_label(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => (["Восстановить"]);
-			return obj;
-		}
-		Restore(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.click) = (next) => ((this.restore_click(next)));
-			(obj.sub) = () => ([(this.Restore_icon()), (this.Restore_label())]);
-			return obj;
-		}
-		delete_ask(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Delete_forever_icon(){
-			const obj = new this.$.$mol_icon_delete_forever();
-			return obj;
-		}
-		Delete_forever_label(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => (["Удалить навсегда"]);
-			return obj;
-		}
-		Delete_forever(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.click) = (next) => ((this.delete_ask(next)));
-			(obj.sub) = () => ([(this.Delete_forever_icon()), (this.Delete_forever_label())]);
-			return obj;
-		}
-		menu_items(){
-			return [
-				(this.Demote()), 
-				(this.Delete()), 
-				(this.Archive()), 
-				(this.Move("0")), 
-				(this.Restore()), 
-				(this.Delete_forever())
-			];
-		}
-		Menu_panel(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ((this.menu_items()));
-			return obj;
-		}
-		Menu(){
-			const obj = new this.$.$mol_pop();
-			(obj.Anchor) = () => ((this.Menu_anchor()));
-			(obj.bubble_content) = () => ([(this.Menu_panel())]);
-			return obj;
-		}
-		content(){
-			return [
-				(this.Cover_box()), 
-				(this.Info()), 
-				(this.Share()), 
-				(this.Menu())
-			];
-		}
-		confirm_text(){
-			return "";
-		}
-		Confirm_text(){
-			const obj = new this.$.$mol_paragraph();
-			(obj.title) = () => ((this.confirm_text()));
-			return obj;
-		}
-		delete_cancel(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Confirm_no(){
-			const obj = new this.$.$mol_button_minor();
-			(obj.title) = () => ("Отмена");
-			(obj.click) = (next) => ((this.delete_cancel(next)));
-			return obj;
-		}
-		delete_confirm(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		Confirm_yes(){
-			const obj = new this.$.$mol_button_major();
-			(obj.title) = () => ("Удалить");
-			(obj.click) = (next) => ((this.delete_confirm(next)));
-			return obj;
-		}
-		Confirm_actions(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.Confirm_no()), (this.Confirm_yes())]);
-			return obj;
-		}
-		key(){
-			return "";
-		}
-		current(){
-			return false;
-		}
-		play(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		archive_mode(){
-			return false;
-		}
-		can_drag(){
-			return false;
-		}
-		drag_start(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		drop_here(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		archive(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		restore(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		delete_forever(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		demote(next){
-			if(next !== undefined) return next;
-			return null;
-		}
-		share_selected(){
-			return false;
-		}
-		cover(){
-			return "";
-		}
-		attr(){
-			return {
-				"bog_music_track_current": (this.current()), 
-				"bog_music_track_share_selected": (this.share_selected()), 
-				"bog_music_track_pending": (this.blob_pending()), 
-				"draggable": (this.can_drag())
-			};
-		}
-		event(){
-			return {
-				"dragstart": (next) => (this.event_drag_start(next)), 
-				"dragover": (next) => (this.event_drag_over(next)), 
-				"drop": (next) => (this.event_drop(next))
-			};
-		}
-		sub(){
-			return (this.content());
-		}
-		Confirm(){
-			const obj = new this.$.$mol_view();
-			(obj.sub) = () => ([(this.Confirm_text()), (this.Confirm_actions())]);
-			return obj;
-		}
-	};
-	($mol_mem(($.$bog_music_track.prototype), "event_drag_start"));
-	($mol_mem(($.$bog_music_track.prototype), "event_drag_over"));
-	($mol_mem(($.$bog_music_track.prototype), "event_drop"));
-	($mol_mem(($.$bog_music_track.prototype), "on_play_click"));
-	($mol_mem(($.$bog_music_track.prototype), "Cover"));
-	($mol_mem(($.$bog_music_track.prototype), "Cover_placeholder"));
-	($mol_mem(($.$bog_music_track.prototype), "Cover_box"));
-	($mol_mem(($.$bog_music_track.prototype), "Title"));
-	($mol_mem(($.$bog_music_track.prototype), "Artist"));
-	($mol_mem(($.$bog_music_track.prototype), "Info"));
-	($mol_mem(($.$bog_music_track.prototype), "share_pointer_down"));
-	($mol_mem(($.$bog_music_track.prototype), "share_pointer_up"));
-	($mol_mem(($.$bog_music_track.prototype), "share_pointer_cancel"));
-	($mol_mem(($.$bog_music_track.prototype), "share_pointer_leave"));
-	($mol_mem(($.$bog_music_track.prototype), "Share_icon"));
-	($mol_mem(($.$bog_music_track.prototype), "Share"));
-	($mol_mem(($.$bog_music_track.prototype), "menu_toggle"));
-	($mol_mem(($.$bog_music_track.prototype), "Menu_icon"));
-	($mol_mem(($.$bog_music_track.prototype), "Menu_anchor"));
-	($mol_mem(($.$bog_music_track.prototype), "demote_click"));
-	($mol_mem(($.$bog_music_track.prototype), "Demote_icon"));
-	($mol_mem(($.$bog_music_track.prototype), "Demote_label"));
-	($mol_mem(($.$bog_music_track.prototype), "Demote"));
-	($mol_mem(($.$bog_music_track.prototype), "delete_cached"));
-	($mol_mem(($.$bog_music_track.prototype), "Delete_icon"));
-	($mol_mem(($.$bog_music_track.prototype), "Delete_label"));
-	($mol_mem(($.$bog_music_track.prototype), "Delete"));
-	($mol_mem(($.$bog_music_track.prototype), "archive_click"));
-	($mol_mem(($.$bog_music_track.prototype), "Archive_icon"));
-	($mol_mem(($.$bog_music_track.prototype), "Archive_label"));
-	($mol_mem(($.$bog_music_track.prototype), "Archive"));
-	($mol_mem_key(($.$bog_music_track.prototype), "move_click"));
-	($mol_mem_key(($.$bog_music_track.prototype), "Move_add_icon"));
-	($mol_mem_key(($.$bog_music_track.prototype), "Move_cut_icon"));
-	($mol_mem_key(($.$bog_music_track.prototype), "Move_label"));
-	($mol_mem_key(($.$bog_music_track.prototype), "Move"));
-	($mol_mem(($.$bog_music_track.prototype), "restore_click"));
-	($mol_mem(($.$bog_music_track.prototype), "Restore_icon"));
-	($mol_mem(($.$bog_music_track.prototype), "Restore_label"));
-	($mol_mem(($.$bog_music_track.prototype), "Restore"));
-	($mol_mem(($.$bog_music_track.prototype), "delete_ask"));
-	($mol_mem(($.$bog_music_track.prototype), "Delete_forever_icon"));
-	($mol_mem(($.$bog_music_track.prototype), "Delete_forever_label"));
-	($mol_mem(($.$bog_music_track.prototype), "Delete_forever"));
-	($mol_mem(($.$bog_music_track.prototype), "Menu_panel"));
-	($mol_mem(($.$bog_music_track.prototype), "Menu"));
-	($mol_mem(($.$bog_music_track.prototype), "Confirm_text"));
-	($mol_mem(($.$bog_music_track.prototype), "delete_cancel"));
-	($mol_mem(($.$bog_music_track.prototype), "Confirm_no"));
-	($mol_mem(($.$bog_music_track.prototype), "delete_confirm"));
-	($mol_mem(($.$bog_music_track.prototype), "Confirm_yes"));
-	($mol_mem(($.$bog_music_track.prototype), "Confirm_actions"));
-	($mol_mem(($.$bog_music_track.prototype), "play"));
-	($mol_mem(($.$bog_music_track.prototype), "drag_start"));
-	($mol_mem(($.$bog_music_track.prototype), "drop_here"));
-	($mol_mem(($.$bog_music_track.prototype), "archive"));
-	($mol_mem(($.$bog_music_track.prototype), "restore"));
-	($mol_mem(($.$bog_music_track.prototype), "delete_forever"));
-	($mol_mem(($.$bog_music_track.prototype), "demote"));
-	($mol_mem(($.$bog_music_track.prototype), "Confirm"));
-
-
-;
-"use strict";
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        class $bog_music_track extends $.$bog_music_track {
-            /** Доменная модель трека по ключу. */
-            track() {
-                return $bog_music_account_baza.home().track(this.key());
-            }
-            title() {
-                return this.track()?.Title()?.val() ?? '';
-            }
-            artist() {
-                return this.track()?.Artist()?.val() ?? '';
-            }
-            cover() {
-                return this.track()?.cover() ?? '';
-            }
-            Cover() {
-                return this.cover() ? super.Cover() : null;
-            }
-            Cover_placeholder() {
-                return this.cover() ? null : super.Cover_placeholder();
-            }
-            cached() {
-                // Неблокирующая проверка: НЕ триггерит sync (иначе рендер списка поднял
-                // бы загрузку всех blob-лендов разом). blob догоняет фоновый prefetch.
-                return this.track()?.blob_local() ?? false;
-            }
-            /** Blob ещё не на устройстве — строка приглушается до докачки. */
-            blob_pending() {
-                return !this.cached();
-            }
-            is_local() {
-                return this.track()?.audio()?.owner_id === 0;
-            }
-            can_drag() {
-                return !this.archive_mode();
-            }
-            // =====================================================================
-            // Меню действий: одна кнопка «⋯» вместо ряда иконок, чтобы тексту
-            // доставалась вся ширина строки (на крупном шрифте иконки распирали
-            // строку до одной буквы в линии).
-            // =====================================================================
-            menu_toggle() {
-                $bog_music_pop_toggle(this.Menu());
-                return null;
-            }
-            menu_items() {
-                return this.archive_mode()
-                    ? [this.Restore(), this.Delete_forever()]
-                    : [
-                        this.Demote(),
-                        ...this.can_drop_cache() ? [this.Delete()] : [],
-                        ...this.move_targets().map(id => this.Move(id)),
-                        this.Archive(),
-                    ];
-            }
-            account() {
-                return $bog_music_account_baza.home();
-            }
-            move_targets() {
-                return this.account().playlists().map(pl => pl.id);
-            }
-            move_member(id) {
-                return this.account().list_has(id, this.key());
-            }
-            move_content(id) {
-                return [
-                    this.move_member(id) ? this.Move_cut_icon(id) : this.Move_add_icon(id),
-                    this.Move_label(id),
-                ];
-            }
-            move_label(id) {
-                const title = this.account().playlist_title(id);
-                return this.move_member(id) ? `Убрать из «${title}»` : `В «${title}»`;
-            }
-            move_click(id) {
-                this.Menu().showed(false);
-                if (this.move_member(id))
-                    this.account().list_cut(id, this.key());
-                else
-                    this.account().list_add(id, this.key());
-                return null;
-            }
-            /** Локальный файл с устройства больше взять неоткуда — кеш не сбрасываем. */
-            can_drop_cache() {
-                return !this.is_local() && this.cached();
-            }
-            // =====================================================================
-            // Удаление навсегда — только через подтверждение прямо в строке.
-            // =====================================================================
-            delete_asked(next) {
-                return next ?? false;
-            }
-            content() {
-                return this.delete_asked() ? [this.Confirm()] : super.content();
-            }
-            confirm_text() {
-                return `Удалить «${this.title()}» навсегда?`;
-            }
-            delete_ask() {
-                this.Menu().showed(false);
-                this.delete_asked(true);
-                return null;
-            }
-            delete_cancel() {
-                this.delete_asked(false);
-                return null;
-            }
-            delete_confirm() {
-                this.delete_asked(false);
-                this.delete_forever();
-                return null;
-            }
-            on_play_click() {
-                // Клик играет всегда: если blob ещё докачивается, плеер сам дождётся
-                // (blob_wait suspend'ится до досинка) и заиграет без второго клика.
-                // Приглушение/мигание строки — лишь индикатор, клик не блокирует.
-                this.play(this.key());
-            }
-            event_drag_start(event) {
-                if (!this.can_drag()) {
-                    event.preventDefault();
-                    return;
-                }
-                try {
-                    event.dataTransfer?.setData('text/x-bog-track', '1');
-                    if (event.dataTransfer)
-                        event.dataTransfer.effectAllowed = 'move';
-                }
-                catch { }
-                this.drag_start();
-            }
-            event_drag_over(event) {
-                if (!this.can_drag())
-                    return;
-                event.preventDefault();
-                if (event.dataTransfer)
-                    event.dataTransfer.dropEffect = 'move';
-            }
-            event_drop(event) {
-                if (!this.can_drag())
-                    return;
-                event.preventDefault();
-                this.drop_here();
-            }
-            delete_cached() {
-                this.Menu().showed(false);
-                $bog_music_account_baza.home().drop_blob(this.key());
-            }
-            // =====================================================================
-            // Share: long-press = вход в multi-select, клик = single share / toggle
-            // =====================================================================
-            share() {
-                return $bog_music_share.instance();
-            }
-            share_selected() {
-                return this.share().selected(this.key());
-            }
-            // Состояние жеста long-press: не reactive-состояние, а таймер DOM-жеста.
-            _share_press_timer = null;
-            _share_long_press_fired = false;
-            static SHARE_LONG_PRESS_MS = 450;
-            share_pointer_down(event) {
-                if (!event)
-                    return null;
-                event.stopPropagation();
-                this._share_long_press_fired = false;
-                if (this._share_press_timer)
-                    clearTimeout(this._share_press_timer);
-                this._share_press_timer = setTimeout(() => {
-                    this._share_press_timer = null;
-                    this._share_long_press_fired = true;
-                    this.share().enter(this.key());
-                }, $bog_music_track.SHARE_LONG_PRESS_MS);
-                return null;
-            }
-            share_pointer_up(event) {
-                if (!event)
-                    return null;
-                event.stopPropagation();
-                if (this._share_press_timer) {
-                    clearTimeout(this._share_press_timer);
-                    this._share_press_timer = null;
-                }
-                if (this._share_long_press_fired)
-                    return null;
-                const share = this.share();
-                if (share.mode())
-                    share.toggle(this.key());
-                else
-                    share.share_single(this.key());
-                return null;
-            }
-            share_pointer_cancel(event) {
-                if (this._share_press_timer) {
-                    clearTimeout(this._share_press_timer);
-                    this._share_press_timer = null;
-                }
-                return null;
-            }
-            share_pointer_leave(event) {
-                return this.share_pointer_cancel(event);
-            }
-            // Пункты меню: закрыть панель и дёрнуть действие, которое привязал
-            // список ($bog_music_tracks через <=>).
-            demote_click() {
-                this.Menu().showed(false);
-                this.demote(null);
-                return null;
-            }
-            archive_click() {
-                this.Menu().showed(false);
-                this.archive(null);
-                return null;
-            }
-            restore_click() {
-                this.Menu().showed(false);
-                this.restore(null);
-                return null;
-            }
-        }
-        __decorate([
-            $mol_action
-        ], $bog_music_track.prototype, "menu_toggle", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_track.prototype, "move_click", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_track.prototype, "delete_asked", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_track.prototype, "delete_ask", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_track.prototype, "delete_cancel", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_track.prototype, "delete_confirm", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_track.prototype, "delete_cached", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_track.prototype, "demote_click", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_track.prototype, "archive_click", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_track.prototype, "restore_click", null);
-        $$.$bog_music_track = $bog_music_track;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    /**
-     * Трек пользователя в home land. Ключ в словаре Tracks — `${owner_id}_${id}`
-     * (для локальных файлов owner_id = 0, id = хеш имени).
-     */
-    class $bog_music_track_baza extends $giper_baza_dict.with({
-        Vk_id: $giper_baza_atom.of($mol_schema_string),
-        Title: $giper_baza_atom.of($mol_schema_string),
-        Artist: $giper_baza_atom.of($mol_schema_string),
-        Duration: $giper_baza_atom.of($mol_schema_float),
-        Url: $giper_baza_atom.of($mol_schema_string),
-        Added: $giper_baza_atom.of($mol_schema_float),
-        Order: $giper_baza_atom.of($mol_schema_float),
-        // Id плейлиста: '' = основной, 'archive' = архив, 'shared:<имя>' —
-        // импортированный шар. Расширяется без миграции схемы.
-        Playlist: $giper_baza_atom.of($mol_schema_string),
-        // Blob лежит в отдельном land — синкается независимо от home land
-        // и не блокирует лёгкие метаданные большими паками.
-        File: $bog_music_link_synced(() => $.$giper_baza_file),
-        // Персональный обрез песни (секунды). Trim_end = null — «без обреза».
-        Trim_start: $giper_baza_atom.of($mol_schema_float),
-        Trim_end: $giper_baza_atom.of($mol_schema_float),
-        // Старая громкость в dB RMS. Мимо восприятия, поэтому не используется —
-        // поле оставлено, чтобы не спотыкаться о данные ранних версий.
-        Loudness: $giper_baza_atom.of($mol_schema_float),
-        // Интегральная громкость записи (LUFS по EBU R128), меряется один раз
-        // при добавлении файла — для выравнивания треков между собой
-        // ($bog_music_gain).
-        Lufs: $giper_baza_atom.of($mol_schema_float),
-        // URL обложки (превью YouTube, альбом VK). Пусто — заглушка-нота.
-        Cover: $giper_baza_atom.of($mol_schema_string),
-    }) {
-        /** Метаданные в форме VK-audio. null если Vk_id не парсится. */
-        audio() {
-            const vk_id = String(this.Vk_id()?.val() ?? '');
-            const parts = vk_id.split('_');
-            const owner_id = Number(parts[0]);
-            const id = Number(parts[1]);
-            if (!Number.isFinite(owner_id) || !Number.isFinite(id))
-                return null;
-            return {
-                id,
-                owner_id,
-                artist: this.Artist()?.val() ?? '',
-                title: this.Title()?.val() ?? '',
-                duration: this.Duration()?.val() ?? 0,
-                url: this.Url()?.val() ?? '',
-                cover: this.cover(),
-            };
-        }
-        /** URL обложки. '' — обложки нет. */
-        cover() {
-            return String(this.Cover()?.val() ?? '');
-        }
-        playlist() {
-            return this.Playlist()?.val() ?? '';
-        }
-        added() {
-            return Number(this.Added()?.val() ?? 0);
-        }
-        /** Позиция в плейлисте. Fallback — время добавления. */
-        order() {
-            const raw = this.Order()?.val();
-            return raw == null ? this.added() : Number(raw);
-        }
-        order_set(next) {
-            this.Order('auto').val(next);
-        }
-        /**
-         * Unit'ы чанков файла — БЕЗ чтения их содержимого.
-         *
-         * После ambient в boot файл — `$mws_baza_file` с `chunk_units()`.
-         * Fallback на sand_ordered без sands_open, если класс ещё базовый.
-         */
-        static chunk_units(file) {
-            const streamed = file;
-            if (typeof streamed.chunk_units === 'function')
-                return streamed.chunk_units();
-            const list = file.Chunks();
-            if (!list)
-                return [];
-            return list.land()
-                .sand_ordered({ head: list.head(), peer: $giper_baza_link.hole })
-                .filter(unit => !unit.dead() && unit.self().str !== '');
-        }
-        /**
-         * Чанки с unload для шара/LUFS. Отдельно от `$mws_baza_file.parts`
-         * (тот для стрима) — file.ts не трогаем.
-         */
-        parts_for_blob(file) {
-            const units = file.chunk_units();
-            const out = [];
-            for (const unit of units) {
-                out.push(file.chunk_bytes_sync(unit));
-            }
-            return out;
-        }
-        blob_of(file) {
-            const streamed = file;
-            const parts = typeof streamed.chunk_bytes_sync === 'function'
-                ? this.parts_for_blob(streamed)
-                : file.chunks();
-            if (!parts.length)
-                return null;
-            // baza отдаёт 'application/octet-stream', когда Type не проставлен;
-            // у нас такой файл — всегда звук из ранних версий.
-            const type = file.type();
-            const blob = new $mol_blob(parts, {
-                type: type === 'application/octet-stream' ? 'audio/mpeg' : type,
-            });
-            $bog_music_mem.blob_made(blob.size);
-            return blob;
-        }
-        /** Blob из baza. null если не закеширован. */
-        blob() {
-            const file = this.File()?.remote();
-            if (!file)
-                return null;
-            // Сперва дешёвая проверка по заголовкам: у пустого файла содержимое
-            // не читаем вовсе.
-            if (!$bog_music_track_baza.chunk_units(file).length)
-                return null;
-            return this.blob_of(file);
-        }
-        /**
-         * Blob, ДОЖИДАЯСЬ докачки blob-land с мастера. Для проигрывания.
-         *
-         * Обычный `blob()` через atom_link_synced.remote() глотает Promise
-         * (чтобы не блокировать рендер списка), поэтому сразу после клика buffer
-         * ещё пуст → «no source». Здесь зовём `land().sync()` НАПРЯМУЮ и
-         * пробрасываем его Promise: под `$mol_wire_async` фибра ретраится, пока
-         * land не досинкается, и возвращает готовый blob — без второго клика.
-         */
-        blob_wait() {
-            let file = this.File()?.remote();
-            if (!file) {
-                // Трек прилетел с другого устройства, а ссылка File ещё не доехала
-                // в home land — ждём его досинка (suspend) и перечитываем. Без
-                // этого возвращали null сразу, фибра не ретраилась и трек не играл
-                // до повторного клика.
-                this.land().sync();
-                file = this.File()?.remote();
-                if (!file)
-                    return null;
-            }
-            file.land().sync(); // проброс Promise → suspend пока не досинкается
-            if (!$bog_music_track_baza.chunk_units(file).length)
-                return null;
-            return this.blob_of(file);
-        }
-        /**
-         * Blob полностью на устройстве — ЛЁГКАЯ проверка (без материализации
-         * Blob, в отличие от blob()): зовётся из keys_in на каждый трек.
-         * Само чтение File→remote через link_synced запускает sync blob-land,
-         * так что недосинканный трек начнёт качаться и по готовности реактивно
-         * появится в списке.
-         */
-        has_blob() {
-            try {
-                const file = this.File()?.remote();
-                if (!file)
-                    return false;
-                return $bog_music_track_baza.chunk_units(file).length > 0;
-            }
-            catch (e) {
-                return false; // Promise (ещё синкается) или битый pawn — пока нет
-            }
-        }
-        /**
-         * Есть ли blob локально — БЕЗ запуска sync (в отличие от has_blob).
-         * Использует `remote_local`, поэтому проверка на каждый трек в списке НЕ
-         * поднимает загрузку всех blob-лендов. Реактивна: когда префетч догонит
-         * этот трек и blob доедет, флипнется в true и строка перестанет тускнеть.
-         *
-         * Отвечает на булев вопрос по заголовкам чанков. Раньше здесь звался
-         * `file.buffer()` — то есть на КАЖДЫЙ трек списка в память поднималась
-         * вся песня целиком, и фонотека оседала в куче просто от рендера.
-         */
-        blob_local() {
-            const link = this.File();
-            if (!link)
-                return false;
-            const file = link.remote_local ? link.remote_local() : link.remote();
-            if (!file)
-                return false;
-            return $bog_music_track_baza.chunk_units(file).length > 0;
-        }
-        /**
-         * Сколько чанков у трека и сколько из них подняты в память (для панели
-         * диагностики). Ничего не подгружает — смотрит только заголовки.
-         */
-        chunks_stat() {
-            const link = this.File();
-            const file = link && (link.remote_local ? link.remote_local() : link.remote());
-            if (!file)
-                return $bog_music_mem.units_stat([]);
-            return $bog_music_mem.units_stat($bog_music_track_baza.chunk_units(file));
-        }
-        /**
-         * Дожидается докачки blob-land с мастера (suspend под $mol_wire_sync) и
-         * возвращает, доехал ли blob. Как blob_wait, но без материализации Blob —
-         * для фонового префетча «по одной песне»: драйвер зовёт это на один трек,
-         * фибра висит пока не досинкается, потом берётся за следующий.
-         */
-        blob_ensure() {
-            let file = this.File()?.remote();
-            if (!file) {
-                this.land().sync();
-                file = this.File()?.remote();
-                if (!file)
-                    return false;
-            }
-            file.land().sync(); // проброс Promise → suspend пока не досинкается
-            return $bog_music_track_baza.chunk_units(file).length > 0;
-        }
-        /**
-         * Файл уже в базе. Проверка по заголовкам чанков: раньше здесь звался
-         * `blob()`, и вопрос «а не скачано ли уже?» перед каждой докачкой с VK
-         * поднимал в память весь трек.
-         */
-        cached() {
-            try {
-                const file = this.File()?.remote();
-                if (!file)
-                    return false;
-                return $bog_music_track_baza.chunk_units(file).length > 0;
-            }
-            catch (e) {
-                // Promise пробрасываем: зовут из фибры докачки, и «ещё грузится»
-                // нельзя выдавать за «не скачано» — иначе трек качается заново.
-                if (e instanceof Promise)
-                    throw e;
-                return false; // битый pawn/CBOR — считаем что кеша нет
-            }
-        }
-        /** Интегральная громкость (LUFS). null — ещё не измерена. */
-        lufs(next) {
-            if (next !== undefined)
-                this.Lufs('auto').val(next);
-            const v = this.Lufs()?.val();
-            return v == null ? null : Number(v);
-        }
-        /** Обрез начала (сек). 0 = без обреза. */
-        trim_start(next) {
-            if (next !== undefined)
-                this.Trim_start('auto').val(Math.max(0, next));
-            const v = Number(this.Trim_start()?.val() ?? 0);
-            return Number.isFinite(v) && v > 0 ? v : 0;
-        }
-        /** Обрез конца (сек). null/0 → fallback (обычно полная длительность). */
-        trim_end(fallback, next) {
-            if (next !== undefined)
-                this.Trim_end('auto').val(Math.max(0, next));
-            const raw = this.Trim_end()?.val();
-            if (raw == null)
-                return fallback;
-            const v = Number(raw);
-            return Number.isFinite(v) && v > 0 ? v : fallback;
-        }
-    }
-    $.$bog_music_track_baza = $bog_music_track_baza;
-    /** Словарь cache_key → трек. Вынесен отдельно, чтобы не циклить TS-инференс. */
-    class $bog_music_tracks_dict extends $giper_baza_dict_to($bog_music_track_baza) {
-    }
-    $.$bog_music_tracks_dict = $bog_music_tracks_dict;
-    class $bog_music_playlists_dict extends $giper_baza_dict_to($giper_baza_atom_text) {
-    }
-    $.$bog_music_playlists_dict = $bog_music_playlists_dict;
-    class $bog_music_lists_dict extends $giper_baza_dict_to($giper_baza_list_str) {
-    }
-    $.$bog_music_lists_dict = $bog_music_lists_dict;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_attach("bog/music/track/track.view.css", "/* Заголовок и исполнитель: не больше трёх и двух строк, дальше многоточие.\n   $mol_style_define не знает -webkit-box-orient, поэтому обычный CSS. */\n[bog_music_track_title],\n[bog_music_track_artist] {\n\tdisplay: -webkit-box;\n\t-webkit-box-orient: vertical;\n\toverflow: hidden;\n}\n[bog_music_track_title] {\n\t-webkit-line-clamp: 3;\n}\n[bog_music_track_artist] {\n\t-webkit-line-clamp: 2;\n}\n[bog_music_track_confirm_text] {\n\tdisplay: block;\n}\n\n/* Огромный шрифт: отступы не растут вместе с буквами, иначе на телефоне\n   тексту не остаётся места. */\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_track] {\n\tpadding: 0.25rem 0 0.25rem 0.125rem;\n\tgap: 0.25rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_body_content] {\n\tpadding-left: 0.25rem;\n\tpadding-right: 0.25rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_track_cover_box] {\n\twidth: 2.5rem;\n\theight: 2.5rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_track_share] {\n\twidth: 1.75rem;\n}\n");
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $mol_style_define($bog_music_track, {
-            flex: {
-                direction: 'row',
-            },
-            align: {
-                items: 'center',
-            },
-            gap: $mol_gap.text,
-            padding: {
-                top: '0.375rem',
-                bottom: '0.375rem',
-                left: '0.5rem',
-                right: '0.25rem',
-            },
-            borderRadius: '0.5rem',
-            Cover_box: {
-                flex: {
-                    shrink: 0,
-                    grow: 0,
-                },
-                width: '3rem',
-                height: '3rem',
-                borderRadius: '4px',
-                overflow: { x: 'hidden', y: 'hidden' },
-                cursor: 'pointer',
-                justify: { content: 'center' },
-                align: { items: 'center' },
-                background: {
-                    color: $mol_theme.line,
-                },
-            },
-            Cover: {
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-            },
-            Cover_placeholder: {
-                width: '1.75rem',
-                height: '1.75rem',
-                color: $mol_theme.shade,
-            },
-            Info: {
-                flex: {
-                    direction: 'column',
-                    grow: 1,
-                    shrink: 1,
-                },
-                minWidth: 0,
-                gap: '0.125rem',
-                cursor: 'pointer',
-            },
-            Title: {
-                font: {
-                    weight: 500,
-                    size: '1rem',
-                },
-                lineHeight: '1.25',
-                whiteSpace: 'normal',
-                wordBreak: 'break-word',
-            },
-            Artist: {
-                font: {
-                    size: '0.875rem',
-                },
-                lineHeight: '1.25',
-                color: $mol_theme.shade,
-                whiteSpace: 'normal',
-                wordBreak: 'break-word',
-            },
-            Share: {
-                flex: {
-                    shrink: 0,
-                    grow: 0,
-                },
-                width: '2.25rem',
-                height: '2.25rem',
-                justify: { content: 'center' },
-                align: { items: 'center' },
-                borderRadius: '4px',
-                cursor: 'pointer',
-                color: $mol_theme.shade,
-                touchAction: 'none',
-                userSelect: 'none',
-                transition: 'background 0.15s, color 0.15s',
-            },
-            Share_icon: {
-                width: '1.5rem',
-                height: '1.5rem',
-            },
-            Menu: {
-                flex: { shrink: 0 },
-            },
-            Menu_anchor: {
-                color: $mol_theme.shade,
-                padding: { left: '0.25rem', right: '0.25rem' },
-            },
-            Menu_panel: {
-                flex: { direction: 'column' },
-                align: { items: 'stretch' },
-                padding: {
-                    top: '0.25rem',
-                    bottom: '0.25rem',
-                    left: '0.25rem',
-                    right: '0.25rem',
-                },
-                minWidth: '13rem',
-            },
-            // Пункт меню: иконка + подпись в одну строку, прижаты влево.
-            Demote: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
-            Delete: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
-            Archive: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
-            Restore: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
-            Move: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
-            Delete_forever: { justify: { content: 'flex-start' }, gap: $mol_gap.text, color: $mol_theme.special },
-            Confirm: {
-                flex: { direction: 'column', grow: 1, shrink: 1 },
-                minWidth: 0,
-                gap: $mol_gap.text,
-                padding: {
-                    top: '0.25rem',
-                    bottom: '0.25rem',
-                    left: '0.25rem',
-                    right: '0.25rem',
-                },
-            },
-            Confirm_text: {
-                whiteSpace: 'normal',
-                wordBreak: 'break-word',
-            },
-            Confirm_actions: {
-                flex: { direction: 'row', wrap: 'wrap' },
-                justify: { content: 'flex-end' },
-                gap: $mol_gap.text,
-            },
-            '@': {
-                bog_music_track_current: {
-                    true: {
-                        color: $mol_theme.focus,
-                    },
-                },
-                bog_music_track_pending: {
-                    true: {
-                        // blob ещё качается фоном — приглушаем строку, но она кликабельна
-                        // (клик играет через blob_wait, дождавшись докачки).
-                        opacity: 0.55,
-                    },
-                },
-                bog_music_track_share_selected: {
-                    true: {
-                        background: { color: $mol_theme.focus },
-                        color: $mol_theme.card,
-                    },
-                },
-            },
-        });
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-"use strict";
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        class $bog_music_account extends $.$bog_music_account {
-            account() {
-                return $bog_music_account_baza.home();
-            }
-            nickname(next) {
-                return this.account().nickname(next);
-            }
-            lord_text() {
-                const auth = this.$.$giper_baza_auth.current();
-                if (!auth)
-                    return '—';
-                return auth.pass().lord().str;
-            }
-            // download_playlist? и download_playlist_status прибиндены в app.view.tree
-            // — логика скачивания живёт в $bog_music_app.
-            download_playlist_label() {
-                return $bog_music_api.in_extension() ? this.ext_label() : this.pwa_label();
-            }
-            download_playlist_hint() {
-                return $bog_music_api.in_extension() ? this.ext_hint() : this.pwa_hint();
-            }
-            // ---------- перенос аккаунта между устройствами ----------
-            account_key() {
-                return String(this.$.$mol_state_local.value('$giper_baza_auth') ?? '');
-            }
-            account_link() {
-                const key = this.account_key();
-                if (!key)
-                    return '';
-                const base = $bog_music_boot.in_extension()
-                    ? 'https://b-on-g.github.io/music/'
-                    : location.origin + location.pathname + location.search;
-                return base + '#account=' + encodeURIComponent(key);
-            }
-            copy_status(next) {
-                return next ?? '';
-            }
-            copy() {
-                const link = this.account_link();
-                if (!link) {
-                    this.copy_status('Ключ не найден');
-                    return;
-                }
-                try {
-                    navigator.clipboard.writeText(link);
-                    this.copy_status('Скопировано. Не делись публично!');
-                }
-                catch (e) {
-                    console.warn('[account] clipboard failed:', e?.message);
-                    this.copy_status('Не удалось — скопируй из адресной строки: ' + link);
-                }
-            }
-            import_link(next) {
-                return next ?? '';
-            }
-            import_status(next) {
-                return next ?? '';
-            }
-            apply_import() {
-                const raw = this.import_link().trim();
-                if (!raw) {
-                    this.import_status('Вставь ссылку с #account=…');
-                    return;
-                }
-                const match = raw.match(/[#&]account=([^&\s]+)/);
-                const key = match ? decodeURIComponent(match[1]) : raw;
-                if (key.length < 172) {
-                    this.import_status('Ключ слишком короткий');
-                    return;
-                }
-                const current = this.$.$mol_state_local.value('$giper_baza_auth');
-                if (current !== key)
-                    this.$.$mol_state_local.value('$giper_baza_auth', key);
-                this.import_status(current === key ? 'Перезапуск…' : 'Применено, перезагрузка…');
-                location.reload();
-            }
-            reset_account() {
-                if (typeof window === 'undefined')
-                    return;
-                try {
-                    const ext = globalThis.chrome;
-                    if (ext?.storage?.local?.clear)
-                        ext.storage.local.clear();
-                }
-                catch { }
-                try {
-                    window.localStorage.clear();
-                }
-                catch { }
-                try {
-                    const idb = globalThis.indexedDB;
-                    if (idb?.deleteDatabase) {
-                        idb.deleteDatabase('$giper_baza_mine');
-                        idb.deleteDatabase('vk_audio_cache'); // legacy-кеш старых версий
-                    }
-                }
-                catch { }
-                setTimeout(() => location.reload(), 100);
-            }
-        }
-        __decorate([
-            $mol_mem
-        ], $bog_music_account.prototype, "lord_text", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_account.prototype, "copy_status", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_account.prototype, "copy", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_account.prototype, "import_link", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_account.prototype, "import_status", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_account.prototype, "apply_import", null);
-        __decorate([
-            $mol_action
-        ], $bog_music_account.prototype, "reset_account", null);
-        $$.$bog_music_account = $bog_music_account;
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    /**
-     * Домен приложения: home land пользователя целиком — профиль, треки,
-     * последняя сессия. Единственное место работы с Giper Baza: view-слой
-     * зовёт методы модели и не знает про lands, sync и PoW.
-     *
-     * Правила (см. memory/giper-baza):
-     * - НЕ вешать @$mol_mem на методы, возвращающие pawn'ы — baza сама кеширует.
-     * - Мутации — instance @$mol_action (паттерн survey), НЕ static.
-     * - Запись blob / создание land — только через $mol_wire_async-фибру,
-     *   иначе PoW пересчитывается на каждом ретрае.
-     */
-    class $bog_music_account_baza extends $giper_baza_dict.with({
-        Nickname: $giper_baza_atom.of($mol_schema_string),
-        Last_track_key: $giper_baza_atom.of($mol_schema_string),
-        Last_position: $giper_baza_atom.of($mol_schema_float),
-        Eq_on: $giper_baza_atom.of($mol_schema_boolean),
-        Eq_gains: $giper_baza_atom.of($mol_schema_string),
-        Tracks: $bog_music_tracks_dict,
-        Playlists: $bog_music_playlists_dict,
-        Lists: $bog_music_lists_dict,
-    }) {
-        /** Модель текущего пользователя (home land). */
-        static home() {
-            return $giper_baza_glob.home().land().Data($bog_music_account_baza);
-        }
-        static key_of(audio) {
-            return `${audio.owner_id}_${audio.id}`;
-        }
-        /**
-         * Идентификатор ленда для журнала — по нему записи фильтруются на
-         * экране логов. Дефенсивно: журнал не имеет права ронять запись данных,
-         * поэтому любая осечка превращается в пустую строку.
-         */
-        land_id() {
-            try {
-                return this.land().link().str;
-            }
-            catch {
-                return '';
-            }
-        }
-        tracks() {
-            return this.Tracks(null);
-        }
-        track(key) {
-            return this.tracks().key(key);
-        }
-        nickname(next) {
-            if (next !== undefined)
-                this.Nickname('auto').val(next);
-            return this.Nickname()?.val() ?? '';
-        }
-        /**
-         * Ключи треков плейлиста, сортировка по Order (fallback — Added desc).
-         * '' = основной, 'archive' = архив, 'shared:<имя>' — импортированный шар.
-         */
-        keys_in(playlist) {
-            const dict = this.tracks();
-            const rows = [];
-            for (const key of (dict.keys() ?? [])) {
-                // Догружающийся трек (атомы кидают Promise) скипаем, не блокируя
-                // список: подписка уже зарегистрирована, по приезде атома список
-                // пересчитается и трек появится.
-                try {
-                    const track = dict.key(key);
-                    if (!track)
-                        continue;
-                    if (track.playlist() !== playlist)
-                        continue;
-                    if (!track.audio())
-                        continue;
-                    // Трек показываем сразу по метаданным (home land лёгкий), не
-                    // дожидаясь blob. Аудио догоняет фоновый префетч «по одной
-                    // песне» (prefetch), а клик играет через blob_wait. Строка
-                    // тускнеет пока blob не доехал (см. track.view: blob_local).
-                    rows.push({ key, order: track.order(), added: track.added() });
-                }
-                catch {
-                    continue;
-                }
-            }
-            rows.sort((a, b) => a.order !== b.order ? a.order - b.order : b.added - a.added);
-            return rows.map(r => r.key);
-        }
-        audios_in(playlist) {
-            return this.keys_in(playlist)
-                .map(key => this.track(key)?.audio())
-                .filter(Boolean);
-        }
-        // ---------- фоновый префетч blob'ов «по одной песне» ----------
-        /**
-         * Ключ следующего трека для докачки: первый из ОКНА (текущий трек и
-         * несколько следующих за ним), у кого blob ещё не локально. '' — окно
-         * целиком на устройстве.
-         *
-         * Раньше окна не было: префетч шёл по всему словарю и рано или поздно
-         * стаскивал на устройство и в память всю фонотеку. Слушают её по одной
-         * песне, поэтому вперёд нужно ровно столько, чтобы переход на следующий
-         * трек не ждал сети.
-         *
-         * Проверка через `blob_local` не запускает sync, так что перебор окна не
-         * поднимает загрузку соседних лендов — качается строго по одному. БЕЗ
-         * @$mol_mem (baza-объект): мемо держит view-атом, реактивность даёт
-         * чтение baza-атомов внутри blob_local.
-         */
-        prefetch_active_key(keys) {
-            for (const key of keys) {
-                try {
-                    const track = this.track(key);
-                    if (!track || !track.audio())
-                        continue;
-                    if (track.blob_local())
-                        continue;
-                    return key;
-                }
-                catch {
-                    continue; // атом ещё синкается — этот трек пропустим на этом проходе
-                }
-            }
-            return '';
-        }
-        /**
-         * Один шаг фонового префетча «по одной песне»: докачать текущий недостающий
-         * blob (suspend до готовности). Одна закачка в полёте — фибра висит на этом
-         * blob'е; когда доедет, blob_local флипнется → prefetch_active_key укажет на
-         * следующий → атом-драйвер (в app.view) перезапустится и возьмётся за него.
-         * Драйвер живёт во view ($bog_music_app.prefetch), не на baza-объекте: он же
-         * и считает окно, потому что знает текущий трек и видимый список.
-         *
-         * Ссылку на трек не держим: фибра берёт его по ключу и отпускает.
-         */
-        prefetch_step(keys) {
-            const key = this.prefetch_active_key(keys);
-            if (!key)
-                return;
-            const track = this.track(key);
-            if (!track)
-                return;
-            $mol_wire_sync(track).blob_ensure();
-            const land = track.File()?.remote()?.land();
-            if (land instanceof $bog_music_land)
-                $mol_wire_async(land).sands_release().catch($mol_fail_log);
-        }
-        /** Плейлисты, импортированные из шаров, с числом треков. */
-        shared_playlists() {
-            const dict = this.tracks();
-            const map = new Map();
-            for (const key of (dict.keys() ?? [])) {
-                try {
-                    const pl = dict.key(key)?.playlist() ?? '';
-                    if (!pl.startsWith('shared:'))
-                        continue;
-                    map.set(pl, (map.get(pl) ?? 0) + 1);
-                }
-                catch {
-                    continue;
-                }
-            }
-            return Array.from(map.entries()).map(([id, count]) => ({
-                id,
-                sender: id.slice('shared:'.length),
-                count,
-            }));
-        }
-        /** Минимальный эффективный order среди существующих треков (свежесозданный
-         * трек без Order даёт added-timestamp — на минимум не влияет). */
-        min_order() {
-            let min = Infinity;
-            const dict = this.tracks();
-            for (const key of (dict.keys() ?? [])) {
-                const track = dict.key(key);
-                if (!track)
-                    continue;
-                min = Math.min(min, track.order());
-            }
-            return Number.isFinite(min) ? min : 1;
-        }
-        /** Максимальный эффективный order внутри плейлиста. */
-        max_order(playlist) {
-            let max = -Infinity;
-            const dict = this.tracks();
-            for (const key of (dict.keys() ?? [])) {
-                const track = dict.key(key);
-                if (!track)
-                    continue;
-                if (track.playlist() !== playlist)
-                    continue;
-                max = Math.max(max, track.order());
-            }
-            return Number.isFinite(max) ? max : 0;
-        }
-        /**
-         * Отправить трек в самый низ своего плейлиста. Соседей не трогаем: order
-         * у них произвольный, и хватает одного числа больше нынешнего максимума.
-         */
-        move_to_bottom(key) {
-            const track = this.track(key);
-            if (!track)
-                return;
-            track.order_set(this.max_order(track.playlist()) + 1);
-        }
-        /** Создаёт/обновляет метаданные трека. Blob — отдельно (save_blob). */
-        save_track(audio) {
-            const key = $bog_music_account_baza.key_of(audio);
-            const track = this.tracks().key(key, 'auto');
-            if (!track)
-                return;
-            if (track.Vk_id()?.val() !== key)
-                track.Vk_id('auto').val(key);
-            const title = audio.title ?? '';
-            if (track.Title()?.val() !== title)
-                track.Title('auto').val(title);
-            const artist = audio.artist ?? '';
-            if (track.Artist()?.val() !== artist)
-                track.Artist('auto').val(artist);
-            const dur = Number(audio.duration ?? 0);
-            if (track.Duration()?.val() !== dur)
-                track.Duration('auto').val(dur);
-            if (audio.url && track.Url()?.val() !== audio.url)
-                track.Url('auto').val(audio.url);
-            const cover = audio.cover || audio.album?.thumb?.photo_300 || '';
-            if (cover && track.Cover()?.val() !== cover)
-                track.Cover('auto').val(cover);
-            if (track.Added()?.val() == null)
-                track.Added('auto').val(Date.now());
-            // Новый трек — наверх списка (order по возрастанию, верх = минимум).
-            if (track.Order()?.val() == null)
-                track.Order('auto').val(this.min_order() - 1);
-        }
-        /**
-         * Пишет blob трека в отдельный land с публичным чтением.
-         * `.remote(store)` после `.ensure` обязателен — без него ссылка
-         * существует только локально и не попадает в pack для пуша.
-         */
-        save_blob(audio, buffer, mime) {
-            const track = this.tracks().key($bog_music_account_baza.key_of(audio), 'auto');
-            if (!track)
-                return;
-            const store = track.File('auto').ensure([]);
-            if (!store)
-                return;
-            store.buffer(buffer);
-            store.type(mime || 'audio/mpeg');
-            track.File('auto').remote(store);
-            $bog_music_log.act(`blob записан: ${audio.artist} — ${audio.title}, ${buffer.length} байт, ${mime || 'audio/mpeg'}`, this.land_id());
-        }
-        /** Метаданные + blob + плейлист одним действием (одна фибра снаружи). */
-        import_audio(audio, buffer, mime, playlist = '') {
-            $bog_music_log.act(`импорт трека ${audio.artist} — ${audio.title}${playlist ? ` в «${playlist}»` : ''}`, this.land_id());
-            this.save_track(audio);
-            if (playlist)
-                this.move_to_playlist($bog_music_account_baza.key_of(audio), playlist);
-            this.save_blob(audio, buffer, mime);
-            this.lufs_measure($bog_music_account_baza.key_of(audio), buffer);
-        }
-        /** Загрузка локального файла с устройства. */
-        save_local_track(file, buffer, order) {
-            const { artist, title, order: parsed_order } = $bog_music_account_baza.parse_filename(file.name);
-            const id = $bog_music_account_baza.hash_str(`${file.name}|${file.size}|${file.lastModified}`);
-            const audio = { id, owner_id: 0, artist, title, duration: 0, url: '' };
-            $bog_music_log.act(`файл с устройства: ${file.name}, ${file.size} байт → ${artist} — ${title}`, this.land_id());
-            this.save_track(audio);
-            const track = this.tracks().key($bog_music_account_baza.key_of(audio), 'auto');
-            if (!track)
-                return null;
-            const want_order = parsed_order ?? order;
-            if (want_order != null)
-                track.order_set(want_order);
-            if (track.Playlist()?.val() == null)
-                track.Playlist('auto').val('');
-            const store = track.File('auto').ensure([]);
-            if (store) {
-                store.buffer(buffer);
-                store.type(file.type || 'audio/mpeg');
-                if (file.name)
-                    store.name(file.name);
-                track.File('auto').remote(store);
-                this.lufs_measure($bog_music_account_baza.key_of(audio), buffer);
-            }
-            return audio;
-        }
-        swap_order(key_a, key_b) {
-            const ta = this.tracks().key(key_a, 'auto');
-            const tb = this.tracks().key(key_b, 'auto');
-            if (!ta || !tb)
-                return;
-            const oa = ta.order();
-            const ob = tb.order();
-            ta.order_set(ob === oa ? oa + 1 : ob);
-            tb.order_set(oa);
-        }
-        move_to_playlist(key, playlist) {
-            const track = this.track(key);
-            if (!track)
-                return;
-            $bog_music_log.act(`${key} → плейлист «${playlist || 'Моя музыка'}»`, this.land_id());
-            track.Playlist('auto').val(playlist);
-        }
-        playlists_dict() {
-            return this.Playlists(null);
-        }
-        playlists() {
-            const dict = this.playlists_dict();
-            const rows = [];
-            for (const id of (dict.keys() ?? [])) {
-                try {
-                    const title = dict.key(id)?.val();
-                    if (title == null)
-                        continue;
-                    rows.push({ id, title });
-                }
-                catch {
-                    continue;
-                }
-            }
-            return rows.sort((a, b) => a.title.localeCompare(b.title, 'ru', { numeric: true }));
-        }
-        playlist_title(id) {
-            return this.playlists_dict().key(id)?.val() ?? '';
-        }
-        playlist_create(title) {
-            const id = 'list:' + $mol_guid(8, id => this.playlists_dict().has(id));
-            $bog_music_log.act(`новый плейлист «${title}»`, this.land_id());
-            this.playlists_dict().key(id, 'auto').val(title);
-            return id;
-        }
-        playlist_rename(id, title) {
-            this.playlists_dict().key(id, 'auto').val(title);
-        }
-        playlist_delete(id) {
-            $bog_music_log.act(`удалён плейлист ${id}`, this.land_id());
-            for (const key of this.keys_in(id))
-                this.move_to_playlist(key, '');
-            this.Lists(null).cut(id);
-            this.playlists_dict().cut(id);
-        }
-        list(id, auto) {
-            return this.Lists(null).key(id, auto);
-        }
-        list_raw(id) {
-            return (this.list(id)?.items() ?? []);
-        }
-        list_keys(id) {
-            const keys = [];
-            for (const key of this.list_raw(id)) {
-                try {
-                    const track = this.track(key);
-                    if (!track?.audio())
-                        continue;
-                    if (track.playlist() === 'archive')
-                        continue;
-                    keys.push(key);
-                }
-                catch {
-                    continue;
-                }
-            }
-            return keys;
-        }
-        list_has(id, key) {
-            return this.list(id)?.has(key) ?? false;
-        }
-        list_add(id, key) {
-            $bog_music_log.act(`${key} → в «${this.playlist_title(id)}»`, this.land_id());
-            this.list(id, 'auto').add(key);
-        }
-        list_cut(id, key) {
-            $bog_music_log.act(`${key} ← из «${this.playlist_title(id)}»`, this.land_id());
-            this.list(id)?.cut(key);
-        }
-        list_move(id, key, to_key) {
-            const raw = this.list_raw(id);
-            const from = raw.indexOf(key);
-            const to = raw.indexOf(to_key);
-            if (from < 0 || to < 0 || from === to)
-                return;
-            this.list(id, 'auto').move(from, to > from ? to + 1 : to);
-        }
-        migrate_lists() {
-            const dict = this.tracks();
-            for (const key of (dict.keys() ?? [])) {
-                const track = dict.key(key);
-                const id = track?.playlist() ?? '';
-                if (!id.startsWith('list:'))
-                    continue;
-                this.list(id, 'auto').add(key);
-                track.Playlist('auto').val('');
-            }
-        }
-        delete_track(key) {
-            $bog_music_log.act(`трек вырезан из фонотеки: ${key}`, this.land_id());
-            this.tracks().cut(key);
-        }
-        /** Убирает только blob-кеш, метаданные остаются. */
-        drop_blob(key) {
-            const track = this.track(key);
-            if (!track)
-                return;
-            $bog_music_log.act(`blob сброшен, метаданные оставлены: ${key}`, this.land_id());
-            track.File('auto').val(null);
-        }
-        save_lufs(key, lufs) {
-            this.track(key)?.lufs(lufs);
-        }
-        /** Громкость меряется один раз, при добавлении файла. */
-        lufs_measure(key, buffer) {
-            $bog_music_gain.measure_later(buffer, lufs => $mol_wire_async(this).save_lufs(key, lufs));
-        }
-        // ---------- последняя сессия (трек + позиция) ----------
-        last_session() {
-            const key = this.Last_track_key()?.val() ?? '';
-            if (!key)
-                return null;
-            if (!this.track(key))
-                return null;
-            const position = Number(this.Last_position()?.val() ?? 0) || 0;
-            return { key, position };
-        }
-        save_last_session(key, position) {
-            this.Last_track_key('auto').val(key);
-            this.Last_position('auto').val(Math.max(0, position || 0));
-        }
-        // ---------- эквалайзер ----------
-        /**
-         * Настройки эквалайзера едут в аккаунте, а не в localStorage: ползунки
-         * крутят один раз и хотят их же на другом устройстве.
-         *
-         * Полосы лежат одной строкой, а не пятью атомами. Их правят набором —
-         * пресетом или подгонкой кривой — и слияние двух устройств по отдельным
-         * полосам собрало бы кривую, которой никто не выставлял; на всю строку
-         * побеждает последняя запись, и это ровно та кривая, что человек видел.
-         */
-        eq_gains() {
-            return $bog_music_eq.parse(this.Eq_gains()?.val() ?? '');
-        }
-        /** Выключенный эквалайзер — состояние по умолчанию: звук как записан. */
-        eq_on() {
-            return this.Eq_on()?.val() ?? false;
-        }
-        save_eq_on(on) {
-            this.Eq_on('auto').val(on);
-        }
-        save_eq_gains(gains) {
-            this.Eq_gains('auto').val($bog_music_eq.stringify(gains));
-        }
-        // ---------- докачка с VK ----------
-        track_cached(key) {
-            return this.track(key)?.cached() ?? false;
-        }
-        /** Качает HLS и пишет blob в baza. Ошибки сети — в warn, не наружу. */
-        async save_hls(audio) {
-            const key = $bog_music_account_baza.key_of(audio);
-            if (await $mol_wire_async(this).track_cached(key))
-                return;
-            const result = await $bog_music_hls.download(audio);
-            if (!result)
-                return;
-            // Запись в фибре: ensure() нового blob-land делает PoW, и только
-            // внутри фибры его wire_task кешируется между ретраями.
-            await $mol_wire_async(this).import_audio(audio, result.buffer, result.mime);
-        }
-        // ---------- утилиты ----------
-        static parse_filename(name) {
-            let base = name.replace(/\.[^.]+$/, '').trim();
-            let order = null;
-            const numbered = base.match(/^(\d{1,4})\s*[-–—]\s*(.+)$/);
-            if (numbered) {
-                order = Number(numbered[1]);
-                base = numbered[2].trim();
-            }
-            const m = base.match(/^(.+?)\s*[-–—]\s*(.+)$/);
-            if (m)
-                return { artist: m[1].trim(), title: m[2].trim(), order };
-            return { artist: '', title: base, order };
-        }
-        /** Детерминированный hash (FNV-1a 32 bit) — id локальных файлов. */
-        static hash_str(s) {
-            let h = 2166136261;
-            for (let i = 0; i < s.length; i++) {
-                h ^= s.charCodeAt(i);
-                h = Math.imul(h, 16777619);
-            }
-            return h >>> 0;
-        }
-    }
-    __decorate([
-        $mol_action
-    ], $bog_music_account_baza.prototype, "move_to_bottom", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_account_baza.prototype, "save_track", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_account_baza.prototype, "save_blob", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_account_baza.prototype, "import_audio", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_account_baza.prototype, "save_local_track", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_account_baza.prototype, "swap_order", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_account_baza.prototype, "move_to_playlist", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_account_baza.prototype, "playlist_create", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_account_baza.prototype, "playlist_rename", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_account_baza.prototype, "playlist_delete", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_account_baza.prototype, "list_add", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_account_baza.prototype, "list_cut", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_account_baza.prototype, "list_move", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_account_baza.prototype, "migrate_lists", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_account_baza.prototype, "delete_track", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_account_baza.prototype, "drop_blob", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_account_baza.prototype, "save_lufs", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_account_baza.prototype, "save_last_session", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_account_baza.prototype, "save_eq_on", null);
-    __decorate([
-        $mol_action
-    ], $bog_music_account_baza.prototype, "save_eq_gains", null);
-    $.$bog_music_account_baza = $bog_music_account_baza;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    var $$;
-    (function ($$) {
-        $mol_style_define($bog_music_account, {
-            flex: { direction: 'column' },
-            width: '100%',
-            boxSizing: 'border-box',
-            padding: {
-                top: '0.5rem',
-                bottom: '0.5rem',
-                left: '0.5rem',
-                right: '0.5rem',
-            },
-            gap: '0.75rem',
-            Font_row: {
-                alignItems: 'center',
-                flex: { wrap: 'wrap' },
-                gap: '0.5rem',
-                padding: { left: '0.25rem', right: '0.25rem' },
-            },
-            Font_label: {
-                color: $mol_theme.shade,
-            },
-            Font_size: {
-                flex: { direction: 'row', wrap: 'wrap' },
-            },
-            Sync_row: {
-                alignItems: 'center',
-                flex: { wrap: 'wrap' },
-                gap: '0.5rem',
-                padding: { left: '0.25rem', right: '0.25rem' },
-            },
-            Download_playlist: {
-                gap: '0.375rem',
-                alignItems: 'center',
-            },
-            Download_playlist_label: {
-                font: { size: '0.875rem' },
-            },
-            Download_playlist_status: {
-                font: { size: '0.8125rem' },
-                color: $mol_theme.shade,
-                flex: { grow: 1 },
-            },
-            Cards: {
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 18rem), 1fr))',
-                gap: '0.75rem',
-                alignItems: 'start',
-            },
-            Profile: {
-                flex: { direction: 'column' },
-                background: { color: $mol_theme.card },
-                border: { radius: $mol_gap.round },
-                padding: {
-                    top: '0.75rem',
-                    bottom: '0.75rem',
-                    left: '0.75rem',
-                    right: '0.75rem',
-                },
-                gap: '0.5rem',
-            },
-            Lord: {
-                font: {
-                    family: 'monospace',
-                    size: '0.875rem',
-                },
-                alignItems: 'baseline',
-                padding: { top: '0.25rem', bottom: '0.25rem' },
-                gap: '0.5rem',
-            },
-            // Идентификатор печатается целиком, поэтому строке нужно разрешить
-            // перенос: без minWidth флекс-элемент не сжимается и вылезает за край.
-            Lord_text: {
-                minWidth: 0,
-                overflowWrap: 'anywhere',
-                userSelect: 'text',
-            },
-            Telegram: {
-                flex: { direction: 'column' },
-                background: { color: $mol_theme.card },
-                border: { radius: $mol_gap.round },
-                padding: {
-                    top: '0.75rem',
-                    bottom: '0.75rem',
-                    left: '0.75rem',
-                    right: '0.75rem',
-                },
-                gap: '0.5rem',
-            },
-            Tg_title: {
-                font: { weight: 'bold' },
-            },
-            Tg_hint: {
-                font: { size: '0.8125rem' },
-                color: $mol_theme.shade,
-            },
-            Tg_status: {
-                font: { size: '0.8125rem' },
-                color: $mol_theme.shade,
-                minHeight: '1rem',
-            },
-            Lastfm: {
-                flex: { direction: 'column' },
-                background: { color: $mol_theme.card },
-                border: { radius: $mol_gap.round },
-                padding: {
-                    top: '0.75rem',
-                    bottom: '0.75rem',
-                    left: '0.75rem',
-                    right: '0.75rem',
-                },
-                gap: '0.5rem',
-            },
-            Fm_title: {
-                font: { weight: 'bold' },
-            },
-            Fm_hint: {
-                font: { size: '0.8125rem' },
-                color: $mol_theme.shade,
-            },
-            Fm_status: {
-                font: { size: '0.8125rem' },
-                color: $mol_theme.shade,
-                minHeight: '1rem',
-            },
-            Export: {
-                flex: { direction: 'column' },
-                background: { color: $mol_theme.card },
-                border: { radius: $mol_gap.round },
-                padding: {
-                    top: '0.75rem',
-                    bottom: '0.75rem',
-                    left: '0.75rem',
-                    right: '0.75rem',
-                },
-                gap: '0.5rem',
-            },
-            Warning: {
-                font: { size: '0.8125rem' },
-                color: '#d33',
-            },
-            Copy_status: {
-                font: { size: '0.8125rem' },
-                color: $mol_theme.shade,
-                minHeight: '1rem',
-            },
-            Import: {
-                flex: { direction: 'column' },
-                background: { color: $mol_theme.card },
-                border: { radius: $mol_gap.round },
-                padding: {
-                    top: '0.75rem',
-                    bottom: '0.75rem',
-                    left: '0.75rem',
-                    right: '0.75rem',
-                },
-                gap: '0.5rem',
-            },
-            Import_hint: {
-                font: { size: '0.8125rem' },
-                color: $mol_theme.shade,
-            },
-            Import_status: {
-                font: { size: '0.8125rem' },
-                color: $mol_theme.shade,
-                minHeight: '1rem',
-            },
-            Reset: {
-                flex: { direction: 'column' },
-                background: { color: $mol_theme.card },
-                border: { radius: $mol_gap.round },
-                padding: {
-                    top: '0.75rem',
-                    bottom: '0.75rem',
-                    left: '0.75rem',
-                    right: '0.75rem',
-                },
-                gap: '0.5rem',
-            },
-            Reset_hint: {
-                font: { size: '0.8125rem' },
-                color: $mol_theme.shade,
-            },
-        });
-    })($$ = $.$$ || ($.$$ = {}));
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    /**
-     * Чистый утилитарный класс — скачивание HLS, демукс TS, MP4-мукс,
-     * расшифровка AES-CBC. Без записи в baza: байты сохраняет домен
-     * ($bog_music_account_baza.save_hls).
-     */
-    class $bog_music_hls extends $mol_object {
-        static adts_to_m4a(adts) {
-            const frames = [];
-            const frameSizes = [];
-            let audioObjectType = 2;
-            let sampleRateIndex = 4;
-            let channelConfig = 2;
-            let i = 0;
-            while (i < adts.length - 7) {
-                if (adts[i] !== 0xFF || (adts[i + 1] & 0xF6) !== 0xF0) {
-                    i++;
-                    continue;
-                }
-                const protAbsent = adts[i + 1] & 0x01;
-                const profile = (adts[i + 2] >> 6) & 0x03;
-                const srIdx = (adts[i + 2] >> 2) & 0x0F;
-                const chCfg = ((adts[i + 2] & 0x01) << 2) | ((adts[i + 3] >> 6) & 0x03);
-                const frameLen = ((adts[i + 3] & 0x03) << 11) | (adts[i + 4] << 3) | ((adts[i + 5] >> 5) & 0x07);
-                if (frameLen < 7 || frameLen > 8192 || i + frameLen > adts.length) {
-                    i++;
-                    continue;
-                }
-                if (i + frameLen + 1 < adts.length) {
-                    if (adts[i + frameLen] !== 0xFF || (adts[i + frameLen + 1] & 0xF6) !== 0xF0) {
-                        i++;
-                        continue;
-                    }
-                }
-                if (frames.length === 0) {
-                    audioObjectType = profile + 1;
-                    sampleRateIndex = srIdx;
-                    channelConfig = chCfg;
-                }
-                const hdrLen = protAbsent ? 7 : 9;
-                if (hdrLen >= frameLen) {
-                    i++;
-                    continue;
-                }
-                const raw = adts.slice(i + hdrLen, i + frameLen);
-                frames.push(raw);
-                frameSizes.push(raw.length);
-                i += frameLen;
-            }
-            if (frames.length === 0)
-                return adts;
-            const sampleRates = [96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350];
-            const sampleRate = sampleRates[sampleRateIndex] || 44100;
-            const totalSamples = frames.length * 1024;
-            const rawSize = frameSizes.reduce((a, b) => a + b, 0);
-            const asc0 = (audioObjectType << 3) | (sampleRateIndex >> 1);
-            const asc1 = ((sampleRateIndex & 1) << 7) | (channelConfig << 3);
-            const u32 = (v) => [(v >>> 24) & 0xFF, (v >>> 16) & 0xFF, (v >>> 8) & 0xFF, v & 0xFF];
-            const u16 = (v) => [(v >> 8) & 0xFF, v & 0xFF];
-            const str = (s) => s.split('').map(c => c.charCodeAt(0));
-            const box = (type, payload) => [...u32(8 + payload.length), ...str(type), ...payload];
-            const fbox = (type, ver, fl, payload) => [...u32(12 + payload.length), ...str(type), ver, (fl >> 16) & 0xFF, (fl >> 8) & 0xFF, fl & 0xFF, ...payload];
-            const ftyp = box('ftyp', [...str('M4A '), ...u32(0), ...str('M4A '), ...str('isom'), ...str('mp42')]);
-            const decSpecInfo = [0x05, 0x02, asc0, asc1];
-            const decConfigPayload = [0x40, 0x15, 0x00, 0x00, 0x00, ...u32(0), ...u32(0), ...decSpecInfo];
-            const decConfig = [0x04, decConfigPayload.length, ...decConfigPayload];
-            const slConfig = [0x06, 0x01, 0x02];
-            const esPayload = [...u16(1), 0x00, ...decConfig, ...slConfig];
-            const esDescr = [0x03, esPayload.length, ...esPayload];
-            const esds = fbox('esds', 0, 0, esDescr);
-            const mp4aPayload = [
-                ...Array(6).fill(0), ...u16(1),
-                ...Array(8).fill(0),
-                ...u16(channelConfig), ...u16(16),
-                ...u16(0), ...u16(0),
-                ...u16(sampleRate), ...u16(0),
-                ...esds,
-            ];
-            const mp4a = [...u32(8 + mp4aPayload.length), ...str('mp4a'), ...mp4aPayload];
-            const stsd = fbox('stsd', 0, 0, [...u32(1), ...mp4a]);
-            const stts = fbox('stts', 0, 0, [...u32(1), ...u32(frames.length), ...u32(1024)]);
-            const stsc = fbox('stsc', 0, 0, [...u32(1), ...u32(1), ...u32(frames.length), ...u32(1)]);
-            const stsz = fbox('stsz', 0, 0, [...u32(0), ...u32(frames.length), ...frameSizes.flatMap(s => u32(s))]);
-            const stco = fbox('stco', 0, 0, [...u32(1), ...u32(0)]);
-            const stbl = box('stbl', [...stsd, ...stts, ...stsc, ...stsz, ...stco]);
-            const smhd = fbox('smhd', 0, 0, [...u16(0), ...u16(0)]);
-            const urlBox = fbox('url ', 0, 1, []);
-            const dref = fbox('dref', 0, 0, [...u32(1), ...urlBox]);
-            const dinf = box('dinf', dref);
-            const minf = box('minf', [...smhd, ...dinf, ...stbl]);
-            const mdhd = fbox('mdhd', 0, 0, [...u32(0), ...u32(0), ...u32(sampleRate), ...u32(totalSamples), ...u16(0x55C4), ...u16(0)]);
-            const hdlr = fbox('hdlr', 0, 0, [...u32(0), ...str('soun'), ...u32(0), ...u32(0), ...u32(0), 0]);
-            const mdia = box('mdia', [...mdhd, ...hdlr, ...minf]);
-            const identity = [
-                0x00, 0x01, 0x00, 0x00, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0x00, 0x01, 0x00, 0x00, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0x40, 0x00, 0x00, 0x00,
-            ];
-            const tkhd = fbox('tkhd', 0, 3, [
-                ...u32(0), ...u32(0), ...u32(1), ...u32(0), ...u32(totalSamples),
-                ...u32(0), ...u32(0), ...u16(0), ...u16(0), ...u16(0x0100), ...u16(0),
-                ...identity, ...u32(0), ...u32(0),
-            ]);
-            const trak = box('trak', [...tkhd, ...mdia]);
-            const mvhd = fbox('mvhd', 0, 0, [
-                ...u32(0), ...u32(0), ...u32(sampleRate), ...u32(totalSamples),
-                ...u32(0x00010000), ...u16(0x0100), ...Array(10).fill(0),
-                ...identity, ...Array(24).fill(0), ...u32(2),
-            ]);
-            const moov = box('moov', [...mvhd, ...trak]);
-            const mdatDataOffset = ftyp.length + moov.length + 8;
-            for (let j = 0; j < moov.length - 4; j++) {
-                if (moov[j] === 0x73 && moov[j + 1] === 0x74 && moov[j + 2] === 0x63 && moov[j + 3] === 0x6F) {
-                    const p = j + 12;
-                    moov[p] = (mdatDataOffset >>> 24) & 0xFF;
-                    moov[p + 1] = (mdatDataOffset >>> 16) & 0xFF;
-                    moov[p + 2] = (mdatDataOffset >>> 8) & 0xFF;
-                    moov[p + 3] = mdatDataOffset & 0xFF;
-                    break;
-                }
-            }
-            const mdatHeader = [...u32(8 + rawSize), ...str('mdat')];
-            const total = ftyp.length + moov.length + mdatHeader.length + rawSize;
-            const out = new Uint8Array(total);
-            let pos = 0;
-            out.set(ftyp, pos);
-            pos += ftyp.length;
-            out.set(moov, pos);
-            pos += moov.length;
-            out.set(mdatHeader, pos);
-            pos += mdatHeader.length;
-            for (const frame of frames) {
-                out.set(frame, pos);
-                pos += frame.length;
-            }
-            return out;
-        }
-        static extract_audio(ts) {
-            if (ts[0] === 0xFF && (ts[1] & 0xF0) === 0xF0) {
-                return { data: ts, mime: 'audio/aac' };
-            }
-            if (ts[0] === 0xFF && (ts[1] & 0xE0) === 0xE0) {
-                return { data: ts, mime: 'audio/mpeg' };
-            }
-            if (ts[0] === 0x49 && ts[1] === 0x44 && ts[2] === 0x33) {
-                return { data: ts, mime: 'audio/mpeg' };
-            }
-            if (ts[0] === 0x47) {
-                const audio = this.demux_ts_audio(ts);
-                if (audio)
-                    return { data: audio, mime: 'audio/aac' };
-            }
-            return { data: ts, mime: 'audio/mpeg' };
-        }
-        static demux_ts_audio(ts) {
-            const pidChunks = new Map();
-            for (let pos = 0; pos + 188 <= ts.length; pos += 188) {
-                if (ts[pos] !== 0x47)
-                    continue;
-                const pusi = !!(ts[pos + 1] & 0x40);
-                const pid = ((ts[pos + 1] & 0x1F) << 8) | ts[pos + 2];
-                const afc = (ts[pos + 3] >> 4) & 0x03;
-                if (pid === 0 || pid === 0x1FFF)
-                    continue;
-                if (!(afc & 0x01))
-                    continue;
-                let off = 4;
-                if (afc & 0x02)
-                    off += 1 + ts[pos + 4];
-                if (off >= 188)
-                    continue;
-                if (!pidChunks.has(pid))
-                    pidChunks.set(pid, []);
-                pidChunks.get(pid).push({ pusi, data: ts.slice(pos + off, pos + 188) });
-            }
-            for (const [pid, chunks] of pidChunks) {
-                const first = chunks.find(c => c.pusi);
-                if (!first)
-                    continue;
-                const d = first.data;
-                if (d.length < 9)
-                    continue;
-                if (d[0] !== 0x00 || d[1] !== 0x00 || d[2] !== 0x01)
-                    continue;
-                if (d[3] < 0xC0 || d[3] > 0xDF)
-                    continue;
-                const parts = [];
-                for (const chunk of chunks) {
-                    if (chunk.pusi) {
-                        const p = chunk.data;
-                        if (p.length < 9 || p[0] !== 0x00 || p[1] !== 0x00 || p[2] !== 0x01)
-                            continue;
-                        const pesHdrLen = 9 + p[8];
-                        if (pesHdrLen < p.length) {
-                            parts.push(p.slice(pesHdrLen));
-                        }
-                    }
-                    else {
-                        parts.push(chunk.data);
-                    }
-                }
-                const total = parts.reduce((s, p) => s + p.length, 0);
-                if (total === 0)
-                    continue;
-                const out = new Uint8Array(total);
-                let off = 0;
-                for (const p of parts) {
-                    out.set(p, off);
-                    off += p.length;
-                }
-                return out;
-            }
-            return null;
-        }
-        static parse_m3u8(text, base_url) {
-            const lines = text.split('\n');
-            let key_url = '';
-            let key_iv = '';
-            const segments = [];
-            for (const line of lines) {
-                const trimmed = line.trim();
-                if (trimmed.startsWith('#EXT-X-KEY:')) {
-                    const uri_match = trimmed.match(/URI="([^"]+)"/);
-                    if (uri_match) {
-                        key_url = uri_match[1].startsWith('http') ? uri_match[1] : base_url + uri_match[1];
-                    }
-                    const iv_match = trimmed.match(/IV=0x([0-9a-fA-F]+)/);
-                    if (iv_match) {
-                        key_iv = iv_match[1];
-                    }
-                }
-                else if (trimmed && !trimmed.startsWith('#')) {
-                    segments.push(trimmed.startsWith('http') ? trimmed : base_url + trimmed);
-                }
-            }
-            return { segments, key_url, key_iv };
-        }
-        static async decrypt_segment(data, cryptoKey, index, iv_hex) {
-            let iv;
-            if (iv_hex) {
-                const bytes = new Uint8Array(16);
-                for (let i = 0; i < 16 && i * 2 < iv_hex.length; i++) {
-                    bytes[i] = parseInt(iv_hex.substring(i * 2, i * 2 + 2), 16);
-                }
-                iv = bytes.buffer;
-            }
-            else {
-                const bytes = new Uint8Array(16);
-                bytes[15] = index & 0xFF;
-                bytes[14] = (index >> 8) & 0xFF;
-                bytes[13] = (index >> 16) & 0xFF;
-                bytes[12] = (index >> 24) & 0xFF;
-                iv = bytes.buffer;
-            }
-            return crypto.subtle.decrypt({ name: 'AES-CBC', iv }, cryptoKey, data);
-        }
-        /**
-         * Освежает audio.url через VK audio.getById — HLS ссылки протухают ~60 мин.
-         * Возвращает рабочий URL или пустую строку если не получилось.
-         */
-        static async refresh_url(audio) {
-            try {
-                const key = `${audio.owner_id}_${audio.id}${audio.access_key ? '_' + audio.access_key : ''}`;
-                const fresh = $mol_wire_sync($bog_music_api).refresh_audio(key);
-                return fresh?.url ?? '';
-            }
-            catch (e) {
-                console.warn('[hls] refresh_url failed:', e?.message);
-                return '';
-            }
-        }
-        /**
-         * Качает HLS, демуксит, конвертит ADTS→M4A. Возвращает байты + mime.
-         */
-        static async download(audio) {
-            let url = audio.url;
-            if (!url)
-                return null;
-            let m3u8_resp = await fetch(url);
-            if (m3u8_resp.status === 403 || m3u8_resp.status === 404) {
-                const fresh_url = await this.refresh_url(audio);
-                if (fresh_url) {
-                    url = fresh_url;
-                    m3u8_resp = await fetch(url);
-                }
-            }
-            if (!m3u8_resp.ok)
-                throw new Error(`m3u8 fetch ${m3u8_resp.status}`);
-            const m3u8_text = await m3u8_resp.text();
-            const base_url = url.substring(0, url.lastIndexOf('/') + 1);
-            const { segments, key_url, key_iv } = this.parse_m3u8(m3u8_text, base_url);
-            if (!segments.length)
-                throw new Error('No segments in m3u8');
-            let cryptoKey = null;
-            if (key_url) {
-                const key_resp = await fetch(key_url);
-                if (!key_resp.ok)
-                    throw new Error(`Key fetch failed: ${key_resp.status}`);
-                const key_data = await key_resp.arrayBuffer();
-                cryptoKey = await crypto.subtle.importKey('raw', key_data, 'AES-CBC', false, ['decrypt']);
-            }
-            const chunks = [];
-            for (let i = 0; i < segments.length; i++) {
-                const resp = await fetch(segments[i]);
-                if (!resp.ok)
-                    throw new Error(`Segment ${i + 1}/${segments.length} failed: ${resp.status}`);
-                let data = await resp.arrayBuffer();
-                const firstByte = new Uint8Array(data)[0];
-                if (cryptoKey && firstByte !== 0x47) {
-                    data = await this.decrypt_segment(data, cryptoKey, i, key_iv);
-                }
-                chunks.push(data);
-            }
-            const total = chunks.reduce((s, c) => s + c.byteLength, 0);
-            const merged = new Uint8Array(total);
-            let offset = 0;
-            for (const chunk of chunks) {
-                merged.set(new Uint8Array(chunk), offset);
-                offset += chunk.byteLength;
-            }
-            let { data: audioData, mime } = this.extract_audio(merged);
-            if (mime === 'audio/aac') {
-                audioData = this.adts_to_m4a(audioData);
-                mime = 'audio/mp4';
-            }
-            return { buffer: audioData, mime };
-        }
-    }
-    $.$bog_music_hls = $bog_music_hls;
 })($ || ($ = {}));
 
 ;
@@ -36215,6 +31301,29 @@ var $;
 			(obj.sub) = () => (["Ничего не играет"]);
 			return obj;
 		}
+		missing(){
+			return "";
+		}
+		Missing_text(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.missing())]);
+			return obj;
+		}
+		missing_pull(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Missing_pull(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ("Перенести");
+			(obj.click) = (next) => ((this.missing_pull(next)));
+			return obj;
+		}
+		Missing(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Missing_text()), (this.Missing_pull())]);
+			return obj;
+		}
 		seek_pointer_down(next){
 			if(next !== undefined) return next;
 			return null;
@@ -36746,6 +31855,7 @@ var $;
 		}
 		sub(){
 			return [
+				(this.Missing()), 
 				(this.Progress_row()), 
 				(this.Time_row()), 
 				(this.Controls())
@@ -36754,6 +31864,10 @@ var $;
 	};
 	($mol_mem(($.$bog_music_player.prototype), "Empty_icon"));
 	($mol_mem(($.$bog_music_player.prototype), "Empty_text"));
+	($mol_mem(($.$bog_music_player.prototype), "Missing_text"));
+	($mol_mem(($.$bog_music_player.prototype), "missing_pull"));
+	($mol_mem(($.$bog_music_player.prototype), "Missing_pull"));
+	($mol_mem(($.$bog_music_player.prototype), "Missing"));
 	($mol_mem(($.$bog_music_player.prototype), "seek_pointer_down"));
 	($mol_mem(($.$bog_music_player.prototype), "seek_pointer_move"));
 	($mol_mem(($.$bog_music_player.prototype), "seek_pointer_up"));
@@ -36843,6 +31957,711 @@ var $;
 
 ;
 "use strict";
+var $;
+(function ($) {
+    /**
+     * Секрет устройства для нашего маленького backend'а (телеграм-инбокс,
+     * скробблинг). Живёт в localStorage, в baza не едет: на каждом устройстве
+     * связка своя, и потеря кода не роняет ни аккаунт, ни треки.
+     *
+     * Не путать с ключом аккаунта Гипер Базы — тот открывает всю музыку, этот
+     * только очередь пересланного и сессию last.fm.
+     */
+    class $bog_music_code extends $mol_object {
+        /** Текущий код, '' — ещё не заводили. */
+        static value(name, next) {
+            return $mol_state_local.value(name, next) ?? '';
+        }
+        /** Код, заводя его при первом обращении. Только из @$mol_action. */
+        static ensure(name) {
+            return this.value(name) || this.value(name, this.random());
+        }
+        /** 96 бит hex: перебором не угадать, в URL и диплинк лезет как есть. */
+        static random() {
+            const bytes = new Uint8Array(12);
+            crypto.getRandomValues(bytes);
+            return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+        /** Формат, который принимает сервер. */
+        static valid(code) {
+            return /^[A-Za-z0-9_-]{8,64}$/.test(code);
+        }
+    }
+    $.$bog_music_code = $bog_music_code;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /**
+     * Скробблинг в last.fm. Ключ приложения и session key юзера лежат на нашем
+     * сервере (bog/music/srv/fm): подпись запроса требует api-секрет, а
+     * ему в клиентском бандле не место. Отсюда уходят только «что играет» и
+     * «что доиграло».
+     */
+    class $bog_music_scrobble extends $mol_object {
+        static base = 'https://tube.87.120.36.150.ip.giper.dev';
+        static code() {
+            return $bog_music_code.value('bog_music_fm_code');
+        }
+        /** Завести код при первом подключении. Только из @$mol_action. */
+        static code_ensure() {
+            return $bog_music_code.ensure('bog_music_fm_code');
+        }
+        /**
+         * Имя на last.fm — оно же признак «подключено». Держим локально, чтобы
+         * плеер на каждом тике проверял скробблинг синхронно и без запроса.
+         */
+        static user(next) {
+            return $mol_state_local.value('bog_music_fm_user', next) ?? '';
+        }
+        static enabled() {
+            return !!this.code() && !!this.user();
+        }
+        /**
+         * Страница подтверждения last.fm. Возврат — на наш сервер, он меняет
+         * токен на сессию и отправляет юзера обратно в приложение. В расширении
+         * возвращаться некуда (chrome-extension:// last.fm не примет), поэтому
+         * сервер просто показывает «готово».
+         */
+        static login_url(code) {
+            const web = location.protocol === 'https:' || location.protocol === 'http:';
+            const back = web ? location.origin + location.pathname + location.search : '';
+            return `${this.base}/fm/login?code=${encodeURIComponent(code)}&back=${encodeURIComponent(back)}`;
+        }
+        /** Подтягивает имя юзера с сервера и кеширует его локально. */
+        static async status() {
+            const code = this.code();
+            if (!code)
+                return '';
+            const resp = await fetch(`${this.base}/fm/status?code=${encodeURIComponent(code)}`);
+            if (!resp.ok)
+                throw new Error(`fm status ${resp.status}`);
+            const data = await resp.json();
+            const user = String(data?.user ?? '');
+            if (this.user() !== user)
+                this.user(user);
+            return user;
+        }
+        static async logout() {
+            const code = this.code();
+            this.user('');
+            if (!code)
+                return;
+            await fetch(`${this.base}/fm/logout?code=${encodeURIComponent(code)}`);
+        }
+        /**
+         * Пуляем и забываем: скробблинг не должен ни задерживать плеер, ни
+         * ронять его своими ошибками. keepalive — потому что отправка часто
+         * совпадает с уходом со страницы (последний трек, закрытие вкладки).
+         */
+        static send(method, params) {
+            const code = this.code();
+            if (!code)
+                return;
+            const query = new URLSearchParams({ code, ...params });
+            fetch(`${this.base}/fm/${method}?${query}`, { keepalive: true })
+                .catch(e => console.warn('[fm] ' + method + ':', e?.message ?? e));
+        }
+        static now_playing(artist, track, duration) {
+            if (!this.enabled() || !track)
+                return;
+            this.send('now', { artist, track, duration: Math.round(duration) || 0 });
+        }
+        static scrobble(artist, track, duration, started) {
+            if (!this.enabled() || !track)
+                return;
+            this.send('scrobble', {
+                artist,
+                track,
+                duration: Math.round(duration) || 0,
+                ts: Math.round(started),
+            });
+        }
+    }
+    $.$bog_music_scrobble = $bog_music_scrobble;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $bog_music_stream extends $mol_object {
+        static name = 'bog-music-stream';
+        static ping = '~ping';
+        static _page_ready = false;
+        static _sw_ready = false;
+        static _served = null;
+        static _served_wait = null;
+        static url(key) {
+            const url = new URL(typeof location !== 'undefined' ? location.href : 'http://localhost/');
+            url.hash = '';
+            url.search = '';
+            url.pathname = url.pathname.replace(/[^/]*$/, this.name);
+            url.searchParams.set('key', key);
+            return url.href;
+        }
+        static matches(request_url) {
+            try {
+                const url = new URL(request_url);
+                if (!url.pathname.endsWith(this.name))
+                    return null;
+                return url.searchParams.get('key');
+            }
+            catch {
+                return null;
+            }
+        }
+        static supported() {
+            if (typeof navigator === 'undefined')
+                return false;
+            return Boolean(navigator.serviceWorker);
+        }
+        static active() {
+            return this.supported() && Boolean(navigator.serviceWorker.controller) && this._served === true;
+        }
+        static served() {
+            if (this._served_wait)
+                return this._served_wait;
+            return this._served_wait = fetch(this.url(this.ping), { cache: 'no-store' })
+                .then(res => res.status === 204)
+                .catch(() => false)
+                .then(ok => {
+                this._served = ok;
+                if (!ok)
+                    void navigator.serviceWorker.getRegistration().then(reg => reg?.update()).catch(() => { });
+                return ok;
+            });
+        }
+        static ready_limit = 3000;
+        static async when_ready() {
+            if (!this.supported())
+                return false;
+            try {
+                const ready = await Promise.race([
+                    navigator.serviceWorker.ready.then(() => true),
+                    new Promise(done => setTimeout(() => done(false), this.ready_limit)),
+                ]);
+                if (!ready)
+                    return false;
+                if (!navigator.serviceWorker.controller)
+                    return false;
+                return await this.served();
+            }
+            catch {
+                return false;
+            }
+        }
+        static install_page() {
+            if (typeof window === 'undefined')
+                return;
+            if (this._page_ready)
+                return;
+            this._page_ready = true;
+            navigator.serviceWorker?.addEventListener('message', event => {
+                void this.on_sw_message(event);
+            });
+            navigator.serviceWorker?.addEventListener('controllerchange', () => {
+                this._served = null;
+                this._served_wait = null;
+                void this.served();
+            });
+            if (navigator.serviceWorker?.controller)
+                void this.served();
+        }
+        static install_sw() {
+            if (typeof window !== 'undefined')
+                return;
+            if (typeof self === 'undefined')
+                return;
+            if (typeof self.clients === 'undefined')
+                return;
+            if (this._sw_ready)
+                return;
+            this._sw_ready = true;
+            self.addEventListener('fetch', (event) => {
+                const key = this.matches(event.request.url);
+                if (!key)
+                    return;
+                if (key === this.ping)
+                    return event.respondWith(new Response(null, { status: 204 }));
+                event.respondWith(this.sw_respond(event.request, key));
+            });
+        }
+        static warm(key) {
+            if (!this.supported() || !key)
+                return;
+            const go = () => fetch(this.url(key), {
+                headers: { Range: 'bytes=0-65535' },
+                credentials: 'same-origin',
+            }).catch(() => { });
+            if (this.active())
+                go();
+            else
+                void this.when_ready().then(ok => { if (ok)
+                    go(); });
+        }
+        static async read(key, start, end) {
+            try {
+                const slice = await $bog_music_disk.bytes(key, start, end);
+                if (!slice)
+                    return { ok: false, error: `stream: no file ${key}` };
+                return { ok: true, ...slice };
+            }
+            catch (error) {
+                return { ok: false, error: error?.message ?? String(error) };
+            }
+        }
+        static async on_sw_message(event) {
+            const data = event.data;
+            if (data?.type !== 'bog_music_stream_range')
+                return;
+            const port = event.ports?.[0];
+            if (!port)
+                return;
+            const slice = await this.read(data.key, data.start, data.end);
+            port.postMessage(slice, slice.ok ? [slice.bytes] : []);
+        }
+        static async sw_client() {
+            const list = await self.clients.matchAll({
+                type: 'window',
+                includeUncontrolled: true,
+            });
+            return list[0] ?? null;
+        }
+        static sw_page(key, start, end) {
+            return new Promise(async (done) => {
+                const client = await this.sw_client();
+                if (!client)
+                    return done({ ok: false, error: 'stream: no page client' });
+                const channel = new MessageChannel();
+                const timer = setTimeout(() => done({ ok: false, error: 'stream: page timeout' }), 30000);
+                channel.port1.onmessage = (event) => {
+                    clearTimeout(timer);
+                    done(event.data);
+                };
+                client.postMessage({ type: 'bog_music_stream_range', key, start, end }, [channel.port2]);
+            });
+        }
+        static async sw_read(key, start, end) {
+            if ($bog_music_disk.supported())
+                return this.read(key, start, end);
+            return this.sw_page(key, start, end);
+        }
+        static open_ended_window = 512 * 1024;
+        static async sw_respond(request, key) {
+            const range = request.headers.get('Range');
+            let start = 0;
+            let end = -1;
+            const m = range ? /^bytes=(\d*)-(\d*)$/i.exec(range.trim()) : null;
+            if (m) {
+                if (m[1] !== '')
+                    start = parseInt(m[1], 10);
+                end = m[2] !== '' ? parseInt(m[2], 10) + 1 : start + this.open_ended_window;
+            }
+            const data = await this.sw_read(key, start, end);
+            if (!data.ok)
+                return new Response(data.error, { status: 404 });
+            if (!range) {
+                return new Response(data.bytes, {
+                    status: 200,
+                    headers: {
+                        'Content-Type': data.mime,
+                        'Accept-Ranges': 'bytes',
+                        'Content-Length': String(data.total),
+                        'Cache-Control': 'no-store',
+                    },
+                });
+            }
+            if (start >= data.total) {
+                return new Response(null, {
+                    status: 416,
+                    headers: { 'Content-Range': `bytes */${data.total}` },
+                });
+            }
+            return new Response(data.bytes, {
+                status: 206,
+                headers: {
+                    'Content-Type': data.mime,
+                    'Accept-Ranges': 'bytes',
+                    'Content-Length': String(data.bytes.byteLength),
+                    'Content-Range': `bytes ${data.start}-${data.end - 1}/${data.total}`,
+                    'Cache-Control': 'no-store',
+                },
+            });
+        }
+    }
+    $.$bog_music_stream = $bog_music_stream;
+    $bog_music_stream.install_sw();
+    $bog_music_stream.install_page();
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $bog_music_peer extends $mol_object {
+        static ice = [
+            { urls: ['stun:stun.l.google.com:19302', 'stun:stun.cloudflare.com:3478'] },
+        ];
+        static chunk = 16 * 1024;
+        static buffer_high = 1024 * 1024;
+        static gather_limit = 5000;
+        static open_limit = 30000;
+        static rtc() {
+            return new RTCPeerConnection({ iceServers: this.ice });
+        }
+        static async gather(rtc) {
+            if (rtc.iceGatheringState !== 'complete') {
+                await new Promise(done => {
+                    const timer = setTimeout(done, this.gather_limit);
+                    rtc.addEventListener('icegatheringstatechange', () => {
+                        if (rtc.iceGatheringState !== 'complete')
+                            return;
+                        clearTimeout(timer);
+                        done();
+                    });
+                });
+            }
+            return rtc.localDescription.sdp;
+        }
+        static async offer() {
+            const rtc = this.rtc();
+            const channel = rtc.createDataChannel('bog_music', { ordered: true });
+            await rtc.setLocalDescription(await rtc.createOffer());
+            return { rtc, channel, sdp: await this.gather(rtc) };
+        }
+        static async answer(offer) {
+            const rtc = this.rtc();
+            const channel = new Promise(done => {
+                rtc.addEventListener('datachannel', event => done(event.channel));
+            });
+            await rtc.setRemoteDescription({ type: 'offer', sdp: offer });
+            await rtc.setLocalDescription(await rtc.createAnswer());
+            return { rtc, channel, sdp: await this.gather(rtc) };
+        }
+        static async finish(rtc, answer) {
+            await rtc.setRemoteDescription({ type: 'answer', sdp: answer });
+        }
+        static opened(channel) {
+            channel.binaryType = 'arraybuffer';
+            if (channel.readyState === 'open')
+                return Promise.resolve(channel);
+            return new Promise((done, fail) => {
+                const timer = setTimeout(() => fail(new Error('Устройства не соединились')), this.open_limit);
+                channel.addEventListener('open', () => {
+                    clearTimeout(timer);
+                    done(channel);
+                });
+                channel.addEventListener('close', () => {
+                    clearTimeout(timer);
+                    fail(new Error('Соединение закрылось'));
+                });
+            });
+        }
+        static message(channel) {
+            return new Promise((done, fail) => {
+                const on = (event) => {
+                    if (typeof event.data !== 'string')
+                        return;
+                    channel.removeEventListener('message', on);
+                    done(JSON.parse(event.data));
+                };
+                channel.addEventListener('message', on);
+                channel.addEventListener('close', () => fail(new Error('Соединение закрылось')));
+            });
+        }
+        static async drain(channel) {
+            if (channel.bufferedAmount < this.buffer_high)
+                return;
+            channel.bufferedAmountLowThreshold = this.buffer_high / 4;
+            await new Promise(done => {
+                channel.addEventListener('bufferedamountlow', () => done(), { once: true });
+            });
+        }
+        static async send(channel, items, progress) {
+            channel.send(JSON.stringify({ type: 'list', count: items.length }));
+            let done = 0;
+            for (const item of items) {
+                channel.send(JSON.stringify({ type: 'file', key: item.key, meta: item.meta, size: item.file.size }));
+                for (let at = 0; at < item.file.size; at += this.chunk) {
+                    await this.drain(channel);
+                    channel.send(await item.file.slice(at, at + this.chunk).arrayBuffer());
+                }
+                channel.send(JSON.stringify({ type: 'end', key: item.key }));
+                progress?.(++done);
+            }
+            channel.send(JSON.stringify({ type: 'done' }));
+            await this.message(channel);
+        }
+        static receive(channel, take, progress) {
+            return new Promise((resolve, fail) => {
+                let count = 0;
+                let done = 0;
+                let head = null;
+                let parts = [];
+                let queue = Promise.resolve();
+                channel.addEventListener('close', () => fail(new Error('Соединение оборвалось')));
+                channel.addEventListener('message', event => {
+                    if (typeof event.data !== 'string') {
+                        parts.push(event.data);
+                        return;
+                    }
+                    const msg = JSON.parse(event.data);
+                    if (msg.type === 'list') {
+                        count = msg.count;
+                        progress?.(done, count);
+                    }
+                    if (msg.type === 'file') {
+                        head = msg;
+                        parts = [];
+                    }
+                    if (msg.type === 'end' && head) {
+                        const bytes = new Uint8Array(head.size);
+                        let at = 0;
+                        for (const part of parts) {
+                            bytes.set(new Uint8Array(part), at);
+                            at += part.byteLength;
+                        }
+                        const got = { key: head.key, meta: head.meta, bytes };
+                        head = null;
+                        parts = [];
+                        queue = queue.then(() => take(got)).then(() => progress?.(++done, count));
+                    }
+                    if (msg.type === 'done') {
+                        queue.then(() => {
+                            channel.send(JSON.stringify({ type: 'ack' }));
+                            resolve(done);
+                        }, fail);
+                    }
+                });
+            });
+        }
+    }
+    $.$bog_music_peer = $bog_music_peer;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $bog_music_beam extends $mol_object {
+        static instance() {
+            return new this;
+        }
+        account() {
+            return $bog_music_account_baza.home();
+        }
+        static answer_limit = 60000;
+        static tick = 2000;
+        static beat_every = 30000;
+        static signal_parse(text) {
+            try {
+                const data = JSON.parse(text);
+                if (typeof data?.sdp !== 'string' || typeof data?.at !== 'number')
+                    return null;
+                return data;
+            }
+            catch {
+                return null;
+            }
+        }
+        signal(kind, from, to, next) {
+            const dict = this.account().signals();
+            const id = `${kind}:${from}>${to}`;
+            if (next !== undefined)
+                dict.key(id, 'auto').val(next);
+            return dict.key(id)?.val() ?? '';
+        }
+        incoming(me) {
+            const dict = this.account().signals();
+            const out = [];
+            for (const id of (dict.keys() ?? [])) {
+                const [kind, pair = ''] = id.split(':');
+                const [from, to] = pair.split('>');
+                if (kind !== 'offer' || to !== me || !from)
+                    continue;
+                const signal = $bog_music_beam.signal_parse(dict.key(id)?.val() ?? '');
+                if (signal)
+                    out.push({ from, signal });
+            }
+            return out;
+        }
+        status(key, next) {
+            return next ?? '';
+        }
+        summary(next) {
+            return next ?? '';
+        }
+        _handled = new Map();
+        _busy = false;
+        _beat_at = 0;
+        _started_at = Date.now();
+        async step() {
+            if (this._busy)
+                return;
+            this._busy = true;
+            try {
+                const self = $mol_wire_async(this);
+                if (Date.now() - this._beat_at > $bog_music_beam.beat_every) {
+                    this._beat_at = Date.now();
+                    await $mol_wire_async(this.account()).device_beat();
+                }
+                const me = $bog_music_device.id();
+                for (const { from, signal } of await self.incoming(me)) {
+                    if (signal.at < this._started_at - $bog_music_beam.answer_limit)
+                        continue;
+                    if ((this._handled.get(from) ?? 0) >= signal.at)
+                        continue;
+                    this._handled.set(from, signal.at);
+                    await this.serve(from, signal);
+                }
+            }
+            catch (error) {
+                $bog_music_log.err(`передача между устройствами: ${error?.message ?? error}`);
+            }
+            finally {
+                this._busy = false;
+            }
+        }
+        _timer = 0;
+        watch() {
+            if (this._timer)
+                clearInterval(this._timer);
+            this._timer = setInterval(() => void this.step(), $bog_music_beam.tick);
+            void this.step();
+            return null;
+        }
+        destructor() {
+            clearInterval(this._timer);
+        }
+        async serve(from, signal) {
+            const me = $bog_music_device.id();
+            const name = await $mol_wire_async(this.account()).device_name(from);
+            $bog_music_log.act(`запрос файлов с «${name}»`);
+            const { rtc, channel, sdp } = await $bog_music_peer.answer(signal.sdp);
+            try {
+                await $mol_wire_async(this).signal('answer', me, from, JSON.stringify({ at: Date.now(), sdp }));
+                const open = await $bog_music_peer.opened(await channel);
+                const want = await $bog_music_peer.message(open);
+                const items = [];
+                for (const key of (want.keys ?? [])) {
+                    const file = await $bog_music_disk.file(key);
+                    const meta = await $mol_wire_async(this.account()).info(key);
+                    if (file && meta)
+                        items.push({ key, meta, file });
+                }
+                this.summary(`Отдаю на «${name}»: 0 из ${items.length}`);
+                await $bog_music_peer.send(open, items, done => this.summary(`Отдаю на «${name}»: ${done} из ${items.length}`));
+                $bog_music_log.act(`отдано на «${name}»: ${items.length}`);
+                this.summary('');
+            }
+            finally {
+                rtc.close();
+            }
+        }
+        async pull(from, keys) {
+            const me = $bog_music_device.id();
+            const account = $mol_wire_async(this.account());
+            const name = await account.device_name(from);
+            for (const key of keys)
+                this.status(key, 'Соединяюсь…');
+            this.summary(`Соединяюсь с «${name}»…`);
+            $bog_music_log.act(`перенос ${keys.length} с «${name}»`);
+            const { rtc, channel, sdp } = await $bog_music_peer.offer();
+            try {
+                const at = Date.now();
+                await $mol_wire_async(this).signal('offer', me, from, JSON.stringify({ at, sdp }));
+                let answer = null;
+                while (Date.now() - at < $bog_music_beam.answer_limit) {
+                    answer = $bog_music_beam.signal_parse(await $mol_wire_async(this).signal('answer', from, me));
+                    if (answer && answer.at >= at)
+                        break;
+                    answer = null;
+                    await new Promise(done => setTimeout(done, 1000));
+                }
+                if (!answer)
+                    throw new Error(`«${name}» не ответило, открой на нём приложение`);
+                await $bog_music_peer.finish(rtc, answer.sdp);
+                const open = await $bog_music_peer.opened(channel);
+                open.send(JSON.stringify({ type: 'want', keys }));
+                const got = await $bog_music_peer.receive(open, async (item) => {
+                    await $bog_music_disk.put(item.key, item.bytes);
+                    await account.holder_add(item.key);
+                    this.status(item.key, '');
+                }, (done, count) => this.summary(`Переношу с «${name}»: ${done} из ${count}`));
+                $bog_music_log.act(`перенесено с «${name}»: ${got}`);
+                this.summary(got ? `Перенесено с «${name}»: ${got}` : `На «${name}» этих файлов уже нет`);
+            }
+            catch (error) {
+                const text = error?.message ?? String(error);
+                $bog_music_log.err(`перенос с «${name}» не удался: ${text}`);
+                this.summary(text);
+                throw error;
+            }
+            finally {
+                for (const key of keys)
+                    this.status(key, '');
+                rtc.close();
+            }
+        }
+        pick_holder(key) {
+            const account = this.account();
+            const holders = account.holders_other(key);
+            return holders.find(id => account.device_online(id)) ?? holders[0] ?? null;
+        }
+        pull_one(key) {
+            const from = this.pick_holder(key);
+            if (!from)
+                return;
+            void this.pull(from, [key]).catch(() => { });
+        }
+        remote_groups(keys) {
+            const account = this.account();
+            const groups = new Map();
+            for (const key of keys) {
+                if (account.place(key) !== 'remote')
+                    continue;
+                const from = this.pick_holder(key);
+                if (!from)
+                    continue;
+                groups.set(from, [...groups.get(from) ?? [], key]);
+            }
+            return groups;
+        }
+        pull_all(keys) {
+            const groups = this.remote_groups(keys);
+            void (async () => {
+                for (const [from, list] of groups) {
+                    await this.pull(from, list).catch(() => { });
+                }
+            })();
+        }
+    }
+    __decorate([
+        $mol_mem_key
+    ], $bog_music_beam.prototype, "status", null);
+    __decorate([
+        $mol_mem
+    ], $bog_music_beam.prototype, "summary", null);
+    __decorate([
+        $mol_mem
+    ], $bog_music_beam.prototype, "watch", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_beam.prototype, "pull_one", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_beam.prototype, "pull_all", null);
+    __decorate([
+        $mol_mem
+    ], $bog_music_beam, "instance", null);
+    $.$bog_music_beam = $bog_music_beam;
+})($ || ($ = {}));
+
+;
+"use strict";
 
 
 ;
@@ -36851,14 +32670,6 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        /**
-         * Плеер. Работает с треками по ключу, метаданные и блобы читает из домена
-         * ($bog_music_account_baza). Два режима вывода звука:
-         * - PWA/сайт: собственный <audio>;
-         * - extension: offscreen-документ (см. ext/offscreen.js) — играет при
-         *   закрытом табе. Команды — sendMessage, блоб — BroadcastChannel
-         *   (sendMessage сериализует через JSON и теряет Blob).
-         */
         class $bog_music_player extends $.$bog_music_player {
             account() {
                 return $bog_music_account_baza.home();
@@ -36870,11 +32681,9 @@ var $;
             current_audio() {
                 const ext = this.ext();
                 if (ext)
-                    return { id: 0, owner_id: 0, artist: ext.artist, title: ext.title, duration: 0, url: ext.url };
-                return this.current_track()?.audio() ?? null;
+                    return { artist: ext.artist, title: ext.title, duration: 0, cover: ext.cover };
+                return this.current_track()?.info() ?? null;
             }
-            // Внешний источник (стрим tube-превью), играющий без записи в baza.
-            // Пока задан — плеер работает по url, а не по ключу из baza.
             _ext = null;
             _ext_seq = 0;
             ext_rev(next) {
@@ -36888,12 +32697,7 @@ var $;
                 this.ext_rev();
                 return this._ext;
             }
-            /** Прослушать по прямому URL, не сохраняя трек (tube-превью). */
             play_external(url, title, artist, cover = '') {
-                if (this.is_extension()) {
-                    // В extension нет прямого <audio>; превью работает только в PWA/сайте.
-                    return;
-                }
                 $bog_music_log.act(`внешний стрим: ${artist} — ${title}`);
                 this.ext({ url, title, artist, cover });
                 this.current_key('');
@@ -36904,38 +32708,21 @@ var $;
                 this.apply_media_metadata(this.current_audio());
                 this.gain_chain_unlock();
                 const el = this.audio_el();
-                if (this._last_blob_url) {
-                    URL.revokeObjectURL(this._last_blob_url);
-                    this._last_blob_url = '';
-                }
+                this.url_drop();
                 this._dispatch_token++;
                 this.set_track_src(el, url);
                 el.play().catch(() => { });
             }
-            // ---------- окружение ----------
-            is_extension() {
-                return typeof chrome !== 'undefined' && !!chrome?.runtime?.id;
-            }
-            _channel;
-            channel() {
-                if (!this._channel)
-                    this._channel = new BroadcastChannel('bog_music_player');
-                return this._channel;
-            }
-            send(type, payload) {
-                if (!this.is_extension())
+            url_drop() {
+                if (!this._last_blob_url)
                     return;
-                chrome.runtime.sendMessage({ target: 'offscreen', type, ...payload }).catch(() => { });
+                URL.revokeObjectURL(this._last_blob_url);
+                this._last_blob_url = '';
             }
-            // ---------- iOS фоновое воспроизведение (один элемент, swap src) ----------
-            // iOS PWA: два <audio> дерутся за единственную аудио-сессию, и play с
-            // локскрина попадает в silence-элемент вместо трека. Решение — ОДИН
-            // элемент, который никогда не останавливается: на «паузе» его src
-            // подменяется на беззвучный цикл (сессия и страница живы), по play —
-            // возвращается src трека и перематывается на сохранённую позицию.
-            // Тишина для keep-alive. 3 сек 8kHz — короткий обрывок (пара сэмплов)
-            // iOS Safari не считает валидным медиа и не держит на нём сессию
-            // («нет аудио»). Генерим полноценный WAV как Blob URL один раз.
+            url_take(file) {
+                this.url_drop();
+                return this._last_blob_url = URL.createObjectURL(file);
+            }
             static _silence_url = '';
             static silence_url() {
                 if (this._silence_url)
@@ -36958,47 +32745,21 @@ var $;
                 dv.setUint16(34, 8, true);
                 w(36, 'data');
                 dv.setUint32(40, n, true);
-                buf.fill(128, 44); // 8-bit unsigned: 128 = тишина
+                buf.fill(128, 44);
                 this._silence_url = URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
                 return this._silence_url;
             }
-            /** src текущего трека (blob url) — чтобы вернуть его после silence-паузы. */
             _track_src = '';
-            /** Позиция трека на момент паузы (для seek при возобновлении). */
             _paused_pos = 0;
-            /** Сейчас в элементе крутится беззвучный keep-alive-цикл (не трек). */
             _silent = false;
-            /**
-             * Ждём, пока трек после resume домотается до сохранённой позиции.
-             * Пока >0 — timeupdate не пишет current_time (иначе полоска мигнёт в 0:
-             * смена src сбрасывает el.currentTime до отработки seek).
-             */
             _await_seek = 0;
-            /**
-             * Идёт смена трека: элемент перезагружает ресурс и ещё не заиграл.
-             * Транзиентные 'pause' в этом окне — не системная пауза, и уводить по ним
-             * элемент в keep-alive-тишину нельзя: он застревает на беззвучном цикле,
-             * трек «играет» без звука, а toggle не помогает (ios_pause на _silent
-             * молча выходит). Сбрасывается по 'playing'/'timeupdate' или по таймауту.
-             */
             _switching = false;
             _switch_gen = 0;
             is_ios() {
                 return /iPad|iPhone|iPod/.test(navigator.userAgent)
                     || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
             }
-            /**
-             * Ставит src трека, запоминая его для последующего swap.
-             *
-             * Обрез НЕ уходит медиа-фрагментом (blob:...#t=): пробовали — обрезанные
-             * треки переставали играть и проскакивались. Фрагмент на blob-url
-             * ломает загрузку ресурса. Позицию ставит только seek в
-             * attach_seek_listener, а от «пауза перехода → keep-alive-тишина»
-             * защищает флаг _switching ниже.
-             */
             set_track_src(el, url) {
-                // Тот же URL повторно — браузер начинает загрузку заново (ливень Range).
-                // el.src — resolved absolute; сравниваем через URL, не строками 1:1.
                 if (!this._silent && this._track_src === url) {
                     try {
                         if (el.src && new URL(el.src).href === new URL(url).href)
@@ -37011,8 +32772,6 @@ var $;
                 }
                 this._silent = false;
                 this._track_src = url;
-                // WebAudio + CORS: только для чужого origin (tube). same-origin stream
-                // и blob: — без crossOrigin, иначе лишний reload медиаэлемента.
                 if (!this._gain_dead && this.normalize()) {
                     const same = url.startsWith('blob:')
                         || (typeof location !== 'undefined' && url.startsWith(location.origin));
@@ -37027,19 +32786,12 @@ var $;
                 setTimeout(() => { if (this._switch_gen === gen)
                     this._switching = false; }, 3000);
             }
-            /**
-             * «Пауза» на iOS: не останавливаем элемент (иначе iOS заморозит страницу
-             * и локскрин умрёт), а крутим в нём беззвучный цикл. Сессия остаётся у
-             * этого же элемента — play с локскрина гарантированно попадёт в него.
-             */
             ios_pause(el) {
-                // Уже на тишине: повторная «пауза» затёрла бы _paused_pos позицией
-                // silence-цикла (0..3с) и resume отмотал бы трек в начало.
                 if (this._silent)
                     return;
                 this._paused_pos = el.currentTime || this._paused_pos;
                 this._silent = true;
-                this.current_time(this._paused_pos); // заморозить полоску на позиции
+                this.current_time(this._paused_pos);
                 el.loop = true;
                 el.src = $bog_music_player.silence_url();
                 el.play().catch(() => { });
@@ -37047,15 +32799,10 @@ var $;
                 if ('mediaSession' in navigator)
                     navigator.mediaSession.playbackState = 'paused';
             }
-            /**
-             * Возобновление на iOS: возвращаем src трека в тот же элемент и
-             * перематываем на сохранённую позицию. Синхронно в юзер-жесте (toggle /
-             * mediaSession play), поэтому iOS разрешает воспроизведение.
-             */
             ios_resume(el) {
                 if (this._track_src) {
                     this._await_seek = this._paused_pos;
-                    this.current_time(this._paused_pos); // держим полоску до досинка seek
+                    this.current_time(this._paused_pos);
                     this.set_track_src(el, this._track_src);
                     this.attach_seek_listener(el, this._paused_pos);
                     el.play().catch(() => { });
@@ -37064,55 +32811,26 @@ var $;
                         navigator.mediaSession.playbackState = 'playing';
                     return;
                 }
-                // src трека потерян — пересобираем из blob по текущему ключу.
                 const key = this.current_key();
                 if (!key)
                     return;
                 const pos = this._paused_pos;
-                $mol_wire_async(this).blob_of(key).then((blob) => {
-                    if (!blob)
+                $bog_music_disk.file(key).then(file => {
+                    if (!file)
                         return;
-                    // URL держим в _last_blob_url: раньше он создавался «мимо» поля, и
-                    // каждый resume после потери src оставлял в браузере ещё одну
-                    // неотзываемую ссылку на целый трек.
-                    if (this._last_blob_url)
-                        URL.revokeObjectURL(this._last_blob_url);
-                    const url = URL.createObjectURL(blob);
-                    this._last_blob_url = url;
-                    this.set_track_src(el, url);
+                    this.set_track_src(el, this.url_take(file));
                     this.attach_seek_listener(el, pos);
                     el.play().catch(() => { });
                 }).catch(() => { });
             }
-            // ---------- выравнивание громкости ----------
-            // Весь звук идёт через WebAudio: el → gain → limiter → выход.
-            // Пользовательская громкость и выравнивающий множитель лежат вместе в
-            // GainNode, потому что el.volume не годится ни для того, ни для другого:
-            // на iOS система его игнорирует, а на остальных платформах он зажат
-            // единицей — тихую запись им не поднять, только приглушить громкую.
             _gain_ctx;
             _gain_node;
-            /** Элемент заведён в граф. Обратной дороги нет: выход теперь только там. */
             _gain_ready = false;
-            /** WebAudio недоступен или упал — работаем напрямую элементом. */
             _gain_dead = false;
             _gain_wake_set = false;
-            /**
-             * Создать и разбудить контекст. Зовётся из юзер-жеста: без жеста он
-             * остаётся спящим, а заводить элемент в спящий граф нельзя — весь звук
-             * ушёл бы в тишину.
-             */
             gain_chain_unlock() {
                 if (this._gain_dead)
                     return;
-                // Эквалайзер живёт в том же графе, что и выравнивание: включён любой
-                // из двух — цепочка нужна.
-                //
-                // Смотрим на _eq_on, а не на eq_on(): тот читает baza и может
-                // подвиснуть на несинхронизированном ленде. Сюда заходят из клика,
-                // а клик — единственный момент, когда WebAudio разрешено будить;
-                // подвиснуть здесь значит доехать до resume уже вне жеста, и на iOS
-                // это тишина до конца сессии.
                 if (!this.normalize() && !this._eq_on)
                     return;
                 if (this._gain_ready) {
@@ -37133,8 +32851,6 @@ var $;
                         this.gain_wire();
                         return;
                     }
-                    // Safari отдаёт контекст спящим даже внутри жеста — подключаемся,
-                    // когда он проснётся.
                     ctx.resume().then(() => this.gain_wire()).catch(() => { });
                 }
                 catch (e) {
@@ -37142,7 +32858,6 @@ var $;
                     console.warn('[player] gain chain failed:', e?.message ?? e);
                 }
             }
-            /** Завести элемент в граф: el → gain → limiter → выход. */
             gain_wire() {
                 if (this._gain_ready || this._gain_dead)
                     return;
@@ -37152,20 +32867,12 @@ var $;
                 try {
                     const src = ctx.createMediaElementSource(this.audio_el());
                     const gain = ctx.createGain();
-                    // Страховка от клиппинга: у поднятой тихой записи пики вылезают
-                    // за 0 dBFS, лимитер срезает их без хруста.
                     const limiter = ctx.createDynamicsCompressor();
                     limiter.threshold.value = -1;
                     limiter.knee.value = 0;
                     limiter.ratio.value = 20;
                     limiter.attack.value = 0.003;
                     limiter.release.value = 0.25;
-                    // Полосы эквалайзера — ДО гейна, чтобы лимитер остался последним:
-                    // поднятый на +12 dB бас вылезает за 0 dBFS ровно так же, как
-                    // поднятая тихая запись, и срезает их один и тот же лимитер.
-                    // Узлы стоят в графе всегда; выключенный эквалайзер — это все
-                    // полосы в нуле, а не выдернутые узлы: createMediaElementSource
-                    // необратим, разбирать цепочку обратно всё равно нечем.
                     const eq = $bog_music_eq.bands.map(band => {
                         const node = ctx.createBiquadFilter();
                         node.type = band.type;
@@ -37185,7 +32892,7 @@ var $;
                     this._eq_nodes = eq;
                     this._gain_node = gain;
                     this._gain_ready = true;
-                    this.audio_el().volume = 1; // дальше громкостью рулит только гейн
+                    this.audio_el().volume = 1;
                     this.gain_push();
                     this.eq_push();
                     this.setup_gain_wake();
@@ -37195,11 +32902,6 @@ var $;
                     console.warn('[player] gain wire failed:', e?.message ?? e);
                 }
             }
-            /**
-             * Заснувший контекст = тишина при живом <audio>: iOS усыпляет его в фоне
-             * и после каждого прерывания (звонок, наушники). Будим отовсюду, откуда
-             * можно узнать, что мы снова на переднем плане.
-             */
             setup_gain_wake() {
                 if (this._gain_wake_set)
                     return;
@@ -37219,23 +32921,17 @@ var $;
                 if (!this._gain_ready)
                     this.gain_wire();
             }
-            /**
-             * Выравнивать ли громкость треков. Выключенное — ещё и аварийный тумблер:
-             * после перезагрузки страницы звук пойдёт мимо WebAudio совсем.
-             */
             normalize(next) {
                 if (next !== undefined)
                     $bog_music_log.act(`выравнивание громкости: ${next ? 'включено' : 'выключено'}`);
                 const v = $mol_state_local.value('bog_music_gain_norm', next);
                 return v ?? true;
             }
-            /** Множитель выравнивания текущего трека. 1 пока громкость не измерена. */
             track_gain() {
                 if (!this.normalize())
                     return 1;
                 return $bog_music_gain.factor(this.current_track()?.lufs() ?? null);
             }
-            // ---------- <audio> для PWA-режима ----------
             _audio_el;
             _last_blob_url = '';
             audio_el() {
@@ -37247,7 +32943,7 @@ var $;
                     this.on_ended(); });
                 el.addEventListener('play', () => {
                     if (this._silent)
-                        return; // это беззвучный keep-alive-цикл, не трек
+                        return;
                     try {
                         this.playing(true);
                     }
@@ -37258,26 +32954,13 @@ var $;
                 });
                 el.addEventListener('pause', () => {
                     if (this._silent) {
-                        // Системная пауза (выдернули наушники) остановила и беззвучный
-                        // keep-alive → страница замёрзнет и iOS прибьёт PWA. Будим тишину.
                         el.play().catch(() => { });
                         return;
                     }
-                    // Пауза посреди смены трека при неготовом ресурсе — не решение
-                    // пользователя и не системное прерывание, а последствие
-                    // перезагрузки src и seek'а на обрез: буфер просел, элемент встал.
-                    // Возвращаем его в игру. Пауза с уже загруженным треком
-                    // (readyState 4) сюда не попадает и обрабатывается как обычно.
                     if (this._switching && !el.ended && el.readyState < el.HAVE_FUTURE_DATA) {
                         el.play().catch(() => { });
                         return;
                     }
-                    // iOS: системная пауза (наушники, interruption) мимо mediaSession
-                    // бьёт прямо в элемент. Просто принять её = потерять audio-сессию →
-                    // iOS закроет приложение. Переводим в наш swap-на-тишину: позиция
-                    // сохранена, сессия жива, UI показывает паузу.
-                    // НО не во время смены трека: там 'pause' прилетает от самой
-                    // перезагрузки ресурса, и swap на тишину намертво глушил автопереход.
                     if (this.is_ios() && this.playing() && !el.ended && !this._switching) {
                         this.ios_pause(el);
                         const key = this.current_key();
@@ -37296,25 +32979,19 @@ var $;
                     if ('mediaSession' in navigator)
                         navigator.mediaSession.playbackState = 'paused';
                 });
-                // Реально заигралo — окно смены трека закрыто.
                 el.addEventListener('playing', () => { this._switching = false; });
                 el.addEventListener('timeupdate', () => {
-                    // Дешёвая проверка живости графа: контекст мог заснуть в фоне,
-                    // и тогда элемент играет, а из динамика тишина.
                     if (this._gain_ctx && this._gain_ctx.state !== 'running')
                         this.gain_resume();
                     if (this._silent)
                         return;
                     this._switching = false;
-                    // После resume игнорим нулевой скачок, пока трек не домотается
-                    // до сохранённой позиции (иначе полоска мигнёт в 0).
                     if (this._await_seek > 0) {
                         if (el.currentTime >= this._await_seek - 1.5)
                             this._await_seek = 0;
                         else
                             return;
                     }
-                    // Палец на полоске — позицию рисует драг, элемент не перебивает.
                     if (this._seek_drag)
                         return;
                     this.current_time(el.currentTime);
@@ -37323,8 +33000,6 @@ var $;
                 el.addEventListener('loadedmetadata', () => {
                     if (this._silent)
                         return;
-                    // Не писать NaN/0 (промельк при смене src на resume) — иначе
-                    // trim-ручки считаются как trim/NaN и уезжают.
                     if (el.duration > 0 && isFinite(el.duration))
                         this.duration(el.duration);
                 });
@@ -37334,14 +33009,7 @@ var $;
                 this._audio_el = el;
                 return el;
             }
-            // ---------- скробблинг в last.fm ----------
             _fm = null;
-            /**
-             * Часы скробблинга. Зовутся из тика воспроизведения (timeupdate в PWA,
-             * state-сообщение из offscreen в расширении) — специально не из
-             * play_track: там синхронный iOS-путь, и лишний код в нём рвёт звук в
-             * фоне. Смену трека ловим по метаданным, а не по событию.
-             */
             scrobble_watch(time) {
                 if (!$bog_music_scrobble.enabled())
                     return;
@@ -37350,7 +33018,7 @@ var $;
                     audio = this.current_audio();
                 }
                 catch {
-                    return; // метаданные ещё синкаются — тик пропускаем
+                    return;
                 }
                 const artist = audio?.artist ?? '';
                 const title = audio?.title ?? '';
@@ -37359,7 +33027,6 @@ var $;
                     return;
                 }
                 const current = this._fm;
-                // Новый трек, либо тот же самый запустили заново с начала.
                 if (!current || current.artist !== artist || current.title !== title || (current.done && time < 3)) {
                     let duration = 0;
                     try {
@@ -37378,8 +33045,6 @@ var $;
                     }
                     catch { }
                 }
-                // Правило last.fm: трек длиннее 30 с, прослушано больше половины
-                // или больше 4 минут.
                 if (current.duration < 30)
                     return;
                 if (time < Math.min(current.duration / 2, 240))
@@ -37388,20 +33053,11 @@ var $;
                 $bog_music_scrobble.scrobble(current.artist, current.title, current.duration, current.started);
             }
             on_ended() {
-                let finished = null;
                 try {
-                    finished = this.current_audio();
-                }
-                catch { }
-                try {
-                    // Синхронно и вне фибры: на iOS звук в фоне даётся только если
-                    // el.play() ушёл в continuation этого же 'ended'-обработчика.
                     this.next(false);
                 }
                 catch (e) {
                     if (e instanceof Promise) {
-                        // Что-то в цепочке ещё не прогрето (холодный baza-атом, крипта):
-                        // вне фибры Promise = молчаливая остановка. Ретраим в фибре.
                         ;
                         $mol_wire_async(this).next_auto();
                     }
@@ -37409,75 +33065,13 @@ var $;
                         console.warn('[player] ended handler error:', e);
                     }
                 }
-                // Дослушанный трек докачиваем в кеш, если ещё не там.
-                if (finished && navigator.onLine) {
-                    try {
-                        this.account().save_hls(finished).catch(() => { });
-                    }
-                    catch { }
-                }
             }
-            // ---------- связь с offscreen (extension) ----------
-            _msg_listener_set = false;
-            offscreen_link() {
-                if (!this.is_extension())
-                    return null;
-                if (this._msg_listener_set)
-                    return null;
-                this._msg_listener_set = true;
-                chrome.runtime.onMessage.addListener((msg) => {
-                    if (msg?.target !== 'popup')
-                        return;
-                    if (msg.type === 'state') {
-                        if (typeof msg.playing === 'boolean') {
-                            this.playing(msg.playing);
-                            if ('mediaSession' in navigator) {
-                                navigator.mediaSession.playbackState = msg.playing ? 'playing' : 'paused';
-                            }
-                        }
-                        if (typeof msg.current_time === 'number' && !this._seek_drag)
-                            this.current_time(msg.current_time);
-                        if (typeof msg.duration === 'number' && isFinite(msg.duration))
-                            this.duration(msg.duration);
-                        if (msg.current_audio) {
-                            this.current_key($bog_music_account_baza.key_of(msg.current_audio));
-                        }
-                        // Ключ уже обновлён — метаданные для скроббла свежие.
-                        if (typeof msg.current_time === 'number')
-                            this.scrobble_watch(msg.current_time);
-                    }
-                    if (msg.type === 'ended')
-                        this.on_ended();
-                    if (msg.type === 'error') {
-                        console.error('[player] offscreen error:', msg.code, msg.message);
-                    }
-                });
-                chrome.runtime.sendMessage({ target: 'background', type: 'ensure_offscreen' })
-                    .then(() => chrome.runtime.sendMessage({ target: 'offscreen', type: 'get_state' }))
-                    .then((s) => {
-                    if (s?.current_audio) {
-                        if (typeof s.playing === 'boolean')
-                            this.playing(s.playing);
-                        if (typeof s.current_time === 'number')
-                            this.current_time(s.current_time);
-                        if (typeof s.duration === 'number' && isFinite(s.duration))
-                            this.duration(s.duration);
-                        this.current_key($bog_music_account_baza.key_of(s.current_audio));
-                        return;
-                    }
-                    this.try_restore_session();
-                })
-                    .catch(() => { });
-                return null;
-            }
-            // ---------- восстановление последней сессии ----------
             _session_restored = false;
-            /** Sync-чтение сессии из домена — зовётся через фибру. */
             session_read() {
                 const session = this.account().last_session();
                 if (!session)
                     return null;
-                const audio = this.account().track(session.key)?.audio();
+                const audio = this.account().info(session.key);
                 if (!audio)
                     return null;
                 return { ...session, audio };
@@ -37486,71 +33080,34 @@ var $;
                 if (this._session_restored)
                     return;
                 this._session_restored = true;
-                const session = await $mol_wire_async(this).session_read()
-                    .catch(() => null);
+                const session = await $mol_wire_async(this).session_read().catch(() => null);
                 if (!session)
                     return;
                 this.current_key(session.key);
                 this.current_time(session.position);
                 if (session.audio.duration)
                     this.duration(session.audio.duration);
-                // До этой правки метаданные и обработчики ставились ТОЛЬКО из
-                // play_track. После восстановления сессии (открыл приложение, но ещё
-                // не нажал play) системный плеер оставался пустым: в шторке нечего
-                // показывать и нечем управлять.
                 this.apply_media_metadata(session.audio);
                 if ('mediaSession' in navigator)
                     navigator.mediaSession.playbackState = 'paused';
-                if (this.is_extension()) {
-                    this.restore_offscreen(session).catch(() => { });
-                }
-                else {
-                    this.restore_local(session).catch(() => { });
-                }
-            }
-            async restore_offscreen(session) {
-                await chrome.runtime.sendMessage({ target: 'background', type: 'ensure_offscreen' });
-                const blob = await this.blob_ready(session.key, session.audio);
-                if (!blob)
-                    return;
-                this.channel().postMessage({
-                    target: 'offscreen',
-                    type: 'play_track',
-                    audio: session.audio,
-                    blob,
-                    start_at: session.position,
-                    autoplay: false,
-                });
+                this.restore_local(session).catch(() => { });
             }
             async restore_local(session) {
                 const el = this.audio_el();
+                if (!await $bog_music_disk.probe(session.key))
+                    return;
                 if ($bog_music_stream.supported() && ($bog_music_stream.active() || await $bog_music_stream.when_ready())) {
-                    await $mol_wire_async(this).track_file_ready(session.key).catch(() => null);
-                    if (this._last_blob_url) {
-                        URL.revokeObjectURL(this._last_blob_url);
-                        this._last_blob_url = '';
-                    }
+                    this.url_drop();
                     this.set_track_src(el, $bog_music_stream.url(session.key));
                 }
                 else {
-                    const blob = await $mol_wire_async(this).blob_of(session.key).catch(() => null);
-                    if (blob) {
-                        if (this._last_blob_url)
-                            URL.revokeObjectURL(this._last_blob_url);
-                        const url = URL.createObjectURL(blob);
-                        this._last_blob_url = url;
-                        this.set_track_src(el, url);
-                    }
-                    else if (session.audio.url) {
-                        this.set_track_src(el, session.audio.url);
-                    }
-                    else {
+                    const file = await $bog_music_disk.file(session.key);
+                    if (!file)
                         return;
-                    }
+                    this.set_track_src(el, this.url_take(file));
                 }
                 this.attach_seek_listener(el, session.position);
             }
-            // ---------- media session ----------
             setup_media_session() {
                 if (!('mediaSession' in navigator))
                     return;
@@ -37563,30 +33120,19 @@ var $;
                     this.next();
                 }
                 catch { } });
-                if (this.is_extension()) {
-                    ms.setActionHandler('seekto', details => {
-                        if (details.seekTime != null)
-                            this.send('seek', { time: details.seekTime });
-                    });
-                    ms.setActionHandler('play', () => { this.send('resume'); });
-                    ms.setActionHandler('pause', () => { this.send('pause'); });
-                }
-                else {
-                    const el = this.audio_el();
-                    ms.setActionHandler('seekto', details => {
-                        if (details.seekTime != null)
-                            el.currentTime = details.seekTime;
-                    });
-                    ms.setActionHandler('play', () => { this.resume_robust(); });
-                    ms.setActionHandler('pause', () => {
-                        if (this.is_ios())
-                            this.ios_pause(el);
-                        else
-                            el.pause();
-                    });
-                }
+                const el = this.audio_el();
+                ms.setActionHandler('seekto', details => {
+                    if (details.seekTime != null)
+                        el.currentTime = details.seekTime;
+                });
+                ms.setActionHandler('play', () => { this.resume_robust(); });
+                ms.setActionHandler('pause', () => {
+                    if (this.is_ios())
+                        this.ios_pause(el);
+                    else
+                        el.pause();
+                });
             }
-            /** Возобновление с локскрина/Control Center. */
             resume_robust() {
                 const el = this.audio_el();
                 this.gain_chain_unlock();
@@ -37599,8 +33145,6 @@ var $;
             apply_media_metadata(audio) {
                 if (!('mediaSession' in navigator))
                     return;
-                // iOS PWA: без artwork iOS считает это не «настоящим медиа» и душит
-                // фоновый звук — подсовываем favicon в нескольких размерах.
                 const fav = 'bog/music/app/favicon.svg';
                 navigator.mediaSession.metadata = new MediaMetadata({
                     title: audio.title,
@@ -37614,15 +33158,6 @@ var $;
                 });
                 this.setup_media_session();
             }
-            /**
-             * Позиция для системного плеера — локскрин и Пункт управления (шторка
-             * справа сверху). Без setPositionState шторка не знает ни длительности,
-             * ни позиции: прогресс стоит на нуле, а скраб-бар не двигается, хотя
-             * обработчик seekto давно есть. Локскрин это переживал, шторка — нет.
-             *
-             * Значения обязаны быть валидными: NaN-длительность или позиция за её
-             * пределами роняют setPositionState с TypeError.
-             */
             apply_position_state() {
                 if (!('mediaSession' in navigator))
                     return 0;
@@ -37632,7 +33167,6 @@ var $;
                 const duration = this.duration();
                 const position = this.current_time();
                 if (!(duration > 0) || !isFinite(duration)) {
-                    // Метаданных ещё нет — сбрасываем, иначе шторка держит прошлый трек.
                     try {
                         ms.setPositionState();
                     }
@@ -37648,7 +33182,6 @@ var $;
                 }
                 return at;
             }
-            // ---------- базовое состояние ----------
             playing(next) {
                 return next ?? false;
             }
@@ -37662,27 +33195,19 @@ var $;
                 const v = $mol_state_local.value('bog_music_volume', next) ?? 0.7;
                 return Math.max(0, Math.min(1, v));
             }
-            /** Последняя посчитанная пара — дожать её после сборки цепочки. */
             _gain_last = { volume: 0.7, factor: 1 };
             apply_volume() {
                 const volume = this.volume();
-                // Реактивно: когда фоновый замер допишет громкость, гейн подтянется.
                 const factor = this.track_gain();
                 this._gain_last = { volume, factor };
                 this.gain_push();
                 return volume * factor;
             }
-            /** Разложить громкость по выходу: offscreen, WebAudio или сам элемент. */
             gain_push() {
                 const { volume, factor } = this._gain_last;
-                if (this.is_extension()) {
-                    this.send('volume', { value: volume, gain: factor });
-                    return;
-                }
                 const node = this._gain_node;
                 const ctx = this._gain_ctx;
                 if (node && ctx) {
-                    // Плавно: мгновенный скачок гейна на стыке треков щёлкает.
                     try {
                         node.gain.setTargetAtTime(volume * factor, ctx.currentTime, 0.02);
                     }
@@ -37691,8 +33216,6 @@ var $;
                     }
                     return;
                 }
-                // Цепочки нет (жеста ещё не было, WebAudio недоступен, выравнивание
-                // выключено) — элементом можно только приглушить.
                 if (this._audio_el)
                     this._audio_el.volume = Math.max(0, Math.min(1, volume * factor));
             }
@@ -37731,12 +33254,6 @@ var $;
                     return '0%';
                 return `${(this.current_time() / dur) * 100}%`;
             }
-            // ---------- громкость (drag по вертикальному слайдеру) ----------
-            /**
-             * Тап по иконке открывает и закрывает панель. Раньше панель была
-             * $mol_pop_over, а он показан, пока «в фокусе ИЛИ под курсором»: на
-             * телефоне фокус остаётся на кнопке, и повторный тап ничего не закрывал.
-             */
             volume_toggle() {
                 const pop = this.Volume();
                 const showed = pop.showed();
@@ -37784,10 +33301,7 @@ var $;
                 }
                 catch { }
                 this._vol_dragging = false;
-                // Пишем в журнал на отпускании, а не на каждом шаге: за одно
-                // перетаскивание сеттер зовётся десятки раз и вытеснил бы журнал.
                 $bog_music_log.act(`громкость: ${Math.round(this.volume() * 100)}%`);
-                // Ползунок отпущен — панель своё отработала, убираем её с экрана.
                 try {
                     this.Volume().showed(false);
                 }
@@ -37797,18 +33311,8 @@ var $;
             volume_fill_height() {
                 return `${Math.round(this.volume() * 100)}%`;
             }
-            // ---------- эквалайзер ----------
-            // Полосы стоят в общем тракте, между источником и гейном (см. gain_wire).
-            // Настройки лежат в аккаунте, а не в localStorage: кривую выставляют один
-            // раз и ждут её же на другом устройстве.
-            //
-            // Ни eq_on, ни eq_gains не мемоизируем. Запись в @$mol_mem замораживает
-            // его зависимости — настройка, приехавшая синком с телефона, до открытого
-            // ноутбука бы уже не дошла. Реактивность даёт сам baza-атом: его читает
-            // тот атом, который вызвал эти методы.
             _eq_nodes = [];
             _eq_last = $bog_music_eq.flat();
-            /** Последнее известное «включён» — снимок для путей, где нельзя виснуть. */
             _eq_on = false;
             eq_on(next) {
                 if (next === undefined) {
@@ -37818,30 +33322,15 @@ var $;
                 }
                 this._eq_on = next;
                 this.account().save_eq_on(next);
-                // Клик по тумблеру — юзер-жест, единственный момент, когда WebAudio
-                // разрешено будить. Поднимаем цепочку прямо здесь: при выключенной
-                // автогромкости её до сих пор могло не быть вовсе.
                 if (next)
                     this.gain_chain_unlock();
                 return next;
             }
-            /**
-             * Полосы, пока ползунок в руке. В baza пишем один раз на перетаскивание,
-             * а не на каждый pointermove: иначе каждое движение пальца улетало бы в
-             * ленд отдельной правкой.
-             */
             eq_draft(next) {
                 return next ?? null;
             }
-            /** Черновик перетаскивания либо сохранённое в аккаунте. */
             eq_gains() {
                 return this.eq_draft() ?? this.account().eq_gains();
-            }
-            /** Панель эквалайзера — только для своего <audio>; в offscreen её нет. */
-            Eq() {
-                if (this.is_extension())
-                    return null;
-                return super.Eq();
             }
             eq_pop_toggle() {
                 const pop = this.Eq();
@@ -37852,20 +33341,12 @@ var $;
                     this.setup_pop_dismiss(pop);
                 return null;
             }
-            /** Выставить полосы: в аккаунт, черновик прочь. */
             eq_apply(gains) {
                 this.account().save_eq_gains(gains);
                 this.eq_draft(null);
-                // Тронули кривую при выключенном эквалайзере — включаем: иначе точка
-                // ездит, а звук не меняется, и это читается как поломка.
                 if (!this.eq_on() && $bog_music_eq.preset_of(gains) !== 'default')
                     this.eq_on(true);
             }
-            // ---------- пресеты ----------
-            // Список как в Я.Музыке: «Своя настройка» сверху, дальше пресеты по
-            // порядку. «Своя настройка» висит всегда и лишь показывает, что кривая
-            // ничьей заготовке не соответствует; нажатие на неё ничего не даёт —
-            // сделать из неё кривую неоткуда.
             eq_preset_rows() {
                 return ['', ...$bog_music_eq.presets.map(preset => preset.id)]
                     .map(id => this.Eq_preset_row(id));
@@ -37884,8 +33365,6 @@ var $;
                 this.eq_apply(gains);
                 return true;
             }
-            // ---------- перетаскивание точек ----------
-            /** Полоса — по колонке графика, в которую попал палец. */
             eq_band_at(event) {
                 const rect = event.currentTarget.getBoundingClientRect();
                 const part = rect.width ? (event.clientX - rect.left) / rect.width : 0;
@@ -37912,8 +33391,6 @@ var $;
                     e.currentTarget.setPointerCapture(e.pointerId);
                 }
                 catch { }
-                // Полосу выбираем один раз, на нажатии: иначе палец, уехавший вверх по
-                // диагонали, посреди жеста перескакивал бы на соседнюю точку.
                 this._eq_dragging = this.eq_band_at(e);
                 this.eq_drag_to(e);
                 e.preventDefault();
@@ -37939,13 +33416,9 @@ var $;
                 const gains = this.eq_draft();
                 if (gains)
                     this.eq_apply(gains);
-                // Панель не закрываем, в отличие от громкости: точек шесть, их
-                // таскают подряд.
                 return null;
             }
-            /** Разложить полосы по узлам. Реактивно: сработает и на синк с другого устройства. */
             apply_eq() {
-                // Заодно обновляет _eq_on — снимок для gain_chain_unlock.
                 this._eq_last = this.eq_on() ? $bog_music_eq.clamp(this.eq_gains()) : $bog_music_eq.flat();
                 this.eq_push();
                 return this._eq_last;
@@ -37958,7 +33431,6 @@ var $;
                     const node = this._eq_nodes[index];
                     if (!node)
                         return;
-                    // Плавно: мгновенный скачок фильтра щёлкает так же, как скачок гейна.
                     try {
                         node.gain.setTargetAtTime(db, ctx.currentTime, 0.02);
                     }
@@ -37967,7 +33439,6 @@ var $;
                     }
                 });
             }
-            // ---------- режим повтора ----------
             repeat_mode(next) {
                 const v = $mol_state_local.value('bog_music_repeat_mode', next);
                 if (v === 'one' || v === 'shuffle')
@@ -38004,26 +33475,8 @@ var $;
                     return null;
                 return super.Shuffle_icon();
             }
-            // ---------- позиция в очереди ----------
-            /**
-             * Индекс текущего трека в очереди. Обычное поле, а не @$mol_mem (как
-             * tube_current в app): индекс не участвует в рендере, подписчиков у
-             * ячейки нет — $mol её сметает, и записанное значение молча
-             * откатывается к дефолту. Именно так плеер залипал: индекс всё время
-             * был 0, и автопереход бесконечно играл queue[1].
-             */
             _queue_at = 0;
-            /**
-             * Индекс назначен снаружи (demote_key целится в конкретного соседа, а
-             * не в позицию играющего). Действует до старта следующего трека.
-             */
             _queue_at_forced = false;
-            /**
-             * Позиция текущего трека в очереди. Источник правды — сам трек:
-             * список переупорядочивают, фильтруют и дозагружают из базы, а после
-             * восстановления сессии индекс вообще никто не ставит. Сохранённое
-             * число берём, только когда играет что-то не из этого списка.
-             */
             queue_index(next) {
                 if (next !== undefined) {
                     this._queue_at_forced = true;
@@ -38034,9 +33487,6 @@ var $;
                 const at = this.queue_keys().indexOf(this.current_key());
                 return at >= 0 ? at : this._queue_at;
             }
-            // ---------- shuffle-bag ----------
-            // Одна перетасовка всего плейлиста, играем без повторов до конца, затем
-            // тасуем заново. Состояние обхода — не reactive: его никто не рендерит.
             _shuffle_bag = [];
             _shuffle_bag_idx = 0;
             _shuffle_bag_sig = '';
@@ -38058,7 +33508,6 @@ var $;
                 this._shuffle_bag_idx = 0;
                 this._shuffle_bag_sig = sig;
             }
-            // ---------- запуск трека ----------
             play_track(key) {
                 if (!key)
                     return;
@@ -38068,137 +33517,79 @@ var $;
                     return;
                 }
                 $bog_music_log.act(`старт трека ${audio.artist} — ${audio.title} (${key})`);
-                this.ext(null); // возвращаемся к baza-треку, гасим tube-превью
-                $bog_music_mem.play_started();
-                // Предыдущий трек больше не нужен: отпускаем и его Blob, и object URL.
-                // Держать их дальше нечем оправдать — назад мотают через play_track,
-                // который соберёт Blob заново из чанков.
-                this.blob_cache_keep(key);
-                // Сброс времени ДО смены трека: иначе apply_trim в auto() прочитает
-                // stale-значения предыдущего трека и может мгновенно дёрнуть next().
+                this.ext(null);
+                this.file_cache_keep(key);
                 this.current_time(0);
                 this.duration(0);
-                this._await_seek = 0; // новый трек — не ждём resume-seek
+                this._await_seek = 0;
                 this.current_key(key);
-                this._queue_at_forced = false; // дальше позиция считается по треку
+                this._queue_at_forced = false;
                 this._trim_end_skip = '';
-                // Обрез начала может быть ещё не прогрет: play_track зовётся из
-                // 'ended'/микротаска — ВНЕ фибры, а холодный baza-атом там суспендится.
-                // Раньше Promise улетал наружу и рвал play_track уже после смены
-                // current_key: трек выбран, src не выставлен, звука нет — «стоп» при
-                // автопереходе на обрезанную песню. Теперь стартуем с нуля, а seek
-                // догоняет реактивно в apply_trim_start (там фибра auto() ретраит).
                 const trim = this.trim_start_of(key);
                 const start_at = trim ?? 0;
                 this._trim_start_done = trim === null ? '' : key;
-                // Если фоновый переход всё же сорвётся в keep-alive-тишину, resume
-                // должен вернуться к НАЧАЛУ нового трека (с учётом обреза), а не к
-                // позиции предыдущего: в ios_pause el.currentTime тут ещё 0.
                 this._paused_pos = start_at;
                 try {
                     this.account().save_last_session(key, start_at);
                 }
                 catch { }
                 this.apply_media_metadata(audio);
-                this.heap_release();
-                if (this.is_extension()) {
-                    this.dispatch_play_offscreen(key, audio, start_at);
-                    return;
-                }
-                // Клик — единственный шанс разлочить WebAudio-цепочку для iOS.
                 this.gain_chain_unlock();
-                // Предзагружаем следующий трек (Range warm / blob fallback).
                 this.prefetch_next(key);
                 const el = this.audio_el();
-                // iOS PWA: sync play в том же tick. Stream URL — без сборки Blob.
                 if (this.try_play_local_sync(key, el, start_at))
                     return;
-                if (audio.url) {
-                    this.set_track_src(el, audio.url);
-                    this.attach_seek_listener(el, start_at);
-                    el.play().catch(() => { });
-                }
-                this.play_source_local(key, audio, el, start_at);
+                this.play_source_local(key, el, start_at);
             }
-            heap_release() {
-                setTimeout(() => $mol_wire_async($bog_music_land).release_all().catch($mol_fail_log), 5000);
-            }
-            // Готовые Blob'ы в RAM. Критично для авто-next: на iOS звук в фоне даётся
-            // только если el.play() вызван СИНХРОННО в обработчике 'ended'
-            // (continuation). Для этого blob следующего трека должен быть доступен
-            // без suspend — держим его здесь, прогретым заранее.
-            _blob_cache = new Map();
-            /**
-             * Потолок кеша: текущий трек и один прогретый следующий. Больше держать
-             * незачем, а меньше нельзя — на одном месте останется тот самый
-             * синхронный переход, ради которого кеш и заведён.
-             */
-            static BLOB_CACHE_MAX = 2;
-            /**
-             * Оставить в кеше только перечисленные ключи и подрезать остаток до
-             * потолка. Зовётся на каждой смене трека: без этого кеш рос ровно на
-             * длину прослушанного за сессию.
-             */
-            blob_cache_keep(...keep) {
+            _file_cache = new Map();
+            static FILE_CACHE_MAX = 2;
+            file_cache_keep(...keep) {
                 const alive = new Set(keep.filter(Boolean));
-                for (const key of [...this._blob_cache.keys()]) {
+                for (const key of [...this._file_cache.keys()]) {
                     if (!alive.has(key))
-                        this._blob_cache.delete(key);
+                        this._file_cache.delete(key);
                 }
-                // Map сохраняет порядок вставки — лишним оказывается самый старый.
-                while (this._blob_cache.size > $bog_music_player.BLOB_CACHE_MAX) {
-                    const oldest = this._blob_cache.keys().next().value;
+                while (this._file_cache.size > $bog_music_player.FILE_CACHE_MAX) {
+                    const oldest = this._file_cache.keys().next().value;
                     if (oldest === undefined)
                         break;
-                    this._blob_cache.delete(oldest);
+                    this._file_cache.delete(oldest);
                 }
             }
-            /** Прогреть следующий трек (stream Range или blob-кеш). */
             prefetch_next(key) {
-                try {
-                    $mol_wire_async(this).cache_next(key);
-                }
-                catch { }
+                void this.cache_next(key).catch(() => { });
             }
-            /**
-             * Sync-метод (через фибру): вычислить РЕАЛЬНЫЙ следующий трек с учётом
-             * режима (repeat/shuffle/«Моя волна») и прогреть его. При SW+Range
-             * достаточно warm первого окна; blob-кеш — fallback без SW / для iOS
-             * без controller.
-             */
-            cache_next(key) {
-                const next_key = this.predict_next_key(key);
+            async cache_next(key) {
+                const next_key = await $mol_wire_async(this).next_warm(key);
                 if (!next_key)
-                    return false;
-                this.track_warm(next_key);
-                if ($bog_music_stream.supported()) {
-                    $bog_music_stream.warm(next_key);
-                    return true;
-                }
-                return this._blob_cache.has(next_key) || this.cache_blob(next_key);
+                    return;
+                if (!await this.file_ensure(next_key))
+                    return;
+                if ($bog_music_stream.supported())
+                    return $bog_music_stream.warm(next_key);
+                const file = await $bog_music_disk.file(next_key);
+                if (!file)
+                    return;
+                this._file_cache.set(next_key, file);
+                this.file_cache_keep(this.current_key(), next_key);
             }
-            /**
-             * Прогрев холодных baza-атомов трека. Обрез и метаданные для НЕтекущего
-             * трека не читает никто, поэтому их первое чтение подвисает (land.sync →
-             * loading/крипта). play_track читает их вне фибры — прогреваем заранее,
-             * из фибры, чтобы автопереход не спотыкался.
-             */
+            next_warm(key) {
+                const next_key = this.predict_next_key(key);
+                if (next_key)
+                    this.track_warm(next_key);
+                return next_key;
+            }
             track_warm(key) {
                 const track = this.account().track(key);
                 if (!track)
                     return;
-                track.audio();
+                track.info();
                 track.trim_start();
                 track.trim_end(0);
             }
-            /**
-             * Метаданные трека без риска оборвать play_track: если атом ещё холодный
-             * (вне фибры = Promise наружу), догреваем в фибре и повторяем ЭТОТ же
-             * трек — иначе автопереход молча терял бы песню.
-             */
             audio_of(key) {
                 try {
-                    return this.account().track(key)?.audio() ?? null;
+                    return this.account().info(key);
                 }
                 catch (e) {
                     if (!(e instanceof Promise))
@@ -38207,12 +33598,10 @@ var $;
                     return null;
                 }
             }
-            /** Прогреть трек в фибре (ретраит подвисания) и запустить его же. */
             play_track_warm(key) {
                 this.track_warm(key);
                 this.play_track(key);
             }
-            /** Обрез начала трека. null — атом ещё холодный (подвис вне фибры). */
             trim_start_of(key) {
                 try {
                     return this.account().track(key)?.trim_start() ?? 0;
@@ -38223,36 +33612,21 @@ var $;
                     return null;
                 }
             }
-            /**
-             * Автопереход (ended / trim_end) в фибре — фолбэк, когда синхронный путь
-             * подвис. Подвисающие чтения ПЕРВЫМИ: ретрай фибры не должен повторно
-             * прокручивать shuffle-мешок. predict_next_key только подглядывает.
-             */
             next_auto() {
                 const key = this.predict_next_key(this.current_key());
                 if (key)
                     this.track_warm(key);
                 this.next(false);
             }
-            /**
-             * Выбор «Моей волны», сделанный ЗАРАНЕЕ (при старте текущего трека).
-             * Волна рандомная, поэтому предсказать её на 'ended' нельзя — вместо
-             * этого выбираем следующий трек сразу, греем его blob, а next() потом
-             * использует именно этот выбор.
-             */
             _planned_wave = null;
-            /** Зеркало логики next() без побочных эффектов (кроме плана волны). */
             predict_next_key(key) {
                 if (this.repeat_mode() === 'one')
                     return key;
                 const queue = this.queue_keys();
                 if (this.repeat_mode() === 'shuffle' && queue.length) {
-                    // Peek следующего из shuffle-bag: детерминирован, next() возьмёт его же.
                     this.ensure_shuffle_bag(queue);
                     return this._shuffle_bag[this._shuffle_bag_idx] ?? null;
                 }
-                // Фибра ретраится при suspend — рандомный выбор волны делаем один раз
-                // и переиспользуем на ретраях, иначе план скакал бы на каждом заходе.
                 if (this._planned_wave?.from === key)
                     return this._planned_wave.key;
                 const picked = this.wave_pick(key);
@@ -38265,63 +33639,35 @@ var $;
                 const idx = queue.indexOf(key);
                 return queue[idx >= 0 && idx + 1 < queue.length ? idx + 1 : 0] ?? null;
             }
-            /** Sync-метод (через фибру): дождаться blob и положить в RAM-кеш. */
-            cache_blob(key) {
-                const blob = this.account().track(key)?.blob_wait();
-                if (!blob)
-                    return false;
-                this._blob_cache.set(key, blob);
-                // Держим компактно: только текущий + этот (следующий).
-                this.blob_cache_keep(this.current_key(), key);
-                return true;
-            }
-            /** Sync-чтение блоба: сперва RAM-кеш (без suspend), потом baza. */
-            blob_of(key) {
-                const cached = this._blob_cache.get(key);
-                if (cached)
-                    return cached;
-                return this.account().track(key)?.blob() ?? null;
-            }
-            /** Блоб, ДОЖИДАЯСЬ докачки land (suspend). Для проигрывания через фибру. */
-            blob_of_wait(key) {
-                return this.account().track(key)?.blob_wait() ?? null;
-            }
-            /** Land с байтами на месте — без материализации Blob (для SW+Range). */
-            track_file_ready(key) {
-                return this.account().track(key)?.blob_ensure() ?? false;
+            async file_ensure(key) {
+                if (await $bog_music_disk.probe(key))
+                    return true;
+                const place = await $mol_wire_async(this.account()).place(key);
+                if (place === 'legacy')
+                    return this.account().migrate(key);
+                return false;
             }
             try_play_local_sync(key, el, start_at) {
-                // SW+Range: src — same-origin URL, play() синхронно. Полный Blob не собираем.
+                try {
+                    if (!$bog_music_disk.has(key))
+                        return false;
+                }
+                catch {
+                    return false;
+                }
                 if ($bog_music_stream.active()) {
-                    if (this._last_blob_url) {
-                        URL.revokeObjectURL(this._last_blob_url);
-                        this._last_blob_url = '';
-                    }
+                    this.url_drop();
                     this._dispatch_token++;
                     this.set_track_src(el, $bog_music_stream.url(key));
                     this.attach_seek_listener(el, start_at);
                     el.play().catch(() => { });
                     return true;
                 }
-                // SW есть, но controller ещё null (типично сразу после reload) —
-                // НЕ собираем parts() всего файла, уйдём в async и дождёмся ready.
-                if ($bog_music_stream.supported())
+                const file = this._file_cache.get(key);
+                if (!file)
                     return false;
-                let blob = null;
-                try {
-                    blob = this.blob_of(key);
-                }
-                catch {
-                    return false;
-                }
-                if (!blob)
-                    return false;
-                if (this._last_blob_url)
-                    URL.revokeObjectURL(this._last_blob_url);
-                const url = URL.createObjectURL(blob);
-                this._last_blob_url = url;
                 this._dispatch_token++;
-                this.set_track_src(el, url);
+                this.set_track_src(el, this.url_take(file));
                 this.attach_seek_listener(el, start_at);
                 el.play().catch(() => { });
                 return true;
@@ -38339,12 +33685,7 @@ var $;
                 el.addEventListener('loadedmetadata', seek);
             }
             seek_to(time) {
-                if (this.is_extension()) {
-                    this.send('seek', { time });
-                }
-                else if (this._silent) {
-                    // На iOS-паузе в элементе крутится тишина: мотать нечего, позиция
-                    // применится при resume.
+                if (this._silent) {
                     this._paused_pos = time;
                 }
                 else if (this._audio_el) {
@@ -38354,7 +33695,6 @@ var $;
                     catch { }
                 }
             }
-            // ---------- перемотка (тап и драг по полоске) ----------
             _seek_drag = false;
             seek_time_of(event) {
                 const rect = this.Progress().dom_node().getBoundingClientRect();
@@ -38398,92 +33738,49 @@ var $;
                 $bog_music_log.act(`перемотка: ${this.format_time(time)}`);
                 return null;
             }
-            // Гонки fast-click'ов: пока blob трека A грузится, пользователь кликает B.
-            // Токен инвалидирует устаревшие dispatch'и.
             _dispatch_token = 0;
             is_current(key) {
                 return this.current_key() === key;
             }
-            /**
-             * Дожидается блоба: сначала ждём докачку blob-land с мастера
-             * (blob_of_wait suspend'ится, фибра ретраит пока не досинкается),
-             * при неудаче докачиваем с VK.
-             */
-            async blob_ready(key, audio) {
-                let blob = await $mol_wire_async(this).blob_of_wait(key).catch(() => null);
-                if (!blob && audio.url) {
-                    await this.account().save_hls(audio).catch(() => { });
-                    blob = await $mol_wire_async(this).blob_of_wait(key).catch(() => null);
-                }
-                return blob;
+            missing(next) {
+                return next ?? '';
             }
-            async dispatch_play_offscreen(key, audio, start_at) {
+            async play_source_local(key, el, start_at) {
                 const token = ++this._dispatch_token;
+                this.missing('');
                 try {
-                    await chrome.runtime.sendMessage({ target: 'background', type: 'ensure_offscreen' });
+                    this.url_drop();
+                    const ready = await this.file_ensure(key);
                     if (token !== this._dispatch_token || !this.is_current(key))
                         return;
-                    const blob = await this.blob_ready(key, audio);
-                    if (token !== this._dispatch_token || !this.is_current(key))
-                        return;
-                    if (!blob) {
-                        console.warn('[player] no source:', audio.artist, '—', audio.title);
+                    if (!ready) {
+                        const holders = this.account().holders_other(key);
+                        const name = holders.length ? this.account().device_name(holders[0]) : '';
+                        this.missing(name ? `Файл на «${name}» — перенеси его сюда` : 'Файла нет ни на одном устройстве');
+                        $bog_music_log.err(`нет файла на устройстве: ${key}`);
+                        this.playing(false);
                         return;
                     }
-                    this.channel().postMessage({
-                        target: 'offscreen',
-                        type: 'play_track',
-                        audio,
-                        blob,
-                        start_at,
-                    });
-                }
-                catch (e) {
-                    console.error('[player] play failed:', e);
-                    this.playing(false);
-                }
-            }
-            async play_source_local(key, audio, el, start_at) {
-                const token = ++this._dispatch_token;
-                try {
-                    if (this._last_blob_url) {
-                        URL.revokeObjectURL(this._last_blob_url);
-                        this._last_blob_url = '';
-                    }
-                    // PWA: всегда stream, даже если controller ещё не прилип после reload.
                     if ($bog_music_stream.supported()) {
                         const ok = $bog_music_stream.active() || await $bog_music_stream.when_ready();
                         if (token !== this._dispatch_token || !this.is_current(key))
                             return;
                         if (ok) {
-                            await $mol_wire_async(this).track_file_ready(key).catch(() => null);
-                            if (token !== this._dispatch_token || !this.is_current(key))
-                                return;
                             this.set_track_src(el, $bog_music_stream.url(key));
                             this.attach_seek_listener(el, start_at);
                             await this.safe_play(el);
                             return;
                         }
-                        console.warn('[player] SW not controlling page — stream unavailable');
                     }
-                    const blob = await this.blob_ready(key, audio);
+                    const file = await $bog_music_disk.file(key);
                     if (token !== this._dispatch_token || !this.is_current(key))
                         return;
-                    if (blob) {
-                        const url = URL.createObjectURL(blob);
-                        this._last_blob_url = url;
-                        this.set_track_src(el, url);
-                        this.attach_seek_listener(el, start_at);
-                        await this.safe_play(el);
+                    if (!file)
                         return;
-                    }
-                    if (audio.url) {
-                        this.set_track_src(el, audio.url);
-                        this.attach_seek_listener(el, start_at);
-                        await this.safe_play(el);
-                        return;
-                    }
-                    console.warn('[player] no source:', audio.artist, '—', audio.title);
+                    this.set_track_src(el, this.url_take(file));
+                    this.attach_seek_listener(el, start_at);
+                    await this.safe_play(el);
+                    return;
                 }
                 catch (e) {
                     console.error('[player] play failed:', e);
@@ -38508,34 +33805,22 @@ var $;
                     }
                 }
             }
-            // ---------- управление ----------
             toggle() {
-                // Крутится keep-alive-тишина = звука нет, чем бы ни было playing():
-                // жмём resume, иначе ios_pause молча выйдет по _silent и кнопка
-                // перестанет что-либо делать.
                 const was_playing = this.playing() && !this._silent;
                 $bog_music_log.act(`${was_playing ? 'пауза' : 'продолжить'}: ${this.current_key() || 'без трека'}`);
-                if (this.is_extension()) {
+                this.gain_chain_unlock();
+                const el = this.audio_el();
+                if (this.is_ios()) {
                     if (was_playing)
-                        this.send('pause');
+                        this.ios_pause(el);
                     else
-                        this.send('resume');
+                        this.ios_resume(el);
                 }
                 else {
-                    this.gain_chain_unlock();
-                    const el = this.audio_el();
-                    if (this.is_ios()) {
-                        if (was_playing)
-                            this.ios_pause(el);
-                        else
-                            this.ios_resume(el);
-                    }
-                    else {
-                        if (was_playing)
-                            el.pause();
-                        else
-                            el.play();
-                    }
+                    if (was_playing)
+                        el.pause();
+                    else
+                        el.play();
                 }
                 if (was_playing) {
                     const key = this.current_key();
@@ -38547,17 +33832,12 @@ var $;
                     }
                 }
             }
-            /**
-             * Полный сброс плеера (крестик): стоп звука, очистка всего внутреннего
-             * состояния (swap-паузы, RAM-кеша, плана волны) и сохранённой сессии —
-             * чтобы после перезагрузки плеер не воскрес сам.
-             */
             close() {
                 $bog_music_log.act('закрытие плеера');
-                this._dispatch_token++; // инвалидировать pending dispatch'и
+                this._dispatch_token++;
                 this.ext(null);
                 this._planned_wave = null;
-                this._blob_cache.clear();
+                this._file_cache.clear();
                 this._silent = false;
                 this._track_src = '';
                 this._paused_pos = 0;
@@ -38566,13 +33846,8 @@ var $;
                 this._switch_gen++;
                 this._trim_end_skip = '';
                 this._trim_start_done = '';
-                // ДО el.pause(): его синхронный 'pause'-event при playing()=true был бы
-                // принят за системную паузу и воскресил бы keep-alive-тишину.
                 this.playing(false);
-                if (this.is_extension()) {
-                    this.send('pause');
-                }
-                else if (this._audio_el) {
+                if (this._audio_el) {
                     const el = this._audio_el;
                     el.pause();
                     el.removeAttribute('src');
@@ -38581,10 +33856,7 @@ var $;
                     }
                     catch { }
                 }
-                if (this._last_blob_url) {
-                    URL.revokeObjectURL(this._last_blob_url);
-                    this._last_blob_url = '';
-                }
+                this.url_drop();
                 if ('mediaSession' in navigator) {
                     navigator.mediaSession.metadata = null;
                     navigator.mediaSession.playbackState = 'none';
@@ -38592,7 +33864,7 @@ var $;
                 this.current_time(0);
                 this.duration(0);
                 this.queue_index(0);
-                this._session_restored = true; // не воскрешать сессию в этой вкладке
+                this._session_restored = true;
                 try {
                     this.account().save_last_session('', 0);
                 }
@@ -38600,7 +33872,6 @@ var $;
                 this.current_key('');
             }
             prev() {
-                // Тот же случай, что и в next(): играет выдача — шагаем по ней.
                 if (this.ext()) {
                     $bog_music_log.act('предыдущий результат выдачи');
                     this.ext_step(-1);
@@ -38617,11 +33888,6 @@ var $;
                     $bog_music_log.act('предыдущий трек: уже первый, шага нет');
                 }
             }
-            /**
-             * Сосед по выдаче YouTube. Плеер про tube ничего не знает — он лишь
-             * сообщает app, что играет внешний стрим, и просит шагнуть.
-             * false — выдача кончилась.
-             */
             ext_step(step) {
                 try {
                     return !!$bog_music_app.Root(0).tube_step(step);
@@ -38633,7 +33899,6 @@ var $;
                     return false;
                 }
             }
-            /** Рекомендация «Моей волны» из app (null если режим выключен). */
             wave_pick(key) {
                 try {
                     return $bog_music_app.Root(0).player_pick_next(key) ?? null;
@@ -38648,21 +33913,15 @@ var $;
                 const mode = this.repeat_mode();
                 const queue = this.queue_keys();
                 $bog_music_log.act(`следующий трек (${manual ? 'кнопка' : 'авто'}, режим ${mode})`);
-                // Играет стрим из выдачи YouTube. Шагаем по выдаче, а не по фонотеке:
-                // у внешнего трека current_key пустой, и общий путь ниже взял бы
-                // queue[0] — по концу трека молча стартовал личный плейлист с начала.
                 if (this.ext()) {
                     if (!manual && mode === 'one') {
                         const ext = this.ext();
                         this.play_external(ext.url, ext.title, ext.artist);
                         return;
                     }
-                    this.ext_step(1); // выдача кончилась — просто встаём, трек уже доиграл
+                    this.ext_step(1);
                     return;
                 }
-                // Авто-advance при mode='one': перезапуск того же трека через
-                // play_track — он подхватит trim_start (native loop крутит от 0).
-                // Ручной клик по Next всё равно ведёт к следующему.
                 if (!manual && mode === 'one') {
                     const cur = this.current_key();
                     if (cur) {
@@ -38675,7 +33934,7 @@ var $;
                     const key = this._shuffle_bag[this._shuffle_bag_idx++];
                     if (this._shuffle_bag_idx >= this._shuffle_bag.length) {
                         this._shuffle_last_key = key;
-                        this._shuffle_bag_sig = ''; // следующий next() перетасует
+                        this._shuffle_bag_sig = '';
                     }
                     const idx = queue.indexOf(key);
                     if (idx >= 0) {
@@ -38684,11 +33943,6 @@ var $;
                         return;
                     }
                 }
-                // «Моя волна» — рекомендалка. Зовём app напрямую: event-binding
-                // `pick_next?` возвращал бы свой аргумент (echo), а не рекомендацию,
-                // из-за чего next() играл текущий трек заново вместо следующего.
-                // Сперва — выбор, сделанный заранее в cache_next: его blob уже прогрет
-                // в RAM → play пройдёт синхронно в ended-continuation (звук в фоне).
                 try {
                     const cur = this.current_key();
                     let picked = null;
@@ -38715,8 +33969,6 @@ var $;
                 if (!queue.length)
                     return;
                 let next_idx = this.queue_index() + 1 < queue.length ? this.queue_index() + 1 : 0;
-                // Страховка от залипания: в списке есть куда шагнуть, а шагаем на
-                // себя же (дубль в очереди, протухший индекс) — берём следующего.
                 if (queue.length > 1 && queue[next_idx] === this.current_key()) {
                     next_idx = next_idx + 1 < queue.length ? next_idx + 1 : 0;
                 }
@@ -38727,6 +33979,21 @@ var $;
                 if (!this.current_key() && !this.ext())
                     return this.full() ? [this.Empty()] : [];
                 return super.sub();
+            }
+            Missing() {
+                return this.missing() ? super.Missing() : null;
+            }
+            Missing_pull() {
+                return this.account().holders_other(this.current_key()).length ? super.Missing_pull() : null;
+            }
+            missing_pull() {
+                const key = this.current_key();
+                const beam = $bog_music_beam.instance();
+                const from = beam.pick_holder(key);
+                if (!from)
+                    return;
+                this.missing('Переношу…');
+                void beam.pull(from, [key]).then(() => this.is_current(key) && this.play_track(key), (error) => this.missing(error?.message ?? 'Не получилось перенести'));
             }
             toggle_icons() {
                 return [this.playing() ? this.Pause_icon() : this.Play_icon()];
@@ -38739,12 +34006,6 @@ var $;
                     return null;
                 return super.Collapse();
             }
-            // ---------- обрез трека (trim handles на прогресс-баре) ----------
-            /**
-             * Ручки обреза показываем только по кнопке «ножницы» в полном плеере:
-             * на общей полоске их принимали за перемотку, а второй ползунок «в
-             * конце» вообще не понимали.
-             */
             progress_parts() {
                 const parts = [this.Progress_line(), this.Progress_bar(), this.Progress_knob()];
                 if (!this.trim_editing())
@@ -38773,12 +34034,6 @@ var $;
             _trim_end_skip = '';
             _trim_start_done = '';
             _trim_drag = null;
-            /**
-             * Догоняющий seek на trim_start: применяется, только если play_track не
-             * смог прочитать обрез (холодный атом). Здесь мы уже в фибре auto(), она
-             * ретраится — значение доедет. Один раз на трек и не во время драга,
-             * иначе спам инвалидаций рождает гонку seek'ов с pending play_track.
-             */
             apply_trim_start() {
                 const key = this.current_key();
                 if (!key)
@@ -38810,13 +34065,6 @@ var $;
                     }
                 });
             }
-            /**
-             * Реактивный apply ТОЛЬКО end-trim'а: current_time >= trim_end → next().
-             * Через microtask, чтобы не писать в cell внутри auto-фибры.
-             * Seek на trim_start делается один раз в trim_pointer_up: если делать
-             * реактивно, drag-спам инвалидаций рождает гонку seek-сообщений с
-             * pending play_track → DEMUXER_ERROR в offscreen.
-             */
             apply_trim() {
                 const track = this.current_track();
                 if (!track)
@@ -38833,15 +34081,10 @@ var $;
                 if (this._trim_end_skip === key)
                     return;
                 this._trim_end_skip = key;
-                const audio = track.audio();
                 queueMicrotask(() => {
                     try {
-                        // В фибре: цепочка next() читает baza (очередь, обрез следующего)
-                        // и может подвиснуть — вне фибры это была бы тихая остановка.
                         ;
                         $mol_wire_async(this).next_auto();
-                        if (audio && navigator.onLine)
-                            this.account().save_hls(audio).catch(() => { });
                     }
                     catch (e) {
                         if (e instanceof Promise)
@@ -38944,7 +34187,6 @@ var $;
                     return '100%';
                 return `${(track.trim_end(dur) / dur) * 100}%`;
             }
-            // ---------- lifecycle ----------
             _pagehide_listener_set = false;
             setup_pagehide_save() {
                 if (this._pagehide_listener_set)
@@ -38961,9 +34203,8 @@ var $;
                 });
             }
             auto() {
-                this.offscreen_link();
                 this.setup_pagehide_save();
-                if (!this.is_extension() && !this.current_key()) {
+                if (!this.current_key()) {
                     this.try_restore_session();
                 }
                 this.apply_volume();
@@ -38991,9 +34232,6 @@ var $;
         __decorate([
             $mol_mem
         ], $bog_music_player.prototype, "normalize", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_player.prototype, "offscreen_link", null);
         __decorate([
             $mol_mem
         ], $bog_music_player.prototype, "apply_position_state", null);
@@ -39024,6 +34262,12 @@ var $;
         __decorate([
             $mol_mem
         ], $bog_music_player.prototype, "repeat_mode", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_player.prototype, "missing", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_player.prototype, "missing_pull", null);
         $$.$bog_music_player = $bog_music_player;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
@@ -39047,6 +34291,16 @@ var $;
             border: { top: { width: '1px', style: 'solid', color: $mol_theme.line } },
             position: 'sticky',
             bottom: 0,
+            Missing: {
+                align: { items: 'center' },
+                gap: '0.5rem',
+                padding: { left: '0.75rem', right: '0.5rem' },
+                font: { size: '0.875rem' },
+            },
+            Missing_text: {
+                flex: { grow: 1, shrink: 1 },
+                color: $mol_theme.shade,
+            },
             Progress_row: {
                 flex: {
                     direction: 'row',
@@ -39524,6 +34778,3647 @@ var $;
                             width: '2rem',
                             height: '2rem',
                         },
+                    },
+                },
+            },
+        });
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+	($.$mol_icon_magnify) = class $mol_icon_magnify extends ($.$mol_icon) {
+		path(){
+			return "M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$bog_music_nav_item) = class $bog_music_nav_item extends ($.$mol_view) {
+		click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.label())]);
+			return obj;
+		}
+		label(){
+			return "";
+		}
+		active(){
+			return "off";
+		}
+		Icon(){
+			const obj = new this.$.$mol_view();
+			return obj;
+		}
+		attr(){
+			return {...(super.attr()), "bog_music_nav_active": (this.active())};
+		}
+		event(){
+			return {...(super.event()), "click": (next) => (this.click(next))};
+		}
+		sub(){
+			return [(this.Icon()), (this.Label())];
+		}
+	};
+	($mol_mem(($.$bog_music_nav_item.prototype), "click"));
+	($mol_mem(($.$bog_music_nav_item.prototype), "Label"));
+	($mol_mem(($.$bog_music_nav_item.prototype), "Icon"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_define($bog_music_nav_item, {
+        // shrink явно: у $mol_view по умолчанию flex-shrink: 0, и на крупном
+        // шрифте четыре nowrap-подписи распирали приложение шире экрана.
+        flex: { direction: 'column', grow: 1, shrink: 1, basis: '0%' },
+        align: { items: 'center' },
+        justify: { content: 'center' },
+        gap: '0.125rem',
+        padding: {
+            top: '0.5rem',
+            bottom: '0.5rem',
+            left: '0.25rem',
+            right: '0.25rem',
+        },
+        minWidth: 0,
+        minHeight: '3.75rem',
+        cursor: 'pointer',
+        userSelect: 'none',
+        border: { radius: $bog_builderui_tokens.radius },
+        color: $bog_builderui_tokens.shade,
+        background: { color: 'transparent' },
+        transition: 'color 120ms ease, background-color 120ms ease',
+        Icon: {
+            width: '2rem',
+            height: '2rem',
+            color: 'inherit',
+        },
+        Label: {
+            font: { size: '0.8125rem', weight: 500 },
+            color: 'inherit',
+            whiteSpace: 'nowrap',
+            maxWidth: '100%',
+            overflow: { x: 'hidden', y: 'hidden' },
+            textOverflow: 'ellipsis',
+        },
+        ':hover': {
+            background: { color: $bog_builderui_tokens.hover },
+            color: $bog_builderui_tokens.text,
+        },
+        '@': {
+            bog_music_nav_active: {
+                on: {
+                    color: $bog_builderui_tokens.special,
+                },
+            },
+        },
+    });
+})($ || ($ = {}));
+
+;
+	($.$mol_icon_playlist_music) = class $mol_icon_playlist_music extends ($.$mol_icon) {
+		path(){
+			return "M15,6H3V8H15V6M15,10H3V12H15V10M3,16H11V14H3V16M17,6V14.18C16.69,14.07 16.35,14 16,14A3,3 0 0,0 13,17A3,3 0 0,0 16,20A3,3 0 0,0 19,17V8H22V6H17Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_account) = class $mol_icon_account extends ($.$mol_icon) {
+		path(){
+			return "M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_account_circle) = class $mol_icon_account_circle extends ($.$mol_icon) {
+		path(){
+			return "M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_text) = class $mol_icon_text extends ($.$mol_icon) {
+		path(){
+			return "M21,6V8H3V6H21M3,18H12V16H3V18M3,13H21V11H3V13Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_text_box) = class $mol_icon_text_box extends ($.$mol_icon) {
+		path(){
+			return "M14,17H7V15H14M17,13H7V11H17M17,9H7V7H17M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_text_box_outline) = class $mol_icon_text_box_outline extends ($.$mol_icon) {
+		path(){
+			return "M5,3C3.89,3 3,3.89 3,5V19C3,20.11 3.89,21 5,21H19C20.11,21 21,20.11 21,19V5C21,3.89 20.11,3 19,3H5M5,5H19V19H5V5M7,7V9H17V7H7M7,11V13H17V11H7M7,15V17H14V15H7Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$bog_music_nav) = class $bog_music_nav extends ($.$mol_view) {
+		search_active(){
+			return "off";
+		}
+		Search_icon(){
+			const obj = new this.$.$mol_icon_magnify();
+			return obj;
+		}
+		search_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Tab_search(){
+			const obj = new this.$.$bog_music_nav_item();
+			(obj.label) = () => ("Поиск");
+			(obj.active) = () => ((this.search_active()));
+			(obj.Icon) = () => ((this.Search_icon()));
+			(obj.click) = (next) => ((this.search_click(next)));
+			return obj;
+		}
+		music_active(){
+			return "off";
+		}
+		Music_icon(){
+			const obj = new this.$.$mol_icon_playlist_music();
+			return obj;
+		}
+		music_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Tab_music(){
+			const obj = new this.$.$bog_music_nav_item();
+			(obj.label) = () => ("Музыка");
+			(obj.active) = () => ((this.music_active()));
+			(obj.Icon) = () => ((this.Music_icon()));
+			(obj.click) = (next) => ((this.music_click(next)));
+			return obj;
+		}
+		account_active(){
+			return "off";
+		}
+		Account_icon(){
+			const obj = new this.$.$mol_icon_account_circle();
+			return obj;
+		}
+		account_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Tab_account(){
+			const obj = new this.$.$bog_music_nav_item();
+			(obj.label) = () => ("Аккаунт");
+			(obj.active) = () => ((this.account_active()));
+			(obj.Icon) = () => ((this.Account_icon()));
+			(obj.click) = (next) => ((this.account_click(next)));
+			return obj;
+		}
+		logs_active(){
+			return "off";
+		}
+		Logs_icon(){
+			const obj = new this.$.$mol_icon_text_box_outline();
+			return obj;
+		}
+		logs_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Tab_logs(){
+			const obj = new this.$.$bog_music_nav_item();
+			(obj.label) = () => ("Логи");
+			(obj.active) = () => ((this.logs_active()));
+			(obj.Icon) = () => ((this.Logs_icon()));
+			(obj.click) = (next) => ((this.logs_click(next)));
+			return obj;
+		}
+		section(next){
+			if(next !== undefined) return next;
+			return "music";
+		}
+		sub(){
+			return [
+				(this.Tab_search()), 
+				(this.Tab_music()), 
+				(this.Tab_account()), 
+				(this.Tab_logs())
+			];
+		}
+	};
+	($mol_mem(($.$bog_music_nav.prototype), "Search_icon"));
+	($mol_mem(($.$bog_music_nav.prototype), "search_click"));
+	($mol_mem(($.$bog_music_nav.prototype), "Tab_search"));
+	($mol_mem(($.$bog_music_nav.prototype), "Music_icon"));
+	($mol_mem(($.$bog_music_nav.prototype), "music_click"));
+	($mol_mem(($.$bog_music_nav.prototype), "Tab_music"));
+	($mol_mem(($.$bog_music_nav.prototype), "Account_icon"));
+	($mol_mem(($.$bog_music_nav.prototype), "account_click"));
+	($mol_mem(($.$bog_music_nav.prototype), "Tab_account"));
+	($mol_mem(($.$bog_music_nav.prototype), "Logs_icon"));
+	($mol_mem(($.$bog_music_nav.prototype), "logs_click"));
+	($mol_mem(($.$bog_music_nav.prototype), "Tab_logs"));
+	($mol_mem(($.$bog_music_nav.prototype), "section"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $bog_music_nav extends $.$bog_music_nav {
+            music_active() { return this.section() === 'music' ? 'on' : 'off'; }
+            search_active() { return this.section() === 'search' ? 'on' : 'off'; }
+            account_active() { return this.section() === 'account' ? 'on' : 'off'; }
+            logs_active() { return this.section() === 'logs' ? 'on' : 'off'; }
+            music_click(e) {
+                if (e)
+                    e.preventDefault();
+                this.section('music');
+                return null;
+            }
+            search_click(e) {
+                if (e)
+                    e.preventDefault();
+                this.section('search');
+                return null;
+            }
+            account_click(e) {
+                if (e)
+                    e.preventDefault();
+                this.section('account');
+                return null;
+            }
+            /**
+             * Вкладка журнала — только для владельца приложения. Сравнивается
+             * публичный идентификатор личности, а не ключ: ключ в коде держать
+             * нельзя, он даёт полный доступ к аккаунту.
+             */
+            static owner_lords = [
+                'rkya36Pg_4GhW4PYB',
+                'xSwlxBfW_flwwJqOO',
+                '24q6G0lY_q0azSzlh',
+                'YsWOsMje_h6DAWt6n',
+            ];
+            Tab_logs() {
+                try {
+                    const self = this.$.$giper_baza_auth.current().pass().lord().str;
+                    if (!$bog_music_nav.owner_lords.includes(self))
+                        return null;
+                }
+                catch (error) {
+                    return null;
+                }
+                return super.Tab_logs();
+            }
+            logs_click(e) {
+                if (e)
+                    e.preventDefault();
+                this.section('logs');
+                return null;
+            }
+        }
+        __decorate([
+            $mol_action
+        ], $bog_music_nav.prototype, "music_click", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_nav.prototype, "search_click", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_nav.prototype, "account_click", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_nav.prototype, "logs_click", null);
+        $$.$bog_music_nav = $bog_music_nav;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_define($bog_music_nav, {
+        flex: { direction: 'row' },
+        padding: {
+            top: '0.375rem',
+            bottom: '0.375rem',
+            left: '0.5rem',
+            right: '0.5rem',
+        },
+        gap: '0.25rem',
+        background: { color: $bog_builderui_tokens.card },
+        border: { top: { width: '1px', style: 'solid', color: $bog_builderui_tokens.line } },
+    });
+})($ || ($ = {}));
+
+;
+	($.$bog_music_app) = class $bog_music_app extends ($.$mol_page) {
+		Skin(){
+			const obj = new this.$.$bog_builderui_skin();
+			(obj.lights) = () => ((this.lights()));
+			(obj.base) = () => ("zinc");
+			(obj.font_head) = () => ("eb-garamond");
+			return obj;
+		}
+		Theme(){
+			const obj = new this.$.$bog_theme_auto();
+			return obj;
+		}
+		Popup_fix(){
+			const obj = new this.$.$bog_popup_plugin();
+			return obj;
+		}
+		Tooltip(){
+			const obj = new this.$.$bog_tooltip_plugin();
+			return obj;
+		}
+		Brand_image(){
+			const obj = new this.$.$mol_image();
+			(obj.uri) = () => ("bog/music/app/favicon.svg");
+			(obj.title) = () => ((this.title()));
+			return obj;
+		}
+		Brand_name(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.title())]);
+			return obj;
+		}
+		Brand(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Brand_image()), (this.Brand_name())]);
+			return obj;
+		}
+		Sync_status(){
+			const obj = new this.$.$giper_baza_status();
+			return obj;
+		}
+		nickname_label(){
+			return "";
+		}
+		Nickname_label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.nickname_label())]);
+			return obj;
+		}
+		version_label(){
+			return "";
+		}
+		Version(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.version_label())]);
+			return obj;
+		}
+		Wave_icon(){
+			const obj = new this.$.$mol_icon_chart_timeline_variant();
+			return obj;
+		}
+		wave_mode(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		Wave_toggle(){
+			const obj = new this.$.$mol_check_icon();
+			(obj.hint) = () => ("Моя волна");
+			(obj.Icon) = () => ((this.Wave_icon()));
+			(obj.checked) = (next) => ((this.wave_mode(next)));
+			return obj;
+		}
+		upload_files(next){
+			if(next !== undefined) return next;
+			return [];
+		}
+		Upload(){
+			const obj = new this.$.$mol_button_open();
+			(obj.hint) = () => ("Загрузить с устройства");
+			(obj.accept) = () => ("audio/*,.mp3,.m4a,.aac,.wav,.ogg,.flac");
+			(obj.files) = (next) => ((this.upload_files(next)));
+			return obj;
+		}
+		Theme_btn(){
+			const obj = new this.$.$bog_theme_toggle();
+			(obj.theme_auto) = () => ((this.Theme()));
+			return obj;
+		}
+		scroll(next){
+			if(next !== undefined) return next;
+			return 0;
+		}
+		download_playlist(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		download_playlist_status(){
+			return "";
+		}
+		tg_hint(){
+			return "";
+		}
+		tg_button(){
+			return "";
+		}
+		tg_status(){
+			return "";
+		}
+		tg_link(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		fm_hint(){
+			return "";
+		}
+		fm_button(){
+			return "";
+		}
+		fm_status(){
+			return "";
+		}
+		fm_link(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Account(){
+			const obj = new this.$.$bog_music_account();
+			(obj.font_size) = (next) => ((this.font_size(next)));
+			(obj.download_playlist) = (next) => ((this.download_playlist(next)));
+			(obj.download_playlist_status) = () => ((this.download_playlist_status()));
+			(obj.tg_hint) = () => ((this.tg_hint()));
+			(obj.tg_button) = () => ((this.tg_button()));
+			(obj.tg_status) = () => ((this.tg_status()));
+			(obj.tg_link) = (next) => ((this.tg_link(next)));
+			(obj.fm_hint) = () => ((this.fm_hint()));
+			(obj.fm_button) = () => ((this.fm_button()));
+			(obj.fm_status) = () => ((this.fm_status()));
+			(obj.fm_link) = (next) => ((this.fm_link(next)));
+			return obj;
+		}
+		Logs(){
+			const obj = new this.$.$bog_music_log_view();
+			(obj.version) = () => ((this.version_label()));
+			return obj;
+		}
+		Feedback(){
+			const obj = new this.$.$bog_feedback2_form();
+			(obj.feedback_id) = () => ("bog_music");
+			return obj;
+		}
+		share_toast_text(){
+			return "";
+		}
+		Share_toast(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.share_toast_text())]);
+			return obj;
+		}
+		beam_text(){
+			return "";
+		}
+		Beam_text(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.beam_text())]);
+			return obj;
+		}
+		beam_button(){
+			return "";
+		}
+		beam_pull(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Beam_pull(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ((this.beam_button()));
+			(obj.click) = (next) => ((this.beam_pull(next)));
+			return obj;
+		}
+		Beam_bar(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Beam_text()), (this.Beam_pull())]);
+			return obj;
+		}
+		page(next){
+			if(next !== undefined) return next;
+			return "my";
+		}
+		my_title(){
+			return "Моя музыка";
+		}
+		archive_title(){
+			return "Архив";
+		}
+		list_dict(){
+			return {};
+		}
+		Tabs(){
+			const obj = new this.$.$bog_music_playlists();
+			(obj.page) = (next) => ((this.page(next)));
+			(obj.my_title) = () => ((this.my_title()));
+			(obj.archive_title) = () => ((this.archive_title()));
+			(obj.list_dict) = () => ((this.list_dict()));
+			return obj;
+		}
+		visible_keys(){
+			return [];
+		}
+		current_key(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		play_key(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		archive_mode(){
+			return false;
+		}
+		reorder_to(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		archive_key(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		restore_key(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		delete_key(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		demote_key(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Tracks(){
+			const obj = new this.$.$bog_music_tracks();
+			(obj.track_keys) = () => ((this.visible_keys()));
+			(obj.current_key) = () => ((this.current_key()));
+			(obj.play_key) = (next) => ((this.play_key(next)));
+			(obj.archive_mode) = () => ((this.archive_mode()));
+			(obj.reorder_to) = (next) => ((this.reorder_to(next)));
+			(obj.archive_key) = (next) => ((this.archive_key(next)));
+			(obj.restore_key) = (next) => ((this.restore_key(next)));
+			(obj.delete_key) = (next) => ((this.delete_key(next)));
+			(obj.demote_key) = (next) => ((this.demote_key(next)));
+			return obj;
+		}
+		tube_submit(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		tube_query(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		Tube_query(){
+			const obj = new this.$.$mol_string();
+			(obj.hint) = () => ("Что ищем на YouTube?");
+			(obj.value) = (next) => ((this.tube_query(next)));
+			(obj.keyboard) = () => ("search");
+			(obj.enter) = () => ("search");
+			return obj;
+		}
+		tube_find(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Tube_find(){
+			const obj = new this.$.$mol_button_major();
+			(obj.title) = () => ("Найти");
+			(obj.click) = (next) => ((this.tube_find(next)));
+			return obj;
+		}
+		Tube_bar(){
+			const obj = new this.$.$mol_view();
+			(obj.dom_name) = () => ("form");
+			(obj.event) = () => ({...(this.$.$mol_view.prototype.event.call(obj)), "submit": (next) => (this.tube_submit(next))});
+			(obj.sub) = () => ([(this.Tube_query()), (this.Tube_find())]);
+			return obj;
+		}
+		tube_rows(){
+			return [];
+		}
+		Tube_list(){
+			const obj = new this.$.$mol_list();
+			(obj.rows) = () => ((this.tube_rows()));
+			return obj;
+		}
+		tube_title(id){
+			return "";
+		}
+		tube_meta(id){
+			return "";
+		}
+		tube_status_text(id){
+			return "";
+		}
+		tube_cover(id){
+			return "";
+		}
+		tube_busy(id){
+			return false;
+		}
+		tube_play(id, next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		tube_get(id, next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Tube_row(id){
+			const obj = new this.$.$bog_music_tube_row();
+			(obj.title) = () => ((this.tube_title(id)));
+			(obj.subtitle) = () => ((this.tube_meta(id)));
+			(obj.status) = () => ((this.tube_status_text(id)));
+			(obj.cover) = () => ((this.tube_cover(id)));
+			(obj.busy) = () => ((this.tube_busy(id)));
+			(obj.play) = (next) => ((this.tube_play(id, next)));
+			(obj.get) = (next) => ((this.tube_get(id, next)));
+			return obj;
+		}
+		player_full(){
+			return false;
+		}
+		player_open(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		player_collapse(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Player(){
+			const obj = new this.$.$bog_music_player();
+			(obj.full) = () => ((this.player_full()));
+			(obj.open) = (next) => ((this.player_open(next)));
+			(obj.collapse) = (next) => ((this.player_collapse(next)));
+			(obj.queue_keys) = () => ((this.visible_keys()));
+			(obj.current_key) = (next) => ((this.current_key(next)));
+			return obj;
+		}
+		section(next){
+			if(next !== undefined) return next;
+			return "music";
+		}
+		Nav(){
+			const obj = new this.$.$bog_music_nav();
+			(obj.section) = (next) => ((this.section(next)));
+			return obj;
+		}
+		plugins(){
+			return [
+				(this.Skin()), 
+				(this.Theme()), 
+				(this.Popup_fix()), 
+				(this.Tooltip())
+			];
+		}
+		lights(){
+			return "system";
+		}
+		font_size(next){
+			if(next !== undefined) return next;
+			return "normal";
+		}
+		attr(){
+			return {...(super.attr()), "bog_music_font": (this.font_size())};
+		}
+		title(){
+			return "Bog Music";
+		}
+		Title(){
+			return (this.Brand());
+		}
+		tools(){
+			return [
+				(this.Sync_status()), 
+				(this.Nickname_label()), 
+				(this.Version()), 
+				(this.Wave_toggle()), 
+				(this.Upload()), 
+				(this.Theme_btn())
+			];
+		}
+		body_scroll_top(next){
+			return (this.scroll(next));
+		}
+		body(){
+			return [
+				(this.Account()), 
+				(this.Logs()), 
+				(this.Feedback()), 
+				(this.Share_toast()), 
+				(this.Beam_bar()), 
+				(this.Tabs()), 
+				(this.Tracks()), 
+				(this.Tube_bar()), 
+				(this.Tube_list()), 
+				(this.Tube_row(id))
+			];
+		}
+		foot(){
+			return [(this.Player()), (this.Nav())];
+		}
+	};
+	($mol_mem(($.$bog_music_app.prototype), "Skin"));
+	($mol_mem(($.$bog_music_app.prototype), "Theme"));
+	($mol_mem(($.$bog_music_app.prototype), "Popup_fix"));
+	($mol_mem(($.$bog_music_app.prototype), "Tooltip"));
+	($mol_mem(($.$bog_music_app.prototype), "Brand_image"));
+	($mol_mem(($.$bog_music_app.prototype), "Brand_name"));
+	($mol_mem(($.$bog_music_app.prototype), "Brand"));
+	($mol_mem(($.$bog_music_app.prototype), "Sync_status"));
+	($mol_mem(($.$bog_music_app.prototype), "Nickname_label"));
+	($mol_mem(($.$bog_music_app.prototype), "Version"));
+	($mol_mem(($.$bog_music_app.prototype), "Wave_icon"));
+	($mol_mem(($.$bog_music_app.prototype), "wave_mode"));
+	($mol_mem(($.$bog_music_app.prototype), "Wave_toggle"));
+	($mol_mem(($.$bog_music_app.prototype), "upload_files"));
+	($mol_mem(($.$bog_music_app.prototype), "Upload"));
+	($mol_mem(($.$bog_music_app.prototype), "Theme_btn"));
+	($mol_mem(($.$bog_music_app.prototype), "scroll"));
+	($mol_mem(($.$bog_music_app.prototype), "download_playlist"));
+	($mol_mem(($.$bog_music_app.prototype), "tg_link"));
+	($mol_mem(($.$bog_music_app.prototype), "fm_link"));
+	($mol_mem(($.$bog_music_app.prototype), "Account"));
+	($mol_mem(($.$bog_music_app.prototype), "Logs"));
+	($mol_mem(($.$bog_music_app.prototype), "Feedback"));
+	($mol_mem(($.$bog_music_app.prototype), "Share_toast"));
+	($mol_mem(($.$bog_music_app.prototype), "Beam_text"));
+	($mol_mem(($.$bog_music_app.prototype), "beam_pull"));
+	($mol_mem(($.$bog_music_app.prototype), "Beam_pull"));
+	($mol_mem(($.$bog_music_app.prototype), "Beam_bar"));
+	($mol_mem(($.$bog_music_app.prototype), "page"));
+	($mol_mem(($.$bog_music_app.prototype), "Tabs"));
+	($mol_mem(($.$bog_music_app.prototype), "current_key"));
+	($mol_mem(($.$bog_music_app.prototype), "play_key"));
+	($mol_mem(($.$bog_music_app.prototype), "reorder_to"));
+	($mol_mem(($.$bog_music_app.prototype), "archive_key"));
+	($mol_mem(($.$bog_music_app.prototype), "restore_key"));
+	($mol_mem(($.$bog_music_app.prototype), "delete_key"));
+	($mol_mem(($.$bog_music_app.prototype), "demote_key"));
+	($mol_mem(($.$bog_music_app.prototype), "Tracks"));
+	($mol_mem(($.$bog_music_app.prototype), "tube_submit"));
+	($mol_mem(($.$bog_music_app.prototype), "tube_query"));
+	($mol_mem(($.$bog_music_app.prototype), "Tube_query"));
+	($mol_mem(($.$bog_music_app.prototype), "tube_find"));
+	($mol_mem(($.$bog_music_app.prototype), "Tube_find"));
+	($mol_mem(($.$bog_music_app.prototype), "Tube_bar"));
+	($mol_mem(($.$bog_music_app.prototype), "Tube_list"));
+	($mol_mem_key(($.$bog_music_app.prototype), "tube_play"));
+	($mol_mem_key(($.$bog_music_app.prototype), "tube_get"));
+	($mol_mem_key(($.$bog_music_app.prototype), "Tube_row"));
+	($mol_mem(($.$bog_music_app.prototype), "player_open"));
+	($mol_mem(($.$bog_music_app.prototype), "player_collapse"));
+	($mol_mem(($.$bog_music_app.prototype), "Player"));
+	($mol_mem(($.$bog_music_app.prototype), "section"));
+	($mol_mem(($.$bog_music_app.prototype), "Nav"));
+	($mol_mem(($.$bog_music_app.prototype), "font_size"));
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $bog_music_boot extends $mol_object {
+        static share_token = '';
+        static init() {
+            $bog_music_stream.install_page();
+            if (typeof location === 'undefined')
+                return;
+            $bog_music_log.init();
+            $bog_music_log.act('запуск приложения');
+            this.import_account_hash();
+            this.parse_share_hash();
+        }
+        static import_account_hash() {
+            const hash = location.hash || '';
+            const match = hash.match(/[#&]account=([^&]+)/);
+            if (!match)
+                return;
+            const key = decodeURIComponent(match[1]);
+            if (key.length < 172) {
+                console.warn('[boot] account key too short, ignoring');
+                return;
+            }
+            const current = $mol_state_local.value('$giper_baza_auth');
+            $mol_state_local.value('$giper_baza_auth', key);
+            this.hash_drop('account');
+            if (current !== key)
+                location.reload();
+        }
+        static parse_share_hash() {
+            const match = (location.hash || '').match(/[#&]share=([^&]+)/);
+            if (match)
+                this.share_token = decodeURIComponent(match[1]);
+        }
+        static clear_share_hash() {
+            this.hash_drop('share');
+            this.share_token = '';
+        }
+        static hash_drop(name) {
+            const hash = (location.hash || '')
+                .replace(new RegExp(`[#&]?${name}=[^&]*`), '')
+                .replace(/^#&/, '#');
+            const url = location.origin + location.pathname + location.search
+                + (hash && hash !== '#' ? hash : '');
+            history.replaceState(null, '', url);
+        }
+    }
+    $.$bog_music_boot = $bog_music_boot;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /** @deprecated Use $mol_crypto2_nonce */
+    $.$mol_crypto_salt = $mol_crypto2_nonce;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /** Symmetric cipher with shortest payload. */
+    class $mol_crypto_sacred extends $mol_buffer {
+        /** Key size in bytes. */
+        static size = 16;
+        /** Makes new random secret. */
+        static make() {
+            return this.from($mol_crypto_salt());
+        }
+        /** Makes from string of buffer view. */
+        static from(serial) {
+            if (typeof serial === 'string') {
+                serial = new Uint8Array([
+                    ...$mol_base64_url_decode(serial),
+                ]);
+            }
+            if (!(serial instanceof Uint8Array)) {
+                serial = new Uint8Array(serial.buffer, serial.byteOffset, serial.byteLength);
+            }
+            ;
+            serial[0] = 0xFF;
+            const sacred = super.from(serial);
+            return sacred;
+        }
+        static async from_native(native) {
+            const buf = await $mol_crypto_native.subtle.exportKey('raw', native).catch($mol_crypto_restack);
+            const sacred = this.from(new Uint8Array(buf));
+            sacred._native = native;
+            return sacred;
+        }
+        constructor(buffer, byteOffset, byteLength) {
+            super(buffer, byteOffset, byteLength);
+            if (this.getUint8(0) !== 0xFF)
+                $mol_fail(new Error('Buffer should starts with 0xFF byte'));
+        }
+        toString() {
+            return $mol_base64_url_encode(this.asArray());
+        }
+        _native;
+        /** Native crypto secret */
+        async native() {
+            return this._native ?? (this._native = await $mol_crypto_native.subtle.importKey('raw', this, {
+                name: 'AES-CBC',
+                length: 128,
+            }, true, ['encrypt', 'decrypt']).catch($mol_crypto_restack));
+        }
+        /** Encrypt any binary message. 16n bytes */
+        async encrypt(open, salt) {
+            return new Uint8Array(await $mol_crypto_native.subtle.encrypt({
+                name: 'AES-CBC',
+                length: 128,
+                tagLength: 32,
+                iv: salt,
+            }, await this.native(), open).catch($mol_crypto_restack));
+        }
+        /** Decrypt any binary message. */
+        async decrypt(closed, salt) {
+            return new Uint8Array(await $mol_crypto_native.subtle.decrypt({
+                name: 'AES-CBC',
+                length: 128,
+                tagLength: 32,
+                iv: salt,
+            }, await this.native(), closed).catch($mol_crypto_restack));
+        }
+        /** Encrypts 0xFF prefixed buffer. 16 bytes */
+        async close(opened, salt) {
+            if (opened.getUint8(0) !== 0xFF)
+                throw new Error('Closable buffer should starts with 0xFF');
+            const trimed = new Uint8Array(opened.buffer, opened.byteOffset + 1, opened.byteLength - 1);
+            return this.encrypt(trimed, salt);
+        }
+        /** Decrypts 0xFF prefixed buffer. 16 bytes */
+        async open(closed, salt) {
+            const trimed = await this.decrypt(closed, salt);
+            if (trimed.byteLength !== closed.byteLength - 1)
+                throw new Error('Length of opened buffer should be ' + (closed.byteLength - 1));
+            const opened = new Uint8Array(closed.byteLength);
+            opened[0] = 0xFF;
+            opened.set(trimed, 1);
+            return opened;
+        }
+    }
+    __decorate([
+        $mol_memo.method
+    ], $mol_crypto_sacred.prototype, "toString", null);
+    $.$mol_crypto_sacred = $mol_crypto_sacred;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $bog_music_share extends $mol_object {
+        static instance() {
+            return new $bog_music_share;
+        }
+        account() {
+            return $bog_music_account_baza.home();
+        }
+        static plural_tracks(n) {
+            const mod10 = n % 10;
+            const mod100 = n % 100;
+            if (mod10 === 1 && mod100 !== 11)
+                return 'трек';
+            if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14))
+                return 'трека';
+            return 'треков';
+        }
+        mode(next) {
+            return next ?? false;
+        }
+        selection(next) {
+            return next ?? [];
+        }
+        selected(key) {
+            return this.selection().includes(key);
+        }
+        enter(key) {
+            $bog_music_log.act(`режим шаринга включён с ${key}`);
+            this.selection([key]);
+            this.mode(true);
+        }
+        toggle(key) {
+            const cur = this.selection();
+            const next = cur.includes(key) ? cur.filter(k => k !== key) : [...cur, key];
+            this.selection(next);
+        }
+        exit() {
+            this.selection([]);
+            this.mode(false);
+        }
+        _status_logged = '';
+        status(next) {
+            if (next && next !== this._status_logged)
+                $bog_music_log.act(`шар: ${next}`);
+            if (next !== undefined)
+                this._status_logged = next;
+            return next ?? '';
+        }
+        _import_logged = '';
+        import_status(next) {
+            if (next && next !== this._import_logged)
+                $bog_music_log.act(`приём шара: ${next}`);
+            if (next !== undefined)
+                this._import_logged = next;
+            return next ?? '';
+        }
+        share_single(key) {
+            void this.share_keys([key]);
+        }
+        submit() {
+            const keys = [...this.selection()];
+            setTimeout(() => {
+                this.exit();
+                void this.share_keys(keys);
+            });
+        }
+        static open_span = 7 * 24 * 60 * 60 * 1000;
+        opens(next) {
+            const list = this.$.$mol_state_local.value('bog_music_shares_open', next) ?? [];
+            return list.filter(open => Date.now() - open.at < $bog_music_share.open_span);
+        }
+        sender_name() {
+            return this.account().nickname() || $bog_music_device.title();
+        }
+        async share_keys(keys) {
+            try {
+                const ready = [];
+                for (const key of keys) {
+                    if (await $bog_music_disk.probe(key))
+                        ready.push(key);
+                }
+                if (!ready.length) {
+                    this.status('Этих треков нет на устройстве');
+                    return;
+                }
+                this.status('Готовлю ссылку…');
+                const secret = $mol_crypto_sacred.make();
+                const sender = await $mol_wire_async(this).sender_name();
+                const sender_cipher = await this.encrypt(secret, $mol_charset_encode(sender));
+                const burn = await $giper_baza_auth._generate();
+                const land = await $mol_wire_async(this).land_make(sender_cipher, ready.length, burn.pass());
+                this.opens([...this.opens(), { land, key: secret.toString(), keys: ready, at: Date.now() }]);
+                $bog_music_log.act(`одноразовая ссылка на ${ready.length}`, land);
+                const url = this.url_for(land, secret.toString(), burn.toString() + burn.toStringPrivate());
+                const note = 'Не закрывай приложение, пока получатель не заберёт';
+                try {
+                    await navigator.clipboard.writeText(url);
+                    this.status(`Ссылка на ${ready.length} ${$bog_music_share.plural_tracks(ready.length)} скопирована. ${note}`);
+                }
+                catch {
+                    this.status(`${url} · ${note}`);
+                }
+            }
+            catch (error) {
+                $bog_music_log.err(`шар не создан: ${error?.message ?? error}`);
+                this.status('Не получилось создать ссылку');
+            }
+        }
+        land_make(sender_cipher, count, burn) {
+            const preset = [[null, $giper_baza_rank_read], [burn, $giper_baza_rank_post('just')]];
+            const land = $giper_baza_glob.land_grab(preset);
+            const data = land.Data($bog_music_share_baza);
+            data.Kind('auto').val($bog_music_share_baza.kind);
+            data.Sender('auto').val(sender_cipher);
+            data.Count('auto').val(count);
+            this.keep(land.link().str);
+            return land.link().str;
+        }
+        url_for(land, key, burn) {
+            return location.origin + location.pathname + location.search + '#share=' + land + '.' + key + '.' + burn;
+        }
+        _kept = new Map();
+        keep(link) {
+            if (this._kept.has(link))
+                return;
+            const atom = new $mol_wire_atom(`bog_music_share_keep<${link}>`, () => {
+                $giper_baza_glob.Land(new $giper_baza_link(link)).sync();
+                return null;
+            });
+            this._kept.set(link, atom);
+            atom.fresh();
+        }
+        data(link) {
+            return $giper_baza_glob.Land(new $giper_baza_link(link)).Data($bog_music_share_baza);
+        }
+        offer_of(link) {
+            return (this.data(link).Offer()?.val() ?? null);
+        }
+        answer_put(link, cipher) {
+            const data = this.data(link);
+            data.Answer('auto').val(cipher);
+            data.Done('auto').val(true);
+        }
+        _timer = 0;
+        _busy = false;
+        watch() {
+            if (this._timer)
+                clearInterval(this._timer);
+            for (const open of this.opens())
+                this.keep(open.land);
+            this._timer = setInterval(() => void this.step(), 3000);
+            return null;
+        }
+        destructor() {
+            clearInterval(this._timer);
+        }
+        async step() {
+            if (this._busy)
+                return;
+            this._busy = true;
+            try {
+                for (const open of this.opens()) {
+                    this.keep(open.land);
+                    const cipher = await $mol_wire_async(this).offer_of(open.land);
+                    if (!cipher?.byteLength)
+                        continue;
+                    this.opens(this.opens().filter(one => one.land !== open.land));
+                    await this.serve(open, cipher).catch((error) => {
+                        $bog_music_log.err(`шар не отдан: ${error?.message ?? error}`, open.land);
+                        this.status('Не получилось отдать треки, ссылка сгорела — сделай новую');
+                    });
+                }
+            }
+            finally {
+                this._busy = false;
+            }
+        }
+        async serve(open, cipher) {
+            const secret = $mol_crypto_sacred.from(open.key);
+            const offer = JSON.parse($mol_charset_decode(await this.decrypt(secret, cipher)));
+            if (typeof offer?.sdp !== 'string')
+                throw new Error('битое приглашение');
+            const { rtc, channel, sdp } = await $bog_music_peer.answer(offer.sdp);
+            try {
+                const answer = await this.encrypt(secret, $mol_charset_encode(JSON.stringify({ sdp })));
+                await $mol_wire_async(this).answer_put(open.land, answer);
+                this.status('Получатель на связи, отдаю…');
+                const ready = await $bog_music_peer.opened(await channel);
+                const items = [];
+                for (const key of open.keys) {
+                    const file = await $bog_music_disk.file(key);
+                    const meta = await $mol_wire_async(this.account()).info(key);
+                    if (file && meta)
+                        items.push({ key, meta, file });
+                }
+                await $bog_music_peer.send(ready, items, done => this.status(`Отдаю: ${done} из ${items.length}`));
+                $bog_music_log.act(`шар отдан: ${items.length}`, open.land);
+                this.status(`Отдано: ${items.length} ${$bog_music_share.plural_tracks(items.length)}, ссылка сгорела`);
+            }
+            finally {
+                rtc.close();
+            }
+        }
+        token_done(token, next) {
+            return next ?? false;
+        }
+        head(link) {
+            const data = this.data(link);
+            return {
+                kind: data.Kind()?.val() ?? '',
+                sender: (data.Sender()?.val() ?? null),
+                count: Number(data.Count()?.val() ?? 0),
+                done: Boolean(data.Done()?.val()),
+                answer: (data.Answer()?.val() ?? null),
+            };
+        }
+        offer_put(link, cipher, burn_str) {
+            const burn = $giper_baza_auth.from(burn_str);
+            const land = $giper_baza_glob.Land(new $giper_baza_link(link));
+            Object.assign(land, { auth: () => burn });
+            land.Data($bog_music_share_baza).Offer('auto').val(cipher);
+        }
+        static wait(ms) {
+            return new Promise(done => setTimeout(done, ms));
+        }
+        async import(token) {
+            if (!token || this.token_done(token))
+                return null;
+            this.token_done(token, true);
+            $bog_music_boot.clear_share_hash();
+            const [link, key_str, burn_str] = token.split('.');
+            if (!link || !key_str || !burn_str) {
+                this.import_status('Битая ссылка');
+                return null;
+            }
+            const self = $mol_wire_async(this);
+            try {
+                const secret = $mol_crypto_sacred.from(key_str);
+                this.keep(link);
+                this.import_status('Открываю ссылку…');
+                let head = null;
+                for (let i = 0; i < 30; i++) {
+                    head = await self.head(link).catch(() => null);
+                    if (head?.kind)
+                        break;
+                    await $bog_music_share.wait(1000);
+                }
+                if (!head?.kind) {
+                    this.import_status('Ссылка не открылась — она старая или ещё не доехала');
+                    return null;
+                }
+                if (head.kind !== $bog_music_share_baza.kind) {
+                    this.import_status('Старая ссылка, попроси новую');
+                    return null;
+                }
+                if (head.done) {
+                    this.import_status('Ссылка уже использована');
+                    return null;
+                }
+                const sender = head.sender?.byteLength
+                    ? $mol_charset_decode(await this.decrypt(secret, head.sender))
+                    : 'Расшаренный';
+                const playlist = 'shared:' + sender;
+                const { rtc, channel, sdp } = await $bog_music_peer.offer();
+                try {
+                    const cipher = await this.encrypt(secret, $mol_charset_encode(JSON.stringify({ sdp })));
+                    await self.offer_put(link, cipher, burn_str);
+                    let answer = null;
+                    for (let i = 0; i < 300 && !answer; i++) {
+                        this.import_status(`Жду, когда ${sender} откроет приложение…`);
+                        const now = await self.head(link).catch(() => null);
+                        if (now?.answer?.byteLength) {
+                            answer = JSON.parse($mol_charset_decode(await this.decrypt(secret, now.answer)));
+                            break;
+                        }
+                        await $bog_music_share.wait(1000);
+                    }
+                    if (!answer) {
+                        this.import_status(`${sender} так и не открыл приложение`);
+                        return null;
+                    }
+                    await $bog_music_peer.finish(rtc, answer.sdp);
+                    const open = await $bog_music_peer.opened(channel);
+                    const got = await $bog_music_peer.receive(open, item => this.account().import_audio(item.key, item.meta, item.bytes, playlist), (done, count) => this.import_status(`От ${sender}: ${done} из ${count}`));
+                    this.import_status(`От ${sender}: ${got} ${$bog_music_share.plural_tracks(got)}`);
+                    return got ? playlist : null;
+                }
+                finally {
+                    rtc.close();
+                }
+            }
+            catch (error) {
+                $bog_music_log.err(`приём шара не удался: ${error?.message ?? error}`, link);
+                this.import_status('Не получилось: ' + (error?.message ?? 'ошибка'));
+                return null;
+            }
+        }
+        async encrypt(key, data) {
+            const iv = crypto.getRandomValues(new Uint8Array(16));
+            const ct = await key.encrypt(data, iv);
+            const out = new Uint8Array(iv.length + ct.length);
+            out.set(iv, 0);
+            out.set(ct, iv.length);
+            return out;
+        }
+        async decrypt(key, blob) {
+            if (blob.length < 17)
+                throw new Error('cipher too short');
+            return key.decrypt(blob.slice(16), blob.slice(0, 16));
+        }
+    }
+    __decorate([
+        $mol_mem
+    ], $bog_music_share.prototype, "mode", null);
+    __decorate([
+        $mol_mem
+    ], $bog_music_share.prototype, "selection", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_share.prototype, "enter", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_share.prototype, "toggle", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_share.prototype, "exit", null);
+    __decorate([
+        $mol_mem
+    ], $bog_music_share.prototype, "status", null);
+    __decorate([
+        $mol_mem
+    ], $bog_music_share.prototype, "import_status", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_share.prototype, "share_single", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_share.prototype, "land_make", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_share.prototype, "answer_put", null);
+    __decorate([
+        $mol_mem
+    ], $bog_music_share.prototype, "watch", null);
+    __decorate([
+        $mol_mem_key
+    ], $bog_music_share.prototype, "token_done", null);
+    __decorate([
+        $mol_action
+    ], $bog_music_share.prototype, "offer_put", null);
+    __decorate([
+        $mol_mem
+    ], $bog_music_share, "instance", null);
+    $.$bog_music_share = $bog_music_share;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $bog_music_share_baza extends $giper_baza_dict.with({
+        Kind: $giper_baza_atom.of($mol_schema_string),
+        Sender: $giper_baza_atom.of(Uint8Array),
+        Count: $giper_baza_atom.of($mol_schema_float),
+        Offer: $giper_baza_atom.of(Uint8Array),
+        Answer: $giper_baza_atom.of(Uint8Array),
+        Done: $giper_baza_atom.of($mol_schema_boolean),
+    }) {
+        static kind = 'p2p1';
+    }
+    $.$bog_music_share_baza = $bog_music_share_baza;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    const reward_of = {
+        play: 0.5,
+        skip: -0.5,
+        like: 1,
+        dislike: -1,
+    };
+    class $bog_recsys extends $mol_object2 {
+        static namespace(next) {
+            return next ?? 'default';
+        }
+        static epsilon(next) {
+            return next ?? 0.15;
+        }
+        static decay(next) {
+            return next ?? 0.92;
+        }
+        static storage_key() {
+            return `bog_recsys_${this.namespace()}_rewards`;
+        }
+        static rewards(next) {
+            const stored = this.$.$mol_state_local.value(this.storage_key(), next ?? undefined);
+            return stored ?? {};
+        }
+        static recommend(pool, opts) {
+            const exclude_set = opts?.exclude
+                ? (opts.exclude instanceof Set
+                    ? opts.exclude
+                    : new Set(opts.exclude))
+                : null;
+            const filtered = exclude_set
+                ? pool.filter(item => !exclude_set.has(item.id))
+                : pool.slice();
+            if (filtered.length === 0)
+                return [];
+            const limit = Math.max(1, opts?.limit ?? 1);
+            const seed = opts?.seed ?? null;
+            const rewards = this.rewards();
+            const eps = this.epsilon();
+            const rand = this.$.Math.random;
+            const explore = rand() < eps;
+            if (explore) {
+                const out = [];
+                const remaining = filtered.slice();
+                while (out.length < limit && remaining.length > 0) {
+                    const idx = Math.floor(rand() * remaining.length);
+                    out.push(remaining.splice(idx, 1)[0]);
+                }
+                return out;
+            }
+            const scored = filtered.map(item => ({
+                item,
+                score: 0.6 * cosine(seed?.embedding, item.embedding)
+                    + 0.3 * tag_reward(item.tags, rewards)
+                    + 0.1 * rand(),
+            }));
+            scored.sort((a, b) => b.score - a.score);
+            return scored.slice(0, limit).map(s => s.item);
+        }
+        static feedback(item, signal) {
+            const tags = item.tags;
+            if (!tags || tags.length === 0)
+                return;
+            const r = reward_of[signal];
+            const decay = this.decay();
+            try {
+                const current = { ...this.rewards() };
+                for (const tag of tags) {
+                    const prev = current[tag] ?? 0;
+                    current[tag] = prev * decay + r;
+                }
+                this.$.$mol_state_local.value(this.storage_key(), current);
+                this.rewards(current);
+            }
+            catch (error) {
+                console.warn(error);
+            }
+        }
+        static reset() {
+            try {
+                this.$.$mol_state_local.value(this.storage_key(), null);
+                this.rewards({});
+            }
+            catch (error) {
+                console.warn(error);
+            }
+        }
+    }
+    __decorate([
+        $mol_mem
+    ], $bog_recsys, "namespace", null);
+    __decorate([
+        $mol_mem
+    ], $bog_recsys, "epsilon", null);
+    __decorate([
+        $mol_mem
+    ], $bog_recsys, "decay", null);
+    __decorate([
+        $mol_mem
+    ], $bog_recsys, "rewards", null);
+    __decorate([
+        $mol_action
+    ], $bog_recsys, "feedback", null);
+    __decorate([
+        $mol_action
+    ], $bog_recsys, "reset", null);
+    $.$bog_recsys = $bog_recsys;
+    function cosine(a, b) {
+        if (!a || !b)
+            return 0;
+        const len = Math.min(a.length, b.length);
+        if (len === 0)
+            return 0;
+        let dot = 0, na = 0, nb = 0;
+        for (let i = 0; i < len; ++i) {
+            const x = a[i], y = b[i];
+            dot += x * y;
+            na += x * x;
+            nb += y * y;
+        }
+        if (na === 0 || nb === 0)
+            return 0;
+        return dot / Math.sqrt(na * nb);
+    }
+    function tag_reward(tags, rewards) {
+        if (!tags || tags.length === 0)
+            return 0;
+        let sum = 0, n = 0;
+        for (const tag of tags) {
+            const r = rewards[tag];
+            if (typeof r === 'number') {
+                sum += r;
+                ++n;
+            }
+        }
+        return n === 0 ? 0 : sum / n;
+    }
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /**
+     * Минимальный ZIP-энкодер (STORE, без компрессии — аудио и так сжато).
+     * Используется для выгрузки плейлиста файлом в PWA-режиме.
+     */
+    class $bog_music_zip extends $mol_object {
+        /** Имя файла внутри архива: `001 - Artist - Title.mp3`. */
+        static entry_name(index, artist, title, mime) {
+            const ext_map = {
+                'audio/mpeg': 'mp3',
+                'audio/mp3': 'mp3',
+                'audio/mp4': 'm4a',
+                'audio/aac': 'aac',
+                'audio/ogg': 'ogg',
+                'audio/webm': 'webm',
+                'audio/wav': 'wav',
+                'audio/flac': 'flac',
+            };
+            const ext = ext_map[(mime || '').toLowerCase()] || 'mp3';
+            const safe = (s) => (s || '').replace(/[\\/:*?"<>|\x00-\x1f]/g, '_').trim().slice(0, 80);
+            const num = String(index).padStart(3, '0');
+            return `${num} - ${safe(artist) || 'unknown'} - ${safe(title) || 'unknown'}.${ext}`;
+        }
+        static _crc32_table = null;
+        static crc32_table() {
+            if (this._crc32_table)
+                return this._crc32_table;
+            const t = new Uint32Array(256);
+            for (let i = 0; i < 256; i++) {
+                let c = i;
+                for (let k = 0; k < 8; k++)
+                    c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+                t[i] = c;
+            }
+            this._crc32_table = t;
+            return t;
+        }
+        static crc32(data) {
+            const t = this.crc32_table();
+            let crc = 0xFFFFFFFF;
+            for (let i = 0; i < data.length; i++)
+                crc = (crc >>> 8) ^ t[(crc ^ data[i]) & 0xFF];
+            return (crc ^ 0xFFFFFFFF) >>> 0;
+        }
+        static build(files) {
+            const enc = new TextEncoder();
+            const entries = files.map(f => ({
+                name: enc.encode(f.name),
+                data: f.data,
+                crc: this.crc32(f.data),
+                offset: 0,
+            }));
+            let local_size = 0;
+            let cd_size = 0;
+            for (const e of entries) {
+                local_size += 30 + e.name.length + e.data.length;
+                cd_size += 46 + e.name.length;
+            }
+            const ab = new ArrayBuffer(local_size + cd_size + 22);
+            const buf = new Uint8Array(ab);
+            const view = new DataView(ab);
+            let off = 0;
+            for (const e of entries) {
+                e.offset = off;
+                view.setUint32(off, 0x04034b50, true);
+                view.setUint16(off + 4, 20, true);
+                view.setUint16(off + 6, 0x0800, true); // UTF-8 filename
+                view.setUint16(off + 8, 0, true); // STORE
+                view.setUint16(off + 10, 0, true);
+                view.setUint16(off + 12, 0, true);
+                view.setUint32(off + 14, e.crc, true);
+                view.setUint32(off + 18, e.data.length, true);
+                view.setUint32(off + 22, e.data.length, true);
+                view.setUint16(off + 26, e.name.length, true);
+                view.setUint16(off + 28, 0, true);
+                buf.set(e.name, off + 30);
+                buf.set(e.data, off + 30 + e.name.length);
+                off += 30 + e.name.length + e.data.length;
+            }
+            const cd_off = off;
+            for (const e of entries) {
+                view.setUint32(off, 0x02014b50, true);
+                view.setUint16(off + 4, 20, true);
+                view.setUint16(off + 6, 20, true);
+                view.setUint16(off + 8, 0x0800, true);
+                view.setUint16(off + 10, 0, true);
+                view.setUint16(off + 12, 0, true);
+                view.setUint16(off + 14, 0, true);
+                view.setUint32(off + 16, e.crc, true);
+                view.setUint32(off + 20, e.data.length, true);
+                view.setUint32(off + 24, e.data.length, true);
+                view.setUint16(off + 28, e.name.length, true);
+                view.setUint16(off + 30, 0, true);
+                view.setUint16(off + 32, 0, true);
+                view.setUint16(off + 34, 0, true);
+                view.setUint16(off + 36, 0, true);
+                view.setUint32(off + 38, 0, true);
+                view.setUint32(off + 42, e.offset, true);
+                buf.set(e.name, off + 46);
+                off += 46 + e.name.length;
+            }
+            view.setUint32(off, 0x06054b50, true);
+            view.setUint16(off + 4, 0, true);
+            view.setUint16(off + 6, 0, true);
+            view.setUint16(off + 8, entries.length, true);
+            view.setUint16(off + 10, entries.length, true);
+            view.setUint32(off + 12, cd_size, true);
+            view.setUint32(off + 16, cd_off, true);
+            view.setUint16(off + 20, 0, true);
+            return ab;
+        }
+    }
+    $.$bog_music_zip = $bog_music_zip;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /**
+     * Клиент телеграм-инбокса: юзер пересылает музыку боту, приложение забирает
+     * её и кладёт в baza. Сервер — bog/music/srv/tg, живёт в том же процессе,
+     * что и tube (см. tube/api/api.node.ts).
+     *
+     * Методы плоско-асинхронные, без @$mol_mem: очередь меняется на стороне
+     * Телеграма, и мемоизировать её нечем — опросом рулит view приложения.
+     */
+    class $bog_music_tg extends $mol_object {
+        static base = 'https://tube.87.120.36.150.ip.giper.dev';
+        /** Юзернейм бота. Уточняется из /tg/status, чтобы не хардкодить дважды. */
+        static bot = 'bog_music_bot';
+        /** Секрет устройства: им линкуется чат и читается очередь. */
+        static code() {
+            return $bog_music_code.value('bog_music_tg_code');
+        }
+        /** Завести код при первом подключении. Только из @$mol_action. */
+        static code_ensure() {
+            return $bog_music_code.ensure('bog_music_tg_code');
+        }
+        static link_url(code) {
+            return `https://t.me/${this.bot}?start=${encodeURIComponent(code)}`;
+        }
+        static async status(code) {
+            const resp = await fetch(`${this.base}/tg/status?code=${encodeURIComponent(code)}`);
+            if (!resp.ok)
+                throw new Error(`tg status ${resp.status}`);
+            const data = await resp.json();
+            if (data.bot)
+                this.bot = data.bot;
+            return data;
+        }
+        static async inbox(code) {
+            const resp = await fetch(`${this.base}/tg/inbox?code=${encodeURIComponent(code)}`);
+            if (!resp.ok)
+                throw new Error(`tg inbox ${resp.status}`);
+            return await resp.json();
+        }
+        static async file(code, id) {
+            const resp = await fetch(`${this.base}/tg/file?code=${encodeURIComponent(code)}&id=${encodeURIComponent(id)}`);
+            if (!resp.ok)
+                throw new Error(`tg file ${resp.status}`);
+            const buffer = new Uint8Array(await resp.arrayBuffer());
+            if (!buffer.byteLength)
+                throw new Error('tg file: пустой ответ');
+            return buffer;
+        }
+        static async ack(code, id) {
+            await fetch(`${this.base}/tg/ack?code=${encodeURIComponent(code)}&id=${encodeURIComponent(id)}`);
+        }
+    }
+    $.$bog_music_tg = $bog_music_tg;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
+    $.$bog_music_version = 'v1.89';
+})($ || ($ = {}));
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        const local = typeof location !== 'undefined' && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+        const master = local ? 'http://localhost:9090/' : 'https://cmyser-bg-pony.87.120.36.150.ip.giper.dev/';
+        $giper_baza_yard.masters_default.length = 0;
+        $giper_baza_yard.masters = () => [master];
+        $bog_music_boot.init();
+        $bog_music_log.act(`мастер синка: ${master}`);
+        class $bog_music_app extends $.$bog_music_app {
+            title() {
+                return 'Bog Music';
+            }
+            account() {
+                return $bog_music_account_baza.home();
+            }
+            share() {
+                return $bog_music_share.instance();
+            }
+            page(next) {
+                if (next !== undefined) {
+                    if (next === 'share') {
+                        $bog_music_log.act('финализация шара по клику на табе');
+                        this.share().submit();
+                        return $mol_state_arg.value('page') ?? 'my';
+                    }
+                    $bog_music_log.act(`вкладка: ${next}`);
+                    $mol_state_arg.value('page', next);
+                    $mol_state_local.value('page', next);
+                    return next;
+                }
+                const page = $mol_state_arg.value('page')
+                    ?? $mol_state_local.value('page')
+                    ?? 'my';
+                if (page.startsWith('list:')) {
+                    const exists = this.account().playlists().some(pl => pl.id === page);
+                    if (!exists) {
+                        $mol_state_local.value('page', 'my');
+                        return 'my';
+                    }
+                }
+                return page;
+            }
+            list_id() {
+                const page = this.page();
+                return page.startsWith('list:') ? page : '';
+            }
+            _lists_migrated = false;
+            lists_migrate() {
+                if (this._lists_migrated)
+                    return;
+                this._lists_migrated = true;
+                $mol_wire_async(this.account()).migrate_lists();
+            }
+            archive_mode() {
+                return this.page() === 'archive';
+            }
+            visible_keys() {
+                const p = this.page();
+                if (p === 'share')
+                    return this.share().selection();
+                if (p === 'archive')
+                    return this.account().keys_in('archive');
+                if (p.startsWith('list:'))
+                    return this.account().list_keys(p);
+                if (p.startsWith('shared:'))
+                    return this.account().keys_in(p);
+                return this.account().keys_in('');
+            }
+            my_title() {
+                const my = this.account().keys_in('').length;
+                return my ? `Моя музыка ${my}` : 'Моя музыка';
+            }
+            archive_title() {
+                const arch = this.account().keys_in('archive').length;
+                return arch ? `Архив ${arch}` : 'Архив';
+            }
+            list_dict() {
+                const opts = {};
+                if (this.share().mode()) {
+                    const n = this.share().selection().length;
+                    opts['share'] = n ? `Расшаренный ${n}` : 'Расшаренный';
+                }
+                for (const pl of this.account().playlists()) {
+                    const n = this.account().list_keys(pl.id).length;
+                    opts[pl.id] = n ? `${pl.title} ${n}` : pl.title;
+                }
+                for (const pl of this.account().shared_playlists()) {
+                    opts[pl.id] = `${pl.sender} ${pl.count}`;
+                }
+                return opts;
+            }
+            current_key(next) {
+                return next ?? '';
+            }
+            static prefetch_ahead = 3;
+            prefetch_window() {
+                const keys = this.visible_keys();
+                if (!keys.length)
+                    return [];
+                const current = this.current_key();
+                const at = current ? keys.indexOf(current) : -1;
+                const from = at >= 0 ? at : 0;
+                return keys.slice(from, from + $bog_music_app.prefetch_ahead);
+            }
+            static migrate_limit = 30;
+            _migrate_busy = false;
+            _migrate_done = 0;
+            legacy_keys() {
+                const account = this.account();
+                const window = this.prefetch_window();
+                const all = [...window, ...account.keys_in(''), ...account.keys_in('archive')];
+                return [...new Set(all)].filter(key => account.place(key) === 'legacy');
+            }
+            async migrate() {
+                if (this._migrate_busy)
+                    return;
+                this._migrate_busy = true;
+                try {
+                    while (this._migrate_done < $bog_music_app.migrate_limit) {
+                        const keys = await $mol_wire_async(this).legacy_keys();
+                        if (!keys.length)
+                            break;
+                        const ok = await Promise.race([
+                            this.account().migrate(keys[0]),
+                            new Promise((done, fail) => setTimeout(() => fail(new Error('Ленд не доехал за минуту')), 60000)),
+                        ]).catch((error) => {
+                            $bog_music_log.err(`перенос из Базы не удался: ${keys[0]}: ${error?.message ?? error}`);
+                            return false;
+                        });
+                        this._migrate_done++;
+                        if (!ok)
+                            break;
+                    }
+                }
+                finally {
+                    this._migrate_busy = false;
+                }
+            }
+            migrate_watch() {
+                this.prefetch_window();
+                setTimeout(() => void this.migrate());
+                return null;
+            }
+            play_key(key) {
+                if (!key)
+                    return;
+                $bog_music_log.act(`воспроизведение ${key}`);
+                this.tube_current(-1);
+                const keys = this.visible_keys();
+                const idx = keys.indexOf(key);
+                this.Player().queue_index(idx >= 0 ? idx : 0);
+                this.Player().play_track(key);
+                const item = this.recsys_item(key);
+                if (item) {
+                    $bog_recsys.namespace('music');
+                    $bog_recsys.feedback(item, 'play');
+                }
+            }
+            wave_mode(next) {
+                if (next !== undefined)
+                    $bog_music_log.act(`моя волна: ${next ? 'включена' : 'выключена'}`);
+                return $mol_state_local.value('music_wave_mode', next) ?? false;
+            }
+            recsys_item(key) {
+                const meta = this.account().info(key);
+                if (!meta)
+                    return null;
+                const tags = [];
+                if (meta.artist)
+                    tags.push('artist:' + meta.artist.toLowerCase().trim());
+                return { id: key, tags };
+            }
+            player_pick_next(current) {
+                if (!this.wave_mode())
+                    return null;
+                const pool = this.visible_keys();
+                if (!pool.length)
+                    return null;
+                $bog_recsys.namespace('music');
+                const items = pool.map(k => this.recsys_item(k)).filter(Boolean);
+                const seed = current ? this.recsys_item(current) : null;
+                const picked = $bog_recsys.recommend(items, {
+                    seed,
+                    exclude: current ? [current] : [],
+                    limit: 1,
+                })[0];
+                return picked?.id ?? null;
+            }
+            reorder_to(args) {
+                if (!args)
+                    return;
+                const { from, to } = args;
+                const keys = this.visible_keys();
+                if (from === to)
+                    return;
+                if (from < 0 || to < 0 || from >= keys.length || to >= keys.length)
+                    return;
+                const moving = keys[from];
+                $bog_music_log.act(`перестановка ${moving}: ${from} → ${to}`);
+                const list = this.list_id();
+                if (list)
+                    return this.account().list_move(list, moving, keys[to]);
+                const step = from < to ? 1 : -1;
+                for (let i = from; i !== to; i += step) {
+                    this.account().swap_order(moving, keys[i + step]);
+                }
+            }
+            archive_key(key) {
+                if (!key)
+                    return;
+                $bog_music_log.act(`в архив ${key}`);
+                this.account().move_to_playlist(key, 'archive');
+            }
+            restore_key(key) {
+                if (!key)
+                    return;
+                $bog_music_log.act(`из архива ${key}`);
+                this.account().move_to_playlist(key, '');
+            }
+            demote_key(key) {
+                if (!key)
+                    return;
+                const keys = this.visible_keys();
+                const from = keys.indexOf(key);
+                if (from < 0 || from === keys.length - 1)
+                    return;
+                $bog_music_log.act(`вниз списка ${key}`);
+                const current = this.current_key();
+                const at = current ? keys.indexOf(current) : -1;
+                const follow = at < 0 ? '' : keys.slice(at + 1).find(k => k !== key) ?? '';
+                const list = this.list_id();
+                if (list)
+                    this.account().list_move(list, key, keys[keys.length - 1]);
+                else
+                    this.account().move_to_bottom(key);
+                if (at < 0)
+                    return;
+                const fresh = this.visible_keys();
+                const follow_at = follow ? fresh.indexOf(follow) : -1;
+                this.Player().queue_index(follow_at >= 0
+                    ? (follow_at - 1 + fresh.length) % fresh.length
+                    : Math.max(0, fresh.indexOf(current)));
+            }
+            delete_key(key) {
+                if (!key)
+                    return;
+                $bog_music_log.act(`удаление ${key}`);
+                void this.account().delete_track(key);
+            }
+            upload_files(next) {
+                if (next?.length) {
+                    $bog_music_log.act(`загрузка с устройства: ${next.length} файл(ов)`);
+                    const files = [...next].sort((a, b) => a.name.localeCompare(b.name, 'ru', { numeric: true }));
+                    void (async () => {
+                        for (const [index, file] of files.entries()) {
+                            await this.account().save_local_track(file, index + 1).catch((error) => {
+                                $bog_music_log.err(`файл не загружен: ${file.name}: ${error?.message ?? error}`);
+                            });
+                        }
+                    })();
+                }
+                return next ?? [];
+            }
+            download_playlist_status(next) {
+                return next ?? '';
+            }
+            download_playlist() {
+                $bog_music_log.act('скачивание плейлиста zip');
+                void this.download_zip_async();
+            }
+            async download_zip_async() {
+                const keys = await $mol_wire_async(this).visible_keys();
+                if (!keys.length) {
+                    this.download_playlist_status('Плейлист пуст');
+                    return;
+                }
+                const files = [];
+                let skipped = 0;
+                for (const key of keys) {
+                    this.download_playlist_status(`Архивирую ${files.length}/${keys.length}…`);
+                    const file = await $bog_music_disk.file(key);
+                    const meta = await $mol_wire_async(this.account()).info(key);
+                    if (!file || !meta) {
+                        skipped++;
+                        continue;
+                    }
+                    const data = new Uint8Array(await file.arrayBuffer());
+                    files.push({
+                        name: $bog_music_zip.entry_name(files.length + 1, meta.artist, meta.title, $bog_music_disk.mime(data.subarray(0, 12))),
+                        data,
+                    });
+                }
+                if (!files.length) {
+                    this.download_playlist_status('На этом устройстве нет файлов этого списка');
+                    return;
+                }
+                this.download_playlist_status('Собираю zip…');
+                const blob = new Blob([$bog_music_zip.build(files)], { type: 'application/zip' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `music-playlist-${new Date().toISOString().slice(0, 10)}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                const skipped_note = skipped ? `, пропущено ${skipped}` : '';
+                $bog_music_log.act(`zip собран: ${files.length} файлов${skipped_note}`);
+                this.download_playlist_status(`Готово: ${files.length} ${$bog_music_share.plural_tracks(files.length)}${skipped_note}`);
+            }
+            beam() {
+                return $bog_music_beam.instance();
+            }
+            beam_groups() {
+                return this.beam().remote_groups(this.visible_keys());
+            }
+            beam_text() {
+                const summary = this.beam().summary();
+                if (summary)
+                    return summary;
+                const groups = [...this.beam_groups()];
+                if (!groups.length)
+                    return '';
+                return groups
+                    .map(([from, keys]) => `${keys.length} ${$bog_music_share.plural_tracks(keys.length)} только на «${this.account().device_name(from)}»`)
+                    .join(', ');
+            }
+            beam_button() {
+                return this.beam_groups().size ? 'Перенести сюда' : '';
+            }
+            beam_pull() {
+                this.beam().pull_all(this.visible_keys());
+            }
+            Beam_bar() {
+                if (!this.beam_text())
+                    return null;
+                return super.Beam_bar();
+            }
+            Beam_pull() {
+                if (!this.beam_button() || this.beam().summary())
+                    return null;
+                return super.Beam_pull();
+            }
+            version_label() {
+                return $bog_music_version;
+            }
+            lights() {
+                const theme = this.Theme();
+                if (theme.mode() === 'system')
+                    return 'system';
+                return theme.is_light_now() ? 'light' : 'dark';
+            }
+            font_size(next) {
+                return this.$.$mol_state_local.value('bog_music_font_size', next) ?? 'normal';
+            }
+            section(next) {
+                if (next !== undefined)
+                    $bog_music_log.act(`раздел: ${next}`);
+                return next ?? 'music';
+            }
+            player_full() {
+                return this.section() === 'player';
+            }
+            _section_back = 'music';
+            player_open(event) {
+                if (this.player_full())
+                    return;
+                this._section_back = this.section();
+                this.section('player');
+            }
+            player_collapse(event) {
+                this.section(this._section_back);
+            }
+            body() {
+                switch (this.section()) {
+                    case 'logs': return [this.Logs()];
+                    case 'account': return [this.Account(), this.Feedback()];
+                    case 'player': return [this.Player()];
+                    case 'search': return [this.Tube_bar(), this.Tube_list()];
+                }
+                return [
+                    this.Share_toast(),
+                    this.Beam_bar(),
+                    this.Tabs(),
+                    this.Tracks(),
+                ];
+            }
+            foot() {
+                return [
+                    ...this.player_full() ? [] : [this.Player()],
+                    this.Nav(),
+                ];
+            }
+            tube_query(next) {
+                if (next !== undefined)
+                    return next;
+                return this.tube_committed();
+            }
+            tube_committed(next) {
+                return $mol_state_arg.value('q', next) ?? '';
+            }
+            tube_find() {
+                const query = this.tube_query();
+                $bog_music_log.act(`поиск на YouTube: ${query}`);
+                this.tube_committed(query);
+            }
+            tube_submit(event) {
+                event?.preventDefault();
+                this.tube_find();
+                this.Tube_query().dom_node().blur();
+            }
+            _tube_found = { query: '', items: [] };
+            tube_items() {
+                const query = this.tube_committed().trim();
+                if (!query)
+                    return [];
+                if (this._tube_found.query === query)
+                    return this._tube_found.items;
+                const items = $bog_music_tube.search(query);
+                this._tube_found = { query, items };
+                return items;
+            }
+            tube_rows() {
+                return this.tube_items().map((_, i) => this.Tube_row(i));
+            }
+            tube_item(index) {
+                return this.tube_items()[index] ?? null;
+            }
+            tube_title(index) {
+                return this.tube_item(index)?.title ?? '';
+            }
+            tube_meta(index) {
+                const item = this.tube_item(index);
+                if (!item)
+                    return '';
+                const dur = item.duration;
+                const time = dur ? `${Math.floor(dur / 60)}:${String(Math.floor(dur % 60)).padStart(2, '0')}` : '';
+                return [item.channel, time].filter(Boolean).join(' · ');
+            }
+            tube_cover(index) {
+                const item = this.tube_item(index);
+                return item ? $bog_music_tube.cover_url(item.id) : '';
+            }
+            _tube_at = -1;
+            tube_current(next) {
+                if (next !== undefined)
+                    this._tube_at = next;
+                return this._tube_at;
+            }
+            tube_step(step) {
+                const at = this.tube_current();
+                if (at < 0)
+                    return false;
+                const to = at + step;
+                if (to < 0 || to >= this.tube_items().length)
+                    return false;
+                this.tube_play(to);
+                return true;
+            }
+            tube_play(index) {
+                const item = this.tube_item(index);
+                if (!item)
+                    return;
+                $bog_music_log.act(`стрим с YouTube: ${item.title}`);
+                this.tube_current(index);
+                this.Player().play_external($bog_music_tube.audio_url(item.id), item.title, item.channel, $bog_music_tube.cover_url(item.id));
+            }
+            tube_status_text(index) {
+                const item = this.tube_item(index);
+                return item ? this.tube_status(item.id) : '';
+            }
+            tube_status(id, next) {
+                return next ?? '';
+            }
+            tube_busy(index) {
+                return this.tube_status_text(index).startsWith('Качаю');
+            }
+            tube_get(index) {
+                const item = this.tube_item(index);
+                if (!item)
+                    return;
+                $bog_music_log.act(`скачивание с YouTube: ${item.title ?? index}`);
+                $mol_wire_async(this).tube_download(item);
+            }
+            async tube_download(item) {
+                if (this.tube_status(item.id))
+                    return;
+                this.tube_status(item.id, 'Качаю…');
+                try {
+                    const bytes = await $bog_music_tube.audio_bytes(item.id);
+                    await this.account().import_audio($bog_music_account_baza.key_make('yt:' + item.id), {
+                        artist: item.channel,
+                        title: item.title,
+                        duration: item.duration,
+                        cover: $bog_music_tube.cover_url(item.id),
+                    }, bytes);
+                    $bog_music_log.act(`скачано с YouTube: ${item.title} (${bytes.length} байт)`);
+                    this.tube_status(item.id, '✓ в Моей музыке');
+                }
+                catch (e) {
+                    if (e instanceof Promise)
+                        throw e;
+                    console.warn('[tube] download failed:', e?.message ?? e);
+                    $bog_music_log.err(`скачивание с YouTube не удалось: ${item.title}: ${e?.message ?? e}`);
+                    this.tube_status(item.id, 'Ошибка');
+                    setTimeout(() => this.tube_status(item.id, ''), 4000);
+                }
+            }
+            tg_state(next) {
+                return next ?? { linked: false, name: '', pending: 0, done: 0, error: '' };
+            }
+            tg_hint() {
+                return this.tg_state().linked
+                    ? 'Пересылай боту треки из любого чата — они приедут в Мою музыку сами.'
+                    : 'Подключи бота и пересылай ему музыку из любого чата. Файлы больше 20 МБ Телеграм ботам не отдаёт.';
+            }
+            tg_button() {
+                return this.tg_state().linked ? 'Открыть бота' : 'Подключить Телеграм';
+            }
+            tg_status() {
+                const state = this.tg_state();
+                if (state.error)
+                    return state.error;
+                if (!$bog_music_tg.code())
+                    return '';
+                const parts = [state.linked
+                        ? (state.name ? `Подключено: ${state.name}` : 'Подключено')
+                        : 'Ждём /start в боте'
+                ];
+                if (state.pending)
+                    parts.push(`в очереди ${state.pending}`);
+                if (state.done)
+                    parts.push(`забрано ${state.done}`);
+                return parts.join(' · ');
+            }
+            tg_link() {
+                const code = $bog_music_tg.code_ensure();
+                $bog_music_log.act('открытие телеграм-бота для связки');
+                window.open($bog_music_tg.link_url(code), '_blank');
+                $mol_wire_async(this).tg_drain();
+            }
+            tg_meta(row) {
+                let artist = row.performer;
+                let title = row.title;
+                if (!title) {
+                    const parsed = $bog_music_account_baza.parse_filename(row.file_name || 'Трек');
+                    title = parsed.title;
+                    if (!artist)
+                        artist = parsed.artist;
+                }
+                return { artist, title, duration: row.duration, cover: '' };
+            }
+            _tg_busy = false;
+            async tg_drain() {
+                const code = $bog_music_tg.code();
+                if (!code || this._tg_busy)
+                    return;
+                this._tg_busy = true;
+                try {
+                    const status = await $bog_music_tg.status(code);
+                    this.tg_state({
+                        ...this.tg_state(),
+                        linked: status.linked,
+                        name: status.name,
+                        pending: status.pending,
+                        error: '',
+                    });
+                    if (!status.linked || !status.pending)
+                        return;
+                    $bog_music_log.act(`Телеграм: в очереди ${status.pending}, забираю`);
+                    for (const row of await $bog_music_tg.inbox(code)) {
+                        try {
+                            const bytes = await $bog_music_tg.file(code, row.id);
+                            await this.account().import_audio($bog_music_account_baza.key_make('tg:' + (row.uid || row.id)), this.tg_meta(row), bytes);
+                            await $bog_music_tg.ack(code, row.id);
+                        }
+                        catch (e) {
+                            if (e instanceof Promise)
+                                throw e;
+                            console.warn('[tg] import failed:', row.id, e?.message ?? e);
+                            $bog_music_log.err(`импорт из Телеграма не удался: ${row.id}: ${e?.message ?? e}`);
+                            continue;
+                        }
+                        const state = this.tg_state();
+                        this.tg_state({ ...state, done: state.done + 1, pending: Math.max(0, state.pending - 1) });
+                    }
+                }
+                catch (e) {
+                    if (e instanceof Promise)
+                        throw e;
+                    console.warn('[tg] drain failed:', e?.message ?? e);
+                    $bog_music_log.err(`Телеграм-бот недоступен: ${e?.message ?? e}`);
+                    this.tg_state({ ...this.tg_state(), error: 'Телеграм-бот недоступен' });
+                }
+                finally {
+                    this._tg_busy = false;
+                }
+            }
+            _tg_timer = 0;
+            tg_poller() {
+                if (this._tg_timer) {
+                    clearInterval(this._tg_timer);
+                    this._tg_timer = 0;
+                }
+                if (!$bog_music_tg.code())
+                    return null;
+                this._tg_timer = setInterval(() => { $mol_wire_async(this).tg_drain(); }, 30000);
+                return null;
+            }
+            fm_user() {
+                return $bog_music_scrobble.user();
+            }
+            fm_hint() {
+                return 'Прослушанное уходит в твою статистику на last.fm. Скробблится всё, что играет в плеере.';
+            }
+            fm_button() {
+                return this.fm_user() ? 'Отключить' : 'Подключить last.fm';
+            }
+            fm_error(next) {
+                return next ?? '';
+            }
+            fm_status() {
+                if (this.fm_error())
+                    return this.fm_error();
+                const user = this.fm_user();
+                return user ? `Подключено: ${user}` : '';
+            }
+            fm_link() {
+                if (this.fm_user()) {
+                    $bog_music_log.act('отключение last.fm');
+                    $mol_wire_async($bog_music_scrobble).logout();
+                    return;
+                }
+                $bog_music_log.act('подключение last.fm');
+                window.open($bog_music_scrobble.login_url($bog_music_scrobble.code_ensure()), '_blank');
+            }
+            async fm_refresh() {
+                if (!$bog_music_scrobble.code())
+                    return;
+                try {
+                    await $bog_music_scrobble.status();
+                    this.fm_error('');
+                }
+                catch (e) {
+                    if (e instanceof Promise)
+                        throw e;
+                    console.warn('[fm] status failed:', e?.message ?? e);
+                    $bog_music_log.err(`сервер скробблинга недоступен: ${e?.message ?? e}`);
+                    this.fm_error('Сервер скробблинга недоступен');
+                }
+            }
+            nickname_label() {
+                return this.account().nickname();
+            }
+            share_toast_text() {
+                return this.share().status() || this.share().import_status() || '';
+            }
+            Share_toast() {
+                if (!this.share_toast_text())
+                    return null;
+                return super.Share_toast();
+            }
+            async import_share(token) {
+                const playlist = await this.share().import(token);
+                if (playlist)
+                    this.page(playlist);
+            }
+            auto() {
+                this.migrate_watch();
+                this.beam().watch();
+                this.share().watch();
+                this.tg_poller();
+                $mol_wire_async(this).tg_drain();
+                $mol_wire_async(this).fm_refresh();
+                this.lists_migrate();
+                const token = $bog_music_boot.share_token;
+                if (token) {
+                    $bog_music_boot.share_token = '';
+                    void this.import_share(token);
+                }
+                return super.auto();
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "page", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "visible_keys", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "list_dict", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "current_key", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "migrate_watch", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "play_key", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "wave_mode", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "reorder_to", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "archive_key", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "restore_key", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "demote_key", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "delete_key", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "upload_files", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "download_playlist_status", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "download_playlist", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "beam_pull", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "font_size", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "section", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "player_open", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "player_collapse", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "tube_query", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "tube_committed", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "tube_find", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "tube_submit", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "tube_items", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "tube_rows", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "tube_step", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "tube_play", null);
+        __decorate([
+            $mol_mem_key
+        ], $bog_music_app.prototype, "tube_status", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "tube_get", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "tg_state", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "tg_link", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "tg_poller", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "fm_error", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_app.prototype, "fm_link", null);
+        $$.$bog_music_app = $bog_music_app;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+var $node = $node || {} ; $node[ "/bog/music/app/favicon.svg" ] = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzZDNjNGRiIvPgo8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMzQjgyRjYiLz4KPC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJzaGluZSIgeDE9IjAiIHkxPSIwIiB4Mj0iMCIgeTI9IjEiPgo8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZmZmZmZmIiBzdG9wLW9wYWNpdHk9IjAuMyIvPgo8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNmZmZmZmYiIHN0b3Atb3BhY2l0eT0iMCIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTA4IiBmaWxsPSJ1cmwoI2JnKSIvPgo8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjI1NiIgcng9IjEwOCIgZmlsbD0idXJsKCNzaGluZSkiLz4KPGcgZmlsbD0iI2ZmZmZmZiI+CjxlbGxpcHNlIGN4PSIxNzUiIGN5PSIzNTUiIHJ4PSI1NSIgcnk9IjQ0Ii8+CjxlbGxpcHNlIGN4PSIzNDUiIGN5PSIzMjUiIHJ4PSI1NSIgcnk9IjQ0Ii8+CjxyZWN0IHg9IjIxOCIgeT0iMTA1IiB3aWR0aD0iMTQiIGhlaWdodD0iMjUwIiByeD0iNyIvPgo8cmVjdCB4PSIzODgiIHk9Ijc1IiB3aWR0aD0iMTQiIGhlaWdodD0iMjUwIiByeD0iNyIvPgo8cGF0aCBkPSJNMjMyIDEwNSBDMjMyIDEwNSAyOTUgNjUgNDAyIDc1IEw0MDIgMTE1IEMyOTUgMTA1IDIzMiAxNDUgMjMyIDE0NVoiLz4KPC9nPgo8L3N2Zz4K"
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("bog/music/app/app.view.css", "[bog_music_app][bog_builderui_base][bog_builderui_lights=\"light\"] {\n\t--bog_builderui_control: hsl( 210, 68%, 42% );\n\t--bog_builderui_focus: hsl( 210, 72%, 36% );\n\t--bog_builderui_current: hsl( 26, 82%, 44% );\n\t--bog_builderui_special: hsl( 26, 82%, 44% );\n\t--bog_builderui_back: #faf9f7;\n\t--bog_builderui_card: #ffffff;\n}\n[bog_music_app][bog_builderui_base][bog_builderui_lights=\"dark\"],\n[bog_music_app][bog_builderui_base][bog_builderui_lights=\"system\"] {\n\t--bog_builderui_control: hsl( 210, 72%, 64% );\n\t--bog_builderui_focus: hsl( 210, 76%, 72% );\n\t--bog_builderui_current: hsl( 30, 85%, 60% );\n\t--bog_builderui_special: hsl( 30, 85%, 60% );\n\t--bog_builderui_text: #d4d4d8;\n\t--bog_builderui_back: #18181b;\n\t--bog_builderui_card: #09090b;\n}\n@media ( prefers-color-scheme: light ) {\n\t[bog_music_app][bog_builderui_base][bog_builderui_lights=\"system\"] {\n\t\t--bog_builderui_control: hsl( 210, 68%, 42% );\n\t\t--bog_builderui_focus: hsl( 210, 72%, 36% );\n\t\t--bog_builderui_current: hsl( 26, 82%, 44% );\n\t\t--bog_builderui_special: hsl( 26, 82%, 44% );\n\t\t--bog_builderui_text: #09090b;\n\t\t--bog_builderui_back: #faf9f7;\n\t\t--bog_builderui_card: #ffffff;\n\t}\n}\n\n[bog_music_app][bog_builderui_lights] {\n\t--mol_theme_back: var(--bog_builderui_back);\n\t--mol_theme_card: var(--bog_builderui_card);\n\t--mol_theme_field: var(--bog_builderui_field);\n\t--mol_theme_hover: var(--bog_builderui_hover);\n\t--mol_theme_text: var(--bog_builderui_text);\n\t--mol_theme_shade: var(--bog_builderui_shade);\n\t--mol_theme_line: var(--bog_builderui_line);\n\t--mol_theme_focus: var(--bog_builderui_focus);\n\t--mol_theme_control: var(--bog_builderui_control);\n\t--mol_theme_current: var(--bog_builderui_current);\n\t--mol_theme_special: var(--bog_builderui_special);\n}\n\n/* $bog_popup распирает html и body до min-width: 20rem (иначе попап\n   расширения схлопывается). Размер шрифта тоже на html, и на Огромном этот\n   минимум вырастал до 440px — шире экрана телефона. Те же 20rem, но в px. */\nhtml:has([bog_music_app]),\nbody:has([bog_music_app]) {\n\tmin-width: 320px;\n}\nhtml:has([bog_music_app][bog_music_font=\"large\"]) {\n\tfont-size: 118.75%;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) {\n\tfont-size: 137.5%;\n}\n\n@media ( max-width: 40rem ) {\n\t[bog_music_app_nickname_label],\n\t[bog_music_app_version] {\n\t\tdisplay: none;\n\t}\n\t[bog_music_app_brand_name] {\n\t\tfont-size: 1.25rem;\n\t}\n\t[bog_music_app] > [mol_page_head] {\n\t\tpadding-left: 0.25rem;\n\t\tpadding-right: 0.25rem;\n\t\t/* Шапка всегда в одну строку: инструменты не переносятся вниз, а\n\t\t   название при нехватке места режется многоточием. */\n\t\tflex-wrap: nowrap;\n\t\tgap: 0.25rem;\n\t}\n\t[bog_music_app_brand] {\n\t\tmin-width: 0;\n\t\tflex-shrink: 1;\n\t\tpadding-right: 0;\n\t}\n\t[bog_music_app_brand_name] {\n\t\tmin-width: 0;\n\t\toverflow: hidden;\n\t\ttext-overflow: ellipsis;\n\t}\n\t[bog_music_app_tools] {\n\t\tflex-shrink: 0;\n\t\tgap: 0;\n\t}\n}\n\n/* Огромный шрифт на телефоне: иконки шапки чуть меньше и без лишних полей,\n   иначе пять инструментов плюс название не влезают в 390px. */\n@media ( max-width: 40rem ) {\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tools] > * {\n\t\tpadding-left: 0.2rem;\n\t\tpadding-right: 0.2rem;\n\t\tmin-width: 0;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tools] [mol_icon] {\n\t\twidth: 1.25rem;\n\t\theight: 1.25rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_brand_image] {\n\t\twidth: 1.75rem;\n\t\theight: 1.75rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_brand_name] {\n\t\tfont-size: 1.1rem;\n\t}\n\thtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app] > [mol_page_head] {\n\t\tpadding-top: 0.25rem;\n\t\tpadding-bottom: 0.25rem;\n\t}\n}\n\n/* Огромный шрифт: контролы и навигация не раздуваются вместе с текстом. */\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_controls] {\n\tpadding: 0.125rem 0.5rem;\n\tgap: 0.25rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_center] {\n\tgap: 0;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_nav_item] {\n\tmin-height: 3rem;\n\tpadding: 0.25rem 0.125rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_tabs] {\n\tpadding: 0.25rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] {\n\tgap: 0.5rem;\n\tpadding: 0.5rem 0.75rem 0.75rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_cover],\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_cover_placeholder] {\n\twidth: 45vw;\n\theight: 45vw;\n\tpadding: 2rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_left] {\n\tgap: 0.5rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player_full=\"true\"] [bog_music_player_title] {\n\tfont-size: 1.25rem;\n}\n\nhtml:has([bog_music_app][bog_music_font=\"large\"]) [bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_prev],\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_prev] {\n\tdisplay: none;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_cover],\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_player]:not([bog_music_player_full=\"true\"]) [bog_music_player_cover_placeholder] {\n\twidth: 2.25rem;\n\theight: 2.25rem;\n}\n");
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        const { rem } = $mol_style_unit;
+        $mol_style_define($bog_music_app, {
+            minWidth: '320px',
+            maxWidth: '50rem',
+            margin: {
+                left: 'auto',
+                right: 'auto',
+            },
+            font: { family: $bog_builderui_tokens.font_body },
+            background: { color: $bog_builderui_tokens.back },
+            color: $bog_builderui_tokens.text,
+            $mol_icon: {
+                width: '1.5em',
+            },
+            $mol_button_major: {
+                background: { color: $bog_builderui_tokens.control },
+                color: $bog_builderui_tokens.back,
+            },
+            Head: {
+                justifyContent: 'space-between',
+                background: { color: $bog_builderui_tokens.back },
+                border: {
+                    radius: 0,
+                    bottom: { width: '1px', style: 'solid', color: $bog_builderui_tokens.line },
+                },
+                box: { shadow: 'none' },
+            },
+            Tabs: {
+                flex: {
+                    direction: 'row',
+                },
+                gap: '0.25rem',
+                padding: {
+                    top: '0.5rem',
+                    bottom: '0.25rem',
+                    left: '0.5rem',
+                    right: '0.5rem',
+                },
+                List: {
+                    Trigger: {
+                        display: 'flex',
+                        justifyContent: 'space-between'
+                    }
+                }
+            },
+            Tools: {
+                alignItems: 'center',
+            },
+            Brand: {
+                align: { items: 'center' },
+                gap: $mol_gap.text,
+                padding: { left: '0.5rem' },
+            },
+            Brand_image: {
+                width: '2rem',
+                height: '2rem',
+                flex: { shrink: 0, grow: 0 },
+                objectFit: 'contain',
+            },
+            Brand_name: {
+                font: {
+                    family: $bog_builderui_tokens.font_head,
+                    size: rem(1.5),
+                    weight: 500,
+                },
+                whiteSpace: 'nowrap',
+                overflow: { x: 'visible', y: 'visible' },
+            },
+            Version: {
+                font: {
+                    size: '0.6875rem',
+                    family: 'monospace',
+                },
+                color: $bog_builderui_tokens.shade,
+                alignSelf: 'center',
+                padding: {
+                    left: '0.25rem',
+                    right: '0.25rem',
+                },
+            },
+            Tube_bar: {
+                flex: { direction: 'row' },
+                gap: '0.5rem',
+                padding: {
+                    top: '0.75rem',
+                    bottom: '0.5rem',
+                    left: '0.75rem',
+                    right: '0.75rem',
+                },
+                align: { items: 'center' },
+            },
+            Tube_query: {
+                flex: { grow: 1 },
+            },
+            Foot: {
+                flex: {
+                    direction: 'column',
+                },
+                align: {
+                    items: 'stretch',
+                },
+                gap: 0,
+            },
+            Nickname_label: {
+                font: { size: '0.875rem' },
+                color: $bog_builderui_tokens.shade,
+                padding: {
+                    left: '0.5rem',
+                    right: '0.5rem',
+                },
+                maxWidth: '8rem',
+                overflow: { x: 'hidden', y: 'hidden' },
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+            },
+            Share_toast: {
+                margin: {
+                    left: '0.5rem',
+                    right: '0.5rem',
+                    top: '0.5rem',
+                },
+                padding: {
+                    top: '0.5rem',
+                    bottom: '0.5rem',
+                    left: '0.75rem',
+                    right: '0.75rem',
+                },
+                background: { color: $bog_builderui_tokens.control },
+                color: $bog_builderui_tokens.back,
+                border: { radius: $bog_builderui_tokens.radius },
+                font: { size: '0.875rem' },
+            },
+            Beam_bar: {
+                margin: {
+                    left: '0.5rem',
+                    right: '0.5rem',
+                    top: '0.5rem',
+                },
+                align: { items: 'center' },
+                gap: '0.5rem',
+                flex: { wrap: 'wrap' },
+                border: { radius: $bog_builderui_tokens.radius },
+                background: { color: $mol_theme.card },
+            },
+            Beam_text: {
+                flex: { grow: 1, shrink: 1, basis: '12rem' },
+                padding: { left: '0.75rem' },
+                font: { size: '0.875rem' },
+            },
+        });
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+var $node = $node || {} ; $node[ "/bog/music/app/apple-touch-icon.png" ] = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAAABmJLR0QA/wD/AP+gvaeTAAAXHElEQVR4nO1da5Ac1XX+bk/PLtKy2tULWcISYCQCiJeAAJFJDFSMcQg4doVUkTjBZVeqUqlKnB82ya9UkcrP/CHlcrniHyRlUrgwdsoOdhCYp3kEBIp4SwtCEloQklbSitVK2pmdPvnROzPdt899dM/tntmZPn925/bpc+69/d3vnHtvP8QP7icAABb+CESFwIngD5KsoDXCiawpFOWtQsEdsLEsFRrtCBBng+I6HdUhYoS0Kjbda+7ziBHVVfY1zVM5IGIOxjraVDXi+tHU94kjCUeMOtPXvI7eIZGpSc3KKC1Y4ljGIMn/xVutarLCNvNDOf6J/HZtjF5hwRkwGyEL9DjjDHa8K6CsbrIFbrXIYAdMKs7g/uMdqWCcgSY9l9HEotxqAHUjmnSEDI0F8LXNiAy9CItrkSaANsOKxVA2RxOTpIom9qMwYzSJaKiQwUaTdHlGxgDKRRO9BTUy2DNtmuwrKyWVc8iIGs0WTVQZKF8H7hweGWmoVdlNNr1tzDPsAmiqaJJfk6UjPpkuqrO5iQ0y1H2dU57BSxrO0Fmya7I5A9WLTTThKiMbSTS5zRypOCNFR2en1viRbs9NZGRo3Vg1mdHJwhnGiVTmJi8wR/YMNFM0UThKwRm8SRtqNQVdM25NnKGPwNGapOKM4pvsK3HXLxloh9Qqn2Raz7Cam0CHDMmR0oKTuYmWJj3+DMH3QC7I0JZbcYYlMvSSZg20U2QY0d7B3CTdNdI22eerrmfGcm7CHszY5CzRxCrPMEUT42DwZYWUnKGspE03qfuazTMYSRlNlEG347nJYlwdN1iQ91YUnMFmN8oqFjk3MY73wuYmdpxhbJM5z0hDk7zYBFAAFE1IB3JuYo4mmeYmKppkVWyjSQ5roLy7Zk2aYaXLc5PIL1dzE6tEXWshUhnlVXG4b6K/8ik5w0lqtRBWupqBEvdH7csympg5Q10VnfvIQcsm28xa9T5zWwOVT4rTpIc2UJRGjRXIuiAIBSTUvpysgVoiQyv2TS4IGXrJNFH3WWSoyFlZG+ugy/YUm2cw4mxuYrKQaW5ileNJ/9msdFnncLyFsDxT0u3r7nGyjCZ6r1D1tf2vdmU6zTPSRBNdnmEXQA15RtasCFKTzQHUhC/FYNBu2WfKMxjHKTmDN+mkm6w5QyX2nGGOJkbOUNUhasQknWwIKLbsC5mbEJQkH5OUcxP72CeXmeYmzu7P6Jk1UP2F9hkHhc1NrDnDnIGau0ldlZYRjQXFMTa1MiND356UnJEqz5Ac6QeDp/GqOs3N3MQSGcax6mRuYoMMvQVk4QxGXCEja54RtexTSmSwB9gBlCjXRRM+AzX6txpASjttI8ZooqlDpCbGNpnzjDSpFS8utpfD8vjyuU000XtVOrb/1a6MOc/IxM9yoZM8w/rOHd9HtQK/Cr+CoarwPDQC1OvUqu1cHXNzmG+oKqRoRdOLg62iZm39RCOUjoubm9isdMGmmzQntR3pPKSfmwiBsVFaPiZWjGFsmRhZitGlWLoUI0vE6AiGhwweW1Kfx1wNnkCtjsPH6MmX6cAn7LWKiJMbD9C+iD5R781N0qxnpMozWIupOEMqEB5WjGPtavGZ1VizGquWi+XLUKnY+DZI1UfVB4ClSzC+TOzYRR8e1J7g4qZoafT6kq49Z+SVgbq5d1xrARbdpB4wS87ChnViw7k4b51YuwZDVW1lHMnq8YVmp+KMVAE0tBM9HLufo48z0HRBN6FQ9XHeerHpfGw8T6xeZbXW71aGqiBVzFBwhqQTiiVnhGJ+NIE3ZHacJc8wuLOawpkK0+QZoyO4ZJO4ZCPO/6zw5cXkoiV7npEJGdRaBFtccxNVN7GSOugSRpbiikvEZb8lNqyDKJ4lOFHTpO3cxCYDlcRXkVV/zk203eRVcOlGcfVl2HSB8BS35XdR5AY6uV0eumukuPu8L+YmbDrGylnD2HK5+Pxvi/FlSp2ui1R9B68MAXONor+Yh5p6dm6ijCYdzE3WrMbWa8VVl3Y/pTAIRWrvbg1UH/E55lhEc5MO1kDPWYkv/I64crPweiOr0Au1woqTx/JgMXpF/LmVRZeB2t8lRYAnIDw0GhgdwW03i6s2ix5JNm2EmqPOzdwkcZgd/5GprCtk6C00jeSUZyQdhRZuuFrcdpOo+Ni+k44ex5bLFg8uWuIQGfrC5gVqPmXfA3MTFhkqSTU3Wb0Sd3xxgSduuFr831tmXPWgOJu1aizEFXzkNjdRRRNW0kUTvQXIA2jtmlgEGRvl61CkzNUQBDhTQxBACCwZbh+q+uCyYwYaNqlVTIzXKB7u/YCzl8vcxIYzYEaG1XOt8W7yRLyKOYeUM3M4Ok1Hp3FiBp/O0swsTp7C7Cl8OktzNdTrmG8YAmjVx598ybt2c/vY1LRMHOxgUIk9Z0QLEw9S5zc36fy51qzbS+a8tQM5eQoHD9NHh/DxYTpyDEenafY0AF1WZEytavOYq8dOmTmlsBD5bYgmaTgjVEk8SJ08hynXcYaqgi7mJhackb/Mz+PAJ7R3Evsm6cBB+vRkPgE0cWGIVc60b8LqJS+xLxeYHadHhpu5STeRERAOfEy792JiLx04SNHbtFQBlJVUTTZYgDtkKC6x7rVPbqJJ58hAljzDiZyZw7vv01sTNLGPTjWDhbIOzZpkjiYx5fhdWESJLXvjjQecjjHPiP7yNeeoTiPNMclIh9QKp0vF1jJXwxu76PV36b29CyRBidryZlPeIazmDEoO+c45g+1HzWXkdmW1nBGtmc6ro7lJcW+kBwh4fx+98jq9uZtq9Vj5giMkCqWaqC0nf6RNrZK3gqfKQJOOEhZI+i8RVnKem7DUyosrziB5NCc7f34eO9+lp16kg0cUllxxhsYCdGugpMCo0p0xmljcLs9/UkOHDBspbG6izzMsantsGs+/GvzvTjp9hjlqyxl8UhRXttpeVg92aoYaG85Q1aHlyMQZoU5knaN3MlDX7/Zj+3z6Uzz9UvDia1RXPCFin2doKyjrWDZZUqNIfDSkVhacoaqm1GS/fY7asm12UyQyNBZMeUZ9Hv/1WPDCDmo0TB3tJM9w0mR3O2oqlWST/eiFVyJDdUxy7OSJ5/zf+nhoCs9uJ40FyZHGnZv3Z7BNTlCHPuY4jCYt8VudpLz6hXEGHOUZiWOsUTNnmKKJeRBbrXSZmtws0gEx0+q4/F+iyezd5+nzjGK+lpWJM4iL34HCCfefssl8HTgdNWdoLUQk0Iw9O85QqWgCqJ/ouyx5BitsftVRNNFyhu7W1yQ6NHgobg1UayHZFtZQPpwRirTOkQ9naCwg3XqGStgMQnMJiWSVFNHEBWcYLKh1YspO8gwom+wny9nR1nk04cUVZ2gtJE+U7NlzhkpS0qTJQkKH4jmH1ejVckZbR33Yk8oNFztu1J4zeHGyBmpChuo8+T9XyNDXIc1tbDp3nXEG6yhZMV9+d3G31zPkosx5RsyRpNH27DiaaCywNUkqKwYDKRzx7jqLJi3xY+G3wLmJgwfDbThDG91tOUOVDKbNMyyiiXIwULPbXWWgGgthYWtvxYqpoOMMSUfjFch5bhI3QolLS1Hu6NLqOKNsGgwByOoapVzC4TUFQGh+rrxIzsgnz0g60lngHGePJploMtVgWFjn0F9UmybbcUYofpA4QenAzXOthXLGwlEJ92HmX8x6hovFPfawRTRJKBtpMt69ni0yVLaildNbyHMNNOHIxIOLDhkaC3DPGaGo7yG1cFxw0O3gvePymYbvcDtbHc9Ok8zbD1gLcIaMJE3EH6RmT+idO3dsoolF7mQ47Igz3LzBraXYXARjo4nKSbZo0pL2CimPjDScwUuB6xkcZwDJnAOKjka+GahcW40FY7dHjKgGQ+Zo0hL1O8GK5AyNBRd5BkParKc830ifiibZKBNIpZbrGZk4I1RO7so2jdqA1100UUnn31Ejrn5MvVxxRuepFRg+li+Tk6RbzRmhsi/jEdbpmNZrcRmoBWdQopvYocnXIerISTQxcobgqhgtyZ8zQkm8NK9nFgSdRROLFTMH0SS394GyRvLLM6JNjj9l3zNzEzfRBFajMD9kdBJN+Cq7QobigHSVfakLzMjQenUzgLKvZ8T/08RHWlDokdVxgq62bZ3OPwNlxxmhtL9Ivcg4I80AUo3CgjlDJWw0MVyL+C/uv4x5RvQqtx9N6JQz0BPRRHLUrBhjsZc5I6lMkKayeeUZ0UKfIyvuHD1Z9XAGyrgT0t3nnHJheUbicPhLe5ugIZqk4oxYbeODwU+FjO5Hk0xTOP39mIwtp01WiX00UankxxmheJ1Gk8XFGWrp2TxDpZI3MsC+3rpnkaFSKRQZTlIrMLyirzBRzG/n0cSGJuW3CfZTNNH8VH6H29hkJ3mGkTMYhXaVC+CMUBSf8eoxzjAgAzpksD6YN/P1zHqGclkhajlnzgjF71Y3sX2UkTM0FtC7a6C8snZZoTDOAEAg7oVx/RJNmrXlfFG8m7rEGZomJ2dYC+schXAGgSDgqQ9z0lPRZGA4A/ZNdsQZoU5ky35x5RlpkCEdZfm5l5GxcIppeqzRyYAMtHMOmzXQRRdNNEI9Gk1UKlJZrtGkdcxfOEfrdfFyBqtD8cr0HmfwflVEuFDolDNCab/2SXVOP3BG0nXPc4YMaNXd5+FR15wRihc5zMki5wy9LArOMB7OgzNC8TV47AfOACBvdnMvmY8Z6X6eQWDawtztmxtnhMrKqWzfcIaiRzjpDc6wbXKenBEq87uy/Y0MXnoYGbyvnJEB5u5z9CMyjH1dIoNTZh5NKJHBuBs8ZEBI4CiRwbobSGQgxhwlMlh3g4oMtMFRIoN1N0hzE8kILYCjr5HBKy86ZGjqkDDiBBkA/BIZvLI7ZFSrWDEqlp4FIVCbp9nT4vgMxV5nqLGglVyRAcAfOGTYDM3OkCEENq0X11zsXbRBXLBOjJ8ta843cHCK3pukt/cFr+6i4zOkd6esQ7y2KgvZkAHpo8OW58SUFxsyDBbQETJWjonbbvBuuVasHNOlPH4F69eI9WvELdd4RHhjT/D4K8HzbwWketZKU+HckIEkOEpk6C2okHH2Utx9a+XW67wqM9x0IgSu3OhdudH70yn60bbGC2+aAVIMMqD7XHmJDFaZQ8bWy72/+lpl2Ugaxwk5d5X4hz/zd0wE9/+kcWxG2YjCkAHlln2fIcM4CURGZAgPf/mVyr1/3ikyWnL1Rd6//l310gv4GheJDGqBo7+RkVMG6lVw79crt3+e25/qQMZG8M/fqp6znKtDKIUgA8yWfR8io+PpGPho8jd3VW64zDEyQqn62LJRYbkoZEBIW/aDgQxJR2dBjYw7bvRuujoXZITisbYLRAakvRXNOSiRESlcPS6+/uWKwbhzKRYZiO6taM5BiYy4u7/4A2+4ajDvWApHBqRHE3oZGatW4ML1Ys1KsXIcw0M4a1jM1ehMDUencegofTCJQ0cpYiRHZKxeLrZekWNA0UthyEC4t6I5B11FhhDYvFFs3SK2XOKtGONOiMj0DHa8E7z0Bu2cCIzYUNahVa5eHb/xClHpEjaKRAZai2C9hoyqj5uv9+64WZyzQrcOHZXxUdxyvXfL9Zia9n7xTPDrl4NaXe0uKzIAXLmpC9CgwpFBITh6DRnXbBbf+KpnDwtJVo2Lb/5R5c6bvAd+Hrz8JntDf3ZkADh/XcaKdSIHjrAT8hyRAfa1TwuHu4GM4SF846veLdc7GJqrxsV376k895r4t581LE+xQYbwMOZoMdRe9nxM+w/JPZc3MsDuyqJLyBgbxd9/q3LhBpfj8veu8TasFU++YrebZUIGBPwKROHE8d5HXUAG+C37biBjdAT/+NeVz65x3/HnrxN//PsGKrJEBoDaPGrzGEq59dqhnDwTq0sxyEDy0YSuIKNSwXe+mQsyQhk7W2fZHhlh4cEpu7mQO/noSLR7C0IGJHB0KwO960vexYp9yLwlLTIA7P6waHDsOrDgsUhkIPrcSreQsXa1uOPm7qwbZEAGgJfftr5hy4V8fHQhGy0YGdTesu/eStfXvuj5hW9TICsyANoxEXxytDjy+OXLAbqBDCxs2XcPGSNLsHVLFwJKZmQACAI88rTt9LhDOT5D27Y3uoIMAF539022XCqKp41OkBHKE68Gu/YXQR4//FVjdq47yACICfaFIQPARed1gTbmanJJ2iYT4V9+PD9zKofKReSJ14KnX290CxlgprKJExKFzpABYO05XQDH9ndjGWW2Jh8+Tv/07/UzCZy5kp17gu/9vN5FZECeyiZOSBS6RAYBI2cpjuUmU9M08WGiFS1J0+TdH9J9D9Tz4I9XdgX3/ahe4xKbwpAB3Qvj8kcGgPmCEru2fDor16Et6Zv81l767vfrH3zsLP8gwsPPNO57sH6mzh2N/sgZGcTffY6CkAHgxEmFRm5yogkOV03+aIq+8/36fz7RqHGXM5Xs/YTu/WH9gcfn+XfDJWorF0qanSED/JZ9UciAwP6DdN3lhaYd+w8SXDe5Po8fP9l4Yntw+1bvtusqo0tT1+rDw/Tws41nXw/mg67NTZL/JbbsC0QGgDcn6K5bFar5yM6JxLB00mRgaob+Y1vjoacaN1/l3Xi5t/kCz7g/d+QEbd9Nz+xsvL0/fO6+h5ABIe3KFosMALv30dRxrEo8wJOTTM/gzQ/itXOEjNZyUa2ObduDbduDoSouXCcuWCs+s0KsXCaGqxgewuxpnJrD4WmanKKJSfrkWNRXbyEDsS37wpEBICD88rngnq8UtLfy6AuNRjQFdo2MqNTqeGc/vROulUUUFNe155AB6dGEgpERFm57MTjI3QPnXKam6dHnIysceSID2iYnNHsRGWi99ilhqCBkAKjP4wc/CRo573QS4XuPNNprViUyTMgA4HUXGaG8s4cefDRfdDz0eGPnRNNtiQwLZBD37vOikRHKo88FP/11Xvj4xW+Ch59sGi+RYYcMJKay3UEGBAj00GONEyfpnjsrDh8ZCgI8+FjjZ8+UyGCO65GB+A3G3URG+O+vng/2TNLf3l1Zs9LBytiR43T/w4239pTRhDluRAYAcfe35/nTCkdGS4aquPMm7w9/t3J2+qXGUM7U8N+/CR55qjHXWtIukZESGWiCo4eQ0VIeruIL13q33+iluiv90DF6cnvwPy8Fsc3SEhnpkQFA3P3tuny4B5DR0hECnztXbLlYXHK+t3G9YLnk5GnsmaR39wU7dtH7kyQvj5fIyIQMRHOOHkQGACK8P0nvTxIQABhZglXjYskwhqqYq+NMDVMn6OQphQWUyEBmZJCQnrLvMWQkLcyexuxpWig3dlOJjA6Qgdg6R88jI6ZcIiNnZKD9jbcSGayvAUYGonsr1l4VyiUyGM1FjAy09lasvSqUS2QwmosbGTDcfS57VTgokcFoLnpkwPC58hIZrPJgIIOUd5/LXhUOSmQwmn2CDCg/V14ig1UeJGSA/1x5iQxWecCQAcUXqXkpkaGz0HfIgAyOEhms8kAiA0L+IjUvJTJ0FvoUGYh/kZqXEhk6C/2LDES+SM1LiQydhb5GBoXL5yUyGOWBRwb4qazacYmMZmH/IwPMVFbtuERGs3AgkAEWHCUydBYGBhnQvTCuRAajOUDIgHLLvkQGozlYyED0PaQlMnQWBg8ZxGzZl8hgNAcRGRDSln2JDEZzQJGB2DpHiQxGc3CRgeQXqVVeS2Twyv2LDCQfTSiR0SwcdGRAejShREazsEQGYLj7HCUyFMoDgAzo7j5HiQyF8mAgg5R3n6NEhkJ5YJAB5ZZ9iQxWeZCQAX7LvkQGqzxgyIDi0YQSGQnlwUMGuEcTSmQklAcSGUg8mlAiI6E8qMhA/NGEEhkJ5QFGBkUeTSiRkVAebGSg+WhCiYyE8sAjA8D/A3U87523f1lYAAAAAElFTkSuQmCC"
+
+;
+	($.$mol_icon_share) = class $mol_icon_share extends ($.$mol_icon) {
+		path(){
+			return "M21,12L14,5V9C7,10 4,15 3,20C5.5,16.5 9,14.9 14,14.9V19L21,12Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_format_vertical_align_bottom) = class $mol_icon_format_vertical_align_bottom extends ($.$mol_icon) {
+		path(){
+			return "M16,13H13V3H11V13H8L12,17L16,13M4,19V21H20V19H4Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_archive) = class $mol_icon_archive extends ($.$mol_icon) {
+		path(){
+			return "M3,3H21V7H3V3M4,8H20V21H4V8M9.5,11A0.5,0.5 0 0,0 9,11.5V13H15V11.5A0.5,0.5 0 0,0 14.5,11H9.5Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_playlist_plus) = class $mol_icon_playlist_plus extends ($.$mol_icon) {
+		path(){
+			return "M3 16H10V14H3M18 14V10H16V14H12V16H16V20H18V16H22V14M14 6H3V8H14M14 10H3V12H14V10Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_playlist_remove) = class $mol_icon_playlist_remove extends ($.$mol_icon) {
+		path(){
+			return "M14 10H3V12H14V10M14 6H3V8H14V6M3 16H10V14H3V16M14.4 22L17 19.4L19.6 22L21 20.6L18.4 18L21 15.4L19.6 14L17 16.6L14.4 14L13 15.4L15.6 18L13 20.6L14.4 22Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_restore) = class $mol_icon_restore extends ($.$mol_icon) {
+		path(){
+			return "M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_icon_delete_forever) = class $mol_icon_delete_forever extends ($.$mol_icon) {
+		path(){
+			return "M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8.46,11.88L9.87,10.47L12,12.59L14.12,10.47L15.53,11.88L13.41,14L15.53,16.12L14.12,17.53L12,15.41L9.88,17.53L8.47,16.12L10.59,14L8.46,11.88M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$bog_music_track) = class $bog_music_track extends ($.$mol_view) {
+		blob_pending(){
+			return false;
+		}
+		event_drag_start(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		event_drag_over(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		event_drop(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		on_play_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Cover(){
+			const obj = new this.$.$mol_image();
+			(obj.uri) = () => ((this.cover()));
+			return obj;
+		}
+		Cover_placeholder(){
+			const obj = new this.$.$mol_icon_music();
+			return obj;
+		}
+		Cover_box(){
+			const obj = new this.$.$mol_view();
+			(obj.event) = () => ({"click": (next) => (this.on_play_click(next))});
+			(obj.sub) = () => ([(this.Cover()), (this.Cover_placeholder())]);
+			return obj;
+		}
+		title(){
+			return "";
+		}
+		Title(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.title()));
+			return obj;
+		}
+		artist(){
+			return "";
+		}
+		Artist(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.artist()));
+			return obj;
+		}
+		Info(){
+			const obj = new this.$.$mol_view();
+			(obj.event) = () => ({"click": (next) => (this.on_play_click(next))});
+			(obj.sub) = () => ([(this.Title()), (this.Artist())]);
+			return obj;
+		}
+		share_pointer_down(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		share_pointer_up(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		share_pointer_cancel(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		share_pointer_leave(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Share_icon(){
+			const obj = new this.$.$mol_icon_share();
+			return obj;
+		}
+		Share(){
+			const obj = new this.$.$mol_view();
+			(obj.attr) = () => ({"bog_music_track_share_button": true, "bog_music_track_share_selected": (this.share_selected())});
+			(obj.event) = () => ({
+				"pointerdown": (next) => (this.share_pointer_down(next)), 
+				"pointerup": (next) => (this.share_pointer_up(next)), 
+				"pointercancel": (next) => (this.share_pointer_cancel(next)), 
+				"pointerleave": (next) => (this.share_pointer_leave(next))
+			});
+			(obj.sub) = () => ([(this.Share_icon())]);
+			return obj;
+		}
+		menu_toggle(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Menu_icon(){
+			const obj = new this.$.$mol_icon_dots_vertical();
+			return obj;
+		}
+		Menu_anchor(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.hint) = () => ("Действия");
+			(obj.click) = (next) => ((this.menu_toggle(next)));
+			(obj.sub) = () => ([(this.Menu_icon())]);
+			return obj;
+		}
+		demote_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Demote_icon(){
+			const obj = new this.$.$mol_icon_format_vertical_align_bottom();
+			return obj;
+		}
+		Demote_label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => (["В конец списка"]);
+			return obj;
+		}
+		Demote(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.click) = (next) => ((this.demote_click(next)));
+			(obj.sub) = () => ([(this.Demote_icon()), (this.Demote_label())]);
+			return obj;
+		}
+		pull_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Pull_icon(){
+			const obj = new this.$.$mol_icon_download();
+			return obj;
+		}
+		pull_label(){
+			return "";
+		}
+		Pull_label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.pull_label())]);
+			return obj;
+		}
+		Pull(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.click) = (next) => ((this.pull_click(next)));
+			(obj.sub) = () => ([(this.Pull_icon()), (this.Pull_label())]);
+			return obj;
+		}
+		delete_cached(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Delete_icon(){
+			const obj = new this.$.$mol_icon_delete();
+			return obj;
+		}
+		Delete_label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => (["Убрать с устройства"]);
+			return obj;
+		}
+		Delete(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.click) = (next) => ((this.delete_cached(next)));
+			(obj.sub) = () => ([(this.Delete_icon()), (this.Delete_label())]);
+			return obj;
+		}
+		archive_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Archive_icon(){
+			const obj = new this.$.$mol_icon_archive();
+			return obj;
+		}
+		Archive_label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => (["В архив"]);
+			return obj;
+		}
+		Archive(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.click) = (next) => ((this.archive_click(next)));
+			(obj.sub) = () => ([(this.Archive_icon()), (this.Archive_label())]);
+			return obj;
+		}
+		move_click(id, next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Move_add_icon(id){
+			const obj = new this.$.$mol_icon_playlist_plus();
+			return obj;
+		}
+		Move_cut_icon(id){
+			const obj = new this.$.$mol_icon_playlist_remove();
+			return obj;
+		}
+		move_label(id){
+			return "";
+		}
+		Move_label(id){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.move_label(id))]);
+			return obj;
+		}
+		move_content(id){
+			return [
+				(this.Move_add_icon(id)), 
+				(this.Move_cut_icon(id)), 
+				(this.Move_label(id))
+			];
+		}
+		Move(id){
+			const obj = new this.$.$mol_button_minor();
+			(obj.click) = (next) => ((this.move_click(id, next)));
+			(obj.sub) = () => ((this.move_content(id)));
+			return obj;
+		}
+		restore_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Restore_icon(){
+			const obj = new this.$.$mol_icon_restore();
+			return obj;
+		}
+		Restore_label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => (["Восстановить"]);
+			return obj;
+		}
+		Restore(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.click) = (next) => ((this.restore_click(next)));
+			(obj.sub) = () => ([(this.Restore_icon()), (this.Restore_label())]);
+			return obj;
+		}
+		delete_ask(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Delete_forever_icon(){
+			const obj = new this.$.$mol_icon_delete_forever();
+			return obj;
+		}
+		Delete_forever_label(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => (["Удалить навсегда"]);
+			return obj;
+		}
+		Delete_forever(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.click) = (next) => ((this.delete_ask(next)));
+			(obj.sub) = () => ([(this.Delete_forever_icon()), (this.Delete_forever_label())]);
+			return obj;
+		}
+		menu_items(){
+			return [
+				(this.Demote()), 
+				(this.Pull()), 
+				(this.Delete()), 
+				(this.Archive()), 
+				(this.Move("0")), 
+				(this.Restore()), 
+				(this.Delete_forever())
+			];
+		}
+		Menu_panel(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ((this.menu_items()));
+			return obj;
+		}
+		Menu(){
+			const obj = new this.$.$mol_pop();
+			(obj.Anchor) = () => ((this.Menu_anchor()));
+			(obj.bubble_content) = () => ([(this.Menu_panel())]);
+			return obj;
+		}
+		content(){
+			return [
+				(this.Cover_box()), 
+				(this.Info()), 
+				(this.Share()), 
+				(this.Menu())
+			];
+		}
+		confirm_text(){
+			return "";
+		}
+		Confirm_text(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.confirm_text()));
+			return obj;
+		}
+		delete_cancel(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Confirm_no(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ("Отмена");
+			(obj.click) = (next) => ((this.delete_cancel(next)));
+			return obj;
+		}
+		delete_confirm(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Confirm_yes(){
+			const obj = new this.$.$mol_button_major();
+			(obj.title) = () => ("Удалить");
+			(obj.click) = (next) => ((this.delete_confirm(next)));
+			return obj;
+		}
+		Confirm_actions(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Confirm_no()), (this.Confirm_yes())]);
+			return obj;
+		}
+		key(){
+			return "";
+		}
+		current(){
+			return false;
+		}
+		play(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		archive_mode(){
+			return false;
+		}
+		can_drag(){
+			return false;
+		}
+		drag_start(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		drop_here(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		archive(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		restore(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		delete_forever(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		demote(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		share_selected(){
+			return false;
+		}
+		cover(){
+			return "";
+		}
+		attr(){
+			return {
+				"bog_music_track_current": (this.current()), 
+				"bog_music_track_share_selected": (this.share_selected()), 
+				"bog_music_track_pending": (this.blob_pending()), 
+				"draggable": (this.can_drag())
+			};
+		}
+		event(){
+			return {
+				"dragstart": (next) => (this.event_drag_start(next)), 
+				"dragover": (next) => (this.event_drag_over(next)), 
+				"drop": (next) => (this.event_drop(next))
+			};
+		}
+		sub(){
+			return (this.content());
+		}
+		Confirm(){
+			const obj = new this.$.$mol_view();
+			(obj.sub) = () => ([(this.Confirm_text()), (this.Confirm_actions())]);
+			return obj;
+		}
+	};
+	($mol_mem(($.$bog_music_track.prototype), "event_drag_start"));
+	($mol_mem(($.$bog_music_track.prototype), "event_drag_over"));
+	($mol_mem(($.$bog_music_track.prototype), "event_drop"));
+	($mol_mem(($.$bog_music_track.prototype), "on_play_click"));
+	($mol_mem(($.$bog_music_track.prototype), "Cover"));
+	($mol_mem(($.$bog_music_track.prototype), "Cover_placeholder"));
+	($mol_mem(($.$bog_music_track.prototype), "Cover_box"));
+	($mol_mem(($.$bog_music_track.prototype), "Title"));
+	($mol_mem(($.$bog_music_track.prototype), "Artist"));
+	($mol_mem(($.$bog_music_track.prototype), "Info"));
+	($mol_mem(($.$bog_music_track.prototype), "share_pointer_down"));
+	($mol_mem(($.$bog_music_track.prototype), "share_pointer_up"));
+	($mol_mem(($.$bog_music_track.prototype), "share_pointer_cancel"));
+	($mol_mem(($.$bog_music_track.prototype), "share_pointer_leave"));
+	($mol_mem(($.$bog_music_track.prototype), "Share_icon"));
+	($mol_mem(($.$bog_music_track.prototype), "Share"));
+	($mol_mem(($.$bog_music_track.prototype), "menu_toggle"));
+	($mol_mem(($.$bog_music_track.prototype), "Menu_icon"));
+	($mol_mem(($.$bog_music_track.prototype), "Menu_anchor"));
+	($mol_mem(($.$bog_music_track.prototype), "demote_click"));
+	($mol_mem(($.$bog_music_track.prototype), "Demote_icon"));
+	($mol_mem(($.$bog_music_track.prototype), "Demote_label"));
+	($mol_mem(($.$bog_music_track.prototype), "Demote"));
+	($mol_mem(($.$bog_music_track.prototype), "pull_click"));
+	($mol_mem(($.$bog_music_track.prototype), "Pull_icon"));
+	($mol_mem(($.$bog_music_track.prototype), "Pull_label"));
+	($mol_mem(($.$bog_music_track.prototype), "Pull"));
+	($mol_mem(($.$bog_music_track.prototype), "delete_cached"));
+	($mol_mem(($.$bog_music_track.prototype), "Delete_icon"));
+	($mol_mem(($.$bog_music_track.prototype), "Delete_label"));
+	($mol_mem(($.$bog_music_track.prototype), "Delete"));
+	($mol_mem(($.$bog_music_track.prototype), "archive_click"));
+	($mol_mem(($.$bog_music_track.prototype), "Archive_icon"));
+	($mol_mem(($.$bog_music_track.prototype), "Archive_label"));
+	($mol_mem(($.$bog_music_track.prototype), "Archive"));
+	($mol_mem_key(($.$bog_music_track.prototype), "move_click"));
+	($mol_mem_key(($.$bog_music_track.prototype), "Move_add_icon"));
+	($mol_mem_key(($.$bog_music_track.prototype), "Move_cut_icon"));
+	($mol_mem_key(($.$bog_music_track.prototype), "Move_label"));
+	($mol_mem_key(($.$bog_music_track.prototype), "Move"));
+	($mol_mem(($.$bog_music_track.prototype), "restore_click"));
+	($mol_mem(($.$bog_music_track.prototype), "Restore_icon"));
+	($mol_mem(($.$bog_music_track.prototype), "Restore_label"));
+	($mol_mem(($.$bog_music_track.prototype), "Restore"));
+	($mol_mem(($.$bog_music_track.prototype), "delete_ask"));
+	($mol_mem(($.$bog_music_track.prototype), "Delete_forever_icon"));
+	($mol_mem(($.$bog_music_track.prototype), "Delete_forever_label"));
+	($mol_mem(($.$bog_music_track.prototype), "Delete_forever"));
+	($mol_mem(($.$bog_music_track.prototype), "Menu_panel"));
+	($mol_mem(($.$bog_music_track.prototype), "Menu"));
+	($mol_mem(($.$bog_music_track.prototype), "Confirm_text"));
+	($mol_mem(($.$bog_music_track.prototype), "delete_cancel"));
+	($mol_mem(($.$bog_music_track.prototype), "Confirm_no"));
+	($mol_mem(($.$bog_music_track.prototype), "delete_confirm"));
+	($mol_mem(($.$bog_music_track.prototype), "Confirm_yes"));
+	($mol_mem(($.$bog_music_track.prototype), "Confirm_actions"));
+	($mol_mem(($.$bog_music_track.prototype), "play"));
+	($mol_mem(($.$bog_music_track.prototype), "drag_start"));
+	($mol_mem(($.$bog_music_track.prototype), "drop_here"));
+	($mol_mem(($.$bog_music_track.prototype), "archive"));
+	($mol_mem(($.$bog_music_track.prototype), "restore"));
+	($mol_mem(($.$bog_music_track.prototype), "delete_forever"));
+	($mol_mem(($.$bog_music_track.prototype), "demote"));
+	($mol_mem(($.$bog_music_track.prototype), "Confirm"));
+
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $bog_music_track extends $.$bog_music_track {
+            track() {
+                return $bog_music_account_baza.home().track(this.key());
+            }
+            title() {
+                return this.track()?.Title()?.val() ?? '';
+            }
+            place() {
+                return this.account().place(this.key());
+            }
+            holder_name() {
+                const holders = this.account().holders_other(this.key());
+                return holders.length ? this.account().device_name(holders[0]) : '';
+            }
+            artist() {
+                const artist = this.track()?.Artist()?.val() ?? '';
+                const status = $bog_music_beam.instance().status(this.key());
+                const where = status
+                    || (this.place() === 'remote' ? `на «${this.holder_name()}»` : '')
+                    || (this.place() === 'lost' ? 'файла нет' : '');
+                return [artist, where].filter(Boolean).join(' · ');
+            }
+            cover() {
+                return this.track()?.cover() ?? '';
+            }
+            Cover() {
+                return this.cover() ? super.Cover() : null;
+            }
+            Cover_placeholder() {
+                return this.cover() ? null : super.Cover_placeholder();
+            }
+            cached() {
+                return this.place() === 'disk';
+            }
+            blob_pending() {
+                return !this.cached();
+            }
+            can_drag() {
+                return !this.archive_mode();
+            }
+            menu_toggle() {
+                $bog_music_pop_toggle(this.Menu());
+                return null;
+            }
+            menu_items() {
+                return this.archive_mode()
+                    ? [this.Restore(), this.Delete_forever()]
+                    : [
+                        ...this.place() === 'remote' ? [this.Pull()] : [],
+                        this.Demote(),
+                        ...this.can_drop_cache() ? [this.Delete()] : [],
+                        ...this.move_targets().map(id => this.Move(id)),
+                        this.Archive(),
+                    ];
+            }
+            pull_label() {
+                return `Перенести с «${this.holder_name()}»`;
+            }
+            pull_click() {
+                this.Menu().showed(false);
+                $bog_music_beam.instance().pull_one(this.key());
+                return null;
+            }
+            account() {
+                return $bog_music_account_baza.home();
+            }
+            move_targets() {
+                return this.account().playlists().map(pl => pl.id);
+            }
+            move_member(id) {
+                return this.account().list_has(id, this.key());
+            }
+            move_content(id) {
+                return [
+                    this.move_member(id) ? this.Move_cut_icon(id) : this.Move_add_icon(id),
+                    this.Move_label(id),
+                ];
+            }
+            move_label(id) {
+                const title = this.account().playlist_title(id);
+                return this.move_member(id) ? `Убрать из «${title}»` : `В «${title}»`;
+            }
+            move_click(id) {
+                this.Menu().showed(false);
+                if (this.move_member(id))
+                    this.account().list_cut(id, this.key());
+                else
+                    this.account().list_add(id, this.key());
+                return null;
+            }
+            can_drop_cache() {
+                return this.cached() && this.account().holders_other(this.key()).length > 0;
+            }
+            delete_asked(next) {
+                return next ?? false;
+            }
+            content() {
+                return this.delete_asked() ? [this.Confirm()] : super.content();
+            }
+            confirm_text() {
+                return `Удалить «${this.title()}» навсегда?`;
+            }
+            delete_ask() {
+                this.Menu().showed(false);
+                this.delete_asked(true);
+                return null;
+            }
+            delete_cancel() {
+                this.delete_asked(false);
+                return null;
+            }
+            delete_confirm() {
+                this.delete_asked(false);
+                this.delete_forever();
+                return null;
+            }
+            on_play_click() {
+                this.play(this.key());
+            }
+            event_drag_start(event) {
+                if (!this.can_drag()) {
+                    event.preventDefault();
+                    return;
+                }
+                try {
+                    event.dataTransfer?.setData('text/x-bog-track', '1');
+                    if (event.dataTransfer)
+                        event.dataTransfer.effectAllowed = 'move';
+                }
+                catch { }
+                this.drag_start();
+            }
+            event_drag_over(event) {
+                if (!this.can_drag())
+                    return;
+                event.preventDefault();
+                if (event.dataTransfer)
+                    event.dataTransfer.dropEffect = 'move';
+            }
+            event_drop(event) {
+                if (!this.can_drag())
+                    return;
+                event.preventDefault();
+                this.drop_here();
+            }
+            delete_cached() {
+                this.Menu().showed(false);
+                void this.account().drop_file(this.key());
+            }
+            share() {
+                return $bog_music_share.instance();
+            }
+            share_selected() {
+                return this.share().selected(this.key());
+            }
+            _share_press_timer = null;
+            _share_long_press_fired = false;
+            static SHARE_LONG_PRESS_MS = 450;
+            share_pointer_down(event) {
+                if (!event)
+                    return null;
+                event.stopPropagation();
+                this._share_long_press_fired = false;
+                if (this._share_press_timer)
+                    clearTimeout(this._share_press_timer);
+                this._share_press_timer = setTimeout(() => {
+                    this._share_press_timer = null;
+                    this._share_long_press_fired = true;
+                    this.share().enter(this.key());
+                }, $bog_music_track.SHARE_LONG_PRESS_MS);
+                return null;
+            }
+            share_pointer_up(event) {
+                if (!event)
+                    return null;
+                event.stopPropagation();
+                if (this._share_press_timer) {
+                    clearTimeout(this._share_press_timer);
+                    this._share_press_timer = null;
+                }
+                if (this._share_long_press_fired)
+                    return null;
+                const share = this.share();
+                if (share.mode())
+                    share.toggle(this.key());
+                else
+                    share.share_single(this.key());
+                return null;
+            }
+            share_pointer_cancel(event) {
+                if (this._share_press_timer) {
+                    clearTimeout(this._share_press_timer);
+                    this._share_press_timer = null;
+                }
+                return null;
+            }
+            share_pointer_leave(event) {
+                return this.share_pointer_cancel(event);
+            }
+            demote_click() {
+                this.Menu().showed(false);
+                this.demote(null);
+                return null;
+            }
+            archive_click() {
+                this.Menu().showed(false);
+                this.archive(null);
+                return null;
+            }
+            restore_click() {
+                this.Menu().showed(false);
+                this.restore(null);
+                return null;
+            }
+        }
+        __decorate([
+            $mol_action
+        ], $bog_music_track.prototype, "menu_toggle", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_track.prototype, "pull_click", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_track.prototype, "move_click", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_track.prototype, "delete_asked", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_track.prototype, "delete_ask", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_track.prototype, "delete_cancel", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_track.prototype, "delete_confirm", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_track.prototype, "delete_cached", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_track.prototype, "demote_click", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_track.prototype, "archive_click", null);
+        __decorate([
+            $mol_action
+        ], $bog_music_track.prototype, "restore_click", null);
+        $$.$bog_music_track = $bog_music_track;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("bog/music/track/track.view.css", "/* Заголовок и исполнитель: не больше трёх и двух строк, дальше многоточие.\n   $mol_style_define не знает -webkit-box-orient, поэтому обычный CSS. */\n[bog_music_track_title],\n[bog_music_track_artist] {\n\tdisplay: -webkit-box;\n\t-webkit-box-orient: vertical;\n\toverflow: hidden;\n}\n[bog_music_track_title] {\n\t-webkit-line-clamp: 3;\n}\n[bog_music_track_artist] {\n\t-webkit-line-clamp: 2;\n}\n[bog_music_track_confirm_text] {\n\tdisplay: block;\n}\n\n/* Огромный шрифт: отступы не растут вместе с буквами, иначе на телефоне\n   тексту не остаётся места. */\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_track] {\n\tpadding: 0.25rem 0 0.25rem 0.125rem;\n\tgap: 0.25rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_app_body_content] {\n\tpadding-left: 0.25rem;\n\tpadding-right: 0.25rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_track_cover_box] {\n\twidth: 2.5rem;\n\theight: 2.5rem;\n}\nhtml:has([bog_music_app][bog_music_font=\"huge\"]) [bog_music_track_share] {\n\twidth: 1.75rem;\n}\n");
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        $mol_style_define($bog_music_track, {
+            flex: {
+                direction: 'row',
+            },
+            align: {
+                items: 'center',
+            },
+            gap: $mol_gap.text,
+            padding: {
+                top: '0.375rem',
+                bottom: '0.375rem',
+                left: '0.5rem',
+                right: '0.25rem',
+            },
+            borderRadius: '0.5rem',
+            Cover_box: {
+                flex: {
+                    shrink: 0,
+                    grow: 0,
+                },
+                width: '3rem',
+                height: '3rem',
+                borderRadius: '4px',
+                overflow: { x: 'hidden', y: 'hidden' },
+                cursor: 'pointer',
+                justify: { content: 'center' },
+                align: { items: 'center' },
+                background: {
+                    color: $mol_theme.line,
+                },
+            },
+            Cover: {
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+            },
+            Cover_placeholder: {
+                width: '1.75rem',
+                height: '1.75rem',
+                color: $mol_theme.shade,
+            },
+            Info: {
+                flex: {
+                    direction: 'column',
+                    grow: 1,
+                    shrink: 1,
+                },
+                minWidth: 0,
+                gap: '0.125rem',
+                cursor: 'pointer',
+            },
+            Title: {
+                font: {
+                    weight: 500,
+                    size: '1rem',
+                },
+                lineHeight: '1.25',
+                whiteSpace: 'normal',
+                wordBreak: 'break-word',
+            },
+            Artist: {
+                font: {
+                    size: '0.875rem',
+                },
+                lineHeight: '1.25',
+                color: $mol_theme.shade,
+                whiteSpace: 'normal',
+                wordBreak: 'break-word',
+            },
+            Share: {
+                flex: {
+                    shrink: 0,
+                    grow: 0,
+                },
+                width: '2.25rem',
+                height: '2.25rem',
+                justify: { content: 'center' },
+                align: { items: 'center' },
+                borderRadius: '4px',
+                cursor: 'pointer',
+                color: $mol_theme.shade,
+                touchAction: 'none',
+                userSelect: 'none',
+                transition: 'background 0.15s, color 0.15s',
+            },
+            Share_icon: {
+                width: '1.5rem',
+                height: '1.5rem',
+            },
+            Menu: {
+                flex: { shrink: 0 },
+            },
+            Menu_anchor: {
+                color: $mol_theme.shade,
+                padding: { left: '0.25rem', right: '0.25rem' },
+            },
+            Menu_panel: {
+                flex: { direction: 'column' },
+                align: { items: 'stretch' },
+                padding: {
+                    top: '0.25rem',
+                    bottom: '0.25rem',
+                    left: '0.25rem',
+                    right: '0.25rem',
+                },
+                minWidth: '13rem',
+            },
+            // Пункт меню: иконка + подпись в одну строку, прижаты влево.
+            Demote: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
+            Delete: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
+            Archive: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
+            Restore: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
+            Move: { justify: { content: 'flex-start' }, gap: $mol_gap.text },
+            Delete_forever: { justify: { content: 'flex-start' }, gap: $mol_gap.text, color: $mol_theme.special },
+            Confirm: {
+                flex: { direction: 'column', grow: 1, shrink: 1 },
+                minWidth: 0,
+                gap: $mol_gap.text,
+                padding: {
+                    top: '0.25rem',
+                    bottom: '0.25rem',
+                    left: '0.25rem',
+                    right: '0.25rem',
+                },
+            },
+            Confirm_text: {
+                whiteSpace: 'normal',
+                wordBreak: 'break-word',
+            },
+            Confirm_actions: {
+                flex: { direction: 'row', wrap: 'wrap' },
+                justify: { content: 'flex-end' },
+                gap: $mol_gap.text,
+            },
+            '@': {
+                bog_music_track_current: {
+                    true: {
+                        color: $mol_theme.focus,
+                    },
+                },
+                bog_music_track_pending: {
+                    true: {
+                        // blob ещё качается фоном — приглушаем строку, но она кликабельна
+                        // (клик играет через blob_wait, дождавшись докачки).
+                        opacity: 0.55,
+                    },
+                },
+                bog_music_track_share_selected: {
+                    true: {
+                        background: { color: $mol_theme.focus },
+                        color: $mol_theme.card,
                     },
                 },
             },
@@ -46748,6 +45643,167 @@ var $;
 "use strict";
 var $;
 (function ($) {
+    function fake_dir() {
+        const files = new Map();
+        const dir = {
+            async getFileHandle(name, opts) {
+                if (!files.has(name)) {
+                    if (!opts?.create)
+                        throw Object.assign(new Error('no'), { name: 'NotFoundError' });
+                    files.set(name, new Blob([]));
+                }
+                return {
+                    async getFile() {
+                        return new File([files.get(name)], name);
+                    },
+                    async createWritable() {
+                        const parts = [];
+                        return {
+                            async write(blob) { parts.push(blob); },
+                            async close() { files.set(name, new Blob(parts)); },
+                        };
+                    },
+                };
+            },
+            async removeEntry(name) {
+                if (!files.delete(name))
+                    throw Object.assign(new Error('no'), { name: 'NotFoundError' });
+            },
+            async *keys() {
+                yield* files.keys();
+            },
+        };
+        return dir;
+    }
+    $mol_test({
+        async 'put, read range, list and drop'() {
+            $bog_music_disk._dir = Promise.resolve(fake_dir());
+            const bytes = new Uint8Array([0, 0, 0, 0, 102, 116, 121, 112, 1, 2, 3, 4, 5, 6]);
+            await $bog_music_disk.put('tube/x y', bytes);
+            $mol_assert_equal($bog_music_disk.has('tube/x y'), true);
+            $mol_assert_equal(await $bog_music_disk.keys(), ['tube/x y']);
+            const range = await $bog_music_disk.bytes('tube/x y', 10, -1);
+            $mol_assert_equal(range.total, 14);
+            $mol_assert_equal(range.mime, 'audio/mp4');
+            $mol_assert_equal([...new Uint8Array(range.bytes)], [3, 4, 5, 6]);
+            await $bog_music_disk.drop('tube/x y');
+            $mol_assert_equal($bog_music_disk.has('tube/x y'), false);
+            $mol_assert_equal(await $bog_music_disk.file('tube/x y'), null);
+            $mol_assert_equal(await $bog_music_disk.bytes('tube/x y', 0, -1), null);
+            $bog_music_disk._dir = null;
+        },
+        'mime by magic bytes'() {
+            $mol_assert_equal($bog_music_disk.mime(new Uint8Array([0x4F, 0x67, 0x67, 0x53])), 'audio/ogg');
+            $mol_assert_equal($bog_music_disk.mime(new Uint8Array([0xFF, 0xF1, 0x50])), 'audio/aac');
+            $mol_assert_equal($bog_music_disk.mime(new Uint8Array([0x49, 0x44, 0x33])), 'audio/mpeg');
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /** Мощность 100-мс кусков постоянного сигнала с заданным средним квадратом. */
+    function power_of(hops, mean_square, hop) {
+        const power = new Float64Array(hops);
+        power.fill(mean_square * hop);
+        return power;
+    }
+    $mol_test({
+        'Множитель приводит запись к целевой громкости'() {
+            $mol_assert_equal($bog_music_gain.factor(null), 1);
+            $mol_assert_equal(Math.round($bog_music_gain.factor(-14) * 1000), 1000);
+            // Тише цели на 6 dB — усиление вдвое.
+            $mol_assert_equal(Math.round($bog_music_gain.factor(-20) * 100), 200);
+            // Громче цели на 6 dB — вдвое тише.
+            $mol_assert_equal(Math.round($bog_music_gain.factor(-8) * 100), 50);
+        },
+        'Множитель зажат пределами'() {
+            $mol_assert_equal($bog_music_gain.factor(-100), Math.pow(10, 12 / 20));
+            $mol_assert_equal($bog_music_gain.factor(20), Math.pow(10, -20 / 20));
+        },
+        'Громкость ровного сигнала'() {
+            const hop = 4800;
+            const lufs = $bog_music_gain.integrated(power_of(20, 0.01, hop), hop);
+            // -0.691 + 10 * log10( 0.01 )
+            $mol_assert_ok(Math.abs(lufs + 20.691) < 0.01);
+        },
+        'Тишина в конце записи не занижает громкость'() {
+            const hop = 4800;
+            const power = new Float64Array(40);
+            power.set(power_of(20, 0.01, hop), 0);
+            power.fill(1e-9 * hop, 20);
+            const lufs = $bog_music_gain.integrated(power, hop);
+            $mol_assert_ok(Math.abs(lufs + 20.691) < 0.5);
+        },
+        'Сплошная тишина не измеряется'() {
+            $mol_assert_equal($bog_music_gain.integrated(new Float64Array(20), 4800), null);
+            $mol_assert_equal($bog_music_gain.integrated(new Float64Array(2), 4800), null);
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_test({
+        'Пресеты покрывают все полосы и лежат в диапазоне'() {
+            for (const preset of $bog_music_eq.presets) {
+                $mol_assert_equal(preset.gains.length, $bog_music_eq.bands.length);
+                for (const db of preset.gains) {
+                    $mol_assert_ok(Math.abs(db) <= $bog_music_eq.range_db);
+                }
+            }
+        },
+        'Пресет узнаётся по своему же набору'() {
+            for (const preset of $bog_music_eq.presets) {
+                $mol_assert_equal($bog_music_eq.preset_of(preset.gains), preset.id);
+            }
+        },
+        'Набор мимо пресетов — «Свой»'() {
+            $mol_assert_equal($bog_music_eq.preset_of([1, 2, 3, 4, 5]), '');
+        },
+        'Ровный набор — это пресет «По умолчанию», а не «Свой»'() {
+            $mol_assert_equal($bog_music_eq.preset_of($bog_music_eq.flat()), 'default');
+        },
+        'Чужой набор приводится к нашим полосам'() {
+            // Короче — недостающие полосы в ноль, длиннее — лишние прочь.
+            $mol_assert_equal($bog_music_eq.clamp([3]).join(), '3,0,0,0,0,0');
+            $mol_assert_equal($bog_music_eq.clamp([1, 1, 1, 1, 1, 1, 1, 1]).join(), '1,1,1,1,1,1');
+            // За пределом — в потолок, дробное — к целым dB.
+            $mol_assert_equal($bog_music_eq.clamp([99, -99, 2.4, 2.6, NaN, 5]).join(), '12,-12,2,3,0,5');
+        },
+        'Настройка от пятиполосной версии не роняет полосы'() {
+            // В baza могла остаться строка на пять значений: шестая полоса в ноль,
+            // первые пять сохраняются как были.
+            $mol_assert_equal($bog_music_eq.parse('8,4,0,0,1').join(), '8,4,0,0,1,0');
+        },
+        'Цвет едет от зелёного через жёлтый к красному'() {
+            $mol_assert_equal($bog_music_eq.color(-12), 'hsl( 120 80% 55% )');
+            $mol_assert_equal($bog_music_eq.color(0), 'hsl( 50 80% 55% )');
+            $mol_assert_equal($bog_music_eq.color(12), 'hsl( 0 80% 55% )');
+            // За пределом диапазона цвет не уезжает дальше края.
+            $mol_assert_equal($bog_music_eq.color(99), $bog_music_eq.color(12));
+        },
+        'Набор переживает запись строкой и чтение обратно'() {
+            const gains = $bog_music_eq.preset('bass');
+            $mol_assert_equal($bog_music_eq.parse($bog_music_eq.stringify(gains)).join(), gains.join());
+            // Пусто в baza (настройки ещё не сохраняли) — плоский набор.
+            $mol_assert_equal($bog_music_eq.parse('').join(), $bog_music_eq.flat().join());
+            $mol_assert_equal($bog_music_eq.parse(null).join(), $bog_music_eq.flat().join());
+        },
+        'Неизвестный пресет не выдумывается'() {
+            $mol_assert_equal($bog_music_eq.preset('nope'), null);
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
     $mol_test({
         '$mol_syntax2_md_flow'() {
             const check = (input, right) => {
@@ -46796,81 +45852,45 @@ var $;
 ;
 "use strict";
 var $;
-(function ($_1) {
-    $mol_test_mocks.push($ => {
-        $.$giper_baza_land = $mws_baza_land;
-        $.$giper_baza_file = $mws_baza_file;
-    });
+(function ($) {
+    function pair() {
+        const make = () => Object.assign(new EventTarget, {
+            readyState: 'open',
+            bufferedAmount: 0,
+            bufferedAmountLowThreshold: 0,
+            binaryType: 'arraybuffer',
+            other: null,
+            send(data) {
+                const target = this.other;
+                setTimeout(() => target.dispatchEvent(new MessageEvent('message', { data })));
+            },
+        });
+        const left = make();
+        const right = make();
+        left.other = right;
+        right.other = left;
+        return [left, right];
+    }
     $mol_test({
-        async 'parts unloads sands after copy'($) {
-            const land = $.$giper_baza_land.make({ $ });
-            const file = land.Data($.$giper_baza_file);
-            const source = new Uint8Array(2 ** 15 + 100);
-            source[2 ** 15 + 50] = 255;
-            file.buffer(source);
-            const units = file.chunk_units();
-            $mol_assert_equal(units.length, 2);
-            // parts() зовёт sand_open через $mol_wire_sync — только из фибры
-            const parts = await $mol_wire_async(file).parts();
-            $mol_assert_equal(parts.length, 2);
-            const joined = new Uint8Array(parts.reduce((n, p) => n + p.byteLength, 0));
-            let offset = 0;
-            for (const part of parts) {
-                joined.set(part, offset);
-                offset += part.byteLength;
-            }
-            $mol_assert_equal(joined, source);
-            for (const unit of units) {
-                if (!unit.big())
-                    continue;
-                $mol_assert_equal(unit._ball, null);
-                $mol_assert_equal(unit._open, null);
-            }
-        },
-        async 'read_range returns window and unloads'($) {
-            const land = $.$giper_baza_land.make({ $ });
-            const file = land.Data($.$giper_baza_file);
-            const source = new Uint8Array(2 ** 15 + 100);
-            for (let i = 0; i < source.length; i++)
-                source[i] = i & 255;
-            file.buffer(source);
-            const slice = await $mol_wire_async(file).read_range(100, 200);
-            $mol_assert_equal(slice, source.subarray(100, 200));
-            const total = await $mol_wire_async(file).byte_length();
-            $mol_assert_equal(total, source.byteLength);
-            for (const unit of file.chunk_units()) {
-                if (!unit.big())
-                    continue;
-                $mol_assert_equal(unit._ball, null);
-                $mol_assert_equal(unit._open, null);
-            }
-        },
-    });
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($_1) {
-    $mol_test_mocks.push($ => {
-        $.$giper_baza_land = $bog_music_land;
-        $.$giper_baza_file = $mws_baza_file;
-    });
-    $mol_test({
-        async 'diff_units loads unloaded big sands back'($) {
-            const land = $.$giper_baza_land.make({ $ });
-            const file = land.Data($.$giper_baza_file);
-            file.buffer(new Uint8Array(2 ** 15 + 100).fill(7));
-            const big = file.chunk_units().filter(sand => sand.big());
-            $mol_assert_equal(big.length > 0, true);
-            await $mol_wire_async(land).diff_units();
-            const balls = new Map(big.map(sand => [sand, sand._ball]));
-            land.mine().ball_load = sand => balls.get(sand);
-            for (const sand of big)
-                land.sand_unload(sand);
-            await $mol_wire_async(land).diff_units();
-            for (const sand of big)
-                $mol_assert_equal(sand._ball, balls.get(sand));
+        async 'files go through channel in chunks with meta'() {
+            const [sender, receiver] = pair();
+            const big = new Uint8Array($bog_music_peer.chunk * 2 + 5).map((_, i) => i % 251);
+            const items = [
+                { key: 'a', meta: { title: 'A', artist: 'X', duration: 1, cover: '' }, file: new Blob([big]) },
+                { key: 'b', meta: { title: 'B', artist: 'Y', duration: 2, cover: '' }, file: new Blob([new Uint8Array([7])]) },
+            ];
+            const got = [];
+            const counted = [];
+            const [count] = await Promise.all([
+                $bog_music_peer.receive(receiver, async (item) => { got.push(item); }, (done, all) => counted.push(`${done}/${all}`)),
+                $bog_music_peer.send(sender, items),
+            ]);
+            $mol_assert_equal(count, 2);
+            $mol_assert_equal(got.map(item => item.key), ['a', 'b']);
+            $mol_assert_equal(got[0].meta.title, 'A');
+            $mol_assert_equal([...got[0].bytes], [...big]);
+            $mol_assert_equal([...got[1].bytes], [7]);
+            $mol_assert_equal(counted, ['0/2', '1/2', '2/2']);
         },
     });
 })($ || ($ = {}));
@@ -47053,106 +46073,6 @@ var $;
             $mol_assert_equal($.$bog_recsys.rewards().pop > 0, true);
             $.$bog_recsys.reset();
             $mol_assert_equal(Object.keys($.$bog_recsys.rewards()).length, 0);
-        },
-    });
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    /** Мощность 100-мс кусков постоянного сигнала с заданным средним квадратом. */
-    function power_of(hops, mean_square, hop) {
-        const power = new Float64Array(hops);
-        power.fill(mean_square * hop);
-        return power;
-    }
-    $mol_test({
-        'Множитель приводит запись к целевой громкости'() {
-            $mol_assert_equal($bog_music_gain.factor(null), 1);
-            $mol_assert_equal(Math.round($bog_music_gain.factor(-14) * 1000), 1000);
-            // Тише цели на 6 dB — усиление вдвое.
-            $mol_assert_equal(Math.round($bog_music_gain.factor(-20) * 100), 200);
-            // Громче цели на 6 dB — вдвое тише.
-            $mol_assert_equal(Math.round($bog_music_gain.factor(-8) * 100), 50);
-        },
-        'Множитель зажат пределами'() {
-            $mol_assert_equal($bog_music_gain.factor(-100), Math.pow(10, 12 / 20));
-            $mol_assert_equal($bog_music_gain.factor(20), Math.pow(10, -20 / 20));
-        },
-        'Громкость ровного сигнала'() {
-            const hop = 4800;
-            const lufs = $bog_music_gain.integrated(power_of(20, 0.01, hop), hop);
-            // -0.691 + 10 * log10( 0.01 )
-            $mol_assert_ok(Math.abs(lufs + 20.691) < 0.01);
-        },
-        'Тишина в конце записи не занижает громкость'() {
-            const hop = 4800;
-            const power = new Float64Array(40);
-            power.set(power_of(20, 0.01, hop), 0);
-            power.fill(1e-9 * hop, 20);
-            const lufs = $bog_music_gain.integrated(power, hop);
-            $mol_assert_ok(Math.abs(lufs + 20.691) < 0.5);
-        },
-        'Сплошная тишина не измеряется'() {
-            $mol_assert_equal($bog_music_gain.integrated(new Float64Array(20), 4800), null);
-            $mol_assert_equal($bog_music_gain.integrated(new Float64Array(2), 4800), null);
-        },
-    });
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_test({
-        'Пресеты покрывают все полосы и лежат в диапазоне'() {
-            for (const preset of $bog_music_eq.presets) {
-                $mol_assert_equal(preset.gains.length, $bog_music_eq.bands.length);
-                for (const db of preset.gains) {
-                    $mol_assert_ok(Math.abs(db) <= $bog_music_eq.range_db);
-                }
-            }
-        },
-        'Пресет узнаётся по своему же набору'() {
-            for (const preset of $bog_music_eq.presets) {
-                $mol_assert_equal($bog_music_eq.preset_of(preset.gains), preset.id);
-            }
-        },
-        'Набор мимо пресетов — «Свой»'() {
-            $mol_assert_equal($bog_music_eq.preset_of([1, 2, 3, 4, 5]), '');
-        },
-        'Ровный набор — это пресет «По умолчанию», а не «Свой»'() {
-            $mol_assert_equal($bog_music_eq.preset_of($bog_music_eq.flat()), 'default');
-        },
-        'Чужой набор приводится к нашим полосам'() {
-            // Короче — недостающие полосы в ноль, длиннее — лишние прочь.
-            $mol_assert_equal($bog_music_eq.clamp([3]).join(), '3,0,0,0,0,0');
-            $mol_assert_equal($bog_music_eq.clamp([1, 1, 1, 1, 1, 1, 1, 1]).join(), '1,1,1,1,1,1');
-            // За пределом — в потолок, дробное — к целым dB.
-            $mol_assert_equal($bog_music_eq.clamp([99, -99, 2.4, 2.6, NaN, 5]).join(), '12,-12,2,3,0,5');
-        },
-        'Настройка от пятиполосной версии не роняет полосы'() {
-            // В baza могла остаться строка на пять значений: шестая полоса в ноль,
-            // первые пять сохраняются как были.
-            $mol_assert_equal($bog_music_eq.parse('8,4,0,0,1').join(), '8,4,0,0,1,0');
-        },
-        'Цвет едет от зелёного через жёлтый к красному'() {
-            $mol_assert_equal($bog_music_eq.color(-12), 'hsl( 120 80% 55% )');
-            $mol_assert_equal($bog_music_eq.color(0), 'hsl( 50 80% 55% )');
-            $mol_assert_equal($bog_music_eq.color(12), 'hsl( 0 80% 55% )');
-            // За пределом диапазона цвет не уезжает дальше края.
-            $mol_assert_equal($bog_music_eq.color(99), $bog_music_eq.color(12));
-        },
-        'Набор переживает запись строкой и чтение обратно'() {
-            const gains = $bog_music_eq.preset('bass');
-            $mol_assert_equal($bog_music_eq.parse($bog_music_eq.stringify(gains)).join(), gains.join());
-            // Пусто в baza (настройки ещё не сохраняли) — плоский набор.
-            $mol_assert_equal($bog_music_eq.parse('').join(), $bog_music_eq.flat().join());
-            $mol_assert_equal($bog_music_eq.parse(null).join(), $bog_music_eq.flat().join());
-        },
-        'Неизвестный пресет не выдумывается'() {
-            $mol_assert_equal($bog_music_eq.preset('nope'), null);
         },
     });
 })($ || ($ = {}));

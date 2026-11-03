@@ -124,6 +124,7 @@
 	pack gipergram git \https://github.com/b-on-g/gipergram.git
 	pack pair git \https://github.com/b-on-g/pair.git
 	pack rsdemo git \https://github.com/b-on-g/rsdemo.git
+	pack build2 git \https://github.com/b-on-g/build2.git
 \/mol
 	pack icon git \https://github.com/nin-jin/mol_icon.git
 \/mol/view
@@ -230,16 +231,8 @@
 	deploy \/giper/baza/diagram/files.png
 	deploy \/giper/baza/diagram/network.png
 	deploy \/giper/baza/diagram/jepsen.png
-\/mws/baza/file
-	include \/mws/baza/land
-\/bog/music/stream
-	include \/mws/baza/file
-	include \/bog/music/account
 \/bog/music/boot
-	include \/mws/baza/file
-	include \/mws/baza/land
 	include \/bog/music/stream
-	include \/bog/music/land
 \/bog/music/app
 	include \/mol/offline/install
 	deploy \/bog/music/app/favicon.svg

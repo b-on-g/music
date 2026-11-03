@@ -6701,387 +6701,61 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    $mol_test({
-        '$mol_syntax2_md_flow'() {
-            const check = (input, right) => {
-                const tokens = [];
-                $mol_syntax2_md_flow.tokenize(input, (...token) => tokens.push(token));
-                $mol_assert_equal(tokens, right);
-            };
-            check('Hello,\nWorld..\r\n\r\n\nof Love!', [
-                ['block', 'Hello,\n', ['Hello,', '\n'], 0],
-                ['block', 'World..\r\n\r\n\n', ['World..', '\r\n\r\n\n'], 7],
-                ['block', 'of Love!', ['of Love!', ''], 19],
-            ]);
-            check('# Header1\n\nHello!\n\n## Header2', [
-                ['header', '# Header1\n\n', ['#', ' ', 'Header1', '\n\n'], 0],
-                ['block', 'Hello!\n\n', ['Hello!', '\n\n'], 11],
-                ['header', '## Header2', ['##', ' ', 'Header2', ''], 19],
-            ]);
-            check('```\nstart()\n```\n\n```jam.js\nrestart()\n```\n\nHello!\n\n```\nstop()\n```', [
-                ['code', '```\nstart()\n```\n\n', ['```', '', 'start()\n', '```', '\n\n'], 0],
-                ['code', '```jam.js\nrestart()\n```\n\n', ['```', 'jam.js', 'restart()\n', '```', '\n\n'], 17],
-                ['block', 'Hello!\n\n', ['Hello!', '\n\n'], 42],
-                ['code', '```\nstop()\n```', ['```', '', 'stop()\n', '```', ''], 50],
-            ]);
-            check('| header1 | header2\n|----|----\n| Cell11 | Cell12\n| Cell21 | Cell22\n\n| Cell11 | Cell12\n| Cell21 | Cell22\n', [
-                ['table', '| header1 | header2\n|----|----\n| Cell11 | Cell12\n| Cell21 | Cell22\n\n', ['| header1 | header2\n|----|----\n| Cell11 | Cell12\n| Cell21 | Cell22\n', '\n'], 0],
-                ['table', '| Cell11 | Cell12\n| Cell21 | Cell22\n', ['| Cell11 | Cell12\n| Cell21 | Cell22\n', ''], 68],
-            ]);
-        },
-    });
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_test({
-        'empty string'() {
-            $mol_assert_equal(''.match($giper_baza_text_tokens), null);
-        },
-        'new lines'() {
-            $mol_assert_equal('\n\r\n'.match($giper_baza_text_tokens), ['\n', '\r\n']);
-        },
-        'numbers'() {
-            $mol_assert_equal('123'.match($giper_baza_text_tokens), ['123']);
-        },
-        'emoji'() {
-            $mol_assert_equal('😀😁'.match($giper_baza_text_tokens), ['😀', '😁']);
-        },
-        'emoji with modifier'() {
-            $mol_assert_equal('👩🏿👩🏿'.match($giper_baza_text_tokens), ['👩🏿', '👩🏿']);
-        },
-        'combo emoji with modifier'() {
-            $mol_assert_equal('👩🏿‍🤝‍🧑🏿👩🏿‍🤝‍🧑🏿'.match($giper_baza_text_tokens), ['👩🏿‍🤝‍🧑🏿', '👩🏿‍🤝‍🧑🏿']);
-        },
-        'word with spaces'() {
-            $mol_assert_equal('foo1  bar2'.match($giper_baza_text_tokens), ['foo1', ' ', ' bar2']);
-        },
-        'word with diactric'() {
-            $mol_assert_equal('Е́е́'.match($giper_baza_text_tokens), ['Е́е́']);
-        },
-        'word with punctuation'() {
-            $mol_assert_equal('foo--bar'.match($giper_baza_text_tokens), ['foo', '--', 'bar']);
-        },
-        'CamelCase'() {
-            $mol_assert_equal('Foo1BAR2'.match($giper_baza_text_tokens), ['Foo1', 'BAR2']);
-        },
-    });
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($_1) {
-    $mol_test({
-        'Change sequences'($) {
-            const land = $giper_baza_land.make({ $ });
-            const text = land.Data($giper_baza_text);
-            const list = land.Data($giper_baza_list);
-            $mol_assert_equal(text.str(), '');
-            $mol_assert_equal(list.items_vary(), []);
-            text.str('foo');
-            $mol_assert_equal(text.str(), 'foo');
-            $mol_assert_equal(list.items_vary(), ['foo']);
-            text.str('foo bar');
-            $mol_assert_equal(text.str(), 'foo bar');
-            $mol_assert_equal(list.items_vary(), ['foo', ' bar']);
-            text.str('foo lol bar');
-            $mol_assert_equal(text.str(), 'foo lol bar');
-            $mol_assert_equal(list.items_vary(), ['foo', ' lol', ' bar']);
-            text.str('lol bar');
-            $mol_assert_equal(text.str(), 'lol bar');
-            $mol_assert_equal(list.items_vary(), ['lol', ' bar']);
-            text.str('foo bar');
-            $mol_assert_equal(text.str(), 'foo bar');
-            $mol_assert_equal(list.items_vary(), ['foo', ' bar']);
-            text.str('foo  bar');
-            $mol_assert_equal(text.str(), 'foo  bar');
-            $mol_assert_equal(list.items_vary(), ['foo', ' ', ' bar']);
-            text.str('foo  BarBar');
-            $mol_assert_equal(text.str(), 'foo  BarBar');
-            $mol_assert_equal(list.items_vary(), ['foo', ' ', ' Bar', 'Bar']);
-        },
-        async 'str: Offset <=> Point'($) {
-            const land = $giper_baza_land.make({ $ });
-            const text = land.Data($giper_baza_text);
-            text.str('fooBar');
-            const [first, second] = text.units();
-            $mol_assert_equal(text.point_by_offset(0), [first.self().str, 0, 0]);
-            $mol_assert_equal(text.offset_by_point([first.self().str, 0, 0]), [first.self().str, 0]);
-            $mol_assert_equal(text.point_by_offset(3), [first.self().str, 3, 0]);
-            $mol_assert_equal(text.offset_by_point([first.self().str, 3, 0]), [first.self().str, 3]);
-            $mol_assert_equal(text.offset_by_point([first.self().str, 5, 0]), [first.self().str, 5]);
-            $mol_assert_equal(text.point_by_offset(5), [second.self().str, 2, 0]);
-            $mol_assert_equal(text.offset_by_point([second.self().str, 2, 0]), [second.self().str, 5]);
-            $mol_assert_equal(text.point_by_offset(6), [second.self().str, 3, 0]);
-            $mol_assert_equal(text.offset_by_point([second.self().str, 3, 0]), [second.self().str, 6]);
-            $mol_assert_equal(text.point_by_offset(7), ['', 1, 0]);
-            $mol_assert_equal(text.offset_by_point(['', 1, 0]), ['', 7]);
-        },
-        async 'text: Offset <=> Point'($) {
-            const land = $giper_baza_land.make({ $ });
-            const text = land.Data($giper_baza_text);
-            text.text('foo bar\n666 777');
-            const [first, second] = text.pawns($giper_baza_text);
-            $mol_assert_equal(text.point_by_offset(0), [first.units()[0].self().str, 0, 0]);
-            $mol_assert_equal(text.offset_by_point([first.units()[0].self().str, 0, 0]), [first.units()[0].self().str, 0]);
-            $mol_assert_equal(text.point_by_offset(8), [first.units()[2].self().str, 1, 0]);
-            $mol_assert_equal(text.offset_by_point([first.units()[2].self().str, 1, 0]), [first.units()[2].self().str, 8]);
-        },
-        async 'Merge different sequences'($) {
-            const land1 = $giper_baza_land.make({ $ });
-            const land2 = $giper_baza_land.make({ $ });
-            const text1 = land1.Pawn($giper_baza_text).Data();
-            const text2 = land2.Pawn($giper_baza_text).Data();
-            text1.str('foo bar.');
-            land2.faces.stat.time = land1.faces.stat.time;
-            text2.str('xxx yyy.');
-            const delta1 = await $mol_wire_async(land1).diff_units();
-            const delta2 = await $mol_wire_async(land2).diff_units();
-            await $mol_wire_async(land1).diff_apply(delta2);
-            await $mol_wire_async(land2).diff_apply(delta1);
-            $mol_assert_equal(text1.str(), text2.str(), 'xxx yyy.foo bar.');
-        },
-        async 'Merge same insertions with different changes to same place'($) {
-            const base = $giper_baza_land.make({ $ });
-            base.Data($giper_baza_text).str('( )');
-            const left = $giper_baza_land.make({ $ });
-            await $mol_wire_async(left).units_steal(base);
-            left.Data($giper_baza_text).str('( [ f ] )');
-            left.Data($giper_baza_text).str('( [ foo ] )');
-            const right = $giper_baza_land.make({ $ });
-            await $mol_wire_async(right).units_steal(base);
-            right.faces.sync(left.faces);
-            right.Data($giper_baza_text).str('( [ f ] )');
-            right.Data($giper_baza_text).str('( [ fu ] )');
-            const left_delta = await $mol_wire_async(left).diff_units(base.faces);
-            const right_delta = await $mol_wire_async(right).diff_units(base.faces);
-            await $mol_wire_async(left).diff_apply(right_delta);
-            await $mol_wire_async(right).diff_apply(left_delta);
-            $mol_assert_equal(left.Data($giper_baza_text).str(), right.Data($giper_baza_text).str(), '( [ fu ] [ foo ] )');
-        },
-    });
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($_1) {
-    function html(dom) {
-        return dom.html().replace(/ (id|xmlns)=".+?"/g, '');
+    function fake_dir() {
+        const files = new Map();
+        const dir = {
+            async getFileHandle(name, opts) {
+                if (!files.has(name)) {
+                    if (!opts?.create)
+                        throw Object.assign(new Error('no'), { name: 'NotFoundError' });
+                    files.set(name, new Blob([]));
+                }
+                return {
+                    async getFile() {
+                        return new File([files.get(name)], name);
+                    },
+                    async createWritable() {
+                        const parts = [];
+                        return {
+                            async write(blob) { parts.push(blob); },
+                            async close() { files.set(name, new Blob(parts)); },
+                        };
+                    },
+                };
+            },
+            async removeEntry(name) {
+                if (!files.delete(name))
+                    throw Object.assign(new Error('no'), { name: 'NotFoundError' });
+            },
+            async *keys() {
+                yield* files.keys();
+            },
+        };
+        return dir;
     }
     $mol_test({
-        'plain text'($) {
-            const left = $giper_baza_land.make({ $ }).Data($giper_baza_rich);
-            left.html('foo bar');
-            $mol_assert_equal(html(left), '<span>foo</span><span> bar</span>');
+        async 'put, read range, list and drop'() {
+            $bog_music_disk._dir = Promise.resolve(fake_dir());
+            const bytes = new Uint8Array([0, 0, 0, 0, 102, 116, 121, 112, 1, 2, 3, 4, 5, 6]);
+            await $bog_music_disk.put('tube/x y', bytes);
+            $mol_assert_equal($bog_music_disk.has('tube/x y'), true);
+            $mol_assert_equal(await $bog_music_disk.keys(), ['tube/x y']);
+            const range = await $bog_music_disk.bytes('tube/x y', 10, -1);
+            $mol_assert_equal(range.total, 14);
+            $mol_assert_equal(range.mime, 'audio/mp4');
+            $mol_assert_equal([...new Uint8Array(range.bytes)], [3, 4, 5, 6]);
+            await $bog_music_disk.drop('tube/x y');
+            $mol_assert_equal($bog_music_disk.has('tube/x y'), false);
+            $mol_assert_equal(await $bog_music_disk.file('tube/x y'), null);
+            $mol_assert_equal(await $bog_music_disk.bytes('tube/x y', 0, -1), null);
+            $bog_music_disk._dir = null;
         },
-        'simple tags'($) {
-            const left = $giper_baza_land.make({ $ }).Data($giper_baza_rich);
-            left.html('<br /><hr />');
-            $mol_assert_equal(html(left), '<br /><hr />');
-        },
-        'tags with attrs'($) {
-            const left = $giper_baza_land.make({ $ }).Data($giper_baza_rich);
-            left.html('<br hidden="" /><hr tabindex="-1" />');
-            $mol_assert_equal(html(left), '<br hidden="" /><hr tabindex="-1" />');
-        },
-        'nested tags'($) {
-            const left = $giper_baza_land.make({ $ }).Data($giper_baza_rich);
-            left.html('<p><br /></p>');
-            $mol_assert_equal(html(left), '<p><br /></p>');
-        },
-        'paragraphs'($) {
-            const left = $giper_baza_land.make({ $ }).Data($giper_baza_rich);
-            left.html('<p>foo bar</p><p>xxx yyy</p>');
-            $mol_assert_equal(html(left), '<p><span>foo</span><span> bar</span></p><p><span>xxx</span><span> yyy</span></p>');
-        },
-        'import exported html'($) {
-            const left = $giper_baza_land.make({ $ }).Data($giper_baza_rich);
-            left.html('foo<a data-xxx="yyy" href="hhh:zzz">ton</a>bar');
-            const right = $giper_baza_land.make({ $ }).Data($giper_baza_rich);
-            right.html(left.html());
-            $mol_assert_equal(html(left), html(right));
-            $mol_assert_equal(left.html(), right.html());
-        },
-        'import wild spans'($) {
-            const left = $giper_baza_land.make({ $ }).Data($giper_baza_rich);
-            left.html('<span>foo bar<a href="hhh:ton"/></span>');
-            $mol_assert_equal(html(left), '<span>foo</span><span> bar</span><a href="hhh:ton"></a>');
+        'mime by magic bytes'() {
+            $mol_assert_equal($bog_music_disk.mime(new Uint8Array([0x4F, 0x67, 0x67, 0x53])), 'audio/ogg');
+            $mol_assert_equal($bog_music_disk.mime(new Uint8Array([0xFF, 0xF1, 0x50])), 'audio/aac');
+            $mol_assert_equal($bog_music_disk.mime(new Uint8Array([0x49, 0x44, 0x33])), 'audio/mpeg');
         },
     });
-})($ || ($ = {}));
-
-;
-"use strict";
-/** @jsx $mol_jsx */
-var $;
-(function ($) {
-    $mol_test({
-        'Attach to document'() {
-            const doc = $mol_dom_parse('<html><body id="foo"></body></html>');
-            $mol_jsx_attach(doc, () => $mol_jsx("body", { id: "foo" }, "bar"));
-            $mol_assert_equal(doc.documentElement.outerHTML, '<html><body id="foo">bar</body></html>');
-        },
-    });
-})($ || ($ = {}));
-
-;
-"use strict";
-/** @jsx $mol_jsx */
-var $;
-(function ($_1) {
-    var $$;
-    (function ($$) {
-        $mol_test({
-            "Head"($) {
-                const div = $mol_jsx("div", null, "foo");
-                $mol_assert_equal($mol_dom_point.head(div), new $mol_dom_point(div, 0));
-                $mol_assert_equal($mol_dom_point.head(div).is_head(), true);
-                $mol_assert_equal(new $mol_dom_point(div.firstChild, 1).is_head(), false);
-            },
-            "Foot"($) {
-                const div = $mol_jsx("div", null, "foo");
-                $mol_assert_equal($mol_dom_point.foot(div), new $mol_dom_point(div, 1), $mol_dom_point.tail(div.firstChild));
-                $mol_assert_equal($mol_dom_point.foot(div).is_foot(), true);
-                $mol_assert_equal(new $mol_dom_point(div.firstChild, 2).is_foot(), false);
-            },
-            "Near & jump"($) {
-                const div = $mol_jsx("div", null,
-                    "123",
-                    $mol_jsx("span", null, "foo"),
-                    "456");
-                const span = div.childNodes[1];
-                $mol_assert_equal(new $mol_dom_point(div, 1), $mol_dom_point.near(span, -1), new $mol_dom_point(span, 1).jump(-1));
-                $mol_assert_equal(new $mol_dom_point(div, 2), $mol_dom_point.near(span, +1), new $mol_dom_point(span, 1).jump(+1));
-            },
-            "Lift points to common parent"($) {
-                const div = $mol_jsx("div", null,
-                    "123",
-                    $mol_jsx("p", null,
-                        $mol_jsx("span", null, "one")),
-                    "456");
-                const para = div.firstChild.nextSibling;
-                const deep = para.firstChild.firstChild;
-                $mol_assert_equal($mol_dom_point.head(deep).lifted_to(div), para);
-                $mol_assert_equal($mol_dom_point.head(div.firstChild).lifted_to(div), div.firstChild);
-            },
-            "move by steps to the end"($) {
-                const div = $mol_jsx("div", null,
-                    "1",
-                    $mol_jsx("span", null, "23"),
-                    $mol_jsx("br", null),
-                    "4");
-                const span = div.childNodes[1];
-                const br = div.childNodes[2];
-                let cursor = $mol_dom_point.head(div);
-                $mol_assert_equal([
-                    cursor = cursor.move_step(+1),
-                    cursor = cursor.move_step(+1),
-                    cursor = cursor.move_step(+1),
-                    cursor = cursor.move_step(+1),
-                    cursor = cursor.move_step(+1),
-                    cursor = cursor.move_step(+1),
-                    cursor = cursor.move_step(+1),
-                    cursor = cursor.move_step(+1),
-                    cursor = cursor.move_step(+1),
-                    cursor = cursor.move_step(+1),
-                    cursor = cursor.move_step(+1),
-                    cursor = cursor.move_step(+1),
-                    cursor = cursor.move_step(+1),
-                    cursor = cursor.move_step(+1),
-                    cursor = cursor.move_step(+1),
-                ], [
-                    $mol_dom_point.head(div.firstChild),
-                    $mol_dom_point.foot(div.firstChild),
-                    $mol_dom_point.tail(div.firstChild),
-                    $mol_dom_point.head(span),
-                    $mol_dom_point.head(span.firstChild),
-                    new $mol_dom_point(span.firstChild, 1),
-                    $mol_dom_point.foot(span.firstChild),
-                    $mol_dom_point.tail(span.firstChild),
-                    $mol_dom_point.tail(span),
-                    $mol_dom_point.head(br),
-                    $mol_dom_point.tail(br),
-                    $mol_dom_point.head(div.lastChild),
-                    $mol_dom_point.foot(div.lastChild),
-                    $mol_dom_point.tail(div.lastChild),
-                    null,
-                ]);
-            },
-            "move by chars to the end"($) {
-                const div = $mol_jsx("div", null,
-                    "1",
-                    $mol_jsx("span", null, "23"),
-                    $mol_jsx("br", null),
-                    "4");
-                const span = div.childNodes[1];
-                const br = div.childNodes[2];
-                let start = $mol_dom_point.head(div);
-                $mol_assert_equal([
-                    start.move_chars(div, +0),
-                    start.move_chars(div, +1),
-                    start.move_chars(div, +2),
-                    start.move_chars(div, +3),
-                    start.move_chars(div, +4),
-                    start.move_chars(div, +5),
-                ], [
-                    $mol_dom_point.head(div),
-                    $mol_dom_point.foot(div.firstChild),
-                    new $mol_dom_point(span.firstChild, 1),
-                    $mol_dom_point.foot(span.firstChild),
-                    $mol_dom_point.foot(div.lastChild),
-                    $mol_dom_point.foot(div),
-                ]);
-            },
-        });
-    })($$ = $_1.$$ || ($_1.$$ = {}));
-})($ || ($ = {}));
-
-;
-"use strict";
-/** @jsx $mol_jsx */
-var $;
-(function ($_1) {
-    var $$;
-    (function ($$) {
-        $mol_test({
-            "Inside, expand & around"($) {
-                const div = $mol_jsx("div", null,
-                    "123",
-                    $mol_jsx("span", null, "foo"),
-                    "456");
-                const span = div.childNodes[1];
-                $mol_assert_equal($mol_dom_range.inside(span).expand(), $mol_dom_range.around(span));
-            },
-            "Order range points"($) {
-                const div = $mol_jsx("div", null,
-                    $mol_jsx("span", null, "one"),
-                    $mol_jsx("span", null, "two"));
-                const one = $mol_dom_point.head(div.firstChild);
-                const two = $mol_dom_point.head(div.lastChild);
-                const forward = new $mol_dom_range(one, two);
-                const backward = new $mol_dom_range(two, one);
-                $mol_assert_equal(forward.ordered(), backward.ordered(), forward);
-            },
-            "Lift to common block parent"($) {
-                const quote = $mol_jsx("blockquote", null,
-                    "123",
-                    $mol_jsx("p", null,
-                        $mol_jsx("span", null, "foo")),
-                    $mol_jsx("p", null,
-                        $mol_jsx("span", null, "bar")),
-                    "456");
-                const foo = quote.firstChild.nextSibling;
-                const bar = quote.lastChild.previousSibling.firstChild.firstChild;
-                const lifted = new $mol_dom_range($mol_dom_point.head(foo), $mol_dom_point.foot(bar)).lifted();
-                const ideal = new $mol_dom_range($mol_dom_point.tail(quote.firstChild), $mol_dom_point.nose(quote.lastChild));
-                $mol_assert_equal(lifted, ideal);
-            },
-        });
-    })($$ = $_1.$$ || ($_1.$$ = {}));
 })($ || ($ = {}));
 
 ;
@@ -7575,6 +7249,539 @@ var $;
 "use strict";
 var $;
 (function ($) {
+    /** Мощность 100-мс кусков постоянного сигнала с заданным средним квадратом. */
+    function power_of(hops, mean_square, hop) {
+        const power = new Float64Array(hops);
+        power.fill(mean_square * hop);
+        return power;
+    }
+    $mol_test({
+        'Множитель приводит запись к целевой громкости'() {
+            $mol_assert_equal($bog_music_gain.factor(null), 1);
+            $mol_assert_equal(Math.round($bog_music_gain.factor(-14) * 1000), 1000);
+            // Тише цели на 6 dB — усиление вдвое.
+            $mol_assert_equal(Math.round($bog_music_gain.factor(-20) * 100), 200);
+            // Громче цели на 6 dB — вдвое тише.
+            $mol_assert_equal(Math.round($bog_music_gain.factor(-8) * 100), 50);
+        },
+        'Множитель зажат пределами'() {
+            $mol_assert_equal($bog_music_gain.factor(-100), Math.pow(10, 12 / 20));
+            $mol_assert_equal($bog_music_gain.factor(20), Math.pow(10, -20 / 20));
+        },
+        'Громкость ровного сигнала'() {
+            const hop = 4800;
+            const lufs = $bog_music_gain.integrated(power_of(20, 0.01, hop), hop);
+            // -0.691 + 10 * log10( 0.01 )
+            $mol_assert_ok(Math.abs(lufs + 20.691) < 0.01);
+        },
+        'Тишина в конце записи не занижает громкость'() {
+            const hop = 4800;
+            const power = new Float64Array(40);
+            power.set(power_of(20, 0.01, hop), 0);
+            power.fill(1e-9 * hop, 20);
+            const lufs = $bog_music_gain.integrated(power, hop);
+            $mol_assert_ok(Math.abs(lufs + 20.691) < 0.5);
+        },
+        'Сплошная тишина не измеряется'() {
+            $mol_assert_equal($bog_music_gain.integrated(new Float64Array(20), 4800), null);
+            $mol_assert_equal($bog_music_gain.integrated(new Float64Array(2), 4800), null);
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_test({
+        'Пресеты покрывают все полосы и лежат в диапазоне'() {
+            for (const preset of $bog_music_eq.presets) {
+                $mol_assert_equal(preset.gains.length, $bog_music_eq.bands.length);
+                for (const db of preset.gains) {
+                    $mol_assert_ok(Math.abs(db) <= $bog_music_eq.range_db);
+                }
+            }
+        },
+        'Пресет узнаётся по своему же набору'() {
+            for (const preset of $bog_music_eq.presets) {
+                $mol_assert_equal($bog_music_eq.preset_of(preset.gains), preset.id);
+            }
+        },
+        'Набор мимо пресетов — «Свой»'() {
+            $mol_assert_equal($bog_music_eq.preset_of([1, 2, 3, 4, 5]), '');
+        },
+        'Ровный набор — это пресет «По умолчанию», а не «Свой»'() {
+            $mol_assert_equal($bog_music_eq.preset_of($bog_music_eq.flat()), 'default');
+        },
+        'Чужой набор приводится к нашим полосам'() {
+            // Короче — недостающие полосы в ноль, длиннее — лишние прочь.
+            $mol_assert_equal($bog_music_eq.clamp([3]).join(), '3,0,0,0,0,0');
+            $mol_assert_equal($bog_music_eq.clamp([1, 1, 1, 1, 1, 1, 1, 1]).join(), '1,1,1,1,1,1');
+            // За пределом — в потолок, дробное — к целым dB.
+            $mol_assert_equal($bog_music_eq.clamp([99, -99, 2.4, 2.6, NaN, 5]).join(), '12,-12,2,3,0,5');
+        },
+        'Настройка от пятиполосной версии не роняет полосы'() {
+            // В baza могла остаться строка на пять значений: шестая полоса в ноль,
+            // первые пять сохраняются как были.
+            $mol_assert_equal($bog_music_eq.parse('8,4,0,0,1').join(), '8,4,0,0,1,0');
+        },
+        'Цвет едет от зелёного через жёлтый к красному'() {
+            $mol_assert_equal($bog_music_eq.color(-12), 'hsl( 120 80% 55% )');
+            $mol_assert_equal($bog_music_eq.color(0), 'hsl( 50 80% 55% )');
+            $mol_assert_equal($bog_music_eq.color(12), 'hsl( 0 80% 55% )');
+            // За пределом диапазона цвет не уезжает дальше края.
+            $mol_assert_equal($bog_music_eq.color(99), $bog_music_eq.color(12));
+        },
+        'Набор переживает запись строкой и чтение обратно'() {
+            const gains = $bog_music_eq.preset('bass');
+            $mol_assert_equal($bog_music_eq.parse($bog_music_eq.stringify(gains)).join(), gains.join());
+            // Пусто в baza (настройки ещё не сохраняли) — плоский набор.
+            $mol_assert_equal($bog_music_eq.parse('').join(), $bog_music_eq.flat().join());
+            $mol_assert_equal($bog_music_eq.parse(null).join(), $bog_music_eq.flat().join());
+        },
+        'Неизвестный пресет не выдумывается'() {
+            $mol_assert_equal($bog_music_eq.preset('nope'), null);
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_test({
+        '$mol_syntax2_md_flow'() {
+            const check = (input, right) => {
+                const tokens = [];
+                $mol_syntax2_md_flow.tokenize(input, (...token) => tokens.push(token));
+                $mol_assert_equal(tokens, right);
+            };
+            check('Hello,\nWorld..\r\n\r\n\nof Love!', [
+                ['block', 'Hello,\n', ['Hello,', '\n'], 0],
+                ['block', 'World..\r\n\r\n\n', ['World..', '\r\n\r\n\n'], 7],
+                ['block', 'of Love!', ['of Love!', ''], 19],
+            ]);
+            check('# Header1\n\nHello!\n\n## Header2', [
+                ['header', '# Header1\n\n', ['#', ' ', 'Header1', '\n\n'], 0],
+                ['block', 'Hello!\n\n', ['Hello!', '\n\n'], 11],
+                ['header', '## Header2', ['##', ' ', 'Header2', ''], 19],
+            ]);
+            check('```\nstart()\n```\n\n```jam.js\nrestart()\n```\n\nHello!\n\n```\nstop()\n```', [
+                ['code', '```\nstart()\n```\n\n', ['```', '', 'start()\n', '```', '\n\n'], 0],
+                ['code', '```jam.js\nrestart()\n```\n\n', ['```', 'jam.js', 'restart()\n', '```', '\n\n'], 17],
+                ['block', 'Hello!\n\n', ['Hello!', '\n\n'], 42],
+                ['code', '```\nstop()\n```', ['```', '', 'stop()\n', '```', ''], 50],
+            ]);
+            check('| header1 | header2\n|----|----\n| Cell11 | Cell12\n| Cell21 | Cell22\n\n| Cell11 | Cell12\n| Cell21 | Cell22\n', [
+                ['table', '| header1 | header2\n|----|----\n| Cell11 | Cell12\n| Cell21 | Cell22\n\n', ['| header1 | header2\n|----|----\n| Cell11 | Cell12\n| Cell21 | Cell22\n', '\n'], 0],
+                ['table', '| Cell11 | Cell12\n| Cell21 | Cell22\n', ['| Cell11 | Cell12\n| Cell21 | Cell22\n', ''], 68],
+            ]);
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    function pair() {
+        const make = () => Object.assign(new EventTarget, {
+            readyState: 'open',
+            bufferedAmount: 0,
+            bufferedAmountLowThreshold: 0,
+            binaryType: 'arraybuffer',
+            other: null,
+            send(data) {
+                const target = this.other;
+                setTimeout(() => target.dispatchEvent(new MessageEvent('message', { data })));
+            },
+        });
+        const left = make();
+        const right = make();
+        left.other = right;
+        right.other = left;
+        return [left, right];
+    }
+    $mol_test({
+        async 'files go through channel in chunks with meta'() {
+            const [sender, receiver] = pair();
+            const big = new Uint8Array($bog_music_peer.chunk * 2 + 5).map((_, i) => i % 251);
+            const items = [
+                { key: 'a', meta: { title: 'A', artist: 'X', duration: 1, cover: '' }, file: new Blob([big]) },
+                { key: 'b', meta: { title: 'B', artist: 'Y', duration: 2, cover: '' }, file: new Blob([new Uint8Array([7])]) },
+            ];
+            const got = [];
+            const counted = [];
+            const [count] = await Promise.all([
+                $bog_music_peer.receive(receiver, async (item) => { got.push(item); }, (done, all) => counted.push(`${done}/${all}`)),
+                $bog_music_peer.send(sender, items),
+            ]);
+            $mol_assert_equal(count, 2);
+            $mol_assert_equal(got.map(item => item.key), ['a', 'b']);
+            $mol_assert_equal(got[0].meta.title, 'A');
+            $mol_assert_equal([...got[0].bytes], [...big]);
+            $mol_assert_equal([...got[1].bytes], [7]);
+            $mol_assert_equal(counted, ['0/2', '1/2', '2/2']);
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_test({
+        'empty string'() {
+            $mol_assert_equal(''.match($giper_baza_text_tokens), null);
+        },
+        'new lines'() {
+            $mol_assert_equal('\n\r\n'.match($giper_baza_text_tokens), ['\n', '\r\n']);
+        },
+        'numbers'() {
+            $mol_assert_equal('123'.match($giper_baza_text_tokens), ['123']);
+        },
+        'emoji'() {
+            $mol_assert_equal('😀😁'.match($giper_baza_text_tokens), ['😀', '😁']);
+        },
+        'emoji with modifier'() {
+            $mol_assert_equal('👩🏿👩🏿'.match($giper_baza_text_tokens), ['👩🏿', '👩🏿']);
+        },
+        'combo emoji with modifier'() {
+            $mol_assert_equal('👩🏿‍🤝‍🧑🏿👩🏿‍🤝‍🧑🏿'.match($giper_baza_text_tokens), ['👩🏿‍🤝‍🧑🏿', '👩🏿‍🤝‍🧑🏿']);
+        },
+        'word with spaces'() {
+            $mol_assert_equal('foo1  bar2'.match($giper_baza_text_tokens), ['foo1', ' ', ' bar2']);
+        },
+        'word with diactric'() {
+            $mol_assert_equal('Е́е́'.match($giper_baza_text_tokens), ['Е́е́']);
+        },
+        'word with punctuation'() {
+            $mol_assert_equal('foo--bar'.match($giper_baza_text_tokens), ['foo', '--', 'bar']);
+        },
+        'CamelCase'() {
+            $mol_assert_equal('Foo1BAR2'.match($giper_baza_text_tokens), ['Foo1', 'BAR2']);
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($_1) {
+    $mol_test({
+        'Change sequences'($) {
+            const land = $giper_baza_land.make({ $ });
+            const text = land.Data($giper_baza_text);
+            const list = land.Data($giper_baza_list);
+            $mol_assert_equal(text.str(), '');
+            $mol_assert_equal(list.items_vary(), []);
+            text.str('foo');
+            $mol_assert_equal(text.str(), 'foo');
+            $mol_assert_equal(list.items_vary(), ['foo']);
+            text.str('foo bar');
+            $mol_assert_equal(text.str(), 'foo bar');
+            $mol_assert_equal(list.items_vary(), ['foo', ' bar']);
+            text.str('foo lol bar');
+            $mol_assert_equal(text.str(), 'foo lol bar');
+            $mol_assert_equal(list.items_vary(), ['foo', ' lol', ' bar']);
+            text.str('lol bar');
+            $mol_assert_equal(text.str(), 'lol bar');
+            $mol_assert_equal(list.items_vary(), ['lol', ' bar']);
+            text.str('foo bar');
+            $mol_assert_equal(text.str(), 'foo bar');
+            $mol_assert_equal(list.items_vary(), ['foo', ' bar']);
+            text.str('foo  bar');
+            $mol_assert_equal(text.str(), 'foo  bar');
+            $mol_assert_equal(list.items_vary(), ['foo', ' ', ' bar']);
+            text.str('foo  BarBar');
+            $mol_assert_equal(text.str(), 'foo  BarBar');
+            $mol_assert_equal(list.items_vary(), ['foo', ' ', ' Bar', 'Bar']);
+        },
+        async 'str: Offset <=> Point'($) {
+            const land = $giper_baza_land.make({ $ });
+            const text = land.Data($giper_baza_text);
+            text.str('fooBar');
+            const [first, second] = text.units();
+            $mol_assert_equal(text.point_by_offset(0), [first.self().str, 0, 0]);
+            $mol_assert_equal(text.offset_by_point([first.self().str, 0, 0]), [first.self().str, 0]);
+            $mol_assert_equal(text.point_by_offset(3), [first.self().str, 3, 0]);
+            $mol_assert_equal(text.offset_by_point([first.self().str, 3, 0]), [first.self().str, 3]);
+            $mol_assert_equal(text.offset_by_point([first.self().str, 5, 0]), [first.self().str, 5]);
+            $mol_assert_equal(text.point_by_offset(5), [second.self().str, 2, 0]);
+            $mol_assert_equal(text.offset_by_point([second.self().str, 2, 0]), [second.self().str, 5]);
+            $mol_assert_equal(text.point_by_offset(6), [second.self().str, 3, 0]);
+            $mol_assert_equal(text.offset_by_point([second.self().str, 3, 0]), [second.self().str, 6]);
+            $mol_assert_equal(text.point_by_offset(7), ['', 1, 0]);
+            $mol_assert_equal(text.offset_by_point(['', 1, 0]), ['', 7]);
+        },
+        async 'text: Offset <=> Point'($) {
+            const land = $giper_baza_land.make({ $ });
+            const text = land.Data($giper_baza_text);
+            text.text('foo bar\n666 777');
+            const [first, second] = text.pawns($giper_baza_text);
+            $mol_assert_equal(text.point_by_offset(0), [first.units()[0].self().str, 0, 0]);
+            $mol_assert_equal(text.offset_by_point([first.units()[0].self().str, 0, 0]), [first.units()[0].self().str, 0]);
+            $mol_assert_equal(text.point_by_offset(8), [first.units()[2].self().str, 1, 0]);
+            $mol_assert_equal(text.offset_by_point([first.units()[2].self().str, 1, 0]), [first.units()[2].self().str, 8]);
+        },
+        async 'Merge different sequences'($) {
+            const land1 = $giper_baza_land.make({ $ });
+            const land2 = $giper_baza_land.make({ $ });
+            const text1 = land1.Pawn($giper_baza_text).Data();
+            const text2 = land2.Pawn($giper_baza_text).Data();
+            text1.str('foo bar.');
+            land2.faces.stat.time = land1.faces.stat.time;
+            text2.str('xxx yyy.');
+            const delta1 = await $mol_wire_async(land1).diff_units();
+            const delta2 = await $mol_wire_async(land2).diff_units();
+            await $mol_wire_async(land1).diff_apply(delta2);
+            await $mol_wire_async(land2).diff_apply(delta1);
+            $mol_assert_equal(text1.str(), text2.str(), 'xxx yyy.foo bar.');
+        },
+        async 'Merge same insertions with different changes to same place'($) {
+            const base = $giper_baza_land.make({ $ });
+            base.Data($giper_baza_text).str('( )');
+            const left = $giper_baza_land.make({ $ });
+            await $mol_wire_async(left).units_steal(base);
+            left.Data($giper_baza_text).str('( [ f ] )');
+            left.Data($giper_baza_text).str('( [ foo ] )');
+            const right = $giper_baza_land.make({ $ });
+            await $mol_wire_async(right).units_steal(base);
+            right.faces.sync(left.faces);
+            right.Data($giper_baza_text).str('( [ f ] )');
+            right.Data($giper_baza_text).str('( [ fu ] )');
+            const left_delta = await $mol_wire_async(left).diff_units(base.faces);
+            const right_delta = await $mol_wire_async(right).diff_units(base.faces);
+            await $mol_wire_async(left).diff_apply(right_delta);
+            await $mol_wire_async(right).diff_apply(left_delta);
+            $mol_assert_equal(left.Data($giper_baza_text).str(), right.Data($giper_baza_text).str(), '( [ fu ] [ foo ] )');
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($_1) {
+    function html(dom) {
+        return dom.html().replace(/ (id|xmlns)=".+?"/g, '');
+    }
+    $mol_test({
+        'plain text'($) {
+            const left = $giper_baza_land.make({ $ }).Data($giper_baza_rich);
+            left.html('foo bar');
+            $mol_assert_equal(html(left), '<span>foo</span><span> bar</span>');
+        },
+        'simple tags'($) {
+            const left = $giper_baza_land.make({ $ }).Data($giper_baza_rich);
+            left.html('<br /><hr />');
+            $mol_assert_equal(html(left), '<br /><hr />');
+        },
+        'tags with attrs'($) {
+            const left = $giper_baza_land.make({ $ }).Data($giper_baza_rich);
+            left.html('<br hidden="" /><hr tabindex="-1" />');
+            $mol_assert_equal(html(left), '<br hidden="" /><hr tabindex="-1" />');
+        },
+        'nested tags'($) {
+            const left = $giper_baza_land.make({ $ }).Data($giper_baza_rich);
+            left.html('<p><br /></p>');
+            $mol_assert_equal(html(left), '<p><br /></p>');
+        },
+        'paragraphs'($) {
+            const left = $giper_baza_land.make({ $ }).Data($giper_baza_rich);
+            left.html('<p>foo bar</p><p>xxx yyy</p>');
+            $mol_assert_equal(html(left), '<p><span>foo</span><span> bar</span></p><p><span>xxx</span><span> yyy</span></p>');
+        },
+        'import exported html'($) {
+            const left = $giper_baza_land.make({ $ }).Data($giper_baza_rich);
+            left.html('foo<a data-xxx="yyy" href="hhh:zzz">ton</a>bar');
+            const right = $giper_baza_land.make({ $ }).Data($giper_baza_rich);
+            right.html(left.html());
+            $mol_assert_equal(html(left), html(right));
+            $mol_assert_equal(left.html(), right.html());
+        },
+        'import wild spans'($) {
+            const left = $giper_baza_land.make({ $ }).Data($giper_baza_rich);
+            left.html('<span>foo bar<a href="hhh:ton"/></span>');
+            $mol_assert_equal(html(left), '<span>foo</span><span> bar</span><a href="hhh:ton"></a>');
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+/** @jsx $mol_jsx */
+var $;
+(function ($) {
+    $mol_test({
+        'Attach to document'() {
+            const doc = $mol_dom_parse('<html><body id="foo"></body></html>');
+            $mol_jsx_attach(doc, () => $mol_jsx("body", { id: "foo" }, "bar"));
+            $mol_assert_equal(doc.documentElement.outerHTML, '<html><body id="foo">bar</body></html>');
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+/** @jsx $mol_jsx */
+var $;
+(function ($_1) {
+    var $$;
+    (function ($$) {
+        $mol_test({
+            "Head"($) {
+                const div = $mol_jsx("div", null, "foo");
+                $mol_assert_equal($mol_dom_point.head(div), new $mol_dom_point(div, 0));
+                $mol_assert_equal($mol_dom_point.head(div).is_head(), true);
+                $mol_assert_equal(new $mol_dom_point(div.firstChild, 1).is_head(), false);
+            },
+            "Foot"($) {
+                const div = $mol_jsx("div", null, "foo");
+                $mol_assert_equal($mol_dom_point.foot(div), new $mol_dom_point(div, 1), $mol_dom_point.tail(div.firstChild));
+                $mol_assert_equal($mol_dom_point.foot(div).is_foot(), true);
+                $mol_assert_equal(new $mol_dom_point(div.firstChild, 2).is_foot(), false);
+            },
+            "Near & jump"($) {
+                const div = $mol_jsx("div", null,
+                    "123",
+                    $mol_jsx("span", null, "foo"),
+                    "456");
+                const span = div.childNodes[1];
+                $mol_assert_equal(new $mol_dom_point(div, 1), $mol_dom_point.near(span, -1), new $mol_dom_point(span, 1).jump(-1));
+                $mol_assert_equal(new $mol_dom_point(div, 2), $mol_dom_point.near(span, +1), new $mol_dom_point(span, 1).jump(+1));
+            },
+            "Lift points to common parent"($) {
+                const div = $mol_jsx("div", null,
+                    "123",
+                    $mol_jsx("p", null,
+                        $mol_jsx("span", null, "one")),
+                    "456");
+                const para = div.firstChild.nextSibling;
+                const deep = para.firstChild.firstChild;
+                $mol_assert_equal($mol_dom_point.head(deep).lifted_to(div), para);
+                $mol_assert_equal($mol_dom_point.head(div.firstChild).lifted_to(div), div.firstChild);
+            },
+            "move by steps to the end"($) {
+                const div = $mol_jsx("div", null,
+                    "1",
+                    $mol_jsx("span", null, "23"),
+                    $mol_jsx("br", null),
+                    "4");
+                const span = div.childNodes[1];
+                const br = div.childNodes[2];
+                let cursor = $mol_dom_point.head(div);
+                $mol_assert_equal([
+                    cursor = cursor.move_step(+1),
+                    cursor = cursor.move_step(+1),
+                    cursor = cursor.move_step(+1),
+                    cursor = cursor.move_step(+1),
+                    cursor = cursor.move_step(+1),
+                    cursor = cursor.move_step(+1),
+                    cursor = cursor.move_step(+1),
+                    cursor = cursor.move_step(+1),
+                    cursor = cursor.move_step(+1),
+                    cursor = cursor.move_step(+1),
+                    cursor = cursor.move_step(+1),
+                    cursor = cursor.move_step(+1),
+                    cursor = cursor.move_step(+1),
+                    cursor = cursor.move_step(+1),
+                    cursor = cursor.move_step(+1),
+                ], [
+                    $mol_dom_point.head(div.firstChild),
+                    $mol_dom_point.foot(div.firstChild),
+                    $mol_dom_point.tail(div.firstChild),
+                    $mol_dom_point.head(span),
+                    $mol_dom_point.head(span.firstChild),
+                    new $mol_dom_point(span.firstChild, 1),
+                    $mol_dom_point.foot(span.firstChild),
+                    $mol_dom_point.tail(span.firstChild),
+                    $mol_dom_point.tail(span),
+                    $mol_dom_point.head(br),
+                    $mol_dom_point.tail(br),
+                    $mol_dom_point.head(div.lastChild),
+                    $mol_dom_point.foot(div.lastChild),
+                    $mol_dom_point.tail(div.lastChild),
+                    null,
+                ]);
+            },
+            "move by chars to the end"($) {
+                const div = $mol_jsx("div", null,
+                    "1",
+                    $mol_jsx("span", null, "23"),
+                    $mol_jsx("br", null),
+                    "4");
+                const span = div.childNodes[1];
+                const br = div.childNodes[2];
+                let start = $mol_dom_point.head(div);
+                $mol_assert_equal([
+                    start.move_chars(div, +0),
+                    start.move_chars(div, +1),
+                    start.move_chars(div, +2),
+                    start.move_chars(div, +3),
+                    start.move_chars(div, +4),
+                    start.move_chars(div, +5),
+                ], [
+                    $mol_dom_point.head(div),
+                    $mol_dom_point.foot(div.firstChild),
+                    new $mol_dom_point(span.firstChild, 1),
+                    $mol_dom_point.foot(span.firstChild),
+                    $mol_dom_point.foot(div.lastChild),
+                    $mol_dom_point.foot(div),
+                ]);
+            },
+        });
+    })($$ = $_1.$$ || ($_1.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+/** @jsx $mol_jsx */
+var $;
+(function ($_1) {
+    var $$;
+    (function ($$) {
+        $mol_test({
+            "Inside, expand & around"($) {
+                const div = $mol_jsx("div", null,
+                    "123",
+                    $mol_jsx("span", null, "foo"),
+                    "456");
+                const span = div.childNodes[1];
+                $mol_assert_equal($mol_dom_range.inside(span).expand(), $mol_dom_range.around(span));
+            },
+            "Order range points"($) {
+                const div = $mol_jsx("div", null,
+                    $mol_jsx("span", null, "one"),
+                    $mol_jsx("span", null, "two"));
+                const one = $mol_dom_point.head(div.firstChild);
+                const two = $mol_dom_point.head(div.lastChild);
+                const forward = new $mol_dom_range(one, two);
+                const backward = new $mol_dom_range(two, one);
+                $mol_assert_equal(forward.ordered(), backward.ordered(), forward);
+            },
+            "Lift to common block parent"($) {
+                const quote = $mol_jsx("blockquote", null,
+                    "123",
+                    $mol_jsx("p", null,
+                        $mol_jsx("span", null, "foo")),
+                    $mol_jsx("p", null,
+                        $mol_jsx("span", null, "bar")),
+                    "456");
+                const foo = quote.firstChild.nextSibling;
+                const bar = quote.lastChild.previousSibling.firstChild.firstChild;
+                const lifted = new $mol_dom_range($mol_dom_point.head(foo), $mol_dom_point.foot(bar)).lifted();
+                const ideal = new $mol_dom_range($mol_dom_point.tail(quote.firstChild), $mol_dom_point.nose(quote.lastChild));
+                $mol_assert_equal(lifted, ideal);
+            },
+        });
+    })($$ = $_1.$$ || ($_1.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
     $mol_test({
         'Special'() {
             $mol_assert_equal($mol_si_short(0), '0');
@@ -7647,88 +7854,6 @@ var $;
             const list = ['abc', 'ab', 'ac'];
             list.sort($mol_compare_text(str => str.split('').reverse().join('')));
             $mol_assert_equal(`${list}`, 'ab,ac,abc');
-        },
-    });
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($_1) {
-    $mol_test_mocks.push($ => {
-        $.$giper_baza_land = $mws_baza_land;
-        $.$giper_baza_file = $mws_baza_file;
-    });
-    $mol_test({
-        async 'parts unloads sands after copy'($) {
-            const land = $.$giper_baza_land.make({ $ });
-            const file = land.Data($.$giper_baza_file);
-            const source = new Uint8Array(2 ** 15 + 100);
-            source[2 ** 15 + 50] = 255;
-            file.buffer(source);
-            const units = file.chunk_units();
-            $mol_assert_equal(units.length, 2);
-            // parts() зовёт sand_open через $mol_wire_sync — только из фибры
-            const parts = await $mol_wire_async(file).parts();
-            $mol_assert_equal(parts.length, 2);
-            const joined = new Uint8Array(parts.reduce((n, p) => n + p.byteLength, 0));
-            let offset = 0;
-            for (const part of parts) {
-                joined.set(part, offset);
-                offset += part.byteLength;
-            }
-            $mol_assert_equal(joined, source);
-            for (const unit of units) {
-                if (!unit.big())
-                    continue;
-                $mol_assert_equal(unit._ball, null);
-                $mol_assert_equal(unit._open, null);
-            }
-        },
-        async 'read_range returns window and unloads'($) {
-            const land = $.$giper_baza_land.make({ $ });
-            const file = land.Data($.$giper_baza_file);
-            const source = new Uint8Array(2 ** 15 + 100);
-            for (let i = 0; i < source.length; i++)
-                source[i] = i & 255;
-            file.buffer(source);
-            const slice = await $mol_wire_async(file).read_range(100, 200);
-            $mol_assert_equal(slice, source.subarray(100, 200));
-            const total = await $mol_wire_async(file).byte_length();
-            $mol_assert_equal(total, source.byteLength);
-            for (const unit of file.chunk_units()) {
-                if (!unit.big())
-                    continue;
-                $mol_assert_equal(unit._ball, null);
-                $mol_assert_equal(unit._open, null);
-            }
-        },
-    });
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($_1) {
-    $mol_test_mocks.push($ => {
-        $.$giper_baza_land = $bog_music_land;
-        $.$giper_baza_file = $mws_baza_file;
-    });
-    $mol_test({
-        async 'diff_units loads unloaded big sands back'($) {
-            const land = $.$giper_baza_land.make({ $ });
-            const file = land.Data($.$giper_baza_file);
-            file.buffer(new Uint8Array(2 ** 15 + 100).fill(7));
-            const big = file.chunk_units().filter(sand => sand.big());
-            $mol_assert_equal(big.length > 0, true);
-            await $mol_wire_async(land).diff_units();
-            const balls = new Map(big.map(sand => [sand, sand._ball]));
-            land.mine().ball_load = sand => balls.get(sand);
-            for (const sand of big)
-                land.sand_unload(sand);
-            await $mol_wire_async(land).diff_units();
-            for (const sand of big)
-                $mol_assert_equal(sand._ball, balls.get(sand));
         },
     });
 })($ || ($ = {}));
@@ -7911,106 +8036,6 @@ var $;
             $mol_assert_equal($.$bog_recsys.rewards().pop > 0, true);
             $.$bog_recsys.reset();
             $mol_assert_equal(Object.keys($.$bog_recsys.rewards()).length, 0);
-        },
-    });
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    /** Мощность 100-мс кусков постоянного сигнала с заданным средним квадратом. */
-    function power_of(hops, mean_square, hop) {
-        const power = new Float64Array(hops);
-        power.fill(mean_square * hop);
-        return power;
-    }
-    $mol_test({
-        'Множитель приводит запись к целевой громкости'() {
-            $mol_assert_equal($bog_music_gain.factor(null), 1);
-            $mol_assert_equal(Math.round($bog_music_gain.factor(-14) * 1000), 1000);
-            // Тише цели на 6 dB — усиление вдвое.
-            $mol_assert_equal(Math.round($bog_music_gain.factor(-20) * 100), 200);
-            // Громче цели на 6 dB — вдвое тише.
-            $mol_assert_equal(Math.round($bog_music_gain.factor(-8) * 100), 50);
-        },
-        'Множитель зажат пределами'() {
-            $mol_assert_equal($bog_music_gain.factor(-100), Math.pow(10, 12 / 20));
-            $mol_assert_equal($bog_music_gain.factor(20), Math.pow(10, -20 / 20));
-        },
-        'Громкость ровного сигнала'() {
-            const hop = 4800;
-            const lufs = $bog_music_gain.integrated(power_of(20, 0.01, hop), hop);
-            // -0.691 + 10 * log10( 0.01 )
-            $mol_assert_ok(Math.abs(lufs + 20.691) < 0.01);
-        },
-        'Тишина в конце записи не занижает громкость'() {
-            const hop = 4800;
-            const power = new Float64Array(40);
-            power.set(power_of(20, 0.01, hop), 0);
-            power.fill(1e-9 * hop, 20);
-            const lufs = $bog_music_gain.integrated(power, hop);
-            $mol_assert_ok(Math.abs(lufs + 20.691) < 0.5);
-        },
-        'Сплошная тишина не измеряется'() {
-            $mol_assert_equal($bog_music_gain.integrated(new Float64Array(20), 4800), null);
-            $mol_assert_equal($bog_music_gain.integrated(new Float64Array(2), 4800), null);
-        },
-    });
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_test({
-        'Пресеты покрывают все полосы и лежат в диапазоне'() {
-            for (const preset of $bog_music_eq.presets) {
-                $mol_assert_equal(preset.gains.length, $bog_music_eq.bands.length);
-                for (const db of preset.gains) {
-                    $mol_assert_ok(Math.abs(db) <= $bog_music_eq.range_db);
-                }
-            }
-        },
-        'Пресет узнаётся по своему же набору'() {
-            for (const preset of $bog_music_eq.presets) {
-                $mol_assert_equal($bog_music_eq.preset_of(preset.gains), preset.id);
-            }
-        },
-        'Набор мимо пресетов — «Свой»'() {
-            $mol_assert_equal($bog_music_eq.preset_of([1, 2, 3, 4, 5]), '');
-        },
-        'Ровный набор — это пресет «По умолчанию», а не «Свой»'() {
-            $mol_assert_equal($bog_music_eq.preset_of($bog_music_eq.flat()), 'default');
-        },
-        'Чужой набор приводится к нашим полосам'() {
-            // Короче — недостающие полосы в ноль, длиннее — лишние прочь.
-            $mol_assert_equal($bog_music_eq.clamp([3]).join(), '3,0,0,0,0,0');
-            $mol_assert_equal($bog_music_eq.clamp([1, 1, 1, 1, 1, 1, 1, 1]).join(), '1,1,1,1,1,1');
-            // За пределом — в потолок, дробное — к целым dB.
-            $mol_assert_equal($bog_music_eq.clamp([99, -99, 2.4, 2.6, NaN, 5]).join(), '12,-12,2,3,0,5');
-        },
-        'Настройка от пятиполосной версии не роняет полосы'() {
-            // В baza могла остаться строка на пять значений: шестая полоса в ноль,
-            // первые пять сохраняются как были.
-            $mol_assert_equal($bog_music_eq.parse('8,4,0,0,1').join(), '8,4,0,0,1,0');
-        },
-        'Цвет едет от зелёного через жёлтый к красному'() {
-            $mol_assert_equal($bog_music_eq.color(-12), 'hsl( 120 80% 55% )');
-            $mol_assert_equal($bog_music_eq.color(0), 'hsl( 50 80% 55% )');
-            $mol_assert_equal($bog_music_eq.color(12), 'hsl( 0 80% 55% )');
-            // За пределом диапазона цвет не уезжает дальше края.
-            $mol_assert_equal($bog_music_eq.color(99), $bog_music_eq.color(12));
-        },
-        'Набор переживает запись строкой и чтение обратно'() {
-            const gains = $bog_music_eq.preset('bass');
-            $mol_assert_equal($bog_music_eq.parse($bog_music_eq.stringify(gains)).join(), gains.join());
-            // Пусто в baza (настройки ещё не сохраняли) — плоский набор.
-            $mol_assert_equal($bog_music_eq.parse('').join(), $bog_music_eq.flat().join());
-            $mol_assert_equal($bog_music_eq.parse(null).join(), $bog_music_eq.flat().join());
-        },
-        'Неизвестный пресет не выдумывается'() {
-            $mol_assert_equal($bog_music_eq.preset('nope'), null);
         },
     });
 })($ || ($ = {}));
