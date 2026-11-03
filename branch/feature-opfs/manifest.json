@@ -1,0 +1,25 @@
+{
+	"name": "Bog Music",
+	"short_name": "Bog Music",
+	"description": "Music player with offline files and Giper Baza sync",
+	"id": "bog_music_app",
+	"start_url": "./",
+	"display": "standalone",
+	"background_color": "#1a1a2e",
+	"theme_color": "#1a1a2e",
+	"scope": "./",
+	"icons": [
+		{
+			"src": "bog/music/app/favicon.svg",
+			"sizes": "any",
+			"type": "image/svg+xml",
+			"purpose": "any"
+		},
+		{
+			"src": "bog/music/app/favicon.svg",
+			"sizes": "any",
+			"type": "image/svg+xml",
+			"purpose": "maskable"
+		}
+	]
+}
