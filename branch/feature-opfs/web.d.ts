@@ -48269,8 +48269,8 @@ declare namespace $ {
 declare namespace $ {
     export class $bog_music_device extends $mol_object {
         static id(): string;
-        static name_of(agent: string): string;
-        static name(): string;
+        static title_of(agent: string): string;
+        static title(): string;
     }
     const $bog_music_device_baza_base: Omit<typeof $giper_baza_dict, "prototype"> & {
         new (...args: any[]): $mol_type_override<$giper_baza_dict, {
@@ -57750,6 +57750,7 @@ declare namespace $ {
         static supported(): boolean;
         static active(): boolean;
         static served(): Promise<boolean>;
+        static ready_limit: number;
         static when_ready(): Promise<boolean>;
         static install_page(): void;
         static install_sw(): void;

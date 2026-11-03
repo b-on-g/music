@@ -23356,7 +23356,7 @@ var $;
             this.$.$mol_state_local.value('bog_music_device', id);
             return id;
         }
-        static name_of(agent) {
+        static title_of(agent) {
             const os = /iPhone/.test(agent) ? 'iPhone'
                 : /iPad/.test(agent) ? 'iPad'
                     : /Android/.test(agent) ? 'Android'
@@ -23371,8 +23371,8 @@ var $;
                             : '';
             return browser ? `${os} · ${browser}` : os;
         }
-        static name() {
-            return this.name_of(typeof navigator === 'undefined' ? '' : navigator.userAgent);
+        static title() {
+            return this.title_of(typeof navigator === 'undefined' ? '' : navigator.userAgent);
         }
     }
     __decorate([
@@ -24229,7 +24229,7 @@ var $;
         static online_span = 90_000;
         device_beat() {
             const device = this.devices().key($bog_music_device.id(), 'auto');
-            const name = $bog_music_device.name();
+            const name = $bog_music_device.title();
             if (device.Name()?.val() !== name)
                 device.Name('auto').val(name);
             device.Beat('auto').val(Date.now());
@@ -31184,11 +31184,17 @@ var $;
                 return ok;
             });
         }
+        static ready_limit = 3000;
         static async when_ready() {
             if (!this.supported())
                 return false;
             try {
-                await navigator.serviceWorker.ready;
+                const ready = await Promise.race([
+                    navigator.serviceWorker.ready.then(() => true),
+                    new Promise(done => setTimeout(() => done(false), this.ready_limit)),
+                ]);
+                if (!ready)
+                    return false;
                 if (!navigator.serviceWorker.controller)
                     return false;
                 return await this.served();
@@ -34900,7 +34906,7 @@ var $;
             return list.filter(open => Date.now() - open.at < $bog_music_share.open_span);
         }
         sender_name() {
-            return this.account().nickname() || $bog_music_device.name();
+            return this.account().nickname() || $bog_music_device.title();
         }
         async share_keys(keys) {
             try {
@@ -35524,7 +35530,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.86';
+    $.$bog_music_version = 'v1.87';
 })($ || ($ = {}));
 
 ;
