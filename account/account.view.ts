@@ -27,6 +27,19 @@ namespace $.$$ {
 			return location.origin + location.pathname + location.search + '#account=' + encodeURIComponent(key)
 		}
 
+		Qr() {
+			return this.qr_showed() ? super.Qr() : null as any
+		}
+
+		@$mol_mem
+		qr_found(next?: string) {
+			if (next) {
+				this.import_link(next)
+				this.apply_import()
+			}
+			return next ?? ''
+		}
+
 		@$mol_mem
 		copy_status(next?: string) {
 			return next ?? ''

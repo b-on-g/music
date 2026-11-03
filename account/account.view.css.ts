@@ -166,6 +166,15 @@ namespace $.$$ {
 			minHeight: '1rem',
 		},
 
+		Qr: {
+			width: '16rem',
+			maxWidth: '100%',
+			aspectRatio: 1,
+			alignSelf: 'center',
+			background: { color: 'white' },
+			border: { radius: $mol_gap.round },
+		},
+
 		Import: {
 			flex: { direction: 'column' },
 			background: { color: $mol_theme.card },

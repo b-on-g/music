@@ -61,6 +61,15 @@ $bog_music_account $mol_view
 							title \Скопировать ссылку для переноса
 							click? <=> copy? null
 						<= Copy_status $mol_view sub / <= copy_status \
+						<= Qr_show $mol_check
+							title @ \Показать QR для переноса
+							checked? <=> qr_showed? false
+						<= Qr $bog_qr
+							uri <= account_link \
+							error_correction \L
+							gradient_stops /
+								\#111827
+								\#1e3a8a
 				<= Import $mol_view
 					sub /
 						<= Import_hint $mol_paragraph
@@ -71,6 +80,9 @@ $bog_music_account $mol_view
 						<= Import_apply $mol_button_minor
 							title \Применить
 							click? <=> apply_import? null
+						<= Import_scan $bog_music_qrscan
+							prefix \#account=
+							found? <=> qr_found? \
 						<= Import_status $mol_view sub / <= import_status \
 				<= Reset $mol_view
 					sub /
