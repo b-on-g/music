@@ -22365,6 +22365,39 @@ var $;
 })($ || ($ = {}));
 
 ;
+	($.$mol_icon_tick) = class $mol_icon_tick extends ($.$mol_icon) {
+		path(){
+			return "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z";
+		}
+	};
+
+
+;
+"use strict";
+
+
+;
+	($.$mol_check_box) = class $mol_check_box extends ($.$mol_check) {
+		Icon(){
+			const obj = new this.$.$mol_icon_tick();
+			return obj;
+		}
+	};
+	($mol_mem(($.$mol_check_box.prototype), "Icon"));
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/check/box/box.view.css", "[mol_check_box_icon] {\n\tborder-radius: var(--mol_gap_round);\n\tbox-shadow: inset 0 0 0 1px var(--mol_theme_line);\n\tcolor: var(--mol_theme_shade);\n\theight: 1rem;\n\talign-self: center;\n}\n\n[mol_check]:not([mol_check_checked]) > [mol_check_box_icon] {\n\tfill: transparent;\n}\n\n[mol_check]:not([disabled]) > [mol_check_box_icon] {\n\tbackground: var(--mol_theme_field);\n\tcolor: var(--mol_theme_text);\n}\n");
+})($ || ($ = {}));
+
+;
+"use strict";
+
+
+;
 	($.$mol_icon_download) = class $mol_icon_download extends ($.$mol_icon) {
 		path(){
 			return "M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z";
@@ -23672,6 +23705,12 @@ var $;
 			(obj.sub) = () => ([(this.Font_label()), (this.Font_size())]);
 			return obj;
 		}
+		Dev(){
+			const obj = new this.$.$mol_check_box();
+			(obj.title) = () => ((this.$.$mol_locale.text("$bog_music_account_Dev_title")));
+			(obj.checked) = (next) => ((this.dev(next)));
+			return obj;
+		}
 		download_playlist(next){
 			if(next !== undefined) return next;
 			return null;
@@ -23971,9 +24010,14 @@ var $;
 			if(next !== undefined) return next;
 			return "normal";
 		}
+		dev(next){
+			if(next !== undefined) return next;
+			return false;
+		}
 		sub(){
 			return [
 				(this.Font_row()), 
+				(this.Dev()), 
 				(this.Sync_row()), 
 				(this.Cards())
 			];
@@ -23982,6 +24026,7 @@ var $;
 	($mol_mem(($.$bog_music_account.prototype), "Font_label"));
 	($mol_mem(($.$bog_music_account.prototype), "Font_size"));
 	($mol_mem(($.$bog_music_account.prototype), "Font_row"));
+	($mol_mem(($.$bog_music_account.prototype), "Dev"));
 	($mol_mem(($.$bog_music_account.prototype), "download_playlist"));
 	($mol_mem(($.$bog_music_account.prototype), "Download_playlist_icon"));
 	($mol_mem(($.$bog_music_account.prototype), "Download_playlist_label"));
@@ -24029,6 +24074,7 @@ var $;
 	($mol_mem(($.$bog_music_account.prototype), "Reset"));
 	($mol_mem(($.$bog_music_account.prototype), "Cards"));
 	($mol_mem(($.$bog_music_account.prototype), "font_size"));
+	($mol_mem(($.$bog_music_account.prototype), "dev"));
 
 
 ;
@@ -24189,7 +24235,6 @@ var $;
         Added: $giper_baza_atom.of($mol_schema_float),
         Order: $giper_baza_atom.of($mol_schema_float),
         Playlist: $giper_baza_atom.of($mol_schema_string),
-        File: $giper_baza_atom_link.to(() => $giper_baza_file),
         Holders: $giper_baza_list_str,
         Trim_start: $giper_baza_atom.of($mol_schema_float),
         Trim_end: $giper_baza_atom.of($mol_schema_float),
@@ -24235,17 +24280,6 @@ var $;
             if (!this.holders().includes(device))
                 return;
             this.Holders('auto').cut(device);
-        }
-        legacy() {
-            return Boolean(this.File()?.val());
-        }
-        legacy_bytes() {
-            const file = this.File()?.remote();
-            if (!file)
-                return null;
-            file.land().sync();
-            const bytes = file.buffer();
-            return bytes.length ? bytes : null;
         }
         lufs(next) {
             if (next !== undefined)
@@ -25013,27 +25047,11 @@ var $;
             const me = $bog_music_device.id();
             if (track.holders().some(id => id !== me))
                 return 'remote';
-            if (track.legacy())
-                return 'legacy';
             return 'lost';
         }
         holders_other(key) {
             const me = $bog_music_device.id();
             return (this.track(key)?.holders() ?? []).filter(id => id !== me);
-        }
-        async migrate(key) {
-            if (await $bog_music_disk.probe(key))
-                return true;
-            const track = this.track(key);
-            if (!track?.legacy())
-                return false;
-            const bytes = await $mol_wire_async(track).legacy_bytes();
-            if (!bytes)
-                return false;
-            await $bog_music_disk.put(key, bytes);
-            await $mol_wire_async(this).holder_add(key);
-            $bog_music_log.act(`перенесён из Базы на устройство: ${key}, ${bytes.length} байт`, this.land_id());
-            return true;
         }
         swap_order(key_a, key_b) {
             const ta = this.tracks().key(key_a, 'auto');
@@ -25475,39 +25493,6 @@ var $;
         });
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
-
-;
-	($.$mol_icon_tick) = class $mol_icon_tick extends ($.$mol_icon) {
-		path(){
-			return "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z";
-		}
-	};
-
-
-;
-"use strict";
-
-
-;
-	($.$mol_check_box) = class $mol_check_box extends ($.$mol_check) {
-		Icon(){
-			const obj = new this.$.$mol_icon_tick();
-			return obj;
-		}
-	};
-	($mol_mem(($.$mol_check_box.prototype), "Icon"));
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_attach("mol/check/box/box.view.css", "[mol_check_box_icon] {\n\tborder-radius: var(--mol_gap_round);\n\tbox-shadow: inset 0 0 0 1px var(--mol_theme_line);\n\tcolor: var(--mol_theme_shade);\n\theight: 1rem;\n\talign-self: center;\n}\n\n[mol_check]:not([mol_check_checked]) > [mol_check_box_icon] {\n\tfill: transparent;\n}\n\n[mol_check]:not([disabled]) > [mol_check_box_icon] {\n\tbackground: var(--mol_theme_field);\n\tcolor: var(--mol_theme_text);\n}\n");
-})($ || ($ = {}));
-
-;
-"use strict";
-
 
 ;
 	($.$bog_music_log_view) = class $bog_music_log_view extends ($.$mol_list) {
@@ -33649,12 +33634,7 @@ var $;
                 return queue[idx >= 0 && idx + 1 < queue.length ? idx + 1 : 0] ?? null;
             }
             async file_ensure(key) {
-                if (await $bog_music_disk.probe(key))
-                    return true;
-                const place = await $mol_wire_async(this.account()).place(key);
-                if (place === 'legacy')
-                    return this.account().migrate(key);
-                return false;
+                return $bog_music_disk.probe(key);
             }
             try_play_local_sync(key, el, start_at) {
                 try {
@@ -35052,6 +35032,9 @@ var $;
 			if(next !== undefined) return next;
 			return "music";
 		}
+		dev(){
+			return false;
+		}
 		sub(){
 			return [
 				(this.Tab_search()), 
@@ -35109,27 +35092,8 @@ var $;
                 this.section('account');
                 return null;
             }
-            /**
-             * Вкладка журнала — только для владельца приложения. Сравнивается
-             * публичный идентификатор личности, а не ключ: ключ в коде держать
-             * нельзя, он даёт полный доступ к аккаунту.
-             */
-            static owner_lords = [
-                'rkya36Pg_4GhW4PYB',
-                'xSwlxBfW_flwwJqOO',
-                '24q6G0lY_q0azSzlh',
-                'YsWOsMje_h6DAWt6n',
-            ];
             Tab_logs() {
-                try {
-                    const self = this.$.$giper_baza_auth.current().pass().lord().str;
-                    if (!$bog_music_nav.owner_lords.includes(self))
-                        return null;
-                }
-                catch (error) {
-                    return null;
-                }
-                return super.Tab_logs();
+                return this.dev() ? super.Tab_logs() : null;
             }
             logs_click(e) {
                 if (e)
@@ -35264,6 +35228,10 @@ var $;
 			if(next !== undefined) return next;
 			return 0;
 		}
+		dev(next){
+			if(next !== undefined) return next;
+			return false;
+		}
 		download_playlist(next){
 			if(next !== undefined) return next;
 			return null;
@@ -35300,6 +35268,7 @@ var $;
 		Account(){
 			const obj = new this.$.$bog_music_account();
 			(obj.font_size) = (next) => ((this.font_size(next)));
+			(obj.dev) = (next) => ((this.dev(next)));
 			(obj.download_playlist) = (next) => ((this.download_playlist(next)));
 			(obj.download_playlist_status) = () => ((this.download_playlist_status()));
 			(obj.tg_hint) = () => ((this.tg_hint()));
@@ -35526,6 +35495,7 @@ var $;
 		Nav(){
 			const obj = new this.$.$bog_music_nav();
 			(obj.section) = (next) => ((this.section(next)));
+			(obj.dev) = () => ((this.dev()));
 			return obj;
 		}
 		plugins(){
@@ -35600,6 +35570,7 @@ var $;
 	($mol_mem(($.$bog_music_app.prototype), "Upload"));
 	($mol_mem(($.$bog_music_app.prototype), "Theme_btn"));
 	($mol_mem(($.$bog_music_app.prototype), "scroll"));
+	($mol_mem(($.$bog_music_app.prototype), "dev"));
 	($mol_mem(($.$bog_music_app.prototype), "download_playlist"));
 	($mol_mem(($.$bog_music_app.prototype), "tg_link"));
 	($mol_mem(($.$bog_music_app.prototype), "fm_link"));
@@ -36489,7 +36460,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.89';
+    $.$bog_music_version = 'v1.92';
 })($ || ($ = {}));
 
 ;
@@ -36593,55 +36564,6 @@ var $;
             }
             current_key(next) {
                 return next ?? '';
-            }
-            static prefetch_ahead = 3;
-            prefetch_window() {
-                const keys = this.visible_keys();
-                if (!keys.length)
-                    return [];
-                const current = this.current_key();
-                const at = current ? keys.indexOf(current) : -1;
-                const from = at >= 0 ? at : 0;
-                return keys.slice(from, from + $bog_music_app.prefetch_ahead);
-            }
-            static migrate_limit = 30;
-            _migrate_busy = false;
-            _migrate_done = 0;
-            legacy_keys() {
-                const account = this.account();
-                const window = this.prefetch_window();
-                const all = [...window, ...account.keys_in(''), ...account.keys_in('archive')];
-                return [...new Set(all)].filter(key => account.place(key) === 'legacy');
-            }
-            async migrate() {
-                if (this._migrate_busy)
-                    return;
-                this._migrate_busy = true;
-                try {
-                    while (this._migrate_done < $bog_music_app.migrate_limit) {
-                        const keys = await $mol_wire_async(this).legacy_keys();
-                        if (!keys.length)
-                            break;
-                        const ok = await Promise.race([
-                            this.account().migrate(keys[0]),
-                            new Promise((done, fail) => setTimeout(() => fail(new Error('Ленд не доехал за минуту')), 60000)),
-                        ]).catch((error) => {
-                            $bog_music_log.err(`перенос из Базы не удался: ${keys[0]}: ${error?.message ?? error}`);
-                            return false;
-                        });
-                        this._migrate_done++;
-                        if (!ok)
-                            break;
-                    }
-                }
-                finally {
-                    this._migrate_busy = false;
-                }
-            }
-            migrate_watch() {
-                this.prefetch_window();
-                setTimeout(() => void this.migrate());
-                return null;
             }
             play_key(key) {
                 if (!key)
@@ -36855,6 +36777,9 @@ var $;
             font_size(next) {
                 return this.$.$mol_state_local.value('bog_music_font_size', next) ?? 'normal';
             }
+            dev(next) {
+                return this.$.$mol_state_local.value('bog_music_dev', next) ?? false;
+            }
             section(next) {
                 if (next !== undefined)
                     $bog_music_log.act(`раздел: ${next}`);
@@ -36875,7 +36800,10 @@ var $;
             }
             body() {
                 switch (this.section()) {
-                    case 'logs': return [this.Logs()];
+                    case 'logs':
+                        if (this.dev())
+                            return [this.Logs()];
+                        break;
                     case 'account': return [this.Account(), this.Feedback()];
                     case 'player': return [this.Player()];
                     case 'search': return [this.Tube_bar(), this.Tube_list()];
@@ -37168,7 +37096,6 @@ var $;
                     this.page(playlist);
             }
             auto() {
-                this.migrate_watch();
                 this.beam().watch();
                 this.share().watch();
                 this.tg_poller();
@@ -37195,9 +37122,6 @@ var $;
         __decorate([
             $mol_mem
         ], $bog_music_app.prototype, "current_key", null);
-        __decorate([
-            $mol_mem
-        ], $bog_music_app.prototype, "migrate_watch", null);
         __decorate([
             $mol_action
         ], $bog_music_app.prototype, "play_key", null);
@@ -37234,6 +37158,9 @@ var $;
         __decorate([
             $mol_mem
         ], $bog_music_app.prototype, "font_size", null);
+        __decorate([
+            $mol_mem
+        ], $bog_music_app.prototype, "dev", null);
         __decorate([
             $mol_mem
         ], $bog_music_app.prototype, "section", null);

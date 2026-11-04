@@ -851,6 +851,11 @@ $mol_check_list $mol_view
 $mol_switch $mol_check_list
 	value? \
 
+$mol_icon_tick $mol_icon path \M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z
+
+$mol_check_box $mol_check
+	Icon $mol_icon_tick
+
 $mol_icon_download $mol_icon path \M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z
 
 $mol_labeler $mol_list
@@ -1031,6 +1036,7 @@ $mol_form $mol_list
 
 $bog_music_account $mol_view
 	font_size? \normal
+	dev? false
 	sub /
 		<= Font_row $mol_view
 			sub /
@@ -1042,6 +1048,9 @@ $bog_music_account $mol_view
 						normal \Обычный
 						large \Крупный
 						huge \Огромный
+		<= Dev $mol_check_box
+			title @ \Включить дев мод
+			checked? <=> dev?
 		<= Sync_row $mol_view
 			sub /
 				<= Download_playlist $mol_button_minor
@@ -1122,11 +1131,6 @@ $bog_music_account $mol_view
 						<= Reset_button $mol_button_minor
 							title \Сбросить локальный аккаунт
 							click? <=> reset_account? null
-
-$mol_icon_tick $mol_icon path \M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z
-
-$mol_check_box $mol_check
-	Icon $mol_icon_tick
 
 $bog_music_log_view $mol_list
 	rows <= log_rows /
@@ -2117,6 +2121,7 @@ $mol_icon_text_box_outline $mol_icon path \M5,3C3.89,3 3,3.89 3,5V19C3,20.11 3.8
 
 $bog_music_nav $mol_view
 	section? \music
+	dev false
 	sub /
 		<= Tab_search $bog_music_nav_item
 			label \Поиск
@@ -3397,6 +3402,7 @@ $bog_music_app $mol_page
 	body /
 		<= Account $bog_music_account
 			font_size? <=> font_size?
+			dev? <=> dev? false
 			download_playlist? <=> download_playlist? null
 			download_playlist_status <= download_playlist_status \
 			tg_hint <= tg_hint \
@@ -3468,6 +3474,7 @@ $bog_music_app $mol_page
 			current_key? <=> current_key? \
 		<= Nav $bog_music_nav
 			section? <=> section? \music
+			dev <= dev?
 
 $mol_icon_share $mol_icon path \M21,12L14,5V9C7,10 4,15 3,20C5.5,16.5 9,14.9 14,14.9V19L21,12Z
 
