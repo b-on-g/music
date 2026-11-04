@@ -32,22 +32,33 @@ namespace $ {
 			}
 		}
 
-		signal( kind: 'offer' | 'answer', from: string, to: string, next?: string ): string {
+		signal_id( kind: 'offer' | 'answer', from: string, to: string, req: string ) {
+			return `${ kind }:${ from }>${ to }:${ req }`
+		}
+
+		signal( kind: 'offer' | 'answer', from: string, to: string, req: string, next?: string ): string {
 			const dict = this.account().signals()
-			const id = `${ kind }:${ from }>${ to }`
+			const id = this.signal_id( kind, from, to, req )
 			if( next !== undefined ) dict.key( id, 'auto' )!.val( next )
 			return dict.key( id )?.val() ?? ''
 		}
 
-		incoming( me: string ): { from: string, signal: $bog_music_beam_signal }[] {
+		@ $mol_action
+		signal_cut( from: string, to: string, req: string ) {
 			const dict = this.account().signals()
-			const out = [] as { from: string, signal: $bog_music_beam_signal }[]
+			dict.cut( this.signal_id( 'offer', from, to, req ) )
+			dict.cut( this.signal_id( 'answer', to, from, req ) )
+		}
+
+		incoming( me: string ): { from: string, req: string, signal: $bog_music_beam_signal }[] {
+			const dict = this.account().signals()
+			const out = [] as { from: string, req: string, signal: $bog_music_beam_signal }[]
 			for( const id of ( dict.keys() ?? [] ) as string[] ) {
-				const [ kind, pair = '' ] = id.split( ':' )
+				const [ kind, pair = '', req = '' ] = id.split( ':' )
 				const [ from, to ] = pair.split( '>' )
-				if( kind !== 'offer' || to !== me || !from ) continue
+				if( kind !== 'offer' || to !== me || !from || !req ) continue
 				const signal = $bog_music_beam.signal_parse( dict.key( id )?.val() ?? '' )
-				if( signal ) out.push({ from, signal })
+				if( signal ) out.push({ from, req, signal })
 			}
 			return out
 		}
@@ -62,7 +73,7 @@ namespace $ {
 			return next ?? ''
 		}
 
-		_handled = new Map< string, number >()
+		_handled = new Set< string >()
 
 		_busy = false
 
@@ -80,11 +91,14 @@ namespace $ {
 					await $mol_wire_async( this.account() ).device_beat()
 				}
 				const me = $bog_music_device.id()
-				for( const { from, signal } of await self.incoming( me ) ) {
+				for( const { from, req, signal } of await self.incoming( me ) ) {
 					if( signal.at < this._started_at - $bog_music_beam.answer_limit ) continue
-					if( ( this._handled.get( from ) ?? 0 ) >= signal.at ) continue
-					this._handled.set( from, signal.at )
-					await this.serve( from, signal )
+					if( this._handled.has( req ) ) continue
+					this._handled.add( req )
+					void this.serve( from, req, signal ).catch( ( error: any ) => {
+						$bog_music_log.err( `отдача файлов не удалась: ${ error?.message ?? error }` )
+						this.summary( '' )
+					} )
 				}
 			} catch( error: any ) {
 				$bog_music_log.err( `передача между устройствами: ${ error?.message ?? error }` )
@@ -107,13 +121,13 @@ namespace $ {
 			clearInterval( this._timer )
 		}
 
-		async serve( from: string, signal: $bog_music_beam_signal ) {
+		async serve( from: string, req: string, signal: $bog_music_beam_signal ) {
 			const me = $bog_music_device.id()
 			const name = await $mol_wire_async( this.account() ).device_name( from )
 			$bog_music_log.act( `запрос файлов с «${ name }»` )
 			const { rtc, channel, sdp } = await $bog_music_peer.answer( signal.sdp )
 			try {
-				await $mol_wire_async( this ).signal( 'answer', me, from, JSON.stringify({ at: Date.now(), sdp }) )
+				await $mol_wire_async( this ).signal( 'answer', me, from, req, JSON.stringify({ at: Date.now(), sdp }) )
 				const open = await $bog_music_peer.opened( await channel )
 				const want = await $bog_music_peer.message( open )
 				const items = [] as $bog_music_peer_item[]
@@ -140,16 +154,17 @@ namespace $ {
 			this.summary( `Соединяюсь с «${ name }»…` )
 			$bog_music_log.act( `перенос ${ keys.length } с «${ name }»` )
 
+			const req = $mol_guid( 8 )
 			const { rtc, channel, sdp } = await $bog_music_peer.offer()
 
 			try {
 
 				const at = Date.now()
-				await $mol_wire_async( this ).signal( 'offer', me, from, JSON.stringify({ at, sdp }) )
+				await $mol_wire_async( this ).signal( 'offer', me, from, req, JSON.stringify({ at, sdp }) )
 
 				let answer = null as null | $bog_music_beam_signal
 				while( Date.now() - at < $bog_music_beam.answer_limit ) {
-					answer = $bog_music_beam.signal_parse( await $mol_wire_async( this ).signal( 'answer', from, me ) )
+					answer = $bog_music_beam.signal_parse( await $mol_wire_async( this ).signal( 'answer', from, me, req ) )
 					if( answer && answer.at >= at ) break
 					answer = null
 					await new Promise( done => setTimeout( done, 1000 ) )
@@ -181,6 +196,7 @@ namespace $ {
 			} finally {
 				for( const key of keys ) this.status( key, '' )
 				rtc.close()
+				await $mol_wire_async( this ).signal_cut( me, from, req ).catch( () => {} )
 			}
 
 		}
