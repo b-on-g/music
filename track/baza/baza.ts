@@ -14,7 +14,6 @@ namespace $ {
 		Added: $giper_baza_atom.of( $mol_schema_float ),
 		Order: $giper_baza_atom.of( $mol_schema_float ),
 		Playlist: $giper_baza_atom.of( $mol_schema_string ),
-		File: $giper_baza_atom_link.to( () => $giper_baza_file ),
 		Holders: $giper_baza_list_str,
 		Trim_start: $giper_baza_atom.of( $mol_schema_float ),
 		Trim_end: $giper_baza_atom.of( $mol_schema_float ),
@@ -68,18 +67,6 @@ namespace $ {
 		holder_cut( device: string ) {
 			if( !this.holders().includes( device ) ) return
 			this.Holders( 'auto' )!.cut( device )
-		}
-
-		legacy(): boolean {
-			return Boolean( this.File()?.val() )
-		}
-
-		legacy_bytes(): Uint8Array< ArrayBuffer > | null {
-			const file = this.File()?.remote()
-			if( !file ) return null
-			file.land().sync()
-			const bytes = file.buffer()
-			return bytes.length ? bytes : null
 		}
 
 		lufs( next?: number ): number | null {

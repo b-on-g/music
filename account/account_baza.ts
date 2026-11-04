@@ -1,6 +1,6 @@
 namespace $ {
 
-	export type $bog_music_account_place = 'disk' | 'legacy' | 'remote' | 'lost'
+	export type $bog_music_account_place = 'disk' | 'remote' | 'lost'
 
 	export class $bog_music_account_baza_playlists extends $giper_baza_dict_to( $giper_baza_atom_text ) {}
 
@@ -162,25 +162,12 @@ namespace $ {
 			if( !track ) return 'lost'
 			const me = $bog_music_device.id()
 			if( track.holders().some( id => id !== me ) ) return 'remote'
-			if( track.legacy() ) return 'legacy'
 			return 'lost'
 		}
 
 		holders_other( key: string ): string[] {
 			const me = $bog_music_device.id()
 			return ( this.track( key )?.holders() ?? [] ).filter( id => id !== me )
-		}
-
-		async migrate( key: string ): Promise< boolean > {
-			if( await $bog_music_disk.probe( key ) ) return true
-			const track = this.track( key )
-			if( !track?.legacy() ) return false
-			const bytes = await $mol_wire_async( track ).legacy_bytes()
-			if( !bytes ) return false
-			await $bog_music_disk.put( key, bytes )
-			await $mol_wire_async( this ).holder_add( key )
-			$bog_music_log.act( `перенесён из Базы на устройство: ${ key }, ${ bytes.length } байт`, this.land_id() )
-			return true
 		}
 
 		@ $mol_action

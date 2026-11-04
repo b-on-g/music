@@ -1,5 +1,6 @@
 $bog_music_account $mol_view
 	font_size? \normal
+	dev? false
 	sub /
 		<= Font_row $mol_view
 			sub /
@@ -11,6 +12,9 @@ $bog_music_account $mol_view
 						normal \Обычный
 						large \Крупный
 						huge \Огромный
+		<= Dev $mol_check_box
+			title @ \Включить дев мод
+			checked? <=> dev?
 		<= Sync_row $mol_view
 			sub /
 				<= Download_playlist $mol_button_minor

@@ -920,10 +920,7 @@ namespace $.$$ {
 		}
 
 		async file_ensure(key: string): Promise<boolean> {
-			if (await $bog_music_disk.probe(key)) return true
-			const place = await $mol_wire_async(this.account()).place(key)
-			if (place === 'legacy') return this.account().migrate(key)
-			return false
+			return $bog_music_disk.probe(key)
 		}
 
 		private try_play_local_sync(key: string, el: HTMLAudioElement, start_at: number): boolean {

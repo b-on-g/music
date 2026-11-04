@@ -1,5 +1,6 @@
 $bog_music_nav $mol_view
 	section? \music
+	dev false
 	sub /
 		<= Tab_search $bog_music_nav_item
 			label \Поиск

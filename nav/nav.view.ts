@@ -28,26 +28,8 @@ namespace $.$$ {
 			return null
 		}
 
-		/**
-		 * Вкладка журнала — только для владельца приложения. Сравнивается
-		 * публичный идентификатор личности, а не ключ: ключ в коде держать
-		 * нельзя, он даёт полный доступ к аккаунту.
-		 */
-		static owner_lords = [
-			'rkya36Pg_4GhW4PYB',
-			'xSwlxBfW_flwwJqOO',
-			'24q6G0lY_q0azSzlh',
-			'YsWOsMje_h6DAWt6n',
-		]
-
 		Tab_logs() {
-			try {
-				const self = this.$.$giper_baza_auth.current().pass().lord().str
-				if( !$bog_music_nav.owner_lords.includes( self ) ) return null as any
-			} catch( error ) {
-				return null as any
-			}
-			return super.Tab_logs()
+			return this.dev() ? super.Tab_logs() : null as any
 		}
 
 		@$mol_action

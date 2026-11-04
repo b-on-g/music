@@ -109,59 +109,6 @@ namespace $.$$ {
 			return next ?? ''
 		}
 
-		static prefetch_ahead = 3
-
-		prefetch_window(): readonly string[] {
-			const keys = this.visible_keys()
-			if (!keys.length) return []
-			const current = this.current_key()
-			const at = current ? keys.indexOf(current) : -1
-			const from = at >= 0 ? at : 0
-			return keys.slice(from, from + $bog_music_app.prefetch_ahead)
-		}
-
-		static migrate_limit = 30
-
-		_migrate_busy = false
-
-		_migrate_done = 0
-
-		legacy_keys(): string[] {
-			const account = this.account()
-			const window = this.prefetch_window()
-			const all = [ ... window, ... account.keys_in( '' ), ... account.keys_in( 'archive' ) ]
-			return [ ... new Set( all ) ].filter( key => account.place( key ) === 'legacy' )
-		}
-
-		async migrate() {
-			if( this._migrate_busy ) return
-			this._migrate_busy = true
-			try {
-				while( this._migrate_done < $bog_music_app.migrate_limit ) {
-					const keys = await $mol_wire_async( this ).legacy_keys()
-					if( !keys.length ) break
-					const ok = await Promise.race([
-						this.account().migrate( keys[ 0 ] ),
-						new Promise< boolean >( ( done, fail ) => setTimeout( () => fail( new Error( 'Ленд не доехал за минуту' ) ), 60000 ) ),
-					]).catch( ( error: any ) => {
-						$bog_music_log.err( `перенос из Базы не удался: ${ keys[ 0 ] }: ${ error?.message ?? error }` )
-						return false
-					} )
-					this._migrate_done++
-					if( !ok ) break
-				}
-			} finally {
-				this._migrate_busy = false
-			}
-		}
-
-		@ $mol_mem
-		migrate_watch() {
-			this.prefetch_window()
-			setTimeout( () => void this.migrate() )
-			return null
-		}
-
 		@$mol_action
 		play_key(key?: string | null) {
 			if (!key) return
@@ -390,6 +337,11 @@ namespace $.$$ {
 		}
 
 		@$mol_mem
+		dev( next?: boolean ) {
+			return this.$.$mol_state_local.value( 'bog_music_dev', next ) ?? false
+		}
+
+		@$mol_mem
 		section(next?: string): string {
 			if (next !== undefined) $bog_music_log.act(`раздел: ${next}`)
 			return next ?? 'music'
@@ -415,7 +367,7 @@ namespace $.$$ {
 
 		body() {
 			switch (this.section()) {
-				case 'logs': return [this.Logs()]
+				case 'logs': if (this.dev()) return [this.Logs()]; break
 				case 'account': return [this.Account(), this.Feedback()]
 				case 'player': return [this.Player()]
 				case 'search': return [this.Tube_bar(), this.Tube_list()]
@@ -749,7 +701,6 @@ namespace $.$$ {
 		}
 
 		auto() {
-			this.migrate_watch()
 			this.beam().watch()
 			this.share().watch()
 			this.tg_poller()

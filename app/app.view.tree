@@ -40,6 +40,7 @@ $bog_music_app $mol_page
 	body /
 		<= Account $bog_music_account
 			font_size? <=> font_size?
+			dev? <=> dev?
 			download_playlist? <=> download_playlist? null
 			download_playlist_status <= download_playlist_status \
 			tg_hint <= tg_hint \
@@ -111,3 +112,4 @@ $bog_music_app $mol_page
 			current_key? <=> current_key? \
 		<= Nav $bog_music_nav
 			section? <=> section? \music
+			dev <= dev?
