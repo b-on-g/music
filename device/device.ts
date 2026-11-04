@@ -11,11 +11,13 @@ namespace $ {
 			return id
 		}
 
-		static title_of( agent: string ) {
+		static title_of( agent: string, touch = 0, side = 0 ) {
+			const mac = /Mac OS X/.test( agent ) && !/iPhone|iPad/.test( agent )
 			const os = /iPhone/.test( agent ) ? 'iPhone'
 				: /iPad/.test( agent ) ? 'iPad'
+				: mac && touch > 1 ? ( side && side < 600 ? 'iPhone' : 'iPad' )
 				: /Android/.test( agent ) ? 'Android'
-				: /Mac OS X/.test( agent ) ? 'Mac'
+				: mac ? 'Mac'
 				: /Windows/.test( agent ) ? 'Windows'
 				: /Linux/.test( agent ) ? 'Linux'
 				: 'Устройство'
@@ -28,7 +30,9 @@ namespace $ {
 		}
 
 		static title() {
-			return this.title_of( typeof navigator === 'undefined' ? '' : navigator.userAgent )
+			if( typeof navigator === 'undefined' ) return this.title_of( '' )
+			const side = typeof screen === 'undefined' ? 0 : Math.min( screen.width, screen.height )
+			return this.title_of( navigator.userAgent, navigator.maxTouchPoints ?? 0, side )
 		}
 
 	}
