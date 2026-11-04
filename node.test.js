@@ -24319,14 +24319,16 @@ var $;
             this.$.$mol_state_local.value('bog_music_device', id);
             return id;
         }
-        static title_of(agent) {
+        static title_of(agent, touch = 0, side = 0) {
+            const mac = /Mac OS X/.test(agent) && !/iPhone|iPad/.test(agent);
             const os = /iPhone/.test(agent) ? 'iPhone'
                 : /iPad/.test(agent) ? 'iPad'
-                    : /Android/.test(agent) ? 'Android'
-                        : /Mac OS X/.test(agent) ? 'Mac'
-                            : /Windows/.test(agent) ? 'Windows'
-                                : /Linux/.test(agent) ? 'Linux'
-                                    : 'Устройство';
+                    : mac && touch > 1 ? (side && side < 600 ? 'iPhone' : 'iPad')
+                        : /Android/.test(agent) ? 'Android'
+                            : mac ? 'Mac'
+                                : /Windows/.test(agent) ? 'Windows'
+                                    : /Linux/.test(agent) ? 'Linux'
+                                        : 'Устройство';
             const browser = /Edg\//.test(agent) ? 'Edge'
                 : /Firefox\//.test(agent) ? 'Firefox'
                     : /Chrome\//.test(agent) ? 'Chrome'
@@ -24335,7 +24337,10 @@ var $;
             return browser ? `${os} · ${browser}` : os;
         }
         static title() {
-            return this.title_of(typeof navigator === 'undefined' ? '' : navigator.userAgent);
+            if (typeof navigator === 'undefined')
+                return this.title_of('');
+            const side = typeof screen === 'undefined' ? 0 : Math.min(screen.width, screen.height);
+            return this.title_of(navigator.userAgent, navigator.maxTouchPoints ?? 0, side);
         }
     }
     __decorate([
@@ -32361,8 +32366,19 @@ var $;
             if (channel.bufferedAmount < this.buffer_high)
                 return;
             channel.bufferedAmountLowThreshold = this.buffer_high / 4;
-            await new Promise(done => {
-                channel.addEventListener('bufferedamountlow', () => done(), { once: true });
+            await new Promise((done, fail) => {
+                const low = () => {
+                    channel.removeEventListener('close', close);
+                    done();
+                };
+                const close = () => {
+                    channel.removeEventListener('bufferedamountlow', low);
+                    fail(new Error('Соединение оборвалось'));
+                };
+                channel.addEventListener('bufferedamountlow', low, { once: true });
+                channel.addEventListener('close', close, { once: true });
+                if (channel.readyState !== 'open')
+                    close();
             });
         }
         static async send(channel, items, progress) {
@@ -36451,7 +36467,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.92';
+    $.$bog_music_version = 'v1.93';
 })($ || ($ = {}));
 
 ;
@@ -45631,6 +45647,20 @@ var $;
 "use strict";
 var $;
 (function ($) {
+    $mol_test({
+        'iPhone and iPad with desktop Safari agent are not Mac'() {
+            const agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15';
+            $mol_assert_equal($bog_music_device.title_of(agent, 5, 390), 'iPhone · Safari');
+            $mol_assert_equal($bog_music_device.title_of(agent, 5, 820), 'iPad · Safari');
+            $mol_assert_equal($bog_music_device.title_of(agent, 0, 900), 'Mac · Safari');
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
     /** Мощность 100-мс кусков постоянного сигнала с заданным средним квадратом. */
     function power_of(hops, mean_square, hop) {
         const power = new Float64Array(hops);
@@ -45799,6 +45829,14 @@ var $;
         return [left, right];
     }
     $mol_test({
+        async 'drain fails when channel closes with full buffer'() {
+            const [channel] = pair();
+            Object.assign(channel, { bufferedAmount: $bog_music_peer.buffer_high });
+            const wait = $bog_music_peer.drain(channel).then(() => 'drained', error => error.message);
+            Object.assign(channel, { readyState: 'closed' });
+            channel.dispatchEvent(new Event('close'));
+            $mol_assert_equal(await wait, 'Соединение оборвалось');
+        },
         async 'files go through channel in chunks with meta'() {
             const [sender, receiver] = pair();
             const big = new Uint8Array($bog_music_peer.chunk * 2 + 5).map((_, i) => i % 251);

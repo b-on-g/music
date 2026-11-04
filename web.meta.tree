@@ -61,6 +61,7 @@
 	pack feedback2 git \https://github.com/b-on-g/feedback2.git
 	pack forge git \https://github.com/b-on-g/forge.git
 	pack langleak git \https://github.com/b-on-g/langleak.git
+	pack keyqr git \https://github.com/b-on-g/keyqr.git
 	pack meta git \https://github.com/b-on-g/meta.git
 	pack popup git \https://github.com/b-on-g/popup.git
 	pack qr git \https://github.com/b-on-g/qr.git

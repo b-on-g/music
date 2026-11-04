@@ -44068,7 +44068,7 @@ declare namespace $ {
 declare namespace $ {
     export class $bog_music_device extends $mol_object {
         static id(): string;
-        static title_of(agent: string): string;
+        static title_of(agent: string, touch?: number, side?: number): string;
         static title(): string;
     }
     const $bog_music_device_baza_base: Omit<typeof $giper_baza_dict, "prototype"> & {

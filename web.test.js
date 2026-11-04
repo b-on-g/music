@@ -6762,6 +6762,20 @@ var $;
 "use strict";
 var $;
 (function ($) {
+    $mol_test({
+        'iPhone and iPad with desktop Safari agent are not Mac'() {
+            const agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15';
+            $mol_assert_equal($bog_music_device.title_of(agent, 5, 390), 'iPhone · Safari');
+            $mol_assert_equal($bog_music_device.title_of(agent, 5, 820), 'iPad · Safari');
+            $mol_assert_equal($bog_music_device.title_of(agent, 0, 900), 'Mac · Safari');
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
     /** Мощность 100-мс кусков постоянного сигнала с заданным средним квадратом. */
     function power_of(hops, mean_square, hop) {
         const power = new Float64Array(hops);
@@ -6916,6 +6930,14 @@ var $;
         return [left, right];
     }
     $mol_test({
+        async 'drain fails when channel closes with full buffer'() {
+            const [channel] = pair();
+            Object.assign(channel, { bufferedAmount: $bog_music_peer.buffer_high });
+            const wait = $bog_music_peer.drain(channel).then(() => 'drained', error => error.message);
+            Object.assign(channel, { readyState: 'closed' });
+            channel.dispatchEvent(new Event('close'));
+            $mol_assert_equal(await wait, 'Соединение оборвалось');
+        },
         async 'files go through channel in chunks with meta'() {
             const [sender, receiver] = pair();
             const big = new Uint8Array($bog_music_peer.chunk * 2 + 5).map((_, i) => i % 251);
