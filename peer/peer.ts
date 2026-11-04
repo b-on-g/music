@@ -81,15 +81,33 @@ namespace $ {
 			} )
 		}
 
-		static message( channel: RTCDataChannel ) {
+		static idle_limit = 60000
+
+		static ack_limit = 300000
+
+		static message( channel: RTCDataChannel, limit = this.idle_limit ) {
 			return new Promise< any >( ( done, fail ) => {
+				const stop = () => {
+					clearTimeout( timer )
+					channel.removeEventListener( 'message', on )
+					channel.removeEventListener( 'close', close )
+				}
 				const on = ( event: MessageEvent ) => {
 					if( typeof event.data !== 'string' ) return
-					channel.removeEventListener( 'message', on )
+					stop()
 					done( JSON.parse( event.data ) )
 				}
+				const close = () => {
+					stop()
+					fail( new Error( 'Соединение закрылось' ) )
+				}
+				const timer = setTimeout( () => {
+					stop()
+					fail( new Error( 'Другое устройство замолчало' ) )
+				}, limit )
 				channel.addEventListener( 'message', on )
-				channel.addEventListener( 'close', () => fail( new Error( 'Соединение закрылось' ) ) )
+				channel.addEventListener( 'close', close )
+				if( channel.readyState !== 'open' ) close()
 			} )
 		}
 
@@ -124,7 +142,7 @@ namespace $ {
 				progress?.( ++done )
 			}
 			channel.send( JSON.stringify({ type: 'done' }) )
-			await this.message( channel )
+			await this.message( channel, this.ack_limit )
 		}
 
 		static receive( channel: RTCDataChannel, take: ( got: $bog_music_peer_got )=> Promise< void >, progress?: ( done: number, count: number )=> void ) {
@@ -137,9 +155,21 @@ namespace $ {
 				let parts = [] as ArrayBuffer[]
 				let queue = Promise.resolve()
 
-				channel.addEventListener( 'close', () => fail( new Error( 'Соединение оборвалось' ) ) )
+				let timer = 0 as any
+				const idle = () => {
+					clearTimeout( timer )
+					timer = setTimeout( () => fail( new Error( 'Передача замерла' ) ), this.idle_limit )
+				}
+				idle()
+
+				channel.addEventListener( 'close', () => {
+					clearTimeout( timer )
+					fail( new Error( 'Соединение оборвалось' ) )
+				} )
 
 				channel.addEventListener( 'message', event => {
+
+					idle()
 
 					if( typeof event.data !== 'string' ) {
 						parts.push( event.data )
@@ -172,6 +202,7 @@ namespace $ {
 					}
 
 					if( msg.type === 'done' ) {
+						clearTimeout( timer )
 						queue.then( () => {
 							channel.send( JSON.stringify({ type: 'ack' }) )
 							resolve( done )

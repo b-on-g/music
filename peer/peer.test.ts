@@ -24,6 +24,12 @@ namespace $ {
 
 	$mol_test({
 
+		async 'waiting for message fails when other side is silent'() {
+			const [ channel ] = pair()
+			const got = await $bog_music_peer.message( channel, 10 ).then( () => 'got', error => error.message )
+			$mol_assert_equal( got, 'Другое устройство замолчало' )
+		},
+
 		async 'drain fails when channel closes with full buffer'() {
 			const [ channel ] = pair()
 			Object.assign( channel, { bufferedAmount: $bog_music_peer.buffer_high } )
