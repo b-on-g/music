@@ -24,6 +24,15 @@ namespace $ {
 
 	$mol_test({
 
+		async 'drain fails when channel closes with full buffer'() {
+			const [ channel ] = pair()
+			Object.assign( channel, { bufferedAmount: $bog_music_peer.buffer_high } )
+			const wait = $bog_music_peer.drain( channel ).then( () => 'drained', error => error.message )
+			Object.assign( channel, { readyState: 'closed' } )
+			channel.dispatchEvent( new Event( 'close' ) )
+			$mol_assert_equal( await wait, 'Соединение оборвалось' )
+		},
+
 		async 'files go through channel in chunks with meta'() {
 
 			const [ sender, receiver ] = pair()

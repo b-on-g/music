@@ -96,8 +96,18 @@ namespace $ {
 		static async drain( channel: RTCDataChannel ) {
 			if( channel.bufferedAmount < this.buffer_high ) return
 			channel.bufferedAmountLowThreshold = this.buffer_high / 4
-			await new Promise< void >( done => {
-				channel.addEventListener( 'bufferedamountlow', () => done(), { once: true } )
+			await new Promise< void >( ( done, fail ) => {
+				const low = () => {
+					channel.removeEventListener( 'close', close )
+					done()
+				}
+				const close = () => {
+					channel.removeEventListener( 'bufferedamountlow', low )
+					fail( new Error( 'Соединение оборвалось' ) )
+				}
+				channel.addEventListener( 'bufferedamountlow', low, { once: true } )
+				channel.addEventListener( 'close', close, { once: true } )
+				if( channel.readyState !== 'open' ) close()
 			} )
 		}
 
