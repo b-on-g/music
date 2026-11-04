@@ -53658,7 +53658,9 @@ declare namespace $ {
         }>;
         static finish(rtc: RTCPeerConnection, answer: string): Promise<void>;
         static opened(channel: RTCDataChannel): Promise<RTCDataChannel>;
-        static message(channel: RTCDataChannel): Promise<any>;
+        static idle_limit: number;
+        static ack_limit: number;
+        static message(channel: RTCDataChannel, limit?: number): Promise<any>;
         static drain(channel: RTCDataChannel): Promise<void>;
         static send(channel: RTCDataChannel, items: readonly $bog_music_peer_item[], progress?: (done: number) => void): Promise<void>;
         static receive(channel: RTCDataChannel, take: (got: $bog_music_peer_got) => Promise<void>, progress?: (done: number, count: number) => void): Promise<number>;
@@ -53677,14 +53679,17 @@ declare namespace $ {
         static tick: number;
         static beat_every: number;
         static signal_parse(text: string): $bog_music_beam_signal | null;
-        signal(kind: 'offer' | 'answer', from: string, to: string, next?: string): string;
+        signal_id(kind: 'offer' | 'answer', from: string, to: string, req: string): string;
+        signal(kind: 'offer' | 'answer', from: string, to: string, req: string, next?: string): string;
+        signal_cut(from: string, to: string, req: string): void;
         incoming(me: string): {
             from: string;
+            req: string;
             signal: $bog_music_beam_signal;
         }[];
         status(key: string, next?: string): string;
         summary(next?: string): string;
-        _handled: Map<string, number>;
+        _handled: Set<string>;
         _busy: boolean;
         _beat_at: number;
         _started_at: number;
@@ -53692,7 +53697,7 @@ declare namespace $ {
         _timer: any;
         watch(): null;
         destructor(): void;
-        serve(from: string, signal: $bog_music_beam_signal): Promise<void>;
+        serve(from: string, req: string, signal: $bog_music_beam_signal): Promise<void>;
         pull(from: string, keys: readonly string[]): Promise<void>;
         pick_holder(key: string): string | null;
         pull_one(key: string): void;

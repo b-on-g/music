@@ -40990,16 +40990,33 @@ var $;
                 });
             });
         }
-        static message(channel) {
+        static idle_limit = 60000;
+        static ack_limit = 300000;
+        static message(channel, limit = this.idle_limit) {
             return new Promise((done, fail) => {
+                const stop = () => {
+                    clearTimeout(timer);
+                    channel.removeEventListener('message', on);
+                    channel.removeEventListener('close', close);
+                };
                 const on = (event) => {
                     if (typeof event.data !== 'string')
                         return;
-                    channel.removeEventListener('message', on);
+                    stop();
                     done(JSON.parse(event.data));
                 };
+                const close = () => {
+                    stop();
+                    fail(new Error('Соединение закрылось'));
+                };
+                const timer = setTimeout(() => {
+                    stop();
+                    fail(new Error('Другое устройство замолчало'));
+                }, limit);
                 channel.addEventListener('message', on);
-                channel.addEventListener('close', () => fail(new Error('Соединение закрылось')));
+                channel.addEventListener('close', close);
+                if (channel.readyState !== 'open')
+                    close();
             });
         }
         static async drain(channel) {
@@ -41034,7 +41051,7 @@ var $;
                 progress?.(++done);
             }
             channel.send(JSON.stringify({ type: 'done' }));
-            await this.message(channel);
+            await this.message(channel, this.ack_limit);
         }
         static receive(channel, take, progress) {
             return new Promise((resolve, fail) => {
@@ -41043,8 +41060,18 @@ var $;
                 let head = null;
                 let parts = [];
                 let queue = Promise.resolve();
-                channel.addEventListener('close', () => fail(new Error('Соединение оборвалось')));
+                let timer = 0;
+                const idle = () => {
+                    clearTimeout(timer);
+                    timer = setTimeout(() => fail(new Error('Передача замерла')), this.idle_limit);
+                };
+                idle();
+                channel.addEventListener('close', () => {
+                    clearTimeout(timer);
+                    fail(new Error('Соединение оборвалось'));
+                });
                 channel.addEventListener('message', event => {
+                    idle();
                     if (typeof event.data !== 'string') {
                         parts.push(event.data);
                         return;
@@ -41071,6 +41098,7 @@ var $;
                         queue = queue.then(() => take(got)).then(() => progress?.(++done, count));
                     }
                     if (msg.type === 'done') {
+                        clearTimeout(timer);
                         queue.then(() => {
                             channel.send(JSON.stringify({ type: 'ack' }));
                             resolve(done);
@@ -41108,24 +41136,32 @@ var $;
                 return null;
             }
         }
-        signal(kind, from, to, next) {
+        signal_id(kind, from, to, req) {
+            return `${kind}:${from}>${to}:${req}`;
+        }
+        signal(kind, from, to, req, next) {
             const dict = this.account().signals();
-            const id = `${kind}:${from}>${to}`;
+            const id = this.signal_id(kind, from, to, req);
             if (next !== undefined)
                 dict.key(id, 'auto').val(next);
             return dict.key(id)?.val() ?? '';
+        }
+        signal_cut(from, to, req) {
+            const dict = this.account().signals();
+            dict.cut(this.signal_id('offer', from, to, req));
+            dict.cut(this.signal_id('answer', to, from, req));
         }
         incoming(me) {
             const dict = this.account().signals();
             const out = [];
             for (const id of (dict.keys() ?? [])) {
-                const [kind, pair = ''] = id.split(':');
+                const [kind, pair = '', req = ''] = id.split(':');
                 const [from, to] = pair.split('>');
-                if (kind !== 'offer' || to !== me || !from)
+                if (kind !== 'offer' || to !== me || !from || !req)
                     continue;
                 const signal = $bog_music_beam.signal_parse(dict.key(id)?.val() ?? '');
                 if (signal)
-                    out.push({ from, signal });
+                    out.push({ from, req, signal });
             }
             return out;
         }
@@ -41135,7 +41171,7 @@ var $;
         summary(next) {
             return next ?? '';
         }
-        _handled = new Map();
+        _handled = new Set();
         _busy = false;
         _beat_at = 0;
         _started_at = Date.now();
@@ -41150,13 +41186,16 @@ var $;
                     await $mol_wire_async(this.account()).device_beat();
                 }
                 const me = $bog_music_device.id();
-                for (const { from, signal } of await self.incoming(me)) {
+                for (const { from, req, signal } of await self.incoming(me)) {
                     if (signal.at < this._started_at - $bog_music_beam.answer_limit)
                         continue;
-                    if ((this._handled.get(from) ?? 0) >= signal.at)
+                    if (this._handled.has(req))
                         continue;
-                    this._handled.set(from, signal.at);
-                    await this.serve(from, signal);
+                    this._handled.add(req);
+                    void this.serve(from, req, signal).catch((error) => {
+                        $bog_music_log.err(`отдача файлов не удалась: ${error?.message ?? error}`);
+                        this.summary('');
+                    });
                 }
             }
             catch (error) {
@@ -41177,13 +41216,13 @@ var $;
         destructor() {
             clearInterval(this._timer);
         }
-        async serve(from, signal) {
+        async serve(from, req, signal) {
             const me = $bog_music_device.id();
             const name = await $mol_wire_async(this.account()).device_name(from);
             $bog_music_log.act(`запрос файлов с «${name}»`);
             const { rtc, channel, sdp } = await $bog_music_peer.answer(signal.sdp);
             try {
-                await $mol_wire_async(this).signal('answer', me, from, JSON.stringify({ at: Date.now(), sdp }));
+                await $mol_wire_async(this).signal('answer', me, from, req, JSON.stringify({ at: Date.now(), sdp }));
                 const open = await $bog_music_peer.opened(await channel);
                 const want = await $bog_music_peer.message(open);
                 const items = [];
@@ -41210,13 +41249,14 @@ var $;
                 this.status(key, 'Соединяюсь…');
             this.summary(`Соединяюсь с «${name}»…`);
             $bog_music_log.act(`перенос ${keys.length} с «${name}»`);
+            const req = $mol_guid(8);
             const { rtc, channel, sdp } = await $bog_music_peer.offer();
             try {
                 const at = Date.now();
-                await $mol_wire_async(this).signal('offer', me, from, JSON.stringify({ at, sdp }));
+                await $mol_wire_async(this).signal('offer', me, from, req, JSON.stringify({ at, sdp }));
                 let answer = null;
                 while (Date.now() - at < $bog_music_beam.answer_limit) {
-                    answer = $bog_music_beam.signal_parse(await $mol_wire_async(this).signal('answer', from, me));
+                    answer = $bog_music_beam.signal_parse(await $mol_wire_async(this).signal('answer', from, me, req));
                     if (answer && answer.at >= at)
                         break;
                     answer = null;
@@ -41245,6 +41285,7 @@ var $;
                 for (const key of keys)
                     this.status(key, '');
                 rtc.close();
+                await $mol_wire_async(this).signal_cut(me, from, req).catch(() => { });
             }
         }
         pick_holder(key) {
@@ -41280,6 +41321,9 @@ var $;
             })();
         }
     }
+    __decorate([
+        $mol_action
+    ], $bog_music_beam.prototype, "signal_cut", null);
     __decorate([
         $mol_mem_key
     ], $bog_music_beam.prototype, "status", null);
@@ -55052,7 +55096,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.93';
+    $.$bog_music_version = 'v1.94';
 })($ || ($ = {}));
 
 ;
