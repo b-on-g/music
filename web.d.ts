@@ -66731,6 +66731,17 @@ declare namespace $ {
 }
 
 declare namespace $ {
+    class $bog_yard extends $giper_baza_yard {
+        static stagger: number;
+        port_make(socket: WebSocket, link: string): $mol_rest_port_ws_std;
+        master(): $mol_rest_port | null;
+    }
+}
+
+declare namespace $ {
+}
+
+declare namespace $ {
     let $bog_music_version: string;
 }
 

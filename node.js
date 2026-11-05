@@ -36519,8 +36519,117 @@ var $;
 "use strict";
 var $;
 (function ($) {
+    class $bog_yard extends $giper_baza_yard {
+        static stagger = 300; // ms
+        port_make(socket, link) {
+            const port = new $mol_rest_port_ws_std;
+            port.socket = socket;
+            socket.onmessage = async (event) => {
+                if (event.data instanceof ArrayBuffer) {
+                    if (!event.data.byteLength)
+                        return;
+                    await $mol_wire_async(this).port_income(port, new Uint8Array(event.data));
+                    return;
+                }
+                this.$.$mol_log3_fail({
+                    place: this,
+                    message: 'Wrong data',
+                    data: event.data,
+                });
+            };
+            const beat = setInterval(() => socket.send(new Uint8Array), 30000);
+            socket.onclose = () => {
+                clearInterval(beat);
+                setTimeout(() => this.reconnects(null), 1000);
+            };
+            port.destructor = () => {
+                socket.onclose = () => { };
+                clearInterval(beat);
+                socket.close();
+            };
+            this.$.$mol_log3_come({
+                place: this,
+                message: 'Connected',
+                port: $mol_key(port),
+                server: link,
+            });
+            return port;
+        }
+        master() {
+            this.reconnects();
+            const links = this.$.$giper_baza_yard.masters();
+            if (!links.length)
+                return null;
+            const first = ($mol_wire_probe(() => this.master_cursor()) ?? 0) % links.length;
+            const order = links.map((_, index) => (first + index) % links.length);
+            const sockets = new Map();
+            const timers = new Set();
+            let won = false;
+            let started = 0;
+            let failed = 0;
+            const stop = (keep) => {
+                for (const timer of timers)
+                    clearTimeout(timer);
+                timers.clear();
+                for (const [index, socket] of sockets) {
+                    if (index === keep)
+                        continue;
+                    socket.onopen = null;
+                    socket.onerror = null;
+                    socket.onclose = null;
+                    socket.close();
+                }
+            };
+            const promise = new Promise(done => {
+                const next = () => {
+                    if (won || started >= order.length)
+                        return;
+                    const index = order[started++];
+                    const link = links[index];
+                    const socket = new this.$.$mol_dom_context.WebSocket(link.replace(/^http/, 'ws'), ['$giper_baza_yard_2']);
+                    socket.binaryType = 'arraybuffer';
+                    sockets.set(index, socket);
+                    socket.onopen = () => {
+                        if (won)
+                            return;
+                        won = true;
+                        stop(index);
+                        socket.onerror = null;
+                        this.master_cursor(index);
+                        done(this.port_make(socket, link));
+                    };
+                    socket.onerror = () => {
+                        socket.onopen = null;
+                        socket.onerror = null;
+                        if (won)
+                            return;
+                        if (++failed >= order.length) {
+                            timers.add(setTimeout(() => this.reconnects(null), 1000));
+                            return;
+                        }
+                        next();
+                    };
+                    if (started < order.length)
+                        timers.add(setTimeout(next, this.constructor.stagger));
+                };
+                next();
+            });
+            return Object.assign(promise, { destructor: () => { if (!won)
+                    stop(); } });
+        }
+    }
+    __decorate([
+        $mol_mem
+    ], $bog_yard.prototype, "master", null);
+    $.$bog_yard = $bog_yard;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.94';
+    $.$bog_music_version = 'v1.95';
 })($ || ($ = {}));
 
 ;
@@ -36533,12 +36642,7 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
-        const local = typeof location !== 'undefined' && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
-        const master = local ? 'http://localhost:9090/' : 'https://cmyser-bg-pony.87.120.36.150.ip.giper.dev/';
-        $giper_baza_yard.masters_default.length = 0;
-        $giper_baza_yard.masters = () => [master];
         $bog_music_boot.init();
-        $bog_music_log.act(`мастер синка: ${master}`);
         class $bog_music_app extends $.$bog_music_app {
             title() {
                 return 'Bog Music';

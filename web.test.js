@@ -8067,5 +8067,51 @@ var $;
     });
 })($ || ($ = {}));
 
+;
+"use strict";
+var $;
+(function ($_1) {
+    $mol_test({
+        async 'Молчащий мастер в начале списка не задерживает подключение к живому'($) {
+            const made = [];
+            class Fake {
+                url;
+                binaryType = '';
+                closed = false;
+                onopen = null;
+                onerror = null;
+                onclose = null;
+                onmessage = null;
+                constructor(url) {
+                    this.url = url;
+                    made.push(this);
+                    if (url.includes('alive'))
+                        setTimeout(() => this.onopen?.(), 5);
+                }
+                send() { }
+                close() { this.closed = true; }
+            }
+            class Yard extends $bog_yard {
+                static stagger = 10;
+                static masters() {
+                    return ['https://silent.example/', 'https://alive.example/'];
+                }
+            }
+            const context = Object.create($);
+            context.$mol_dom_context = Object.assign(Object.create($.$mol_dom_context), { WebSocket: Fake });
+            context.$giper_baza_yard = Yard;
+            const yard = Yard.make({ $: context });
+            const began = Date.now();
+            const port = await $mol_wire_async(yard).master();
+            const spent = Date.now() - began;
+            $mol_assert_equal(yard.master_cursor(), 1);
+            $mol_assert_equal(port.socket.url, 'wss://alive.example/');
+            $mol_assert_equal(made[0].closed, true);
+            $mol_assert_equal(spent < 500, true);
+            port.destructor();
+        },
+    });
+})($ || ($ = {}));
+
 
 //# sourceMappingURL=web.test.js.map
