@@ -36620,7 +36620,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.95';
+    $.$bog_music_version = 'v1.96';
 })($ || ($ = {}));
 
 ;
@@ -36633,6 +36633,9 @@ var $;
 (function ($) {
     var $$;
     (function ($$) {
+        const local = typeof location !== 'undefined' && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+        if (local)
+            $giper_baza_yard.masters = () => $giper_baza_yard.masters_override() ?? ['http://localhost:9090/'];
         $bog_music_boot.init();
         class $bog_music_app extends $.$bog_music_app {
             title() {
