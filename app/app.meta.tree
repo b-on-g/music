@@ -1,2 +1,3 @@
+include \/bog/yard
 include \/mol/offline/install
 deploy \/bog/music/app/favicon.svg

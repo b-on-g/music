@@ -1,12 +1,5 @@
 namespace $.$$ {
-	const local = typeof location !== 'undefined' && /^(localhost|127\.0\.0\.1|\[::1\])$/.test( location.hostname )
-	const master = local ? 'http://localhost:9090/' : 'https://cmyser-bg-pony.87.120.36.150.ip.giper.dev/'
-
-	$giper_baza_yard.masters_default.length = 0
-	$giper_baza_yard.masters = (): string[] => [ master ]
-
 	$bog_music_boot.init()
-	$bog_music_log.act( `мастер синка: ${ master }` )
 
 	export class $bog_music_app extends $.$bog_music_app {
 
