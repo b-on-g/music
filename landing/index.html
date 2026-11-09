@@ -165,7 +165,7 @@ body, :where([mol_theme]) {
 	scrollbar-color: var(--mol_theme_line) transparent;
 	scrollbar-width: thin;
 	/* text-wrap-style: pretty; dont work in textarea */
-	unicode-bidi: plaintext
+	unicode-bidi: plaintext;
 }
 
 [mol_view]::selection {
@@ -192,6 +192,7 @@ body, :where([mol_theme]) {
 
 [mol_view] > * {
 	word-break: inherit;
+	unicode-bidi: inherit;
 }
 
 [mol_view_root] {
