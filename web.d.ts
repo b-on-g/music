@@ -60106,39 +60106,54 @@ declare namespace $ {
 		,
 		ReturnType< $mol_pick['bubble_content'] >
 	>
-	type $mol_bar__sub_giper_baza_rich_edit_50 = $mol_type_enforce<
-		readonly(any)[]
-		,
-		ReturnType< $mol_bar['sub'] >
-	>
-	type $mol_string__hint_giper_baza_rich_edit_51 = $mol_type_enforce<
+	type $mol_button_open__hint_giper_baza_rich_edit_50 = $mol_type_enforce<
 		string
 		,
-		ReturnType< $mol_string['hint'] >
+		ReturnType< $mol_button_open['hint'] >
 	>
-	type $mol_string__hint_giper_baza_rich_edit_52 = $mol_type_enforce<
-		string
+	type $mol_button_open__enabled_giper_baza_rich_edit_51 = $mol_type_enforce<
+		ReturnType< $giper_baza_rich_edit['selected'] >
 		,
-		ReturnType< $mol_string['hint'] >
+		ReturnType< $mol_button_open['enabled'] >
+	>
+	type $mol_button_open__files_giper_baza_rich_edit_52 = $mol_type_enforce<
+		ReturnType< $giper_baza_rich_edit['attach_files'] >
+		,
+		ReturnType< $mol_button_open['files'] >
 	>
 	type $mol_bar__sub_giper_baza_rich_edit_53 = $mol_type_enforce<
 		readonly(any)[]
 		,
 		ReturnType< $mol_bar['sub'] >
 	>
-	type $mol_float__sub_giper_baza_rich_edit_54 = $mol_type_enforce<
+	type $mol_string__hint_giper_baza_rich_edit_54 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_string['hint'] >
+	>
+	type $mol_string__hint_giper_baza_rich_edit_55 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_string['hint'] >
+	>
+	type $mol_bar__sub_giper_baza_rich_edit_56 = $mol_type_enforce<
+		readonly(any)[]
+		,
+		ReturnType< $mol_bar['sub'] >
+	>
+	type $mol_float__sub_giper_baza_rich_edit_57 = $mol_type_enforce<
 		ReturnType< $giper_baza_rich_edit['tools'] >
 		,
 		ReturnType< $mol_float['sub'] >
 	>
-	type $mol_view__attr_giper_baza_rich_edit_55 = $mol_type_enforce<
+	type $mol_view__attr_giper_baza_rich_edit_58 = $mol_type_enforce<
 		({ 
 			'contenteditable': ReturnType< $giper_baza_rich_edit['editable'] >,
 		}) 
 		,
 		ReturnType< $mol_view['attr'] >
 	>
-	type $mol_view__event_giper_baza_rich_edit_56 = $mol_type_enforce<
+	type $mol_view__event_giper_baza_rich_edit_59 = $mol_type_enforce<
 		({ 
 			input( next?: ReturnType< $giper_baza_rich_edit['save'] > ): ReturnType< $giper_baza_rich_edit['save'] >,
 			paste( next?: ReturnType< $giper_baza_rich_edit['paste'] > ): ReturnType< $giper_baza_rich_edit['paste'] >,
@@ -60147,7 +60162,7 @@ declare namespace $ {
 		,
 		ReturnType< $mol_view['event'] >
 	>
-	type $mol_view__sub_giper_baza_rich_edit_57 = $mol_type_enforce<
+	type $mol_view__sub_giper_baza_rich_edit_60 = $mol_type_enforce<
 		ReturnType< $giper_baza_rich_edit['content'] >
 		,
 		ReturnType< $mol_view['sub'] >
@@ -60183,6 +60198,8 @@ declare namespace $ {
 		Del_button( ): $mol_button_minor
 		Code_button( ): $mol_button_minor
 		Inline_format_menu( ): $mol_pick
+		attach_files( next?: readonly(any)[] ): readonly(any)[]
+		Attach( ): $mol_button_open
 		Main( ): $mol_bar
 		Search_query( ): $mol_string
 		Search_replace( ): $mol_string
@@ -60228,6 +60245,7 @@ declare namespace $.$$ {
         block_unwrap(event: KeyboardEvent): void;
         /** Wraps selecion to given element type. */
         inline_toggle(Type: string, event: KeyboardEvent): void;
+        attach_files(files: readonly File[]): never[];
         paste(event: ClipboardEvent): void;
         hover(event: PointerEvent): void;
     }
