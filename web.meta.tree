@@ -75,6 +75,7 @@
 	pack version git \https://github.com/b-on-g/version.git
 	pack apps git \https://github.com/b-on-g/apps.git
 	pack gram git \https://github.com/b-on-g/gram.git
+	pack install git \https://github.com/b-on-g/install.git
 	pack invest git \https://github.com/b-on-g/invest.git
 	pack slop git \https://github.com/b-on-g/slop.git
 	pack worm git \https://github.com/b-on-g/worm.git
