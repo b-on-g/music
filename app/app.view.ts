@@ -3,8 +3,6 @@ namespace $.$$ {
 
 	if( local ) $giper_baza_yard.masters = (): string[] => $giper_baza_yard.masters_override() ?? [ 'http://localhost:9090/' ]
 
-	$bog_music_boot.init()
-
 	export class $bog_music_app extends $.$bog_music_app {
 
 		title() {
