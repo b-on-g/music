@@ -702,11 +702,6 @@ namespace $.$$ {
 			$mol_wire_async(this).tg_drain()
 			$mol_wire_async(this).fm_refresh()
 			this.lists_migrate()
-			const token = $bog_music_boot.share_token
-			if (token) {
-				$bog_music_boot.share_token = ''
-				void this.import_share(token)
-			}
 			return super.auto()
 		}
 

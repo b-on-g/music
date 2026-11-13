@@ -272,7 +272,6 @@ namespace $ {
 
 			if( !token || this.token_done( token ) ) return null
 			this.token_done( token, true )
-			$bog_music_boot.clear_share_hash()
 
 			const [ link, key_str, burn_str ] = token.split( '.' )
 			if( !link || !key_str || !burn_str ) {
