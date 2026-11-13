@@ -32306,13 +32306,69 @@ var $;
         static buffer_high = 1024 * 1024;
         static gather_limit = 5000;
         static open_limit = 30000;
-        static rtc() {
-            return new RTCPeerConnection({ iceServers: this.ice });
+        static rtc(tag) {
+            const rtc = new RTCPeerConnection({ iceServers: this.ice });
+            this.trace(rtc, tag);
+            return rtc;
+        }
+        static candidates(sdp) {
+            const found = [];
+            for (const line of sdp.split(/\r?\n/)) {
+                const match = line.match(/^a=candidate:\S+ \d+ (\S+) \d+ (\S+) (\d+) typ (\S+)/);
+                if (match)
+                    found.push(`${match[4]} ${match[1].toLowerCase()} ${match[2]}:${match[3]}`);
+            }
+            return found.length ? found.join(', ') : 'ни одного';
+        }
+        static candidate_text(stats, id) {
+            const one = stats.get(id);
+            if (!one)
+                return '?';
+            return `${one.candidateType} ${one.protocol} ${one.address ?? one.ip ?? '?'}:${one.port}`;
+        }
+        static async route(rtc) {
+            const stats = await rtc.getStats();
+            const pairs = [];
+            let chosen = '';
+            stats.forEach(one => {
+                if (one.type === 'transport' && one.selectedCandidatePairId)
+                    chosen = one.selectedCandidatePairId;
+            });
+            stats.forEach(one => {
+                if (one.type !== 'candidate-pair')
+                    return;
+                if (!chosen && one.nominated && one.state === 'succeeded')
+                    chosen = one.id;
+                pairs.push(`${one.state}: ${this.candidate_text(stats, one.localCandidateId)} → ${this.candidate_text(stats, one.remoteCandidateId)}`);
+            });
+            const pair = chosen ? stats.get(chosen) : null;
+            if (pair)
+                return `${this.candidate_text(stats, pair.localCandidateId)} → ${this.candidate_text(stats, pair.remoteCandidateId)}`;
+            return pairs.length ? `не выбран, пары: ${pairs.join('; ')}` : 'не выбран, пар нет';
+        }
+        static trace(rtc, tag) {
+            const log = (text) => $bog_music_log.act(`${tag}: ${text}`);
+            const route = () => void this.route(rtc).then(log, (error) => log(`маршрут не прочитан: ${error?.message ?? error}`));
+            rtc.addEventListener('icegatheringstatechange', () => log(`сбор адресов ${rtc.iceGatheringState}`));
+            rtc.addEventListener('signalingstatechange', () => log(`сигналинг ${rtc.signalingState}`));
+            rtc.addEventListener('iceconnectionstatechange', () => log(`ice ${rtc.iceConnectionState}`));
+            rtc.addEventListener('icecandidateerror', (event) => {
+                const error = event;
+                $bog_music_log.err(`${tag}: адрес с ${error.url} не получен: ${error.errorCode} ${error.errorText}`);
+            });
+            rtc.addEventListener('connectionstatechange', () => {
+                log(`соединение ${rtc.connectionState}`);
+                if (rtc.connectionState === 'connected' || rtc.connectionState === 'failed')
+                    route();
+            });
         }
         static async gather(rtc) {
             if (rtc.iceGatheringState !== 'complete') {
                 await new Promise(done => {
-                    const timer = setTimeout(done, this.gather_limit);
+                    const timer = setTimeout(() => {
+                        $bog_music_log.act(`сбор адресов не закончился за ${this.gather_limit} мс, шлю что есть`);
+                        done();
+                    }, this.gather_limit);
                     rtc.addEventListener('icegatheringstatechange', () => {
                         if (rtc.iceGatheringState !== 'complete')
                             return;
@@ -32323,22 +32379,31 @@ var $;
             }
             return rtc.localDescription.sdp;
         }
-        static async offer() {
-            const rtc = this.rtc();
+        static async offer(tag = 'пара') {
+            const rtc = this.rtc(tag);
             const channel = rtc.createDataChannel('bog_music', { ordered: true });
             await rtc.setLocalDescription(await rtc.createOffer());
-            return { rtc, channel, sdp: await this.gather(rtc) };
+            const sdp = await this.gather(rtc);
+            $bog_music_log.act(`${tag}: свои адреса: ${this.candidates(sdp)}`);
+            return { rtc, channel, sdp };
         }
-        static async answer(offer) {
-            const rtc = this.rtc();
+        static async answer(offer, tag = 'пара') {
+            const rtc = this.rtc(tag);
             const channel = new Promise(done => {
-                rtc.addEventListener('datachannel', event => done(event.channel));
+                rtc.addEventListener('datachannel', event => {
+                    $bog_music_log.act(`${tag}: пришёл канал ${event.channel.readyState}`);
+                    done(event.channel);
+                });
             });
+            $bog_music_log.act(`${tag}: адреса соседа: ${this.candidates(offer)}`);
             await rtc.setRemoteDescription({ type: 'offer', sdp: offer });
             await rtc.setLocalDescription(await rtc.createAnswer());
-            return { rtc, channel, sdp: await this.gather(rtc) };
+            const sdp = await this.gather(rtc);
+            $bog_music_log.act(`${tag}: свои адреса: ${this.candidates(sdp)}`);
+            return { rtc, channel, sdp };
         }
-        static async finish(rtc, answer) {
+        static async finish(rtc, answer, tag = 'пара') {
+            $bog_music_log.act(`${tag}: адреса соседа: ${this.candidates(answer)}`);
             await rtc.setRemoteDescription({ type: 'answer', sdp: answer });
         }
         static opened(channel) {
@@ -32548,17 +32613,23 @@ var $;
             this._busy = true;
             try {
                 const self = $mol_wire_async(this);
+                const me = $bog_music_device.id();
                 if (Date.now() - this._beat_at > $bog_music_beam.beat_every) {
+                    if (!this._beat_at)
+                        $bog_music_log.act(`пара: я ${me} «${$bog_music_device.title()}», жду запросов`);
                     this._beat_at = Date.now();
                     await $mol_wire_async(this.account()).device_beat();
                 }
-                const me = $bog_music_device.id();
                 for (const { from, req, signal } of await self.incoming(me)) {
-                    if (signal.at < this._started_at - $bog_music_beam.answer_limit)
-                        continue;
                     if (this._handled.has(req))
                         continue;
                     this._handled.add(req);
+                    const age = Date.now() - signal.at;
+                    if (signal.at < this._started_at - $bog_music_beam.answer_limit) {
+                        $bog_music_log.act(`пара: старый запрос ${req} от ${from} пропущен, ему ${Math.round(age / 1000)} с`);
+                        continue;
+                    }
+                    $bog_music_log.act(`пара: запрос ${req} от ${from}, по моим часам ему ${age} мс`);
                     void this.serve(from, req, signal).catch((error) => {
                         $bog_music_log.err(`отдача файлов не удалась: ${error?.message ?? error}`);
                         this.summary('');
@@ -32587,11 +32658,15 @@ var $;
             const me = $bog_music_device.id();
             const name = await $mol_wire_async(this.account()).device_name(from);
             $bog_music_log.act(`запрос файлов с «${name}»`);
-            const { rtc, channel, sdp } = await $bog_music_peer.answer(signal.sdp);
+            const tag = `пара ${req} отдача`;
+            const { rtc, channel, sdp } = await $bog_music_peer.answer(signal.sdp, tag);
             try {
                 await $mol_wire_async(this).signal('answer', me, from, req, JSON.stringify({ at: Date.now(), sdp }));
+                $bog_music_log.act(`${tag}: ответ записан в Базу, жду канал`);
                 const open = await $bog_music_peer.opened(await channel);
+                $bog_music_log.act(`${tag}: канал открыт, жду список`);
                 const want = await $bog_music_peer.message(open);
+                $bog_music_log.act(`${tag}: просят ${want.keys?.length ?? 0}`);
                 const items = [];
                 for (const key of (want.keys ?? [])) {
                     const file = await $bog_music_disk.file(key);
@@ -32617,22 +32692,33 @@ var $;
             this.summary(`Соединяюсь с «${name}»…`);
             $bog_music_log.act(`перенос ${keys.length} с «${name}»`);
             const req = $mol_guid(8);
-            const { rtc, channel, sdp } = await $bog_music_peer.offer();
+            const tag = `пара ${req} приём`;
+            const online = await account.device_online(from);
+            $bog_music_log.act(`${tag}: я ${me}, беру с ${from} «${name}», ${online ? 'на связи' : 'пульса нет'}`);
+            const { rtc, channel, sdp } = await $bog_music_peer.offer(tag);
             try {
                 const at = Date.now();
                 await $mol_wire_async(this).signal('offer', me, from, req, JSON.stringify({ at, sdp }));
+                $bog_music_log.act(`${tag}: запрос записан в Базу, жду ответ`);
                 let answer = null;
+                let skewed = false;
                 while (Date.now() - at < $bog_music_beam.answer_limit) {
                     answer = $bog_music_beam.signal_parse(await $mol_wire_async(this).signal('answer', from, me, req));
                     if (answer && answer.at >= at)
                         break;
+                    if (answer && !skewed) {
+                        skewed = true;
+                        $bog_music_log.err(`${tag}: ответ есть, но его время ${answer.at} раньше запроса ${at} на ${at - answer.at} мс, часы устройств расходятся`);
+                    }
                     answer = null;
                     await new Promise(done => setTimeout(done, 1000));
                 }
                 if (!answer)
                     throw new Error(`«${name}» не ответило, открой на нём приложение`);
-                await $bog_music_peer.finish(rtc, answer.sdp);
+                $bog_music_log.act(`${tag}: ответ пришёл через ${Date.now() - at} мс`);
+                await $bog_music_peer.finish(rtc, answer.sdp, tag);
                 const open = await $bog_music_peer.opened(channel);
+                $bog_music_log.act(`${tag}: канал открыт, прошу ${keys.length}`);
                 open.send(JSON.stringify({ type: 'want', keys }));
                 const got = await $bog_music_peer.receive(open, async (item) => {
                     await $bog_music_disk.put(item.key, item.bytes);
@@ -32662,8 +32748,10 @@ var $;
         }
         pull_one(key) {
             const from = this.pick_holder(key);
-            if (!from)
+            if (!from) {
+                $bog_music_log.act(`пара: у ${key} нет держателей кроме меня`);
                 return;
+            }
             void this.pull(from, [key]).catch(() => { });
         }
         remote_groups(keys) {
@@ -35952,7 +36040,7 @@ var $;
             const offer = JSON.parse($mol_charset_decode(await this.decrypt(secret, cipher)));
             if (typeof offer?.sdp !== 'string')
                 throw new Error('битое приглашение');
-            const { rtc, channel, sdp } = await $bog_music_peer.answer(offer.sdp);
+            const { rtc, channel, sdp } = await $bog_music_peer.answer(offer.sdp, `шар ${open.land} отдача`);
             try {
                 const answer = await this.encrypt(secret, $mol_charset_encode(JSON.stringify({ sdp })));
                 await $mol_wire_async(this).answer_put(open.land, answer);
@@ -36032,7 +36120,7 @@ var $;
                     ? $mol_charset_decode(await this.decrypt(secret, head.sender))
                     : 'Расшаренный';
                 const playlist = 'shared:' + sender;
-                const { rtc, channel, sdp } = await $bog_music_peer.offer();
+                const { rtc, channel, sdp } = await $bog_music_peer.offer(`шар ${link} приём`);
                 try {
                     const cipher = await this.encrypt(secret, $mol_charset_encode(JSON.stringify({ sdp })));
                     await self.offer_put(link, cipher, burn_str);
@@ -36050,7 +36138,7 @@ var $;
                         this.import_status(`${sender} так и не открыл приложение`);
                         return null;
                     }
-                    await $bog_music_peer.finish(rtc, answer.sdp);
+                    await $bog_music_peer.finish(rtc, answer.sdp, `шар ${link} приём`);
                     const open = await $bog_music_peer.opened(channel);
                     const got = await $bog_music_peer.receive(open, item => this.account().import_audio(item.key, item.meta, item.bytes, playlist), (done, count) => this.import_status(`От ${sender}: ${done} из ${count}`));
                     this.import_status(`От ${sender}: ${got} ${$bog_music_share.plural_tracks(got)}`);
@@ -36466,9 +36554,23 @@ var $;
 (function ($) {
     class $bog_yard extends $giper_baza_yard {
         static stagger = 300; // ms
+        /** Как часто проверяем, не появился ли мастер быстрее текущего. */
+        static probe_period = 20_000; // ms
+        /** Сколько ждём пробные сокеты, прежде чем считать их молчащими. */
+        static probe_timeout = 5_000; // ms
+        /** Насколько быстрее должен быть кандидат, чтобы ради него рвать связь. */
+        static switch_margin = 200; // ms
+        /** Пауза перед переподключением после обрыва. */
+        static reconnect_delay = 1_000; // ms
+        /** За сколько открылся мастер, с которым работаем сейчас. */
+        master_rtt(next = 0) {
+            return next;
+        }
         port_make(socket, link) {
             const port = new $mol_rest_port_ws_std;
             port.socket = socket;
+            const stop_probe = this.probe_loop();
+            const delay = this.constructor.reconnect_delay;
             socket.onmessage = async (event) => {
                 if (event.data instanceof ArrayBuffer) {
                     if (!event.data.byteLength)
@@ -36485,11 +36587,17 @@ var $;
             const beat = setInterval(() => socket.send(new Uint8Array), 30000);
             socket.onclose = () => {
                 clearInterval(beat);
-                setTimeout(() => this.reconnects(null), 1000);
+                stop_probe();
+                setTimeout(() => {
+                    if (this.$.$giper_baza_yard.masters().length)
+                        this.master_next();
+                    this.reconnects(null);
+                }, delay);
             };
             port.destructor = () => {
                 socket.onclose = () => { };
                 clearInterval(beat);
+                stop_probe();
                 socket.close();
             };
             this.$.$mol_log3_come({
@@ -36508,6 +36616,7 @@ var $;
             const first = ($mol_wire_probe(() => this.master_cursor()) ?? 0) % links.length;
             const order = links.map((_, index) => (first + index) % links.length);
             const sockets = new Map();
+            const begins = new Map();
             const timers = new Set();
             let won = false;
             let started = 0;
@@ -36534,6 +36643,7 @@ var $;
                     const socket = new this.$.$mol_dom_context.WebSocket(link.replace(/^http/, 'ws'), ['$giper_baza_yard_2']);
                     socket.binaryType = 'arraybuffer';
                     sockets.set(index, socket);
+                    begins.set(index, Date.now());
                     socket.onopen = () => {
                         if (won)
                             return;
@@ -36541,6 +36651,7 @@ var $;
                         stop(index);
                         socket.onerror = null;
                         this.master_cursor(index);
+                        this.master_rtt(Date.now() - (begins.get(index) ?? Date.now()));
                         done(this.port_make(socket, link));
                     };
                     socket.onerror = () => {
@@ -36562,10 +36673,128 @@ var $;
             return Object.assign(promise, { destructor: () => { if (!won)
                     stop(); } });
         }
+        /**
+         * Раз в `probe_period` проверяет, не открывается ли какой-то мастер
+         * заметно быстрее текущего. Возвращает остановку проверок.
+         */
+        probe_loop() {
+            const period = this.constructor.probe_period;
+            let stopped = false;
+            let timer = 0;
+            const tick = async () => {
+                if (stopped)
+                    return;
+                try {
+                    if (await this.probe_check())
+                        return;
+                }
+                catch (error) {
+                    $mol_fail_log(error);
+                }
+                if (stopped)
+                    return;
+                timer = setTimeout(tick, period);
+            };
+            timer = setTimeout(tick, period);
+            return () => {
+                stopped = true;
+                clearTimeout(timer);
+            };
+        }
+        /**
+         * Переключается на мастера, который открывается заметно быстрее
+         * текущего. Так приложение уходит с зарубежного мастера на ближний,
+         * когда маршрут меняется, а сокет при этом не рвётся.
+         * Возвращает, переключился ли.
+         */
+        async probe_check() {
+            const rtt = this.master_rtt();
+            if (!rtt)
+                return false;
+            const current = this.master_cursor();
+            const best = await this.probe_best(current);
+            if (!best)
+                return false;
+            const margin = this.constructor.switch_margin;
+            if (best.rtt + margin >= rtt)
+                return false;
+            const links = this.$.$giper_baza_yard.masters();
+            this.$.$mol_log3_rise({
+                place: this,
+                message: 'Switch to faster master',
+                from: links[current],
+                to: links[best.index],
+                rtt: [rtt, best.rtt],
+            });
+            this.master_cursor(best.index);
+            this.master_rtt(best.rtt);
+            this.reconnects(null);
+            return true;
+        }
+        /** Гоняет пробные сокеты по всем мастерам, кроме текущего, и отдаёт самого быстрого. */
+        probe_best(exclude) {
+            const links = this.$.$giper_baza_yard.masters();
+            const candidates = links
+                .map((link, index) => [index, link])
+                .filter(([index]) => index !== exclude);
+            if (!candidates.length)
+                return Promise.resolve(null);
+            const timeout = this.constructor.probe_timeout;
+            return new Promise(done => {
+                let left = candidates.length;
+                let best = null;
+                let finished = false;
+                const sockets = new Map();
+                const finish = () => {
+                    if (finished)
+                        return;
+                    finished = true;
+                    clearTimeout(timer);
+                    for (const socket of sockets.values()) {
+                        socket.onopen = null;
+                        socket.onerror = null;
+                        socket.close();
+                    }
+                    done(best);
+                };
+                const timer = setTimeout(finish, timeout);
+                for (const [index, link] of candidates) {
+                    const began = Date.now();
+                    const socket = new this.$.$mol_dom_context.WebSocket(link.replace(/^http/, 'ws'), ['$giper_baza_yard_2']);
+                    socket.binaryType = 'arraybuffer';
+                    sockets.set(index, socket);
+                    const settle = () => {
+                        if (--left)
+                            return;
+                        finish();
+                    };
+                    socket.onopen = () => {
+                        const rtt = Date.now() - began;
+                        if (!best || rtt < best.rtt)
+                            best = { index, rtt };
+                        socket.onopen = null;
+                        socket.onerror = null;
+                        socket.close();
+                        settle();
+                    };
+                    socket.onerror = () => {
+                        socket.onopen = null;
+                        socket.onerror = null;
+                        settle();
+                    };
+                }
+            });
+        }
     }
     __decorate([
         $mol_mem
+    ], $bog_yard.prototype, "master_rtt", null);
+    __decorate([
+        $mol_mem
     ], $bog_yard.prototype, "master", null);
+    __decorate([
+        $mol_action
+    ], $bog_yard.prototype, "probe_check", null);
     $.$bog_yard = $bog_yard;
 })($ || ($ = {}));
 
@@ -36574,7 +36803,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.99';
+    $.$bog_music_version = 'v1.100';
 })($ || ($ = {}));
 
 ;
@@ -37207,6 +37436,7 @@ var $;
                     this.page(playlist);
             }
             auto() {
+                $bog_music_log.init();
                 this.beam().watch();
                 this.share().watch();
                 this.tg_poller();
@@ -46150,44 +46380,129 @@ var $;
 "use strict";
 var $;
 (function ($_1) {
+    /** Поддельный сокет: открывается через заданную задержку, либо молчит. */
+    class $bog_yard_test_socket {
+        url;
+        static made = [];
+        static delays = new Map();
+        static reset() {
+            this.made = [];
+            this.delays.clear();
+        }
+        binaryType = '';
+        closed = false;
+        onopen = null;
+        onerror = null;
+        onclose = null;
+        onmessage = null;
+        constructor(url) {
+            this.url = url;
+            $bog_yard_test_socket.made.push(this);
+            const delay = $bog_yard_test_socket.delays.get(url);
+            if (delay == null)
+                return;
+            setTimeout(() => this.onopen?.(), delay);
+        }
+        send() { }
+        close() {
+            this.closed = true;
+        }
+    }
+    /** Контекст с поддельным `WebSocket` и подменённым синхронизатором. */
+    function $bog_yard_test_context(ambient, Yard) {
+        const context = Object.create(ambient);
+        context.$mol_dom_context = Object.assign(Object.create(ambient.$mol_dom_context), {
+            WebSocket: $bog_yard_test_socket,
+        });
+        context.$giper_baza_yard = Yard;
+        return context;
+    }
     $mol_test({
         async 'Молчащий мастер в начале списка не задерживает подключение к живому'($) {
-            const made = [];
-            class Fake {
-                url;
-                binaryType = '';
-                closed = false;
-                onopen = null;
-                onerror = null;
-                onclose = null;
-                onmessage = null;
-                constructor(url) {
-                    this.url = url;
-                    made.push(this);
-                    if (url.includes('alive'))
-                        setTimeout(() => this.onopen?.(), 5);
-                }
-                send() { }
-                close() { this.closed = true; }
-            }
+            $bog_yard_test_socket.reset();
+            $bog_yard_test_socket.delays.set('wss://alive.example/', 5);
             class Yard extends $bog_yard {
                 static stagger = 10;
                 static masters() {
                     return ['https://silent.example/', 'https://alive.example/'];
                 }
             }
-            const context = Object.create($);
-            context.$mol_dom_context = Object.assign(Object.create($.$mol_dom_context), { WebSocket: Fake });
-            context.$giper_baza_yard = Yard;
-            const yard = Yard.make({ $: context });
+            const yard = Yard.make({ $: $bog_yard_test_context($, Yard) });
             const began = Date.now();
             const port = await $mol_wire_async(yard).master();
             const spent = Date.now() - began;
             $mol_assert_equal(yard.master_cursor(), 1);
             $mol_assert_equal(port.socket.url, 'wss://alive.example/');
-            $mol_assert_equal(made[0].closed, true);
+            $mol_assert_equal($bog_yard_test_socket.made[0].closed, true);
             $mol_assert_equal(spent < 500, true);
+            $mol_assert_equal(yard.master_rtt() > 0, true);
             port.destructor();
+        },
+        async 'Обрыв связи сдвигает курсор на следующего мастера'($) {
+            $bog_yard_test_socket.reset();
+            $bog_yard_test_socket.delays.set('wss://alive.example/', 5);
+            class Yard extends $bog_yard {
+                static stagger = 10;
+                static reconnect_delay = 1;
+                static masters() {
+                    return ['https://silent.example/', 'https://alive.example/'];
+                }
+            }
+            const yard = Yard.make({ $: $bog_yard_test_context($, Yard) });
+            const port = await $mol_wire_async(yard).master();
+            $mol_assert_equal(yard.master_cursor(), 1);
+            port.socket.onclose?.();
+            await new Promise(done => setTimeout(done, 20));
+            $mol_assert_equal(yard.master_cursor(), 0);
+            port.destructor();
+        },
+        async 'Проверка выбирает мастера, который открывается быстрее'($) {
+            $bog_yard_test_socket.reset();
+            $bog_yard_test_socket.delays.set('wss://slow.example/', 60);
+            $bog_yard_test_socket.delays.set('wss://fast.example/', 5);
+            class Yard extends $bog_yard {
+                static masters() {
+                    return ['https://current.example/', 'https://slow.example/', 'https://fast.example/'];
+                }
+            }
+            const yard = Yard.make({ $: $bog_yard_test_context($, Yard) });
+            const best = await $mol_wire_async(yard).probe_best(0);
+            $mol_assert_equal(best?.index, 2);
+            $mol_assert_equal(best.rtt < 50, true);
+            $mol_assert_equal($bog_yard_test_socket.made.every(socket => socket.closed), true);
+        },
+        async 'Проверка переключается на заметно более быстрого мастера'($) {
+            $bog_yard_test_socket.reset();
+            $bog_yard_test_socket.delays.set('wss://fast.example/', 5);
+            class Yard extends $bog_yard {
+                static switch_margin = 0;
+                static masters() {
+                    return ['https://current.example/', 'https://fast.example/'];
+                }
+            }
+            const yard = Yard.make({ $: $bog_yard_test_context($, Yard) });
+            yard.master_cursor(0);
+            yard.master_rtt(100);
+            const switched = await $mol_wire_async(yard).probe_check();
+            $mol_assert_equal(switched, true);
+            $mol_assert_equal(yard.master_cursor(), 1);
+            $mol_assert_equal(yard.master_rtt() < 50, true);
+        },
+        async 'Проверка не трогает связь, если кандидат не быстрее'($) {
+            $bog_yard_test_socket.reset();
+            $bog_yard_test_socket.delays.set('wss://other.example/', 5);
+            class Yard extends $bog_yard {
+                static masters() {
+                    return ['https://current.example/', 'https://other.example/'];
+                }
+            }
+            const yard = Yard.make({ $: $bog_yard_test_context($, Yard) });
+            yard.master_cursor(0);
+            yard.master_rtt(50);
+            const switched = await $mol_wire_async(yard).probe_check();
+            $mol_assert_equal(switched, false);
+            $mol_assert_equal(yard.master_cursor(), 0);
+            $mol_assert_equal(yard.master_rtt(), 50);
         },
     });
 })($ || ($ = {}));

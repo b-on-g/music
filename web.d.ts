@@ -53645,19 +53645,23 @@ declare namespace $ {
         static buffer_high: number;
         static gather_limit: number;
         static open_limit: number;
-        static rtc(): RTCPeerConnection;
+        static rtc(tag: string): RTCPeerConnection;
+        static candidates(sdp: string): string;
+        static candidate_text(stats: RTCStatsReport, id: string): string;
+        static route(rtc: RTCPeerConnection): Promise<string>;
+        static trace(rtc: RTCPeerConnection, tag: string): void;
         static gather(rtc: RTCPeerConnection): Promise<string>;
-        static offer(): Promise<{
+        static offer(tag?: string): Promise<{
             rtc: RTCPeerConnection;
             channel: RTCDataChannel;
             sdp: string;
         }>;
-        static answer(offer: string): Promise<{
+        static answer(offer: string, tag?: string): Promise<{
             rtc: RTCPeerConnection;
             channel: Promise<RTCDataChannel>;
             sdp: string;
         }>;
-        static finish(rtc: RTCPeerConnection, answer: string): Promise<void>;
+        static finish(rtc: RTCPeerConnection, answer: string, tag?: string): Promise<void>;
         static opened(channel: RTCDataChannel): Promise<RTCDataChannel>;
         static idle_limit: number;
         static ack_limit: number;
@@ -66741,8 +66745,35 @@ declare namespace $ {
 declare namespace $ {
     class $bog_yard extends $giper_baza_yard {
         static stagger: number;
+        /** Как часто проверяем, не появился ли мастер быстрее текущего. */
+        static probe_period: number;
+        /** Сколько ждём пробные сокеты, прежде чем считать их молчащими. */
+        static probe_timeout: number;
+        /** Насколько быстрее должен быть кандидат, чтобы ради него рвать связь. */
+        static switch_margin: number;
+        /** Пауза перед переподключением после обрыва. */
+        static reconnect_delay: number;
+        /** За сколько открылся мастер, с которым работаем сейчас. */
+        master_rtt(next?: number): number;
         port_make(socket: WebSocket, link: string): $mol_rest_port_ws_std;
         master(): $mol_rest_port | null;
+        /**
+         * Раз в `probe_period` проверяет, не открывается ли какой-то мастер
+         * заметно быстрее текущего. Возвращает остановку проверок.
+         */
+        probe_loop(): () => void;
+        /**
+         * Переключается на мастера, который открывается заметно быстрее
+         * текущего. Так приложение уходит с зарубежного мастера на ближний,
+         * когда маршрут меняется, а сокет при этом не рвётся.
+         * Возвращает, переключился ли.
+         */
+        probe_check(): Promise<boolean>;
+        /** Гоняет пробные сокеты по всем мастерам, кроме текущего, и отдаёт самого быстрого. */
+        probe_best(exclude: number): Promise<{
+            index: number;
+            rtt: number;
+        } | null>;
     }
 }
 
