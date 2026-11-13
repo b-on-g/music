@@ -86,15 +86,21 @@ namespace $ {
 			this._busy = true
 			try {
 				const self = $mol_wire_async( this )
+				const me = $bog_music_device.id()
 				if( Date.now() - this._beat_at > $bog_music_beam.beat_every ) {
+					if( !this._beat_at ) $bog_music_log.act( `пара: я ${ me } «${ $bog_music_device.title() }», жду запросов` )
 					this._beat_at = Date.now()
 					await $mol_wire_async( this.account() ).device_beat()
 				}
-				const me = $bog_music_device.id()
 				for( const { from, req, signal } of await self.incoming( me ) ) {
-					if( signal.at < this._started_at - $bog_music_beam.answer_limit ) continue
 					if( this._handled.has( req ) ) continue
 					this._handled.add( req )
+					const age = Date.now() - signal.at
+					if( signal.at < this._started_at - $bog_music_beam.answer_limit ) {
+						$bog_music_log.act( `пара: старый запрос ${ req } от ${ from } пропущен, ему ${ Math.round( age / 1000 ) } с` )
+						continue
+					}
+					$bog_music_log.act( `пара: запрос ${ req } от ${ from }, по моим часам ему ${ age } мс` )
 					void this.serve( from, req, signal ).catch( ( error: any ) => {
 						$bog_music_log.err( `отдача файлов не удалась: ${ error?.message ?? error }` )
 						this.summary( '' )
@@ -125,11 +131,15 @@ namespace $ {
 			const me = $bog_music_device.id()
 			const name = await $mol_wire_async( this.account() ).device_name( from )
 			$bog_music_log.act( `запрос файлов с «${ name }»` )
-			const { rtc, channel, sdp } = await $bog_music_peer.answer( signal.sdp )
+			const tag = `пара ${ req } отдача`
+			const { rtc, channel, sdp } = await $bog_music_peer.answer( signal.sdp, tag )
 			try {
 				await $mol_wire_async( this ).signal( 'answer', me, from, req, JSON.stringify({ at: Date.now(), sdp }) )
+				$bog_music_log.act( `${ tag }: ответ записан в Базу, жду канал` )
 				const open = await $bog_music_peer.opened( await channel )
+				$bog_music_log.act( `${ tag }: канал открыт, жду список` )
 				const want = await $bog_music_peer.message( open )
+				$bog_music_log.act( `${ tag }: просят ${ want.keys?.length ?? 0 }` )
 				const items = [] as $bog_music_peer_item[]
 				for( const key of ( want.keys ?? [] ) as string[] ) {
 					const file = await $bog_music_disk.file( key )
@@ -155,24 +165,35 @@ namespace $ {
 			$bog_music_log.act( `перенос ${ keys.length } с «${ name }»` )
 
 			const req = $mol_guid( 8 )
-			const { rtc, channel, sdp } = await $bog_music_peer.offer()
+			const tag = `пара ${ req } приём`
+			const online = await account.device_online( from )
+			$bog_music_log.act( `${ tag }: я ${ me }, беру с ${ from } «${ name }», ${ online ? 'на связи' : 'пульса нет' }` )
+			const { rtc, channel, sdp } = await $bog_music_peer.offer( tag )
 
 			try {
 
 				const at = Date.now()
 				await $mol_wire_async( this ).signal( 'offer', me, from, req, JSON.stringify({ at, sdp }) )
+				$bog_music_log.act( `${ tag }: запрос записан в Базу, жду ответ` )
 
 				let answer = null as null | $bog_music_beam_signal
+				let skewed = false
 				while( Date.now() - at < $bog_music_beam.answer_limit ) {
 					answer = $bog_music_beam.signal_parse( await $mol_wire_async( this ).signal( 'answer', from, me, req ) )
 					if( answer && answer.at >= at ) break
+					if( answer && !skewed ) {
+						skewed = true
+						$bog_music_log.err( `${ tag }: ответ есть, но его время ${ answer.at } раньше запроса ${ at } на ${ at - answer.at } мс, часы устройств расходятся` )
+					}
 					answer = null
 					await new Promise( done => setTimeout( done, 1000 ) )
 				}
 				if( !answer ) throw new Error( `«${ name }» не ответило, открой на нём приложение` )
+				$bog_music_log.act( `${ tag }: ответ пришёл через ${ Date.now() - at } мс` )
 
-				await $bog_music_peer.finish( rtc, answer.sdp )
+				await $bog_music_peer.finish( rtc, answer.sdp, tag )
 				const open = await $bog_music_peer.opened( channel )
+				$bog_music_log.act( `${ tag }: канал открыт, прошу ${ keys.length }` )
 				open.send( JSON.stringify({ type: 'want', keys }) )
 
 				const got = await $bog_music_peer.receive(
@@ -210,7 +231,10 @@ namespace $ {
 		@ $mol_action
 		pull_one( key: string ) {
 			const from = this.pick_holder( key )
-			if( !from ) return
+			if( !from ) {
+				$bog_music_log.act( `пара: у ${ key } нет держателей кроме меня` )
+				return
+			}
 			void this.pull( from, [ key ] ).catch( () => {} )
 		}
 

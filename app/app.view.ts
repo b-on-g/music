@@ -696,6 +696,7 @@ namespace $.$$ {
 		}
 
 		auto() {
+			$bog_music_log.init()
 			this.beam().watch()
 			this.share().watch()
 			this.tg_poller()

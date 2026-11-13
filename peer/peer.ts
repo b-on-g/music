@@ -26,14 +26,72 @@ namespace $ {
 
 		static open_limit = 30000
 
-		static rtc() {
-			return new RTCPeerConnection({ iceServers: this.ice })
+		static rtc( tag: string ) {
+			const rtc = new RTCPeerConnection({ iceServers: this.ice })
+			this.trace( rtc, tag )
+			return rtc
+		}
+
+		static candidates( sdp: string ) {
+			const found = [] as string[]
+			for( const line of sdp.split( /\r?\n/ ) ) {
+				const match = line.match( /^a=candidate:\S+ \d+ (\S+) \d+ (\S+) (\d+) typ (\S+)/ )
+				if( match ) found.push( `${ match[ 4 ] } ${ match[ 1 ].toLowerCase() } ${ match[ 2 ] }:${ match[ 3 ] }` )
+			}
+			return found.length ? found.join( ', ' ) : 'ни одного'
+		}
+
+		static candidate_text( stats: RTCStatsReport, id: string ) {
+			const one = stats.get( id )
+			if( !one ) return '?'
+			return `${ one.candidateType } ${ one.protocol } ${ one.address ?? one.ip ?? '?' }:${ one.port }`
+		}
+
+		static async route( rtc: RTCPeerConnection ) {
+			const stats = await rtc.getStats()
+			const pairs = [] as string[]
+			let chosen = ''
+			stats.forEach( one => {
+				if( one.type === 'transport' && one.selectedCandidatePairId ) chosen = one.selectedCandidatePairId
+			} )
+			stats.forEach( one => {
+				if( one.type !== 'candidate-pair' ) return
+				if( !chosen && one.nominated && one.state === 'succeeded' ) chosen = one.id
+				pairs.push( `${ one.state }: ${ this.candidate_text( stats, one.localCandidateId ) } → ${ this.candidate_text( stats, one.remoteCandidateId ) }` )
+			} )
+			const pair = chosen ? stats.get( chosen ) : null
+			if( pair ) return `${ this.candidate_text( stats, pair.localCandidateId ) } → ${ this.candidate_text( stats, pair.remoteCandidateId ) }`
+			return pairs.length ? `не выбран, пары: ${ pairs.join( '; ' ) }` : 'не выбран, пар нет'
+		}
+
+		static trace( rtc: RTCPeerConnection, tag: string ) {
+
+			const log = ( text: string ) => $bog_music_log.act( `${ tag }: ${ text }` )
+			const route = () => void this.route( rtc ).then( log, ( error: any ) => log( `маршрут не прочитан: ${ error?.message ?? error }` ) )
+
+			rtc.addEventListener( 'icegatheringstatechange', () => log( `сбор адресов ${ rtc.iceGatheringState }` ) )
+			rtc.addEventListener( 'signalingstatechange', () => log( `сигналинг ${ rtc.signalingState }` ) )
+			rtc.addEventListener( 'iceconnectionstatechange', () => log( `ice ${ rtc.iceConnectionState }` ) )
+
+			rtc.addEventListener( 'icecandidateerror', ( event: Event ) => {
+				const error = event as RTCPeerConnectionIceErrorEvent
+				$bog_music_log.err( `${ tag }: адрес с ${ error.url } не получен: ${ error.errorCode } ${ error.errorText }` )
+			} )
+
+			rtc.addEventListener( 'connectionstatechange', () => {
+				log( `соединение ${ rtc.connectionState }` )
+				if( rtc.connectionState === 'connected' || rtc.connectionState === 'failed' ) route()
+			} )
+
 		}
 
 		static async gather( rtc: RTCPeerConnection ) {
 			if( rtc.iceGatheringState !== 'complete' ) {
 				await new Promise< void >( done => {
-					const timer = setTimeout( done, this.gather_limit )
+					const timer = setTimeout( () => {
+						$bog_music_log.act( `сбор адресов не закончился за ${ this.gather_limit } мс, шлю что есть` )
+						done()
+					}, this.gather_limit )
 					rtc.addEventListener( 'icegatheringstatechange', () => {
 						if( rtc.iceGatheringState !== 'complete' ) return
 						clearTimeout( timer )
@@ -44,24 +102,33 @@ namespace $ {
 			return rtc.localDescription!.sdp
 		}
 
-		static async offer() {
-			const rtc = this.rtc()
+		static async offer( tag = 'пара' ) {
+			const rtc = this.rtc( tag )
 			const channel = rtc.createDataChannel( 'bog_music', { ordered: true } )
 			await rtc.setLocalDescription( await rtc.createOffer() )
-			return { rtc, channel, sdp: await this.gather( rtc ) }
+			const sdp = await this.gather( rtc )
+			$bog_music_log.act( `${ tag }: свои адреса: ${ this.candidates( sdp ) }` )
+			return { rtc, channel, sdp }
 		}
 
-		static async answer( offer: string ) {
-			const rtc = this.rtc()
+		static async answer( offer: string, tag = 'пара' ) {
+			const rtc = this.rtc( tag )
 			const channel = new Promise< RTCDataChannel >( done => {
-				rtc.addEventListener( 'datachannel', event => done( event.channel ) )
+				rtc.addEventListener( 'datachannel', event => {
+					$bog_music_log.act( `${ tag }: пришёл канал ${ event.channel.readyState }` )
+					done( event.channel )
+				} )
 			} )
+			$bog_music_log.act( `${ tag }: адреса соседа: ${ this.candidates( offer ) }` )
 			await rtc.setRemoteDescription({ type: 'offer', sdp: offer })
 			await rtc.setLocalDescription( await rtc.createAnswer() )
-			return { rtc, channel, sdp: await this.gather( rtc ) }
+			const sdp = await this.gather( rtc )
+			$bog_music_log.act( `${ tag }: свои адреса: ${ this.candidates( sdp ) }` )
+			return { rtc, channel, sdp }
 		}
 
-		static async finish( rtc: RTCPeerConnection, answer: string ) {
+		static async finish( rtc: RTCPeerConnection, answer: string, tag = 'пара' ) {
+			$bog_music_log.act( `${ tag }: адреса соседа: ${ this.candidates( answer ) }` )
 			await rtc.setRemoteDescription({ type: 'answer', sdp: answer })
 		}
 

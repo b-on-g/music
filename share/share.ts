@@ -220,7 +220,7 @@ namespace $ {
 			const offer = JSON.parse( $mol_charset_decode( await this.decrypt( secret, cipher ) ) )
 			if( typeof offer?.sdp !== 'string' ) throw new Error( 'битое приглашение' )
 
-			const { rtc, channel, sdp } = await $bog_music_peer.answer( offer.sdp )
+			const { rtc, channel, sdp } = await $bog_music_peer.answer( offer.sdp, `шар ${ open.land } отдача` )
 			try {
 				const answer = await this.encrypt( secret, $mol_charset_encode( JSON.stringify({ sdp }) ) )
 				await $mol_wire_async( this ).answer_put( open.land, answer )
@@ -311,7 +311,7 @@ namespace $ {
 					: 'Расшаренный'
 				const playlist = 'shared:' + sender
 
-				const { rtc, channel, sdp } = await $bog_music_peer.offer()
+				const { rtc, channel, sdp } = await $bog_music_peer.offer( `шар ${ link } приём` )
 
 				try {
 
@@ -333,7 +333,7 @@ namespace $ {
 						return null
 					}
 
-					await $bog_music_peer.finish( rtc, answer.sdp )
+					await $bog_music_peer.finish( rtc, answer.sdp, `шар ${ link } приём` )
 					const open = await $bog_music_peer.opened( channel )
 					const got = await $bog_music_peer.receive(
 						open,
