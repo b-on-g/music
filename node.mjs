@@ -32710,16 +32710,10 @@ var $;
                 await $mol_wire_async(this).signal('offer', me, from, req, JSON.stringify({ at, sdp }));
                 $bog_music_log.act(`${tag}: запрос записан в Базу, жду ответ`);
                 let answer = null;
-                let skewed = false;
                 while (Date.now() - at < $bog_music_beam.answer_limit) {
                     answer = $bog_music_beam.signal_parse(await $mol_wire_async(this).signal('answer', from, me, req));
-                    if (answer && answer.at >= at)
+                    if (answer)
                         break;
-                    if (answer && !skewed) {
-                        skewed = true;
-                        $bog_music_log.err(`${tag}: ответ есть, но его время ${answer.at} раньше запроса ${at} на ${at - answer.at} мс, часы устройств расходятся`);
-                    }
-                    answer = null;
                     await new Promise(done => setTimeout(done, 1000));
                 }
                 if (!answer)
@@ -36812,7 +36806,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.100';
+    $.$bog_music_version = 'v1.101';
 })($ || ($ = {}));
 
 ;
