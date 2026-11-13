@@ -177,15 +177,9 @@ namespace $ {
 				$bog_music_log.act( `${ tag }: запрос записан в Базу, жду ответ` )
 
 				let answer = null as null | $bog_music_beam_signal
-				let skewed = false
 				while( Date.now() - at < $bog_music_beam.answer_limit ) {
 					answer = $bog_music_beam.signal_parse( await $mol_wire_async( this ).signal( 'answer', from, me, req ) )
-					if( answer && answer.at >= at ) break
-					if( answer && !skewed ) {
-						skewed = true
-						$bog_music_log.err( `${ tag }: ответ есть, но его время ${ answer.at } раньше запроса ${ at } на ${ at - answer.at } мс, часы устройств расходятся` )
-					}
-					answer = null
+					if( answer ) break
 					await new Promise( done => setTimeout( done, 1000 ) )
 				}
 				if( !answer ) throw new Error( `«${ name }» не ответило, открой на нём приложение` )
