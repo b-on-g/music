@@ -35672,58 +35672,6 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    class $bog_music_boot extends $mol_object {
-        static share_token = '';
-        static init() {
-            $bog_music_stream.install_page();
-            if (typeof location === 'undefined')
-                return;
-            $bog_music_log.init();
-            $bog_music_log.act('запуск приложения');
-            this.import_account_hash();
-            this.parse_share_hash();
-        }
-        static import_account_hash() {
-            const hash = location.hash || '';
-            const match = hash.match(/[#&]account=([^&]+)/);
-            if (!match)
-                return;
-            const key = decodeURIComponent(match[1]);
-            if (key.length < 172) {
-                console.warn('[boot] account key too short, ignoring');
-                return;
-            }
-            const current = $mol_state_local.value('$giper_baza_auth');
-            $mol_state_local.value('$giper_baza_auth', key);
-            this.hash_drop('account');
-            if (current !== key)
-                location.reload();
-        }
-        static parse_share_hash() {
-            const match = (location.hash || '').match(/[#&]share=([^&]+)/);
-            if (match)
-                this.share_token = decodeURIComponent(match[1]);
-        }
-        static clear_share_hash() {
-            this.hash_drop('share');
-            this.share_token = '';
-        }
-        static hash_drop(name) {
-            const hash = (location.hash || '')
-                .replace(new RegExp(`[#&]?${name}=[^&]*`), '')
-                .replace(/^#&/, '#');
-            const url = location.origin + location.pathname + location.search
-                + (hash && hash !== '#' ? hash : '');
-            history.replaceState(null, '', url);
-        }
-    }
-    $.$bog_music_boot = $bog_music_boot;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
     /** @deprecated Use $mol_crypto2_nonce */
     $.$mol_crypto_salt = $mol_crypto2_nonce;
 })($ || ($ = {}));
@@ -35817,6 +35765,58 @@ var $;
         $mol_memo.method
     ], $mol_crypto_sacred.prototype, "toString", null);
     $.$mol_crypto_sacred = $mol_crypto_sacred;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $bog_music_boot extends $mol_object {
+        static share_token = '';
+        static init() {
+            $bog_music_stream.install_page();
+            if (typeof location === 'undefined')
+                return;
+            $bog_music_log.init();
+            $bog_music_log.act('запуск приложения');
+            this.import_account_hash();
+            this.parse_share_hash();
+        }
+        static import_account_hash() {
+            const hash = location.hash || '';
+            const match = hash.match(/[#&]account=([^&]+)/);
+            if (!match)
+                return;
+            const key = decodeURIComponent(match[1]);
+            if (key.length < 172) {
+                console.warn('[boot] account key too short, ignoring');
+                return;
+            }
+            const current = $mol_state_local.value('$giper_baza_auth');
+            $mol_state_local.value('$giper_baza_auth', key);
+            this.hash_drop('account');
+            if (current !== key)
+                location.reload();
+        }
+        static parse_share_hash() {
+            const match = (location.hash || '').match(/[#&]share=([^&]+)/);
+            if (match)
+                this.share_token = decodeURIComponent(match[1]);
+        }
+        static clear_share_hash() {
+            this.hash_drop('share');
+            this.share_token = '';
+        }
+        static hash_drop(name) {
+            const hash = (location.hash || '')
+                .replace(new RegExp(`[#&]?${name}=[^&]*`), '')
+                .replace(/^#&/, '#');
+            const url = location.origin + location.pathname + location.search
+                + (hash && hash !== '#' ? hash : '');
+            history.replaceState(null, '', url);
+        }
+    }
+    $.$bog_music_boot = $bog_music_boot;
 })($ || ($ = {}));
 
 ;
@@ -36627,7 +36627,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.96';
+    $.$bog_music_version = 'v1.97';
 })($ || ($ = {}));
 
 ;
@@ -36643,7 +36643,6 @@ var $;
         const local = typeof location !== 'undefined' && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
         if (local)
             $giper_baza_yard.masters = () => $giper_baza_yard.masters_override() ?? ['http://localhost:9090/'];
-        $bog_music_boot.init();
         class $bog_music_app extends $.$bog_music_app {
             title() {
                 return 'Bog Music';

@@ -62664,17 +62664,6 @@ declare namespace $.$$ {
 }
 
 declare namespace $ {
-    class $bog_music_boot extends $mol_object {
-        static share_token: string;
-        static init(): void;
-        static import_account_hash(): void;
-        static parse_share_hash(): void;
-        static clear_share_hash(): void;
-        static hash_drop(name: string): void;
-    }
-}
-
-declare namespace $ {
     /** @deprecated Use $mol_crypto2_nonce */
     let $mol_crypto_salt: typeof $mol_crypto2_nonce;
 }
@@ -62709,6 +62698,17 @@ declare namespace $ {
         open(closed: Uint8Array<ArrayBuffer>, salt: BufferSource): Promise<Uint8Array<ArrayBuffer>>;
     }
     export {};
+}
+
+declare namespace $ {
+    class $bog_music_boot extends $mol_object {
+        static share_token: string;
+        static init(): void;
+        static import_account_hash(): void;
+        static parse_share_hash(): void;
+        static clear_share_hash(): void;
+        static hash_drop(name: string): void;
+    }
 }
 
 declare namespace $ {
