@@ -57977,17 +57977,6 @@ declare namespace $ {
 }
 
 declare namespace $ {
-    class $bog_music_boot extends $mol_object {
-        static share_token: string;
-        static init(): void;
-        static import_account_hash(): void;
-        static parse_share_hash(): void;
-        static clear_share_hash(): void;
-        static hash_drop(name: string): void;
-    }
-}
-
-declare namespace $ {
     type $bog_music_share_open = {
         land: string;
         key: string;

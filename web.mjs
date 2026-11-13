@@ -54377,58 +54377,6 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    class $bog_music_boot extends $mol_object {
-        static share_token = '';
-        static init() {
-            $bog_music_stream.install_page();
-            if (typeof location === 'undefined')
-                return;
-            $bog_music_log.init();
-            $bog_music_log.act('запуск приложения');
-            this.import_account_hash();
-            this.parse_share_hash();
-        }
-        static import_account_hash() {
-            const hash = location.hash || '';
-            const match = hash.match(/[#&]account=([^&]+)/);
-            if (!match)
-                return;
-            const key = decodeURIComponent(match[1]);
-            if (key.length < 172) {
-                console.warn('[boot] account key too short, ignoring');
-                return;
-            }
-            const current = $mol_state_local.value('$giper_baza_auth');
-            $mol_state_local.value('$giper_baza_auth', key);
-            this.hash_drop('account');
-            if (current !== key)
-                location.reload();
-        }
-        static parse_share_hash() {
-            const match = (location.hash || '').match(/[#&]share=([^&]+)/);
-            if (match)
-                this.share_token = decodeURIComponent(match[1]);
-        }
-        static clear_share_hash() {
-            this.hash_drop('share');
-            this.share_token = '';
-        }
-        static hash_drop(name) {
-            const hash = (location.hash || '')
-                .replace(new RegExp(`[#&]?${name}=[^&]*`), '')
-                .replace(/^#&/, '#');
-            const url = location.origin + location.pathname + location.search
-                + (hash && hash !== '#' ? hash : '');
-            history.replaceState(null, '', url);
-        }
-    }
-    $.$bog_music_boot = $bog_music_boot;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
     class $bog_music_share extends $mol_object {
         static instance() {
             return new $bog_music_share;
@@ -54657,7 +54605,6 @@ var $;
             if (!token || this.token_done(token))
                 return null;
             this.token_done(token, true);
-            $bog_music_boot.clear_share_hash();
             const [link, key_str, burn_str] = token.split('.');
             if (!link || !key_str || !burn_str) {
                 this.import_status('Битая ссылка');
@@ -55240,7 +55187,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.97';
+    $.$bog_music_version = 'v1.99';
 })($ || ($ = {}));
 
 ;
@@ -55879,11 +55826,6 @@ var $;
                 $mol_wire_async(this).tg_drain();
                 $mol_wire_async(this).fm_refresh();
                 this.lists_migrate();
-                const token = $bog_music_boot.share_token;
-                if (token) {
-                    $bog_music_boot.share_token = '';
-                    void this.import_share(token);
-                }
                 return super.auto();
             }
         }
