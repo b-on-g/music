@@ -3055,6 +3055,17 @@ declare namespace $ {
 }
 
 declare namespace $ {
+    /**
+     * Disable reaping of current subscriber
+     */
+    function $mol_wire_solid(): void;
+}
+
+declare namespace $ {
+    let $mol_mem_persist: typeof $mol_wire_solid;
+}
+
+declare namespace $ {
     class $mol_storage_node extends $mol_storage {
         static persisted(): boolean;
         static stats(): import("node:fs").StatsFs;
@@ -3129,13 +3140,6 @@ declare namespace $ {
         close(): void;
         destructor(): void;
     }
-}
-
-declare namespace $ {
-    /**
-     * Disable reaping of current subscriber
-     */
-    function $mol_wire_solid(): void;
 }
 
 declare namespace $ {
