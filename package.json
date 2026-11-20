@@ -497,8 +497,7 @@
     "$mol_icon_text",
     "$bog_recsys",
     "$bog_music_zip",
-    "$bog_music_tg",
-    "$bog_yard"
+    "$bog_music_tg"
   ],
   "dependencies": {
     "autoinstall": "*",

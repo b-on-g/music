@@ -62024,41 +62024,6 @@ declare namespace $ {
 }
 
 declare namespace $ {
-    class $bog_yard extends $giper_baza_yard {
-        static stagger: number;
-        /** Как часто проверяем, не появился ли мастер быстрее текущего. */
-        static probe_period: number;
-        /** Сколько ждём пробные сокеты, прежде чем считать их молчащими. */
-        static probe_timeout: number;
-        /** Насколько быстрее должен быть кандидат, чтобы ради него рвать связь. */
-        static switch_margin: number;
-        /** Пауза перед переподключением после обрыва. */
-        static reconnect_delay: number;
-        /** За сколько открылся мастер, с которым работаем сейчас. */
-        master_rtt(next?: number): number;
-        port_make(socket: WebSocket, link: string): $mol_rest_port_ws_std;
-        master(): $mol_rest_port | null;
-        /**
-         * Раз в `probe_period` проверяет, не открывается ли какой-то мастер
-         * заметно быстрее текущего. Возвращает остановку проверок.
-         */
-        probe_loop(): () => void;
-        /**
-         * Переключается на мастера, который открывается заметно быстрее
-         * текущего. Так приложение уходит с зарубежного мастера на ближний,
-         * когда маршрут меняется, а сокет при этом не рвётся.
-         * Возвращает, переключился ли.
-         */
-        probe_check(): Promise<boolean>;
-        /** Гоняет пробные сокеты по всем мастерам, кроме текущего, и отдаёт самого быстрого. */
-        probe_best(exclude: number): Promise<{
-            index: number;
-            rtt: number;
-        } | null>;
-    }
-}
-
-declare namespace $ {
     let $bog_music_version: string;
 }
 
