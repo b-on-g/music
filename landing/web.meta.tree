@@ -128,7 +128,6 @@
 	pack pair git \https://github.com/b-on-g/pair.git
 	pack rsdemo git \https://github.com/b-on-g/rsdemo.git
 	pack build2 git \https://github.com/b-on-g/build2.git
-	pack yard git \https://github.com/b-on-g/yard.git
 	pack zig git \https://github.com/b-on-g/zig.git
 	pack wire git \https://github.com/b-on-g/wire.git
 	pack brelok git \https://github.com/b-on-g/brelok.git
