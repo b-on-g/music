@@ -50217,6 +50217,10 @@ declare namespace $ {
         holder_cut(key: string): void;
         import_audio(key: string, meta: $bog_music_track_baza_info, bytes: Uint8Array, playlist?: string): Promise<void>;
         save_local_track(file: File, order?: number): Promise<void>;
+        static name_norm(artist: string, title: string): string;
+        twin(artist: string, title: string): string;
+        twins(): string[][];
+        twins_merge(): Promise<void>;
         order_set(key: string, order: number): void;
         place(key: string): $bog_music_account_place;
         holders_other(key: string): string[];
@@ -67221,6 +67225,9 @@ declare namespace $.$$ {
         tracks_rescue(): boolean;
         private _lists_migrated;
         lists_migrate(): void;
+        private _twins_merged;
+        twins_merge(): Promise<void>;
+        twins_merge_once(): void;
         archive_mode(): boolean;
         visible_keys(): readonly string[];
         my_title(): string;
