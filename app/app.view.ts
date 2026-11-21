@@ -50,6 +50,15 @@ namespace $.$$ {
 			return page.startsWith('list:') ? page : ''
 		}
 
+		tracks_rescue() {
+			try {
+				return this.account().tracks_rescue()
+			} catch( error ) {
+				if( !$mol_promise_like( error ) ) $mol_fail_log( error )
+				return false
+			}
+		}
+
 		private _lists_migrated = false
 
 		lists_migrate() {
@@ -703,6 +712,7 @@ namespace $.$$ {
 			$mol_wire_async(this).tg_drain()
 			$mol_wire_async(this).fm_refresh()
 			this.lists_migrate()
+			this.tracks_rescue()
 			return super.auto()
 		}
 

@@ -35,6 +35,46 @@ namespace $ {
 			return this.Tracks( null )!
 		}
 
+		static track_key_is( key: unknown ) {
+			return typeof key === 'string' && /^0_\d+$/.test( key )
+		}
+
+		tracks_lost() {
+
+			const land = this.land()
+
+			let lost = null as $giper_baza_unit_sand | null
+			let size = 0
+
+			for( const unit of land.sand_ordered({ head: this.head(), peer: $giper_baza_link.hole }) ) {
+
+				if( !unit.dead() ) continue
+
+				const keys = land.Pawn( $giper_baza_dict ).Head( unit.self() ).keys()
+				if( keys.length <= size ) continue
+				if( !keys.every( key => $bog_music_account_baza.track_key_is( key ) ) ) continue
+
+				lost = unit
+				size = keys.length
+			}
+
+			return lost
+		}
+
+		@ $mol_mem
+		tracks_rescue() {
+
+			if( this.Tracks()?.keys().length ) return false
+
+			const lost = this.tracks_lost()
+			if( !lost ) return false
+
+			this.cut( 'Tracks' )
+			this.land().post( $giper_baza_link.hole, this.head(), lost.self(), 'Tracks', $bog_music_track_baza_dict.tag )
+
+			return true
+		}
+
 		track( key: string ) {
 			return this.tracks().key( key )
 		}
