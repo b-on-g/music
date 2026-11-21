@@ -24964,6 +24964,36 @@ var $;
         tracks() {
             return this.Tracks(null);
         }
+        static track_key_is(key) {
+            return typeof key === 'string' && /^0_\d+$/.test(key);
+        }
+        tracks_lost() {
+            const land = this.land();
+            let lost = null;
+            let size = 0;
+            for (const unit of land.sand_ordered({ head: this.head(), peer: $giper_baza_link.hole })) {
+                if (!unit.dead())
+                    continue;
+                const keys = land.Pawn($giper_baza_dict).Head(unit.self()).keys();
+                if (keys.length <= size)
+                    continue;
+                if (!keys.every(key => $bog_music_account_baza.track_key_is(key)))
+                    continue;
+                lost = unit;
+                size = keys.length;
+            }
+            return lost;
+        }
+        tracks_rescue() {
+            if (this.Tracks()?.keys().length)
+                return false;
+            const lost = this.tracks_lost();
+            if (!lost)
+                return false;
+            this.cut('Tracks');
+            this.land().post($giper_baza_link.hole, this.head(), lost.self(), 'Tracks', $bog_music_track_baza_dict.tag);
+            return true;
+        }
         track(key) {
             return this.tracks().key(key);
         }
@@ -25277,6 +25307,9 @@ var $;
             return h >>> 0;
         }
     }
+    __decorate([
+        $mol_mem
+    ], $bog_music_account_baza.prototype, "tracks_rescue", null);
     __decorate([
         $mol_action
     ], $bog_music_account_baza.prototype, "move_to_bottom", null);
@@ -36558,7 +36591,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.102';
+    $.$bog_music_version = 'v1.103';
 })($ || ($ = {}));
 
 ;
@@ -36611,6 +36644,16 @@ var $;
             list_id() {
                 const page = this.page();
                 return page.startsWith('list:') ? page : '';
+            }
+            tracks_rescue() {
+                try {
+                    return this.account().tracks_rescue();
+                }
+                catch (error) {
+                    if (!$mol_promise_like(error))
+                        $mol_fail_log(error);
+                    return false;
+                }
             }
             _lists_migrated = false;
             lists_migrate() {
@@ -37198,6 +37241,7 @@ var $;
                 $mol_wire_async(this).tg_drain();
                 $mol_wire_async(this).fm_refresh();
                 this.lists_migrate();
+                this.tracks_rescue();
                 return super.auto();
             }
         }
@@ -45849,6 +45893,54 @@ var $;
         },
         'Неизвестный пресет не выдумывается'() {
             $mol_assert_equal($bog_music_eq.preset('nope'), null);
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($_1) {
+    $mol_test({
+        async 'Треки под убитым ключом корня возвращаются на место пустого Tracks'($) {
+            const land = $giper_baza_land.make({ $ });
+            const account = land.Data($bog_music_account_baza);
+            const ops = {
+                fill() {
+                    account.Tracks('auto').key('0_1', 'auto').Title('auto').val('Первый');
+                    account.Tracks('auto').key('0_2', 'auto').Title('auto').val('Второй');
+                    account.Nickname('auto').val('Кирилл');
+                    return true;
+                },
+                wipe() {
+                    const root = land.Data($giper_baza_dict);
+                    for (const key of root.keys())
+                        root.cut(key);
+                    account.Tracks('auto');
+                    return account.tracks().keys().length;
+                },
+                rescue() {
+                    return account.tracks_rescue();
+                },
+                read() {
+                    return {
+                        keys: account.tracks().keys().map(String),
+                        title: account.track('0_2')?.Title()?.val() ?? '',
+                        tracks: land.Data($giper_baza_dict).keys().filter(key => key === 'Tracks').length,
+                        lost: account.tracks_lost(),
+                    };
+                },
+            };
+            await $mol_wire_async(ops).fill();
+            const wiped = await $mol_wire_async(ops).wipe();
+            const rescued = await $mol_wire_async(ops).rescue();
+            const state = await $mol_wire_async(ops).read();
+            $mol_assert_equal(wiped, 0);
+            $mol_assert_equal(rescued, true);
+            $mol_assert_equal(state.keys.sort(), ['0_1', '0_2']);
+            $mol_assert_equal(state.title, 'Второй');
+            $mol_assert_equal(state.tracks, 1);
+            $mol_assert_equal(state.lost, null);
         },
     });
 })($ || ($ = {}));

@@ -33695,6 +33695,36 @@ var $;
         tracks() {
             return this.Tracks(null);
         }
+        static track_key_is(key) {
+            return typeof key === 'string' && /^0_\d+$/.test(key);
+        }
+        tracks_lost() {
+            const land = this.land();
+            let lost = null;
+            let size = 0;
+            for (const unit of land.sand_ordered({ head: this.head(), peer: $giper_baza_link.hole })) {
+                if (!unit.dead())
+                    continue;
+                const keys = land.Pawn($giper_baza_dict).Head(unit.self()).keys();
+                if (keys.length <= size)
+                    continue;
+                if (!keys.every(key => $bog_music_account_baza.track_key_is(key)))
+                    continue;
+                lost = unit;
+                size = keys.length;
+            }
+            return lost;
+        }
+        tracks_rescue() {
+            if (this.Tracks()?.keys().length)
+                return false;
+            const lost = this.tracks_lost();
+            if (!lost)
+                return false;
+            this.cut('Tracks');
+            this.land().post($giper_baza_link.hole, this.head(), lost.self(), 'Tracks', $bog_music_track_baza_dict.tag);
+            return true;
+        }
         track(key) {
             return this.tracks().key(key);
         }
@@ -34008,6 +34038,9 @@ var $;
             return h >>> 0;
         }
     }
+    __decorate([
+        $mol_mem
+    ], $bog_music_account_baza.prototype, "tracks_rescue", null);
     __decorate([
         $mol_action
     ], $bog_music_account_baza.prototype, "move_to_bottom", null);
@@ -55157,7 +55190,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.102';
+    $.$bog_music_version = 'v1.103';
 })($ || ($ = {}));
 
 ;
@@ -55210,6 +55243,16 @@ var $;
             list_id() {
                 const page = this.page();
                 return page.startsWith('list:') ? page : '';
+            }
+            tracks_rescue() {
+                try {
+                    return this.account().tracks_rescue();
+                }
+                catch (error) {
+                    if (!$mol_promise_like(error))
+                        $mol_fail_log(error);
+                    return false;
+                }
             }
             _lists_migrated = false;
             lists_migrate() {
@@ -55797,6 +55840,7 @@ var $;
                 $mol_wire_async(this).tg_drain();
                 $mol_wire_async(this).fm_refresh();
                 this.lists_migrate();
+                this.tracks_rescue();
                 return super.auto();
             }
         }

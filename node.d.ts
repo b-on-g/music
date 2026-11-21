@@ -53472,6 +53472,9 @@ declare namespace $ {
         static key_make(source: string): string;
         land_id(): string;
         tracks(): $bog_music_track_baza_dict;
+        static track_key_is(key: unknown): boolean;
+        tracks_lost(): $giper_baza_unit_sand | null;
+        tracks_rescue(): boolean;
         track(key: string): $bog_music_track_baza;
         info(key: string): $bog_music_track_baza_info | null;
         nickname(next?: string): string;
@@ -62495,6 +62498,7 @@ declare namespace $.$$ {
         share(): $bog_music_share;
         page(next?: string): string;
         list_id(): string;
+        tracks_rescue(): boolean;
         private _lists_migrated;
         lists_migrate(): void;
         archive_mode(): boolean;
