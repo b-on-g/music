@@ -67,6 +67,20 @@ namespace $.$$ {
 			$mol_wire_async(this.account()).migrate_lists()
 		}
 
+		private _twins_merged = false
+
+		async twins_merge() {
+			await this.account().twins_merge().catch( ( error: any ) => {
+				$bog_music_log.err( `дубли не слиты: ${ error?.message ?? error }` )
+			} )
+		}
+
+		twins_merge_once() {
+			if( this._twins_merged ) return
+			this._twins_merged = true
+			void this.twins_merge()
+		}
+
 		archive_mode() {
 			return this.page() === 'archive'
 		}
@@ -234,6 +248,7 @@ namespace $.$$ {
 							$bog_music_log.err( `файл не загружен: ${ file.name }: ${ error?.message ?? error }` )
 						} )
 					}
+					await this.twins_merge()
 				} )()
 			}
 			return next ?? []
@@ -713,6 +728,7 @@ namespace $.$$ {
 			$mol_wire_async(this).fm_refresh()
 			this.lists_migrate()
 			this.tracks_rescue()
+			this.twins_merge_once()
 			return super.auto()
 		}
 

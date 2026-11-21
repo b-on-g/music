@@ -182,13 +182,111 @@ namespace $ {
 		}
 
 		async save_local_track( file: File, order?: number ) {
+
 			const { artist, title, order: parsed_order } = $bog_music_account_baza.parse_filename( file.name )
+			const self = $mol_wire_async( this )
+			const twin = await self.twin( artist, title )
+
+			if( twin ) {
+
+				if( await $bog_music_disk.probe( twin ) ) {
+					$bog_music_log.act( `файл с устройства: ${ file.name } уже есть как ${ twin }, пропущен`, this.land_id() )
+					return
+				}
+
+				$bog_music_log.act( `файл с устройства: ${ file.name } → к треку ${ twin }`, this.land_id() )
+				const bytes = new Uint8Array( await file.arrayBuffer() )
+				await $bog_music_disk.put( twin, bytes )
+				await self.holder_add( twin )
+				if( this.track( twin )?.Lufs()?.val() == null ) this.lufs_measure( twin, bytes )
+				return
+
+			}
+
 			const key = $bog_music_account_baza.key_make( `${ file.name }|${ file.size }|${ file.lastModified }` )
 			$bog_music_log.act( `файл с устройства: ${ file.name }, ${ file.size } байт → ${ artist } — ${ title }`, this.land_id() )
 			const bytes = new Uint8Array( await file.arrayBuffer() )
 			await this.import_audio( key, { artist, title, duration: 0, cover: '' }, bytes )
 			const want = parsed_order ?? order
-			if( want != null ) await $mol_wire_async( this ).order_set( key, want )
+			if( want != null ) await self.order_set( key, want )
+
+		}
+
+		static name_norm( artist: string, title: string ): string {
+
+			const safe = ( s: string ) => ( s || '' ).replace( /[\\/:*?"<>|\x00-\x1f]/g, '_' ).trim().slice( 0, 80 )
+			const full = artist ? `${ safe( artist ) } - ${ safe( title ) }` : safe( title )
+
+			return full
+				.replace( /[–—]/g, '-' )
+				.replace( /^(?:\d{1,4}(?:\s*-\s*|\.\s+))+/, '' )
+				.replace( /[_\s]+/g, ' ' )
+				.trim()
+				.toLowerCase()
+
+		}
+
+		twin( artist: string, title: string ): string {
+
+			const norm = $bog_music_account_baza.name_norm( artist, title )
+			const dict = this.tracks()
+
+			for( const key of ( dict.keys() ?? [] ) as string[] ) {
+				const info = dict.key( key )?.info()
+				if( !info ) continue
+				if( $bog_music_account_baza.name_norm( info.artist, info.title ) === norm ) return key
+			}
+
+			return ''
+
+		}
+
+		twins(): string[][] {
+
+			const dict = this.tracks()
+			const groups = new Map< string, string[] >()
+
+			for( const key of ( dict.keys() ?? [] ) as string[] ) {
+				const info = dict.key( key )?.info()
+				if( !info ) continue
+				const norm = $bog_music_account_baza.name_norm( info.artist, info.title )
+				groups.set( norm, [ ...groups.get( norm ) ?? [], key ] )
+			}
+
+			const rank = ( key: string ) => [ this.track( key )!.cover() ? 0 : 1, this.track( key )!.added() ]
+
+			return [ ...groups.values() ]
+				.filter( keys => keys.length > 1 )
+				.map( keys => keys.sort( ( a, b ) => {
+					const [ ca, aa ] = rank( a )
+					const [ cb, ab ] = rank( b )
+					return ca !== cb ? ca - cb : aa - ab
+				} ) )
+
+		}
+
+		async twins_merge() {
+
+			const self = $mol_wire_async( this )
+
+			for( const [ keeper, ...rest ] of await self.twins() ) {
+				for( const key of rest ) {
+
+					const file = await $bog_music_disk.file( key )
+
+					if( file && !await $bog_music_disk.probe( keeper ) ) {
+						await $bog_music_disk.put( keeper, new Uint8Array( await file.arrayBuffer() ) )
+						await self.holder_add( keeper )
+					}
+
+					if( await self.place( keeper ) === 'lost' ) continue
+
+					$bog_music_log.act( `дубль ${ key } слит в ${ keeper }`, this.land_id() )
+					await this.delete_track( key )
+
+				}
+			}
+
 		}
 
 		@ $mol_action
@@ -408,9 +506,9 @@ namespace $ {
 		static parse_filename( name: string ): { artist: string, title: string, order: number | null } {
 			let base = name.replace( /\.[^.]+$/, '' ).trim()
 			let order: number | null = null
-			const numbered = base.match( /^(\d{1,4})\s*[-–—]\s*(.+)$/ )
-			if( numbered ) {
-				order = Number( numbered[ 1 ] )
+			let numbered: RegExpMatchArray | null
+			while( numbered = base.match( /^(\d{1,4})(?:\s*[-–—]\s*|\.\s+)(.+)$/ ) ) {
+				order ??= Number( numbered[ 1 ] )
 				base = numbered[ 2 ].trim()
 			}
 			const m = base.match( /^(.+?)\s*[-–—]\s*(.+)$/ )
