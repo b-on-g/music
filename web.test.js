@@ -3439,41 +3439,6 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    function parse(theme) {
-        if (theme === 'true')
-            return true;
-        if (theme === 'false')
-            return false;
-        return null;
-    }
-    // Get once because chrome switches to light on print
-    const base = $.$mol_media.match('(prefers-color-scheme: light)');
-    /**
-     * Switcher between light/dark themes (usually for `mol_theme_auto` plugin).
-     * @see https://mol.hyoo.ru/#!section=demos/demo=mol_lights_demo
-     */
-    function $mol_lights(next) {
-        const arg = parse(this.$mol_state_arg.value('mol_lights'));
-        if (next === undefined) {
-            return arg ?? this.$mol_state_local.value('$mol_lights') ?? base;
-        }
-        else {
-            if (arg === null) {
-                this.$mol_state_local.value('$mol_lights', next === base ? null : next);
-            }
-            else {
-                this.$mol_state_arg.value('mol_lights', String(next));
-            }
-            return next;
-        }
-    }
-    $.$mol_lights = $mol_lights;
-})($ || ($ = {}));
-
-;
-"use strict";
-var $;
-(function ($) {
     $mol_test({
         'null by default'() {
             const key = String(Math.random());
@@ -8150,6 +8115,48 @@ var $;
             $mol_assert_equal(Object.keys($.$bog_recsys.rewards()).length, 0);
         },
     });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($_1) {
+    $mol_test({
+        'frame opens own dock with lights, current app and query'($) {
+            const frame = $bog_dock_frame.make({
+                $,
+                query: () => 'a/b c',
+            });
+            const [host, hash] = frame.uri().split('#');
+            $mol_assert_equal(host, 'https://b-on-g.github.io/dock/');
+            $mol_assert_equal(hash.includes('query=a%2Fb%20c'), true);
+            $mol_assert_equal(hash.includes('{'), false);
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($_1) {
+    var $$;
+    (function ($$) {
+        $mol_test({
+            'dock is shown only on wide screen and never inside of frame'($) {
+                const make = (wide, embedded) => $bog_dock_side.make({
+                    $: $.$mol_ambient({
+                        $mol_media: class extends $mol_media {
+                            static match() { return wide; }
+                        },
+                    }),
+                    embedded: () => embedded,
+                });
+                $mol_assert_equal(make(true, false).sub().length, 1);
+                $mol_assert_equal(make(false, false).sub().length, 0);
+                $mol_assert_equal(make(true, true).sub().length, 0);
+            },
+        });
+    })($$ = $_1.$$ || ($_1.$$ = {}));
 })($ || ($ = {}));
 
 

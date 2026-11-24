@@ -497,7 +497,13 @@
     "$mol_icon_text",
     "$bog_recsys",
     "$bog_music_zip",
-    "$bog_music_tg"
+    "$bog_music_tg",
+    "$bog_dock_side",
+    "$bog_dock",
+    "$bog_dock_frame",
+    "$giper_web_frame",
+    "$giper_web",
+    "$mol_lights"
   ],
   "dependencies": {
     "autoinstall": "*",
