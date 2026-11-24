@@ -116,6 +116,7 @@
 	pack doodle git \https://github.com/b-on-g/doodle.git
 	pack flow git \https://github.com/b-on-g/flow.git
 	pack selection git \https://github.com/b-on-g/selection.git
+	pack rich git \https://github.com/b-on-g/rich.git
 	pack max git \https://github.com/b-on-g/max.git
 	pack rash git \https://github.com/b-on-g/rash.git
 	pack hub git \https://github.com/b-on-g/hub.git
@@ -133,10 +134,11 @@
 	pack brelok git \https://github.com/b-on-g/brelok.git
 	pack microtodo git \https://github.com/b-on-g/microtodo.git
 	pack ssr git \https://github.com/b-on-g/ssr.git
-	pack id git \https://github.com/b-on-g/id.git
+	pack id git \https://github.com/Dev-cmyser/id.git
 	pack passkey git \https://github.com/b-on-g/passkey.git
 	pack collider git \https://github.com/b-on-g/collider.git
 	pack molefy git \https://github.com/b-on-g/molefy.git
+	pack basket git \https://github.com/b-on-g/basket.git
 \/mol
 	pack icon git \https://github.com/nin-jin/mol_icon.git
 \/mol/view
