@@ -37899,8 +37899,14 @@ declare namespace $ {
     };
     export class $bog_id_key_store extends $bog_id_key_store_base {
     }
+    /** Store of app key in granted Land. Null while Land is not synced or not writable */
+    export function $bog_id_key_ready(this: $, pointer: string): $bog_id_key_store | null;
     /** Own key of app, the same on all devices: the first device puts it to granted Land. Empty while Land is not synced */
     export function $bog_id_key(this: $, pointer: string, own: string): string;
+    /** Key of app from granted Land without putting own one. Null while Land is not synced, empty when there is no key yet */
+    export function $bog_id_key_peek(this: $, pointer: string): string | null;
+    /** Puts key to granted Land if it is vacant, waits for master and tells whether it has the key */
+    export function $bog_id_key_put(this: $, pointer: string, key: string): Promise<boolean>;
     export {};
 }
 
@@ -37926,17 +37932,57 @@ declare namespace $ {
 		,
 		ReturnType< $mol_paragraph['title'] >
 	>
-	type $mol_button_minor__title_bog_id_enter_5 = $mol_type_enforce<
+	type $mol_button_major__title_bog_id_enter_5 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_major['title'] >
+	>
+	type $mol_button_major__enabled_bog_id_enter_6 = $mol_type_enforce<
+		ReturnType< $bog_id_enter['idle'] >
+		,
+		ReturnType< $mol_button_major['enabled'] >
+	>
+	type $mol_button_major__click_bog_id_enter_7 = $mol_type_enforce<
+		ReturnType< $bog_id_enter['save'] >
+		,
+		ReturnType< $mol_button_major['click'] >
+	>
+	type $mol_button_minor__title_bog_id_enter_8 = $mol_type_enforce<
+		ReturnType< $bog_id_enter['fresh_title'] >
+		,
+		ReturnType< $mol_button_minor['title'] >
+	>
+	type $mol_button_minor__enabled_bog_id_enter_9 = $mol_type_enforce<
+		ReturnType< $bog_id_enter['idle'] >
+		,
+		ReturnType< $mol_button_minor['enabled'] >
+	>
+	type $mol_button_minor__click_bog_id_enter_10 = $mol_type_enforce<
+		ReturnType< $bog_id_enter['fresh'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_button_minor__title_bog_id_enter_11 = $mol_type_enforce<
 		ReturnType< $bog_id_enter['replace_title'] >
 		,
 		ReturnType< $mol_button_minor['title'] >
 	>
-	type $mol_button_minor__click_bog_id_enter_6 = $mol_type_enforce<
+	type $mol_button_minor__click_bog_id_enter_12 = $mol_type_enforce<
 		ReturnType< $bog_id_enter['replace'] >
 		,
 		ReturnType< $mol_button_minor['click'] >
 	>
-	type $mol_paragraph__title_bog_id_enter_7 = $mol_type_enforce<
+	type $mol_button_minor__title_bog_id_enter_13 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_button_minor['title'] >
+	>
+	type $mol_button_minor__click_bog_id_enter_14 = $mol_type_enforce<
+		ReturnType< $bog_id_enter['enter'] >
+		,
+		ReturnType< $mol_button_minor['click'] >
+	>
+	type $mol_paragraph__title_bog_id_enter_15 = $mol_type_enforce<
 		ReturnType< $bog_id_enter['error'] >
 		,
 		ReturnType< $mol_paragraph['title'] >
@@ -37945,24 +37991,36 @@ declare namespace $ {
 		parts( ): readonly(any)[]
 		enter( next?: any ): any
 		status( ): string
+		idle( ): boolean
+		save( next?: any ): any
+		fresh_title( ): string
+		fresh( next?: any ): any
 		replace_title( ): string
 		replace( next?: any ): any
 		error( next?: string ): string
 		provider( ): string
 		scope( ): string
 		apply( next?: string ): string
+		apply_fresh( next?: string ): string
 		rows( ): ReturnType< $bog_id_enter['parts'] >
 		Enter( ): $mol_button_major
 		Hint( ): $mol_paragraph
 		Status( ): $mol_paragraph
+		Save( ): $mol_button_major
+		Fresh( ): $mol_button_minor
 		Replace( ): $mol_button_minor
+		Change( ): $mol_button_minor
 		Error( ): $mol_paragraph
-		armed( next?: boolean ): boolean
-		replace_sure( ): string
+		busy( next?: boolean ): boolean
+		armed( next?: string ): string
+		switch_sure( ): string
 		wait( ): string
+		vacant_text( ): string
 		conflict( ): string
 		done( ): string
+		sending( ): string
 		error_bad( ): string
+		error_sent( ): string
 	}
 	
 }
@@ -37970,6 +38028,7 @@ declare namespace $ {
 //# sourceMappingURL=enter.view.tree.d.ts.map
 declare namespace $.$$ {
     class $bog_id_enter extends $.$bog_id_enter {
+        key_of(auth: $giper_baza_auth): string;
         own(): string;
         lord(): string;
         grant(next?: $bog_id_login_grant & {
@@ -37979,17 +38038,29 @@ declare namespace $.$$ {
         }) | null;
         enter(): void;
         joined(): boolean;
-        key(): string;
-        key_ready(): string;
+        join(lord: string): void;
+        key(): string | null;
+        key_ready(): string | null;
+        vacant(): boolean;
         conflicted(): boolean;
         joining(): $mol_after_tick | null;
         auto(): void;
+        idle(): boolean;
         status(): string;
         replace_title(): string;
+        fresh_title(): string;
+        arm(kind: string): boolean;
         auth_from(str: string): $giper_baza_auth | null;
         keep(): void;
+        sent(key: string): Promise<boolean>;
+        save(): Promise<void>;
+        save_run(): Promise<void>;
+        fresh(): Promise<void> | undefined;
+        fresh_run(): Promise<void>;
         replace(): void;
+        switch(key: string): void;
         apply(next?: string): string;
+        apply_fresh(next?: string): string;
         parts(): ($mol_button_minor | $.$mol_paragraph)[];
     }
 }

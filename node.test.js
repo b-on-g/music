@@ -22627,6 +22627,20 @@ var $;
 		status(){
 			return "";
 		}
+		idle(){
+			return true;
+		}
+		save(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		fresh_title(){
+			return (this.$.$mol_locale.text("$bog_id_enter_fresh_title"));
+		}
+		fresh(next){
+			if(next !== undefined) return next;
+			return null;
+		}
 		replace_title(){
 			return (this.$.$mol_locale.text("$bog_id_enter_replace_title"));
 		}
@@ -22645,6 +22659,10 @@ var $;
 			return "account";
 		}
 		apply(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		apply_fresh(next){
 			if(next !== undefined) return next;
 			return "";
 		}
@@ -22667,10 +22685,30 @@ var $;
 			(obj.title) = () => ((this.status()));
 			return obj;
 		}
+		Save(){
+			const obj = new this.$.$mol_button_major();
+			(obj.title) = () => ((this.$.$mol_locale.text("$bog_id_enter_Save_title")));
+			(obj.enabled) = () => ((this.idle()));
+			(obj.click) = (next) => ((this.save(next)));
+			return obj;
+		}
+		Fresh(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ((this.fresh_title()));
+			(obj.enabled) = () => ((this.idle()));
+			(obj.click) = (next) => ((this.fresh(next)));
+			return obj;
+		}
 		Replace(){
 			const obj = new this.$.$mol_button_minor();
 			(obj.title) = () => ((this.replace_title()));
 			(obj.click) = (next) => ((this.replace(next)));
+			return obj;
+		}
+		Change(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ((this.$.$mol_locale.text("$bog_id_enter_Change_title")));
+			(obj.click) = (next) => ((this.enter(next)));
 			return obj;
 		}
 		Error(){
@@ -22678,15 +22716,22 @@ var $;
 			(obj.title) = () => ((this.error()));
 			return obj;
 		}
-		armed(next){
+		busy(next){
 			if(next !== undefined) return next;
 			return false;
 		}
-		replace_sure(){
-			return (this.$.$mol_locale.text("$bog_id_enter_replace_sure"));
+		armed(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		switch_sure(){
+			return (this.$.$mol_locale.text("$bog_id_enter_switch_sure"));
 		}
 		wait(){
 			return (this.$.$mol_locale.text("$bog_id_enter_wait"));
+		}
+		vacant_text(){
+			return (this.$.$mol_locale.text("$bog_id_enter_vacant_text"));
 		}
 		conflict(){
 			return (this.$.$mol_locale.text("$bog_id_enter_conflict"));
@@ -22694,19 +22739,32 @@ var $;
 		done(){
 			return (this.$.$mol_locale.text("$bog_id_enter_done"));
 		}
+		sending(){
+			return (this.$.$mol_locale.text("$bog_id_enter_sending"));
+		}
 		error_bad(){
 			return (this.$.$mol_locale.text("$bog_id_enter_error_bad"));
 		}
+		error_sent(){
+			return (this.$.$mol_locale.text("$bog_id_enter_error_sent"));
+		}
 	};
 	($mol_mem(($.$bog_id_enter.prototype), "enter"));
+	($mol_mem(($.$bog_id_enter.prototype), "save"));
+	($mol_mem(($.$bog_id_enter.prototype), "fresh"));
 	($mol_mem(($.$bog_id_enter.prototype), "replace"));
 	($mol_mem(($.$bog_id_enter.prototype), "error"));
 	($mol_mem(($.$bog_id_enter.prototype), "apply"));
+	($mol_mem(($.$bog_id_enter.prototype), "apply_fresh"));
 	($mol_mem(($.$bog_id_enter.prototype), "Enter"));
 	($mol_mem(($.$bog_id_enter.prototype), "Hint"));
 	($mol_mem(($.$bog_id_enter.prototype), "Status"));
+	($mol_mem(($.$bog_id_enter.prototype), "Save"));
+	($mol_mem(($.$bog_id_enter.prototype), "Fresh"));
 	($mol_mem(($.$bog_id_enter.prototype), "Replace"));
+	($mol_mem(($.$bog_id_enter.prototype), "Change"));
 	($mol_mem(($.$bog_id_enter.prototype), "Error"));
+	($mol_mem(($.$bog_id_enter.prototype), "busy"));
 	($mol_mem(($.$bog_id_enter.prototype), "armed"));
 
 
@@ -22842,29 +22900,51 @@ var $;
     }) {
     }
     $.$bog_id_key_store = $bog_id_key_store;
-    /** Own key of app, the same on all devices: the first device puts it to granted Land. Empty while Land is not synced */
-    function $bog_id_key(pointer, own) {
+    /** Store of app key in granted Land. Null while Land is not synced or not writable */
+    function $bog_id_key_ready(pointer) {
         const land = this.$bog_id_land(pointer);
         if (!land)
-            return '';
+            return null;
         const tines = land.Tine().items_vary()
             .map(tine => $giper_baza_link_schema.cast(tine)?.str)
             .filter($mol_guard_defined);
         const synced = [pointer, land.link().str, ...tines].map(link => this.$bog_id_land_synced(link));
         if (!synced.every(Boolean))
-            return '';
+            return null;
         const rank = land.lord_rank(land.auth().pass().lord());
         if (rank < $giper_baza_rank_post('late'))
+            return null;
+        return land.Data($bog_id_key_store);
+    }
+    $.$bog_id_key_ready = $bog_id_key_ready;
+    /** Own key of app, the same on all devices: the first device puts it to granted Land. Empty while Land is not synced */
+    function $bog_id_key(pointer, own) {
+        const store = this.$bog_id_key_ready(pointer);
+        if (!store)
             return '';
-        const store = land.Data($bog_id_key_store);
         const key = store.Key()?.val();
         if (key)
             return key;
         store.Key('auto').val(own);
-        land.units_saving();
+        store.land().units_saving();
         return own;
     }
     $.$bog_id_key = $bog_id_key;
+    /** Key of app from granted Land without putting own one. Null while Land is not synced, empty when there is no key yet */
+    function $bog_id_key_peek(pointer) {
+        const store = this.$bog_id_key_ready(pointer);
+        return store && (store.Key()?.val() ?? '');
+    }
+    $.$bog_id_key_peek = $bog_id_key_peek;
+    /** Puts key to granted Land if it is vacant, waits for master and tells whether it has the key */
+    async function $bog_id_key_put(pointer, key) {
+        const actual = await $mol_wire_async(this).$bog_id_key(pointer, key);
+        if (actual !== key)
+            return false;
+        const land = await $mol_wire_async(this).$bog_id_land(pointer);
+        return this.$bog_id_land_push([land]);
+    }
+    $.$bog_id_key_put = $bog_id_key_put;
 })($ || ($ = {}));
 
 ;
@@ -22878,9 +22958,11 @@ var $;
     var $$;
     (function ($$) {
         class $bog_id_enter extends $.$bog_id_enter {
-            own() {
-                const auth = this.$.$giper_baza_auth.current();
+            key_of(auth) {
                 return auth.toString() + auth.toStringPrivate();
+            }
+            own() {
+                return this.key_of(this.$.$giper_baza_auth.current());
             }
             lord() {
                 return this.$.$giper_baza_auth.current().pass().lord().str;
@@ -22890,6 +22972,7 @@ var $;
             }
             enter() {
                 this.error('');
+                this.armed('');
                 const pass = this.$.$giper_baza_auth.current().pass().toString();
                 this.$.$bog_id_login(this.provider(), pass, this.scope())
                     .then(grant => this.grant(grant))
@@ -22898,11 +22981,14 @@ var $;
             joined() {
                 return this.grant()?.done === this.lord();
             }
+            join(lord) {
+                this.grant({ ...this.grant(), done: lord });
+            }
             key() {
                 const grant = this.grant();
                 if (!grant || this.joined())
-                    return '';
-                return this.$.$bog_id_key(grant.pointer, this.own());
+                    return null;
+                return this.$.$bog_id_key_peek(grant.pointer);
             }
             key_ready() {
                 try {
@@ -22911,32 +22997,50 @@ var $;
                 catch (error) {
                     if (!$mol_promise_like(error))
                         $mol_fail_log(error);
-                    return '';
+                    return null;
                 }
+            }
+            vacant() {
+                return this.key_ready() === '';
             }
             conflicted() {
                 const key = this.key_ready();
                 return Boolean(key) && key !== this.own();
             }
             joining() {
-                const grant = this.grant();
-                if (!grant || this.key_ready() !== this.own())
+                if (this.busy() || this.key_ready() !== this.own())
                     return null;
-                return new this.$.$mol_after_tick(() => this.grant({ ...grant, done: this.lord() }));
+                return new this.$.$mol_after_tick(() => this.join(this.lord()));
             }
             auto() {
                 this.joining();
+            }
+            idle() {
+                return !this.busy();
             }
             status() {
                 const grant = this.grant();
                 if (!grant)
                     return '';
-                if (this.joined())
-                    return this.done().replace('{name}', () => grant.name || grant.lord);
-                return this.conflicted() ? this.conflict() : this.wait();
+                if (this.busy())
+                    return this.sending();
+                const text = this.joined() ? this.done()
+                    : this.vacant() ? this.vacant_text()
+                        : this.conflicted() ? this.conflict()
+                            : this.wait();
+                return text.replace('{name}', () => grant.name || grant.lord);
             }
             replace_title() {
-                return this.armed() ? this.replace_sure() : super.replace_title();
+                return this.armed() === 'replace' ? this.switch_sure() : super.replace_title();
+            }
+            fresh_title() {
+                return this.armed() === 'fresh' ? this.switch_sure() : super.fresh_title();
+            }
+            arm(kind) {
+                if (this.armed() === kind)
+                    return true;
+                this.armed(kind);
+                return false;
             }
             auth_from(str) {
                 try {
@@ -22955,6 +23059,49 @@ var $;
                 if (!prev.includes(own))
                     this.$.$mol_state_local.value('bog_id_enter_prev', [...prev, own]);
             }
+            async sent(key) {
+                this.error('');
+                this.busy(true);
+                try {
+                    const done = await this.$.$bog_id_key_put(this.grant().pointer, key);
+                    if (!done)
+                        this.error(this.error_sent());
+                    return done;
+                }
+                catch (error) {
+                    this.error(this.error_sent());
+                    $mol_fail_log(error);
+                    return false;
+                }
+                finally {
+                    this.busy(false);
+                }
+            }
+            save() {
+                this.armed('');
+                return this.save_run();
+            }
+            async save_run() {
+                if (this.busy() || !this.vacant())
+                    return;
+                if (await this.sent(this.own()))
+                    this.join(this.lord());
+            }
+            fresh() {
+                if (this.arm('fresh'))
+                    return this.fresh_run();
+            }
+            async fresh_run() {
+                if (this.busy() || !this.vacant())
+                    return;
+                const auth = await $mol_wire_async(this.$.$giper_baza_auth).grab();
+                const key = this.key_of(auth);
+                if (!await this.sent(key))
+                    return;
+                this.keep();
+                this.join(auth.pass().lord().str);
+                this.apply_fresh(key);
+            }
             replace() {
                 const key = this.key_ready();
                 if (!key)
@@ -22963,26 +23110,33 @@ var $;
                 this.error(auth ? '' : this.error_bad());
                 if (!auth)
                     return;
-                if (!this.armed()) {
-                    this.armed(true);
+                if (!this.arm('replace'))
                     return;
-                }
                 this.keep();
+                this.join(auth.pass().lord().str);
                 this.apply(key);
             }
-            apply(next) {
-                if (!next)
-                    return '';
-                this.$.$giper_baza_auth.current(this.$.$giper_baza_auth.from(next));
+            switch(key) {
+                this.$.$giper_baza_auth.current(this.$.$giper_baza_auth.from(key));
                 this.$.$mol_dom_context.location.reload();
-                return next;
+            }
+            apply(next) {
+                if (next)
+                    this.switch(next);
+                return '';
+            }
+            apply_fresh(next) {
+                if (next)
+                    this.switch(next);
+                return '';
             }
             parts() {
                 const grant = this.grant();
                 return [
-                    ...this.joined() ? [] : [this.Enter()],
-                    ...grant ? [this.Status()] : [this.Hint()],
-                    ...this.conflicted() ? [this.Replace()] : [],
+                    ...grant ? [this.Status()] : [this.Enter(), this.Hint()],
+                    ...this.vacant() ? [this.Save(), this.Fresh()] : [],
+                    ...this.conflicted() && this.idle() ? [this.Replace()] : [],
+                    ...grant && this.idle() ? [this.Change()] : [],
                     ...this.error() ? [this.Error()] : [],
                 ];
             }
@@ -22999,6 +23153,9 @@ var $;
         __decorate([
             $mol_action
         ], $bog_id_enter.prototype, "apply", null);
+        __decorate([
+            $mol_action
+        ], $bog_id_enter.prototype, "apply_fresh", null);
         $$.$bog_id_enter = $bog_id_enter;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
@@ -46601,55 +46758,115 @@ var $;
 (function ($_1) {
     var $$;
     (function ($$) {
+        async function stand($) {
+            const own = await $.$giper_baza_auth._generate();
+            const other = await $.$giper_baza_auth._generate();
+            const key_of = (auth) => auth.toString() + auth.toStringPrivate();
+            const state = {
+                memory: new Map(),
+                key: null,
+                delivered: true,
+                put: [],
+                applied: [],
+                started: [],
+            };
+            const context = $.$mol_ambient({
+                $giper_baza_auth: class extends $giper_baza_auth {
+                    static current() { return own; }
+                    static grab() { return other; }
+                },
+                $mol_state_local: {
+                    value: (name, next) => {
+                        if (next !== undefined)
+                            state.memory.set(name, next);
+                        return state.memory.get(name) ?? null;
+                    },
+                },
+                $bog_id_key_peek: () => state.key,
+                $bog_id_key_put: async (pointer, key) => {
+                    state.put.push(key);
+                    return state.delivered;
+                },
+            });
+            const make = () => $bog_id_enter.make({
+                $: context,
+                apply: (next) => {
+                    if (next)
+                        state.applied.push(next);
+                    return '';
+                },
+                apply_fresh: (next) => {
+                    if (next)
+                        state.started.push(next);
+                    return '';
+                },
+            });
+            const login = (done) => state.memory.set('bog_id_enter', { lord: 'L', name: 'Ann', pointer: 'P', done });
+            return {
+                state, make, login,
+                own: key_of(own), own_lord: own.pass().lord().str,
+                other: key_of(other), other_lord: other.pass().lord().str,
+            };
+        }
         $mol_test({
             async 'same key joins, other key changes nothing until confirmed twice and own key is kept'($) {
-                const own = await $.$giper_baza_auth._generate();
-                const other = await $.$giper_baza_auth._generate();
-                const key_of = (auth) => auth.toString() + auth.toStringPrivate();
-                const memory = new Map();
-                let key = '';
-                const applied = [];
-                const context = $.$mol_ambient({
-                    $giper_baza_auth: class extends $giper_baza_auth {
-                        static current() { return own; }
-                    },
-                    $mol_state_local: {
-                        value: (name, next) => {
-                            if (next !== undefined)
-                                memory.set(name, next);
-                            return memory.get(name) ?? null;
-                        },
-                    },
-                    $bog_id_key: () => key,
-                });
-                const make = () => $bog_id_enter.make({
-                    $: context,
-                    apply: (next) => {
-                        if (next)
-                            applied.push(next);
-                        return '';
-                    },
-                });
-                const fresh = make();
-                $mol_assert_equal(fresh.parts(), [fresh.Enter(), fresh.Hint()]);
-                memory.set('bog_id_enter', { lord: 'L', name: 'Ann', pointer: 'P' });
-                $mol_assert_equal(make().status(), fresh.wait());
-                key = key_of(other);
-                const clash = make();
-                $mol_assert_equal(clash.conflicted(), true);
-                $mol_assert_equal(clash.joining(), null);
-                clash.replace();
-                $mol_assert_equal(applied, []);
-                clash.replace();
-                $mol_assert_equal(applied, [key]);
-                $mol_assert_equal(memory.get('bog_id_enter_prev'), [key_of(own)]);
-                key = key_of(own);
+                const { state, make, login, own, own_lord, other, other_lord } = await stand($);
+                const out = make();
+                $mol_assert_equal(out.parts(), [out.Enter(), out.Hint()]);
+                login();
+                const waiting = make();
+                $mol_assert_equal(waiting.status(), waiting.wait());
+                $mol_assert_equal(waiting.parts(), [waiting.Status(), waiting.Change()]);
+                state.key = own;
                 const same = make();
                 $mol_assert_equal(same.conflicted(), false);
                 $mol_assert_unique(same.joining(), null);
-                memory.set('bog_id_enter', { lord: 'L', name: 'Ann', pointer: 'P', done: own.pass().lord().str });
+                state.key = other;
+                const clash = make();
+                $mol_assert_equal(clash.joining(), null);
+                $mol_assert_equal(clash.parts(), [clash.Status(), clash.Replace(), clash.Change()]);
+                clash.replace();
+                $mol_assert_equal(state.applied, []);
+                clash.replace();
+                $mol_assert_equal(state.applied, [other]);
+                $mol_assert_equal(state.memory.get('bog_id_enter_prev'), [own]);
+                $mol_assert_equal(state.memory.get('bog_id_enter').done, other_lord);
+                login(own_lord);
                 const joined = make();
-                $mol_assert_equal(joined.parts(), [joined.Status()]);
+                $mol_assert_equal(joined.parts(), [joined.Status(), joined.Change()]);
+            },
+            async 'vacant ID gets key only by choice'($) {
+                const { state, make, login, own, own_lord } = await stand($);
+                login();
+                state.key = '';
+                const enter = make();
+                $mol_assert_equal(enter.parts(), [enter.Status(), enter.Save(), enter.Fresh(), enter.Change()]);
+                enter.joining();
+                $mol_assert_equal(state.put, []);
+                await enter.save();
+                $mol_assert_equal(state.put, [own]);
+                $mol_assert_equal(state.memory.get('bog_id_enter').done, own_lord);
+                $mol_assert_equal([...state.applied, ...state.started], []);
+            },
+            async 'new account starts after second click and only when master has its key'($) {
+                const { state, make, login, own, other, other_lord } = await stand($);
+                login();
+                state.key = '';
+                state.delivered = false;
+                const enter = make();
+                await enter.fresh();
+                $mol_assert_equal(state.put, []);
+                await enter.fresh();
+                $mol_assert_equal(state.put, [other]);
+                $mol_assert_equal(state.started, []);
+                $mol_assert_equal(enter.error(), enter.error_sent());
+                $mol_assert_equal(state.memory.get('bog_id_enter').done, undefined);
+                state.delivered = true;
+                await enter.fresh();
+                $mol_assert_equal(state.started, [other]);
+                $mol_assert_equal(state.applied, []);
+                $mol_assert_equal(state.memory.get('bog_id_enter_prev'), [own]);
+                $mol_assert_equal(state.memory.get('bog_id_enter').done, other_lord);
             },
         });
     })($$ = $_1.$$ || ($_1.$$ = {}));

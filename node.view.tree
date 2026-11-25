@@ -886,6 +886,7 @@ $bog_id_enter $mol_list
 	provider \https://dev-cmyser.github.io/id/
 	scope \account
 	apply? \
+	apply_fresh? \
 	rows <= parts /
 	Enter $mol_button_major
 		title @ \Sign in with Giper ID
@@ -894,17 +895,32 @@ $bog_id_enter $mol_list
 		title @ \Keeps the key of this account in Giper ID. Other devices get the same account. Nothing changes here until you confirm it.
 	Status $mol_paragraph
 		title <= status \
+	Save $mol_button_major
+		title @ \Save the current account there
+		enabled <= idle true
+		click? <=> save? null
+	Fresh $mol_button_minor
+		title <= fresh_title @ \Start a new account
+		enabled <= idle
+		click? <=> fresh? null
 	Replace $mol_button_minor
 		title <= replace_title @ \Switch to the account from Giper ID
 		click? <=> replace? null
+	Change $mol_button_minor
+		title @ \Change Giper ID
+		click? <=> enter?
 	Error $mol_paragraph
 		title <= error? \
-	armed? false
-	replace_sure @ \Really switch? The account changes in all apps of this domain
+	busy? false
+	armed? \
+	switch_sure @ \Really switch? The account changes in all apps of this domain
 	wait @ \Getting the key from Giper Base…
-	conflict @ \Giper ID keeps another account. The account of this device stays until you switch.
+	vacant_text @ \There is no account in this Giper ID yet: {name}
+	conflict @ \Giper ID keeps another account: {name}. The account of this device stays until you switch.
 	done @ \Signed in with Giper ID: {name}
+	sending @ \Sending the key to Giper Base…
 	error_bad @ \This does not look like an account key
+	error_sent @ \The server has not confirmed the key. The account of this device is the same, try later
 
 $bog_qr $mol_svg_root
 	uri \
