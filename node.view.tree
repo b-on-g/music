@@ -2272,13 +2272,30 @@ $bog_dock_frame $giper_web_frame
 	clipboard_write false
 
 $bog_dock_side $mol_view
-	shown false
+	mode \none
+	opened? false
 	attr *
 		^
-		bog_dock_side_shown <= shown
+		bog_dock_side_mode <= mode
+		bog_dock_side_opened <= opened
 	sub /
+		<= Shade $mol_view
+			event *
+				click? <=> close? null
 		<= Frame $bog_dock_frame
 			lights <= lights true
+		<= Tab $mol_view
+			dom_name \button
+			attr *
+				^
+				type \button
+				title <= tab_hint @ \Apps
+				aria-label <= tab_hint
+				aria-expanded <= tab_expanded \false
+			event *
+				pointerdown? <=> tab_grab? null
+				pointermove? <=> tab_move? null
+				click? <=> tab_click? null
 
 $mol_icon_share $mol_icon path \M21,12L14,5V9C7,10 4,15 3,20C5.5,16.5 9,14.9 14,14.9V19L21,12Z
 

@@ -36798,6 +36798,15 @@ var $;
 
 ;
 	($.$bog_dock_side) = class $bog_dock_side extends ($.$mol_view) {
+		close(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Shade(){
+			const obj = new this.$.$mol_view();
+			(obj.event) = () => ({"click": (next) => (this.close(next))});
+			return obj;
+		}
 		lights(){
 			return true;
 		}
@@ -36806,17 +36815,71 @@ var $;
 			(obj.lights) = () => ((this.lights()));
 			return obj;
 		}
-		shown(){
+		tab_hint(){
+			return (this.$.$mol_locale.text("$bog_dock_side_tab_hint"));
+		}
+		tab_expanded(){
+			return "false";
+		}
+		tab_grab(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		tab_move(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		tab_click(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		Tab(){
+			const obj = new this.$.$mol_view();
+			(obj.dom_name) = () => ("button");
+			(obj.attr) = () => ({
+				...(this.$.$mol_view.prototype.attr.call(obj)), 
+				"type": "button", 
+				"title": (this.tab_hint()), 
+				"aria-label": (this.tab_hint()), 
+				"aria-expanded": (this.tab_expanded())
+			});
+			(obj.event) = () => ({
+				"pointerdown": (next) => (this.tab_grab(next)), 
+				"pointermove": (next) => (this.tab_move(next)), 
+				"click": (next) => (this.tab_click(next))
+			});
+			return obj;
+		}
+		mode(){
+			return "none";
+		}
+		opened(next){
+			if(next !== undefined) return next;
 			return false;
 		}
 		attr(){
-			return {...(super.attr()), "bog_dock_side_shown": (this.shown())};
+			return {
+				...(super.attr()), 
+				"bog_dock_side_mode": (this.mode()), 
+				"bog_dock_side_opened": (this.opened())
+			};
 		}
 		sub(){
-			return [(this.Frame())];
+			return [
+				(this.Shade()), 
+				(this.Frame()), 
+				(this.Tab())
+			];
 		}
 	};
+	($mol_mem(($.$bog_dock_side.prototype), "close"));
+	($mol_mem(($.$bog_dock_side.prototype), "Shade"));
 	($mol_mem(($.$bog_dock_side.prototype), "Frame"));
+	($mol_mem(($.$bog_dock_side.prototype), "tab_grab"));
+	($mol_mem(($.$bog_dock_side.prototype), "tab_move"));
+	($mol_mem(($.$bog_dock_side.prototype), "tab_click"));
+	($mol_mem(($.$bog_dock_side.prototype), "Tab"));
+	($mol_mem(($.$bog_dock_side.prototype), "opened"));
 
 
 ;
@@ -36830,12 +36893,66 @@ var $;
     var $$;
     (function ($$) {
         class $bog_dock_side extends $.$bog_dock_side {
+            static swipe_min = 16;
             embedded() {
                 const win = this.$.$mol_dom_context;
                 return win.parent !== win.self;
             }
-            shown() {
-                return !this.embedded() && this.$.$mol_media.match('(min-width: 60rem)');
+            popup() {
+                return Boolean(this.$.$mol_dom_context.opener);
+            }
+            mode() {
+                if (this.embedded() || this.popup())
+                    return 'none';
+                return this.$.$mol_media.match('(min-width: 60rem)') ? 'wide' : 'narrow';
+            }
+            used(next = false) {
+                return next;
+            }
+            opened(next = false) {
+                return next;
+            }
+            toggle(next) {
+                if (next)
+                    this.used(true);
+                this.opened(next);
+            }
+            close() {
+                this.toggle(false);
+                return null;
+            }
+            tab_expanded() {
+                return String(this.opened());
+            }
+            grab_x = 0;
+            swiped = false;
+            tab_grab(event) {
+                if (!event)
+                    return null;
+                this.grab_x = event.clientX;
+                this.swiped = false;
+                const node = event.currentTarget;
+                node?.setPointerCapture?.(event.pointerId);
+                return null;
+            }
+            tab_move(event) {
+                if (!event || !event.buttons || this.swiped)
+                    return null;
+                const shift = event.clientX - this.grab_x;
+                if (Math.abs(shift) < $bog_dock_side.swipe_min)
+                    return null;
+                this.swiped = true;
+                this.toggle(shift > 0);
+                return null;
+            }
+            tab_click(event) {
+                if (!event)
+                    return null;
+                if (this.swiped)
+                    this.swiped = false;
+                else
+                    this.toggle(!this.opened());
+                return null;
             }
             lights() {
                 const root = this.$.$mol_view.roots()[0];
@@ -36843,9 +36960,30 @@ var $;
                 return theme?.is_light_now?.() ?? this.$.$mol_lights();
             }
             sub() {
-                return this.shown() ? super.sub() : [];
+                const mode = this.mode();
+                if (mode === 'none')
+                    return [];
+                if (mode === 'wide')
+                    return [this.Frame()];
+                return [
+                    ...this.opened() ? [this.Shade()] : [],
+                    ...this.used() ? [this.Frame()] : [],
+                    this.Tab(),
+                ];
             }
         }
+        __decorate([
+            $mol_mem
+        ], $bog_dock_side.prototype, "mode", null);
+        __decorate([
+            $mol_mem
+        ], $bog_dock_side.prototype, "used", null);
+        __decorate([
+            $mol_mem
+        ], $bog_dock_side.prototype, "opened", null);
+        __decorate([
+            $mol_action
+        ], $bog_dock_side.prototype, "toggle", null);
         $$.$bog_dock_side = $bog_dock_side;
     })($$ = $.$$ || ($.$$ = {}));
 })($ || ($ = {}));
@@ -36854,7 +36992,7 @@ var $;
 "use strict";
 var $;
 (function ($) {
-    $mol_style_attach("bog/dock/side/side.view.css", "[bog_dock_side][mol_view_root] {\n\tdisplay: none;\n\tposition: fixed;\n\tz-index: 1;\n\ttop: 0;\n\tleft: 0;\n\twidth: 4rem;\n\theight: 100%;\n\ttransition: none;\n}\n\n[bog_dock_side][mol_view_root][bog_dock_side_shown=\"true\"] {\n\tdisplay: flex;\n}\n\n[bog_dock_side_frame] {\n\theight: 100%;\n}\n\nbody:has( > [bog_dock_side_shown=\"true\"] ) {\n\tpadding-left: 4rem;\n}\n\n@media print {\n\t[bog_dock_side][mol_view_root][bog_dock_side_shown=\"true\"] { display: none; }\n\tbody:has( > [bog_dock_side_shown=\"true\"] ) { padding-left: 0; }\n}\n");
+    $mol_style_attach("bog/dock/side/side.view.css", "[bog_dock_side][mol_view_root] {\n\tdisplay: none;\n\tposition: fixed;\n\tz-index: 1;\n\ttop: 0;\n\tleft: 0;\n\twidth: 4rem;\n\theight: 100%;\n\ttransition: none;\n}\n\n[bog_dock_side][mol_view_root][bog_dock_side_mode=\"wide\"] {\n\tdisplay: flex;\n}\n\n[bog_dock_side_frame] {\n\twidth: 4rem;\n\theight: 100%;\n}\n\nbody:has( > [bog_dock_side_mode=\"wide\"] ) {\n\tpadding-left: 4rem;\n}\n\n[bog_dock_side][mol_view_root][bog_dock_side_mode=\"narrow\"] {\n\tdisplay: block;\n\tz-index: 100;\n\twidth: 0;\n\theight: 0;\n}\n\n[bog_dock_side_mode=\"narrow\"] > [bog_dock_side_shade] {\n\tposition: fixed;\n\tinset: 0;\n\tbackground: #00000059;\n}\n\n[bog_dock_side_mode=\"narrow\"] > [bog_dock_side_frame] {\n\tposition: fixed;\n\ttop: 0;\n\tleft: 0;\n\theight: 100dvh;\n\tvisibility: hidden;\n\ttransform: translateX( -100% );\n\ttransition: transform .2s ease-out, visibility .2s;\n}\n\n[bog_dock_side_mode=\"narrow\"][bog_dock_side_opened=\"true\"] > [bog_dock_side_frame] {\n\tvisibility: visible;\n\ttransform: none;\n\tbox-shadow: 0 0 1.5rem #00000033;\n}\n\n[bog_dock_side_tab] {\n\tposition: fixed;\n\ttop: 50%;\n\tleft: 0;\n\twidth: 1.25rem;\n\theight: 4rem;\n\tmargin: -2rem 0 0;\n\tpadding: 0;\n\tborder: none;\n\tbackground: none;\n\tcursor: pointer;\n\ttouch-action: none;\n\t-webkit-tap-highlight-color: transparent;\n\ttransition: left .2s ease-out;\n}\n\n[bog_dock_side_tab]::before {\n\tcontent: '';\n\twidth: 6px;\n\theight: 100%;\n\tborder-radius: 0 6px 6px 0;\n\tbackground: hsl( 26, 82%, 44% );\n\topacity: .75;\n}\n\n[bog_dock_side_opened=\"true\"] > [bog_dock_side_tab] {\n\tleft: 4rem;\n}\n\n@media print {\n\t[bog_dock_side][mol_view_root][bog_dock_side_mode] { display: none; }\n\tbody:has( > [bog_dock_side_mode=\"wide\"] ) { padding-left: 0; }\n}\n");
 })($ || ($ = {}));
 
 ;
@@ -46535,7 +46673,7 @@ var $;
     var $$;
     (function ($$) {
         $mol_test({
-            'dock is shown only on wide screen and never inside of frame'($) {
+            'wide has bar, narrow has tab only, frame has nothing'($) {
                 const make = (wide, embedded) => $bog_dock_side.make({
                     $: $.$mol_ambient({
                         $mol_media: class extends $mol_media {
@@ -46543,10 +46681,33 @@ var $;
                         },
                     }),
                     embedded: () => embedded,
+                    popup: () => false,
                 });
-                $mol_assert_equal(make(true, false).sub().length, 1);
-                $mol_assert_equal(make(false, false).sub().length, 0);
-                $mol_assert_equal(make(true, true).sub().length, 0);
+                const wide = make(true, false);
+                $mol_assert_equal(wide.sub(), [wide.Frame()]);
+                const narrow = make(false, false);
+                $mol_assert_equal(narrow.sub(), [narrow.Tab()]);
+                $mol_assert_equal(make(true, true).sub(), []);
+                $mol_assert_equal(make(false, true).sub(), []);
+            },
+            'tab opens by click and by swipe, click after swipe changes nothing'($) {
+                const side = $bog_dock_side.make({ $, mode: () => 'narrow' });
+                const pointer = (clientX) => ({ clientX, buttons: 1, pointerId: 1 });
+                const click = {};
+                side.tab_click(click);
+                $mol_assert_equal(side.sub(), [side.Shade(), side.Frame(), side.Tab()]);
+                side.close();
+                $mol_assert_equal(side.sub(), [side.Frame(), side.Tab()]);
+                side.tab_grab(pointer(2));
+                side.tab_move(pointer(10));
+                $mol_assert_equal(side.opened(), false);
+                side.tab_move(pointer(40));
+                side.tab_click(click);
+                $mol_assert_equal(side.opened(), true);
+                side.tab_grab(pointer(70));
+                side.tab_move(pointer(30));
+                side.tab_click(click);
+                $mol_assert_equal(side.opened(), false);
             },
         });
     })($$ = $_1.$$ || ($_1.$$ = {}));

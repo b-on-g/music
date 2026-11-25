@@ -62082,17 +62082,58 @@ declare namespace $.$$ {
 
 declare namespace $ {
 
-	type $bog_dock_frame__lights_bog_dock_side_1 = $mol_type_enforce<
+	type $mol_view__event_bog_dock_side_1 = $mol_type_enforce<
+		({ 
+			click( next?: ReturnType< $bog_dock_side['close'] > ): ReturnType< $bog_dock_side['close'] >,
+		}) 
+		,
+		ReturnType< $mol_view['event'] >
+	>
+	type $bog_dock_frame__lights_bog_dock_side_2 = $mol_type_enforce<
 		ReturnType< $bog_dock_side['lights'] >
 		,
 		ReturnType< $bog_dock_frame['lights'] >
 	>
+	type $mol_view__dom_name_bog_dock_side_3 = $mol_type_enforce<
+		string
+		,
+		ReturnType< $mol_view['dom_name'] >
+	>
+	type $mol_view__attr_bog_dock_side_4 = $mol_type_enforce<
+		({ 
+			'type': string,
+			'title': ReturnType< $bog_dock_side['tab_hint'] >,
+			'aria-label': ReturnType< $bog_dock_side['tab_hint'] >,
+			'aria-expanded': ReturnType< $bog_dock_side['tab_expanded'] >,
+		})  & ReturnType< $mol_view['attr'] >
+		,
+		ReturnType< $mol_view['attr'] >
+	>
+	type $mol_view__event_bog_dock_side_5 = $mol_type_enforce<
+		({ 
+			pointerdown( next?: ReturnType< $bog_dock_side['tab_grab'] > ): ReturnType< $bog_dock_side['tab_grab'] >,
+			pointermove( next?: ReturnType< $bog_dock_side['tab_move'] > ): ReturnType< $bog_dock_side['tab_move'] >,
+			click( next?: ReturnType< $bog_dock_side['tab_click'] > ): ReturnType< $bog_dock_side['tab_click'] >,
+		}) 
+		,
+		ReturnType< $mol_view['event'] >
+	>
 	export class $bog_dock_side extends $mol_view {
+		close( next?: any ): any
+		Shade( ): $mol_view
 		lights( ): boolean
 		Frame( ): $bog_dock_frame
-		shown( ): boolean
+		tab_hint( ): string
+		tab_expanded( ): string
+		tab_grab( next?: any ): any
+		tab_move( next?: any ): any
+		tab_click( next?: any ): any
+		Tab( ): $mol_view
+		mode( ): string
+		opened( next?: boolean ): boolean
 		attr( ): ({ 
-			'bog_dock_side_shown': ReturnType< $bog_dock_side['shown'] >,
+			'bog_dock_side_mode': ReturnType< $bog_dock_side['mode'] >,
+			'bog_dock_side_opened': ReturnType< $bog_dock_side['opened'] >,
 		})  & ReturnType< $mol_view['attr'] >
 		sub( ): readonly(any)[]
 	}
@@ -62102,10 +62143,22 @@ declare namespace $ {
 //# sourceMappingURL=side.view.tree.d.ts.map
 declare namespace $.$$ {
     class $bog_dock_side extends $.$bog_dock_side {
+        static swipe_min: number;
         embedded(): boolean;
-        shown(): boolean;
+        popup(): boolean;
+        mode(): "none" | "wide" | "narrow";
+        used(next?: boolean): boolean;
+        opened(next?: boolean): boolean;
+        toggle(next: boolean): void;
+        close(): null;
+        tab_expanded(): string;
+        grab_x: number;
+        swiped: boolean;
+        tab_grab(event?: PointerEvent): null;
+        tab_move(event?: PointerEvent): null;
+        tab_click(event?: Event): null;
         lights(): boolean;
-        sub(): readonly any[];
+        sub(): ($mol_view | $.$bog_dock_frame)[];
     }
 }
 
