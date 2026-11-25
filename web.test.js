@@ -6678,6 +6678,116 @@ var $;
 "use strict";
 var $;
 (function ($) {
+    $mol_test({
+        'land covers faces only when it has the latest time and all units of every peer'() {
+            const master = new $giper_baza_face_map;
+            const land = new $giper_baza_face_map;
+            $mol_assert_equal($bog_id_land_covers(land, master), true);
+            master.peer_time('peer', 2, 1);
+            $mol_assert_equal($bog_id_land_covers(land, master), false);
+            land.peer_time('peer', 2, 0);
+            $mol_assert_equal($bog_id_land_covers(land, master), false);
+            land.peer_time('peer', 2, 1);
+            land.peer_time('other', 3, 0);
+            $mol_assert_equal($bog_id_land_covers(land, master), true);
+            master.peer_summ('peer', 2);
+            land.peer_summ('peer', 1);
+            $mol_assert_equal($bog_id_land_covers(land, master), false);
+            land.peer_summ('peer', 2);
+            $mol_assert_equal($bog_id_land_covers(land, master), true);
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($_1) {
+    $mol_test({
+        async 'first device puts own key, second device takes it, unsynced land gives nothing'($) {
+            const grab = (name) => $mol_wire_async(() => {
+                const land = $.$giper_baza_glob.land_grab([[null, $giper_baza_rank_deny]]);
+                new $mol_wire_atom(name, () => $.$giper_baza_glob.Land(land.link())).fresh();
+                return land;
+            })();
+            const pointer = await grab('bog_id_key_test_pointer');
+            const land = await grab('bog_id_key_test_land');
+            await $mol_wire_async(pointer.Data($giper_baza_atom_text)).val(land.link().str);
+            let synced = false;
+            const context = $.$mol_ambient({ $bog_id_land_synced: () => synced });
+            const ask = (own) => $mol_wire_async(context).$bog_id_key(pointer.link().str, own);
+            $mol_assert_equal(await ask('one'), '');
+            synced = true;
+            $mol_assert_equal(await ask('one'), 'one');
+            $mol_assert_equal(await ask('two'), 'one');
+        },
+    });
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($_1) {
+    var $$;
+    (function ($$) {
+        $mol_test({
+            async 'same key joins, other key changes nothing until confirmed twice and own key is kept'($) {
+                const own = await $.$giper_baza_auth._generate();
+                const other = await $.$giper_baza_auth._generate();
+                const key_of = (auth) => auth.toString() + auth.toStringPrivate();
+                const memory = new Map();
+                let key = '';
+                const applied = [];
+                const context = $.$mol_ambient({
+                    $giper_baza_auth: class extends $giper_baza_auth {
+                        static current() { return own; }
+                    },
+                    $mol_state_local: {
+                        value: (name, next) => {
+                            if (next !== undefined)
+                                memory.set(name, next);
+                            return memory.get(name) ?? null;
+                        },
+                    },
+                    $bog_id_key: () => key,
+                });
+                const make = () => $bog_id_enter.make({
+                    $: context,
+                    apply: (next) => {
+                        if (next)
+                            applied.push(next);
+                        return '';
+                    },
+                });
+                const fresh = make();
+                $mol_assert_equal(fresh.parts(), [fresh.Enter(), fresh.Hint()]);
+                memory.set('bog_id_enter', { lord: 'L', name: 'Ann', pointer: 'P' });
+                $mol_assert_equal(make().status(), fresh.wait());
+                key = key_of(other);
+                const clash = make();
+                $mol_assert_equal(clash.conflicted(), true);
+                $mol_assert_equal(clash.joining(), null);
+                clash.replace();
+                $mol_assert_equal(applied, []);
+                clash.replace();
+                $mol_assert_equal(applied, [key]);
+                $mol_assert_equal(memory.get('bog_id_enter_prev'), [key_of(own)]);
+                key = key_of(own);
+                const same = make();
+                $mol_assert_equal(same.conflicted(), false);
+                $mol_assert_unique(same.joining(), null);
+                memory.set('bog_id_enter', { lord: 'L', name: 'Ann', pointer: 'P', done: own.pass().lord().str });
+                const joined = make();
+                $mol_assert_equal(joined.parts(), [joined.Status()]);
+            },
+        });
+    })($$ = $_1.$$ || ($_1.$$ = {}));
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
     function fake_dir() {
         const files = new Map();
         const dir = {

@@ -22565,6 +22565,454 @@ var $;
 })($ || ($ = {}));
 
 ;
+"use strict";
+var $;
+(function ($) {
+    /** Public Giper ID profile of Lord, stored under own key in home Land */
+    function $bog_id_profile_of(lord, auto) {
+        return this.$giper_baza_glob.Land(new $giper_baza_link(lord))
+            .Data($giper_baza_dict)
+            .dive('bog_id', $bog_id_profile, auto);
+    }
+    $.$bog_id_profile_of = $bog_id_profile_of;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $bog_id_grant extends $giper_baza_dict.with({
+        App: $giper_baza_atom_text,
+        Scope: $giper_baza_atom_text,
+        Pointer: $giper_baza_atom_text,
+        Land: $giper_baza_atom_text,
+        Lands: $giper_baza_list_str,
+        Apps: $giper_baza_list_str,
+    }) {
+    }
+    $.$bog_id_grant = $bog_id_grant;
+    class $bog_id_store extends $giper_baza_dict.with({
+        Grants: $giper_baza_list_link_to(() => $bog_id_grant),
+    }) {
+    }
+    $.$bog_id_store = $bog_id_store;
+    class $bog_id_profile extends $giper_baza_dict.with({
+        Name: $giper_baza_atom_text,
+        Vault: $giper_baza_atom_text,
+        Stores: $giper_baza_list_str,
+    }) {
+    }
+    $.$bog_id_profile = $bog_id_profile;
+})($ || ($ = {}));
+
+;
+	($.$mol_button_major) = class $mol_button_major extends ($.$mol_button_minor) {
+		theme(){
+			return "$mol_theme_base";
+		}
+	};
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    $mol_style_attach("mol/button/major/major.view.css", "[mol_button_major] {\n\tbackground-color: var(--mol_theme_back);\n\tcolor: var(--mol_theme_text);\n}\n");
+})($ || ($ = {}));
+
+;
+"use strict";
+
+
+;
+	($.$bog_id_enter) = class $bog_id_enter extends ($.$mol_list) {
+		parts(){
+			return [];
+		}
+		enter(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		status(){
+			return "";
+		}
+		replace_title(){
+			return (this.$.$mol_locale.text("$bog_id_enter_replace_title"));
+		}
+		replace(next){
+			if(next !== undefined) return next;
+			return null;
+		}
+		error(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		provider(){
+			return "https://dev-cmyser.github.io/id/";
+		}
+		scope(){
+			return "account";
+		}
+		apply(next){
+			if(next !== undefined) return next;
+			return "";
+		}
+		rows(){
+			return (this.parts());
+		}
+		Enter(){
+			const obj = new this.$.$mol_button_major();
+			(obj.title) = () => ((this.$.$mol_locale.text("$bog_id_enter_Enter_title")));
+			(obj.click) = (next) => ((this.enter(next)));
+			return obj;
+		}
+		Hint(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.$.$mol_locale.text("$bog_id_enter_Hint_title")));
+			return obj;
+		}
+		Status(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.status()));
+			return obj;
+		}
+		Replace(){
+			const obj = new this.$.$mol_button_minor();
+			(obj.title) = () => ((this.replace_title()));
+			(obj.click) = (next) => ((this.replace(next)));
+			return obj;
+		}
+		Error(){
+			const obj = new this.$.$mol_paragraph();
+			(obj.title) = () => ((this.error()));
+			return obj;
+		}
+		armed(next){
+			if(next !== undefined) return next;
+			return false;
+		}
+		replace_sure(){
+			return (this.$.$mol_locale.text("$bog_id_enter_replace_sure"));
+		}
+		wait(){
+			return (this.$.$mol_locale.text("$bog_id_enter_wait"));
+		}
+		conflict(){
+			return (this.$.$mol_locale.text("$bog_id_enter_conflict"));
+		}
+		done(){
+			return (this.$.$mol_locale.text("$bog_id_enter_done"));
+		}
+		error_bad(){
+			return (this.$.$mol_locale.text("$bog_id_enter_error_bad"));
+		}
+	};
+	($mol_mem(($.$bog_id_enter.prototype), "enter"));
+	($mol_mem(($.$bog_id_enter.prototype), "replace"));
+	($mol_mem(($.$bog_id_enter.prototype), "error"));
+	($mol_mem(($.$bog_id_enter.prototype), "apply"));
+	($mol_mem(($.$bog_id_enter.prototype), "Enter"));
+	($mol_mem(($.$bog_id_enter.prototype), "Hint"));
+	($mol_mem(($.$bog_id_enter.prototype), "Status"));
+	($mol_mem(($.$bog_id_enter.prototype), "Replace"));
+	($mol_mem(($.$bog_id_enter.prototype), "Error"));
+	($mol_mem(($.$bog_id_enter.prototype), "armed"));
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    /** Opens Giper ID popup, sends app Pass and resolves with Pointer to granted Land */
+    function $bog_id_login(provider, pass, scope) {
+        const win = $mol_dom_context;
+        const origin = new URL(provider, win.location.href).origin;
+        return new Promise((done, fail) => {
+            const popup = win.open(provider, 'bog_id', 'popup,width=440,height=640');
+            if (!popup)
+                return fail(new Error('Popup blocked'));
+            const timer = win.setInterval(() => {
+                if (popup.closed)
+                    finish(new Error('Popup closed'));
+            }, 500);
+            const finish = (error, grant) => {
+                win.clearInterval(timer);
+                win.removeEventListener('message', listen);
+                if (error)
+                    fail(error);
+                else
+                    done(grant);
+            };
+            const listen = (event) => {
+                if (event.origin !== origin)
+                    return;
+                if (event.source !== popup)
+                    return;
+                const data = event.data;
+                if (data?.bog_id === 'ready')
+                    popup.postMessage({ bog_id: 'request', pass, scope }, origin);
+                if (data?.bog_id === 'deny')
+                    finish(new Error('Access denied'));
+                if (data?.bog_id === 'grant') {
+                    popup.close();
+                    finish(null, {
+                        lord: String(data.lord),
+                        name: String(data.name ?? ''),
+                        pointer: String(data.pointer),
+                    });
+                }
+            };
+            win.addEventListener('message', listen);
+        });
+    }
+    $.$bog_id_login = $bog_id_login;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    /** Resolves Pointer from Giper ID grant to current data Land */
+    function $bog_id_land(pointer) {
+        const glob = this.$giper_baza_glob;
+        const link = glob.Land(new $giper_baza_link(pointer)).Data($giper_baza_atom_text).val();
+        return link ? glob.Land(new $giper_baza_link(link)) : null;
+    }
+    $.$bog_id_land = $bog_id_land;
+    /** Has Land got everything that master knows */
+    function $bog_id_land_synced(str) {
+        const link = new $giper_baza_link(str);
+        const glob = this.$giper_baza_glob;
+        const land = glob.Land(link);
+        land.sync();
+        const faces = glob.yard().masters().map(port => glob.yard().face_port_land([port, link]));
+        this.$mol_state_time.now(500);
+        return faces.some(map => map && $bog_id_land_covers(land.faces, map));
+    }
+    $.$bog_id_land_synced = $bog_id_land_synced;
+    /** What master really has for Land, asked by separate connection */
+    function $bog_id_land_ask(master, land) {
+        return new Promise(done => {
+            const socket = new $mol_dom_context.WebSocket(master.replace(/^http/, 'ws'), ['$giper_baza_yard_2']);
+            socket.binaryType = 'arraybuffer';
+            const finish = (faces) => {
+                clearTimeout(timer);
+                socket.onopen = socket.onerror = socket.onmessage = null;
+                socket.close();
+                done(faces);
+            };
+            const timer = setTimeout(() => finish(null), 6000);
+            socket.onopen = () => socket.send(land.face_pack().asArray());
+            socket.onerror = () => finish(null);
+            socket.onmessage = event => {
+                if (!event.data?.byteLength)
+                    return;
+                const pack = new $giper_baza_pack(event.data);
+                const part = new Map(pack.parts()).get(land.link().str);
+                if (part)
+                    finish(part.faces);
+            };
+        });
+    }
+    $.$bog_id_land_ask = $bog_id_land_ask;
+    /** Sends Lands to master and checks that it really has them */
+    async function $bog_id_land_push(lands) {
+        const yard = this.$giper_baza_glob.yard();
+        for (let i = 0; i < 4; ++i) {
+            await Promise.all(lands.map(land => $mol_wire_async(land).units_saving()));
+            const master = await $mol_wire_async(yard).master_current();
+            const faces = await Promise.all(lands.map(land => this.$bog_id_land_ask(master, land)));
+            if (lands.every((land, at) => faces[at] && $bog_id_land_covers(faces[at], land.faces)))
+                return true;
+            if (!faces.every(Boolean))
+                await $mol_wire_async(yard).master_next();
+            else if (i)
+                yard.reconnects(null);
+            await new Promise(done => setTimeout(done, 800));
+        }
+        return false;
+    }
+    $.$bog_id_land_push = $bog_id_land_push;
+    function $bog_id_land_covers(left, right) {
+        return [...right].every(([peer, face]) => {
+            const own = left.get(peer);
+            return (own?.time_tick ?? 0) >= face.time_tick && (own?.summ ?? 0) >= face.summ;
+        });
+    }
+    $.$bog_id_land_covers = $bog_id_land_covers;
+})($ || ($ = {}));
+
+;
+"use strict";
+var $;
+(function ($) {
+    class $bog_id_key_store extends $giper_baza_dict.with({
+        Key: $giper_baza_atom_text,
+    }) {
+    }
+    $.$bog_id_key_store = $bog_id_key_store;
+    /** Own key of app, the same on all devices: the first device puts it to granted Land. Empty while Land is not synced */
+    function $bog_id_key(pointer, own) {
+        const land = this.$bog_id_land(pointer);
+        if (!land)
+            return '';
+        const tines = land.Tine().items_vary()
+            .map(tine => $giper_baza_link_schema.cast(tine)?.str)
+            .filter($mol_guard_defined);
+        const synced = [pointer, land.link().str, ...tines].map(link => this.$bog_id_land_synced(link));
+        if (!synced.every(Boolean))
+            return '';
+        const rank = land.lord_rank(land.auth().pass().lord());
+        if (rank < $giper_baza_rank_post('late'))
+            return '';
+        const store = land.Data($bog_id_key_store);
+        const key = store.Key()?.val();
+        if (key)
+            return key;
+        store.Key('auto').val(own);
+        land.units_saving();
+        return own;
+    }
+    $.$bog_id_key = $bog_id_key;
+})($ || ($ = {}));
+
+;
+"use strict";
+
+
+;
+"use strict";
+var $;
+(function ($) {
+    var $$;
+    (function ($$) {
+        class $bog_id_enter extends $.$bog_id_enter {
+            own() {
+                const auth = this.$.$giper_baza_auth.current();
+                return auth.toString() + auth.toStringPrivate();
+            }
+            lord() {
+                return this.$.$giper_baza_auth.current().pass().lord().str;
+            }
+            grant(next) {
+                return this.$.$mol_state_local.value('bog_id_enter', next) ?? null;
+            }
+            enter() {
+                this.error('');
+                const pass = this.$.$giper_baza_auth.current().pass().toString();
+                this.$.$bog_id_login(this.provider(), pass, this.scope())
+                    .then(grant => this.grant(grant))
+                    .catch(error => this.error(error.message));
+            }
+            joined() {
+                return this.grant()?.done === this.lord();
+            }
+            key() {
+                const grant = this.grant();
+                if (!grant || this.joined())
+                    return '';
+                return this.$.$bog_id_key(grant.pointer, this.own());
+            }
+            key_ready() {
+                try {
+                    return this.key();
+                }
+                catch (error) {
+                    if (!$mol_promise_like(error))
+                        $mol_fail_log(error);
+                    return '';
+                }
+            }
+            conflicted() {
+                const key = this.key_ready();
+                return Boolean(key) && key !== this.own();
+            }
+            joining() {
+                const grant = this.grant();
+                if (!grant || this.key_ready() !== this.own())
+                    return null;
+                return new this.$.$mol_after_tick(() => this.grant({ ...grant, done: this.lord() }));
+            }
+            auto() {
+                this.joining();
+            }
+            status() {
+                const grant = this.grant();
+                if (!grant)
+                    return '';
+                if (this.joined())
+                    return this.done().replace('{name}', () => grant.name || grant.lord);
+                return this.conflicted() ? this.conflict() : this.wait();
+            }
+            replace_title() {
+                return this.armed() ? this.replace_sure() : super.replace_title();
+            }
+            auth_from(str) {
+                try {
+                    const auth = this.$.$giper_baza_auth.from(str);
+                    return auth.byteLength === 128 ? auth : null;
+                }
+                catch (error) {
+                    if ($mol_promise_like(error))
+                        $mol_fail_hidden(error);
+                    return null;
+                }
+            }
+            keep() {
+                const prev = this.$.$mol_state_local.value('bog_id_enter_prev') ?? [];
+                const own = this.own();
+                if (!prev.includes(own))
+                    this.$.$mol_state_local.value('bog_id_enter_prev', [...prev, own]);
+            }
+            replace() {
+                const key = this.key_ready();
+                if (!key)
+                    return;
+                const auth = this.auth_from(key);
+                this.error(auth ? '' : this.error_bad());
+                if (!auth)
+                    return;
+                if (!this.armed()) {
+                    this.armed(true);
+                    return;
+                }
+                this.keep();
+                this.apply(key);
+            }
+            apply(next) {
+                if (!next)
+                    return '';
+                this.$.$giper_baza_auth.current(this.$.$giper_baza_auth.from(next));
+                this.$.$mol_dom_context.location.reload();
+                return next;
+            }
+            parts() {
+                const grant = this.grant();
+                return [
+                    ...this.joined() ? [] : [this.Enter()],
+                    ...grant ? [this.Status()] : [this.Hint()],
+                    ...this.conflicted() ? [this.Replace()] : [],
+                    ...this.error() ? [this.Error()] : [],
+                ];
+            }
+        }
+        __decorate([
+            $mol_mem
+        ], $bog_id_enter.prototype, "key", null);
+        __decorate([
+            $mol_mem
+        ], $bog_id_enter.prototype, "joining", null);
+        __decorate([
+            $mol_action
+        ], $bog_id_enter.prototype, "replace", null);
+        __decorate([
+            $mol_action
+        ], $bog_id_enter.prototype, "apply", null);
+        $$.$bog_id_enter = $bog_id_enter;
+    })($$ = $.$$ || ($.$$ = {}));
+})($ || ($ = {}));
+
+;
 	($.$bog_qr) = class $bog_qr extends ($.$mol_svg_root) {
 		stop_offset(id){
 			return "0%";
@@ -23465,25 +23913,6 @@ var $;
 })($ || ($ = {}));
 
 ;
-	($.$mol_button_major) = class $mol_button_major extends ($.$mol_button_minor) {
-		theme(){
-			return "$mol_theme_base";
-		}
-	};
-
-
-;
-"use strict";
-var $;
-(function ($) {
-    $mol_style_attach("mol/button/major/major.view.css", "[mol_button_major] {\n\tbackground-color: var(--mol_theme_back);\n\tcolor: var(--mol_theme_text);\n}\n");
-})($ || ($ = {}));
-
-;
-"use strict";
-
-
-;
 	($.$mol_status) = class $mol_status extends ($.$mol_view) {
 		message(){
 			return "";
@@ -23912,6 +24341,10 @@ var $;
 			]);
 			return obj;
 		}
+		Id(){
+			const obj = new this.$.$bog_id_enter();
+			return obj;
+		}
 		Warning(){
 			const obj = new this.$.$mol_paragraph();
 			(obj.title) = () => ("Ссылка ниже — СЕКРЕТ. Не делись ей публично.");
@@ -24046,6 +24479,7 @@ var $;
 				(this.Profile()), 
 				(this.Telegram()), 
 				(this.Lastfm()), 
+				(this.Id()), 
 				(this.Export()), 
 				(this.Import()), 
 				(this.Reset())
@@ -24097,6 +24531,7 @@ var $;
 	($mol_mem(($.$bog_music_account.prototype), "Fm_connect"));
 	($mol_mem(($.$bog_music_account.prototype), "Fm_status"));
 	($mol_mem(($.$bog_music_account.prototype), "Lastfm"));
+	($mol_mem(($.$bog_music_account.prototype), "Id"));
 	($mol_mem(($.$bog_music_account.prototype), "Warning"));
 	($mol_mem(($.$bog_music_account.prototype), "copy"));
 	($mol_mem(($.$bog_music_account.prototype), "Copy"));
@@ -37009,7 +37444,7 @@ var $;
 var $;
 (function ($) {
     // Инкрементится автоматически git-хуком hooks/pre-push при каждом push.
-    $.$bog_music_version = 'v1.105';
+    $.$bog_music_version = 'v1.106';
 })($ || ($ = {}));
 
 ;
