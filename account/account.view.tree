@@ -57,6 +57,7 @@ $bog_music_account $mol_view
 							title <= fm_button \
 							click? <=> fm_link? null
 						<= Fm_status $mol_view sub / <= fm_status \
+				<= Id $bog_id_enter
 				<= Export $mol_view
 					sub /
 						<= Warning $mol_paragraph
